@@ -191,6 +191,11 @@ struct CalculatorView: View {
                     Display( model: model )
                     
                     HStack {
+                        KeypadView( padSpec: psUnitsL, keyPressHandler: model )
+                        Spacer()
+                        KeypadView( padSpec: psUnitsR, keyPressHandler: model )
+                    }
+                    HStack {
                         KeypadView( padSpec: psFunctionsL, keyPressHandler: model )
                         Spacer()
                         KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
@@ -215,9 +220,11 @@ struct CalculatorView: View {
                     }
                     Spacer()
                 }
-                .padding( 35 )
-                .ignoresSafeArea(.keyboard)
+                .padding(.horizontal, 30)
+                .padding(.vertical, 5)
+                .background( Color("Background"))
             }
+            .ignoresSafeArea(.keyboard)
         }
     }
 }

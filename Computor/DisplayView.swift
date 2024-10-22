@@ -160,6 +160,7 @@ struct Display: View {
         }
         .padding(10)
         .border(Color("Frame"), width: 10)
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
