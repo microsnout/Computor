@@ -371,7 +371,7 @@ struct KeyView: View {
                     }
                 
                 Rectangle()
-                    .foregroundColor( Color.brown )
+                    .foregroundColor( padSpec.keySpec.keyColor )
                     .frame( width: keyW, height: padSpec.keySpec.height )
                     .cornerRadius( padSpec.keySpec.radius )
                     .simultaneousGesture( longPress )
@@ -385,7 +385,7 @@ struct KeyView: View {
                     .if( key.text != nil ) { view in
                         view.overlay(
                             Text( key.text! )
-                                .font(.system(size: key.fontSize != nil ? key.fontSize! : padSpec.fontSize ))
+                                .font(.system(size: key.fontSize != nil ? key.fontSize! : padSpec.keySpec.fontSize ))
                                 .bold()
                                 .foregroundColor(Color.white) )
                     }

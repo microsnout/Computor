@@ -28,10 +28,10 @@ extension View {
 // ***************************************************
 // Keypad Definitions
 
-let ksNormal = KeySpec( width: 43, height: 40,
+let ksNormal = KeySpec( width: 45, height: 40,
                         keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
-let ksSoftkey = KeySpec( width: 43, height: 30,
+let ksSoftkey = KeySpec( width: 45, height: 30, fontSize: 14,
                          keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
 let psNumeric = PadSpec(
@@ -173,7 +173,7 @@ struct CalculatorView: View {
         
         ZStack {
             Rectangle()
-                .fill(Color("Display"))
+                .fill(Color("Background"))
                 .edgesIgnoringSafeArea( .all )
             
             KeyStack() {
