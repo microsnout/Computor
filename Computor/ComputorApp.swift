@@ -9,9 +9,14 @@ import SwiftUI
 
 @main
 struct ComputorApp: App {
+    init() {
+        initKeyLayout()
+        TypeDef.buildUnitData()
+    }
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            CalculatorView()
         }
     }
 }

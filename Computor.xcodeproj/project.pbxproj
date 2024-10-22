@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0C3355072CC7B63700776F58 /* ComplexModule in Frameworks */ = {isa = PBXBuildFile; productRef = 0C3355062CC7B63700776F58 /* ComplexModule */; };
+		0C3355092CC7B63700776F58 /* Numerics in Frameworks */ = {isa = PBXBuildFile; productRef = 0C3355082CC7B63700776F58 /* Numerics */; };
+		0C33550B2CC7B63700776F58 /* RealModule in Frameworks */ = {isa = PBXBuildFile; productRef = 0C33550A2CC7B63700776F58 /* RealModule */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		0C3354DB2CC7A52100776F58 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +58,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C3355092CC7B63700776F58 /* Numerics in Frameworks */,
+				0C3355072CC7B63700776F58 /* ComplexModule in Frameworks */,
+				0C33550B2CC7B63700776F58 /* RealModule in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +121,9 @@
 			);
 			name = Computor;
 			packageProductDependencies = (
+				0C3355062CC7B63700776F58 /* ComplexModule */,
+				0C3355082CC7B63700776F58 /* Numerics */,
+				0C33550A2CC7B63700776F58 /* RealModule */,
 			);
 			productName = Computor;
 			productReference = 0C3354CA2CC7A51E00776F58 /* Computor.app */;
@@ -195,6 +207,9 @@
 			);
 			mainGroup = 0C3354C12CC7A51E00776F58;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0C3355052CC7B63700776F58 /* XCRemoteSwiftPackageReference "swift-numerics" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0C3354CB2CC7A51E00776F58 /* Products */;
 			projectDirPath = "";
@@ -558,6 +573,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0C3355052CC7B63700776F58 /* XCRemoteSwiftPackageReference "swift-numerics" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-numerics.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0C3355062CC7B63700776F58 /* ComplexModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C3355052CC7B63700776F58 /* XCRemoteSwiftPackageReference "swift-numerics" */;
+			productName = ComplexModule;
+		};
+		0C3355082CC7B63700776F58 /* Numerics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C3355052CC7B63700776F58 /* XCRemoteSwiftPackageReference "swift-numerics" */;
+			productName = Numerics;
+		};
+		0C33550A2CC7B63700776F58 /* RealModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C3355052CC7B63700776F58 /* XCRemoteSwiftPackageReference "swift-numerics" */;
+			productName = RealModule;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0C3354C22CC7A51E00776F58 /* Project object */;
 }
