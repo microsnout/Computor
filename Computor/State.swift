@@ -358,6 +358,21 @@ struct CalcState {
         set { stack[regZ].value.reg = newValue }
     }
     
+    var Zt: TypeTag {
+        get { stack[regZ].value.tag }
+        set { stack[regZ].value.tag = newValue }
+    }
+    
+    var Zfmt: FormatRec {
+        get { stack[regZ].value.fmt }
+        set { stack[regZ].value.fmt = newValue }
+    }
+    
+    var Ztv: TaggedValue {
+        get { stack[regZ].value }
+        set { self.Zt = newValue.tag; self.Z = newValue.reg; self.Zfmt = newValue.fmt }
+    }
+
     var T: Double {
         get { stack[regT].value.reg }
         set { stack[regT].value.reg = newValue }

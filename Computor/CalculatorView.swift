@@ -34,6 +34,23 @@ let ksNormal = KeySpec( width: 45, height: 40,
 let ksSoftkey = KeySpec( width: 45, height: 30, fontSize: 14,
                          keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
+let ksSubpad = KeySpec( width: 45, height: 30, fontSize: 14,
+                        keyColor: Color(.brown), textColor: Color("KeyText"))
+
+let ksUnits = KeySpec( width: 60, height: 25, fontSize: 14,
+                       keyColor: Color("KeyColor"), textColor: Color("KeyText"))
+
+let psUnits = PadSpec (
+    keySpec: ksUnits,
+    cols: 5,
+    keys: [ Key(.noop, "Angle"),
+            Key(.noop, "Volume"),
+            Key(.noop, "Length"),
+            Key(.noop, "Speed"),
+            Key(.noop, "User")
+          ]
+)
+
 let psNumeric = PadSpec(
     keySpec: ksNormal,
     cols: 3,
@@ -53,7 +70,7 @@ let psEnter = PadSpec(
 let psOperations = PadSpec(
     keySpec: ksNormal,
     cols: 3,
-    keys: [ Key(.divide, "÷", fontSize: 24), Key(.fixL, ".00\u{2190}", fontSize: 12), Key(.y2x, image: .yx),
+    keys: [ Key(.divide, "÷", fontSize: 24), Key(.deg, "deg", fontSize: 12), Key(.y2x, image: .yx),
             Key(.times, "×", fontSize: 24),  Key(.lastx, "LASTx", fontSize: 10),      Key(.inv, image: .onex),
             Key(.minus, "−", fontSize: 24),  Key(.xy, "X\u{21c6}Y", fontSize: 12),    Key(.x2,  image: .x2),
             Key(.plus,  "+", fontSize: 24),  Key(.roll, "R\u{2193}", fontSize: 12),   Key(.sqrt,image: .rx)
@@ -62,7 +79,7 @@ let psOperations = PadSpec(
 let psClear = PadSpec(
         keySpec: ksNormal,
         cols: 3,
-        keys: [ Key(.back, "BACK/UNDO", size: 2, fontSize: 12.0), Key(.clear, "CLx", fontSize: 14.0) ]
+        keys: [ Key(.back, "BACK/UNDO", size: 2, fontSize: 12.0), Key(.clX, "CLx", fontSize: 14.0) ]
     )
 
 let psUnitsL = PadSpec (
@@ -70,15 +87,15 @@ let psUnitsL = PadSpec (
     cols: 3,
     keys: [ Key(.deg, "deg"),
             Key(.rad, "rad"),
-            Key(.sec, "sec")
+            Key(.kg, "kg")
           ]
 )
 
 let psUnitsR = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
-    keys: [ Key(.min, "min"),
-            Key(.m,   "m"),
+    keys: [ Key(.hr,  "hr"),
+            Key(.mi,  "mi"),
             Key(.km,  "km")
           ]
 )
@@ -96,7 +113,7 @@ let psFunctionsR = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
         keys: [ Key(.log, "log"),
-                Key(.ln,  "ln"),
+                Key(.tenExp, image: .tenx),
                 Key(.pi,  "\u{1d70b}", fontSize: 20)
             ]
     )
@@ -123,7 +140,7 @@ let psFormatR = PadSpec (
 
 func initKeyLayout() {
     SubPadSpec.define( .sin,
-                       keySpec: ksSoftkey,
+                       keySpec: ksSubpad,
                        keys: [
                         Key(.sin, "sin"),
                         Key(.cos, "cos"),
@@ -133,24 +150,98 @@ func initKeyLayout() {
     )
     
     SubPadSpec.define( .log,
-                       keySpec: ksSoftkey,
+                       keySpec: ksSubpad,
                        keys: [
-                        Key(.acos, "acos"),
-                        Key(.asin, "asin"),
-                        Key(.x2, image: .x2),
-                        Key(.log,  "log"),
-                        Key(.ln,   "ln")
+                        Key(.log, "log"),
+                        Key(.ln, "ln"),
+                        Key(.log2, image: .log2),
+                        Key(.logY, image: .logyx)
                        ],
-                       fontSize: 14.0,
-                       caption: "Functions"
+                       fontSize: 14.0
+    )
+
+    SubPadSpec.define( .tenExp,
+                       keySpec: ksSubpad,
+                       keys: [
+                        Key(.eExp, image: .ex),
+                        Key(.tenExp, image: .tenx),
+                        Key(.y2x, image: .yx),
+                       ],
+                       fontSize: 14.0
     )
     
     SubPadSpec.define( .xy,
-                       keySpec: ksSoftkey,
+                       keySpec: ksSubpad,
                        keys: [
                         Key(.xz, "X\u{21c6}Z", fontSize: 14.0),
                         Key(.xy, "X\u{21c6}Y", fontSize: 14.0),
                         Key(.yz, "Y\u{21c6}Z", fontSize: 14.0)
+                       ],
+                       fontSize: 14.0
+    )
+
+    SubPadSpec.define( .hr,
+                       keySpec: ksSubpad,
+                       keys: [
+                        Key(.sec, "sec"),
+                        Key(.min, "min"),
+                        Key(.hr,  "hr"),
+                        Key(.day, "day"),
+                        Key(.yr,  "yr"),
+                       ],
+                       fontSize: 14.0
+    )
+
+    SubPadSpec.define( .km,
+                       keySpec: ksSubpad,
+                       keys: [
+                        Key(.mm, "mm"),
+                        Key(.cm, "cm"),
+                        Key(.m,  "m"),
+                        Key(.km, "km"),
+                       ],
+                       fontSize: 14.0
+    )
+
+    SubPadSpec.define( .mi,
+                       keySpec: ksSubpad,
+                       keys: [
+                        Key(.inch, "in"),
+                        Key(.ft, "ft"),
+                        Key(.yd,  "yd"),
+                        Key(.mi, "mi"),
+                       ],
+                       fontSize: 14.0
+    )
+
+    SubPadSpec.define( .clX,
+                       keySpec: ksSubpad,
+                       keys: [
+                        Key(.clReg,"Reg"),
+                        Key(.clZ,  "Z"),
+                        Key(.clY,  "Y"),
+                        Key(.clX,  "X"),
+                       ],
+                       fontSize: 14.0,
+                       caption: "Clear"
+    )
+
+    SubPadSpec.define( .deg,
+                       keySpec: ksSubpad,
+                       keys: [
+                        Key(.rad,  "rad"),
+                        Key(.deg,"deg"),
+                       ],
+                       fontSize: 14.0
+    )
+
+    SubPadSpec.define( .kg,
+                       keySpec: ksSubpad,
+                       keys: [
+                        Key(.mg,    "mg"),
+                        Key(.gram,  "g"),
+                        Key(.kg,    "kg"),
+                        Key(.tonne, "tn"),
                        ],
                        fontSize: 14.0
     )
@@ -190,6 +281,9 @@ struct CalculatorView: View {
                     // Main calculator display
                     Display( model: model )
                     
+//                    KeypadView( padSpec: psUnits, keyPressHandler: model )
+//                    Divider()
+
                     HStack {
                         KeypadView( padSpec: psUnitsL, keyPressHandler: model )
                         Spacer()
@@ -200,7 +294,6 @@ struct CalculatorView: View {
                         Spacer()
                         KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
                     }
-                    Divider()
                     HStack {
                         VStack( spacing: 15 ) {
                             KeypadView( padSpec: psNumeric, keyPressHandler: model )

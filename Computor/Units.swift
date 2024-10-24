@@ -459,21 +459,25 @@ class TypeDef {
         defineType( .length,   "mm",   1000)
         defineType( .length,   "cm",   100)
         defineType( .length,   "km",   0.001)
+        
+        defineType( .length,   "in",   1000/25.4)
+        defineType( .length,   "ft",   1000/(12*25.4))
+        defineType( .length,   "yd",   1000/(36*25.4))
+        defineType( .length,   "mi",   1000/(5280*12*25.4))
 
         defineType( .angle,    "rad",  1)
         defineType( .angle,    "deg",  180/Double.pi)
 
-        defineType( .time,     "sec",  1)
-        defineType( .time,     "min",  1/60.0)
-        defineType( .time,     "hr",   1/3600.0)
-        defineType( .time,     "day",  1/86400.0)
-        defineType( .time,     "yr",   1/31536000.0)
+        defineType( .time,     "sec",  1.0)
+        defineType( .time,     "min",  1.0/60)
+        defineType( .time,     "hr",   1.0/(60*60))
+        defineType( .time,     "day",  1.0/(24*60*60))
+        defineType( .time,     "yr",   1.0/(365*24*60*60))
 
         defineType( .mass,     "g",    1)
         defineType( .mass,     "kg",   0.001)
         defineType( .mass,     "mg",   1000)
-        defineType( .mass,     "tonne",0.000001)
-        defineType( .mass,     "g",    1)
+        defineType( .mass,     "tn",   0.000001)
 
         defineType( .weight,   "lb",   1)
         defineType( .weight,   "oz",   16.0)

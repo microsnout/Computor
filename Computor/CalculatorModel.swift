@@ -30,23 +30,37 @@ enum KeyCode: Int {
     
     case plus = 10, minus, times, divide
     
-    case dot = 20, enter, clear, back, sign, eex
+    case dot = 20, enter, clX, clY, clZ, clReg, back, sign, eex
     
     case fixL = 30, fixR, roll, xy, xz, yz, lastx
     
     case y2x = 40, inv, x2, sqrt
     
-    case fn0 = 50, sin, cos, tan, log, ln, pi, asin, acos, atan
+    case fn0 = 50, sin, cos, tan, pi, asin, acos, atan
     
-    case tenExp = 60, eExp, e
+    case log = 80, ln, log2, logY
     
-    case fix = 70, sci, eng, percent, currency
+    case tenExp = 90, eExp, e
     
-    case deg = 80, rad, sec, min, hr, yr, mm, cm, m, km
+    // Format
+    case fix = 120, sci, eng, percent, currency
     
-    case noop = 90, rcl, sto, mPlus, mMinus
+    case noop = 150, rcl, sto, mPlus, mMinus
     
-    case sk0 = 100, sk1, sk2, sk3, sk4, sk5, sk6
+    // Softkeys
+    case sk0 = 190, sk1, sk2, sk3, sk4, sk5, sk6
+    
+    // Length
+    case km = 200, mm, cm, m, inch, ft, yd, mi
+    
+    // Time
+    case sec = 210, min, hr, day, yr
+    
+    // Angles
+    case deg = 220, rad
+    
+    // Mass
+    case kg = 230, mg, gram, tonne, lb, oz, ton, stone
 }
 
 
@@ -338,6 +352,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         .log:   UnaryOp( result: tagUntyped, log10 ),
         .ln:    UnaryOp( result: tagUntyped, log ),
+        .log2:  UnaryOp( result: tagUntyped, { x in log10(x)/log10(2) } ),
+        
+        .logY:  BinaryOpReal( { y, x in log10(x)/log10(y) } ),
         
         .tenExp: UnaryOp( parm: tagUntyped, result: tagUntyped, { x in pow(10.0, x) } ),
         .eExp: UnaryOp( parm: tagUntyped, result: tagUntyped, { x in exp(x) } ),
@@ -414,11 +431,40 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 return nil
             },
         
-        .clear:
+        .clX:
             // Clear X register
             CustomOp { s0 in
                 var s1 = s0
                 s1.Xtv = untypedZero
+                s1.noLift = true
+                return s1
+            },
+
+        .clY:
+            // Clear Y register
+            CustomOp { s0 in
+                var s1 = s0
+                s1.Ytv = untypedZero
+                s1.noLift = true
+                return s1
+            },
+
+        .clZ:
+            // Clear Z register
+            CustomOp { s0 in
+                var s1 = s0
+                s1.Ztv = untypedZero
+                s1.noLift = true
+                return s1
+            },
+
+        .clReg:
+            // Clear registers
+            CustomOp { s0 in
+                var s1 = s0
+                s1.Xtv = untypedZero
+                s1.Ytv = untypedZero
+                s1.Ztv = untypedZero
                 s1.noLift = true
                 return s1
             },
@@ -432,7 +478,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             },
         
         .xy:
-            // x Y exchange
+            // XY exchange
             CustomOp { s0 in
                 var s1 = s0
                 s1.Ytv = s0.Xtv
@@ -440,12 +486,47 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 return s1
             },
         
+        .yz:
+            // Y Z exchange
+            CustomOp { s0 in
+                var s1 = s0
+                s1.Ytv = s0.Ztv
+                s1.Ztv = s0.Ytv
+                return s1
+            },
+
+        .xz:
+            // X Z exchange
+            CustomOp { s0 in
+                var s1 = s0
+                s1.Ztv = s0.Xtv
+                s1.Xtv = s0.Ztv
+                return s1
+            },
+
         .deg: Convert( sym: "deg" ),
         .rad: Convert( sym: "rad" ),
+        
         .sec: Convert( sym: "sec" ),
         .min: Convert( sym: "min" ),
+        .hr:  Convert( sym: "hr"  ),
+        .day: Convert( sym: "day" ),
+        .yr:  Convert( sym: "yr"  ),
+
         .m:   Convert( sym: "m"   ),
-        .km:  Convert( sym: "km"  )
+        .km:  Convert( sym: "km"  ),
+        .cm:  Convert( sym: "cm"  ),
+        .mm:  Convert( sym: "mm"  ),
+
+        .inch:  Convert( sym: "in"  ),
+        .ft:  Convert( sym: "ft"  ),
+        .yd:  Convert( sym: "yd"  ),
+        .mi:  Convert( sym: "mi"  ),
+        
+        .gram:  Convert( sym: "g"   ),
+        .kg:    Convert( sym: "kg"  ),
+        .mg:    Convert( sym: "mg"  ),
+        .tonne: Convert( sym: "tn"  ),
     ]
     
     
