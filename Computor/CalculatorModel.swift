@@ -445,7 +445,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             CustomOp { s0 in
                 var s1 = s0
                 s1.Ytv = untypedZero
-                s1.noLift = true
                 return s1
             },
 
@@ -454,7 +453,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             CustomOp { s0 in
                 var s1 = s0
                 s1.Ztv = untypedZero
-                s1.noLift = true
                 return s1
             },
 
@@ -670,7 +668,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 if let newState = op.transition( state ) {
                     // Operation has produced a new state
                     state = newState
-                    state.noLift = false
+//                    state.noLift = false
                 }
                 else {
                     // else no-op as there was no new state
