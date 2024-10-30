@@ -254,7 +254,7 @@ struct KeyView: View {
         let xSet = nkeys.map( { xKey - Double($0)*keyW } )
         
         // Filter out values where the popup won't fit in the Z frame
-        let xSet2 = xSet.filter( { x in x >= 0 && (x + popW) <= keyData.zFrame.maxX })
+        let xSet2 = xSet.filter( { x in x >= 0 && (x + popW) <= keyData.zFrame.maxX - zOrigin.x })
         
         // Sort by distance from mid popup to mid key
         let xSet3 = xSet2.sorted() { x1, x2 in

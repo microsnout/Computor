@@ -419,8 +419,16 @@ class TypeDef {
     static var symDict:  [String : TypeTag] = [:]
     static var sigDict:  [TypeSignature : TypeTag] = [:]
     
+    static func tagOf( _ sym: String ) -> TypeTag {
+        // Required tag lookup or else bug
+        guard let tag = TypeDef.symDict[sym] else {
+            fatalError()
+        }
+        return tag
+    }
+    
     static func defineType( _ uid: StdUnitId, _ sym: String, _ ratio: Double, delta: Double = 0.0 ) {
-        if let unit = UnitDef.unitDict[uid.rawValue] {
+        if let _ = UnitDef.unitDict[uid.rawValue] {
             let def = TypeDef(uid, sym: sym, ratio, delta: delta)
             
             let tag = TypeTag(uid, def.tid)
@@ -854,7 +862,6 @@ func lookupTypeTag( _ tc: TypeCode ) -> TypeTag? {
 
 
 // Common tag values
-let tagNone: TypeTag = TypeTag(.none)
-let tagUntyped: TypeTag = TypeTag(.untyped)
-
-let tagRad = TypeTag(.angle, 2000)
+let tagNone    = TypeTag(.none)
+let tagUntyped = TypeTag(.untyped)
+let tagRad     = TypeDef.tagOf("rad")

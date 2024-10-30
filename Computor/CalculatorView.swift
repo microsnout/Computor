@@ -163,8 +163,8 @@ func initKeyLayout() {
     SubPadSpec.define( .tenExp,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.eExp, image: .ex),
                         Key(.tenExp, image: .tenx),
+                        Key(.eExp, image: .ex),
                         Key(.y2x, image: .yx),
                        ],
                        fontSize: 14.0
@@ -217,10 +217,10 @@ func initKeyLayout() {
     SubPadSpec.define( .clX,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.clReg,"Reg"),
-                        Key(.clZ,  "Z"),
-                        Key(.clY,  "Y"),
                         Key(.clX,  "X"),
+                        Key(.clY,  "Y"),
+                        Key(.clZ,  "Z"),
+                        Key(.clReg,"Reg"),
                        ],
                        fontSize: 14.0,
                        caption: "Clear"
