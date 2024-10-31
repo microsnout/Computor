@@ -350,6 +350,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         .cos:   UnaryOp( parm: tagRad, result: tagUntyped, cos ),
         .tan:   UnaryOp( parm: tagRad, result: tagUntyped, tan ),
         
+        .asin:   UnaryOp( parm: tagUntyped, result: tagRad, asin ),
+        .acos:   UnaryOp( parm: tagUntyped, result: tagRad, acos ),
+        .atan:   UnaryOp( parm: tagUntyped, result: tagRad, atan ),
+            
         .log:   UnaryOp( result: tagUntyped, log10 ),
         .ln:    UnaryOp( result: tagUntyped, log ),
         .log2:  UnaryOp( result: tagUntyped, { x in log10(x)/log10(2) } ),
@@ -653,9 +657,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.Xfmt.mode = .scientific
             
         case .percent:
-            undoStack.push(state)
-            state.Xfmt = CalcState.defaultPercentFormat
-            
+            if state.Xt == tagUntyped && state.Xfmt.mode != .percent {
+                undoStack.push(state)
+                state.Xfmt = CalcState.defaultPercentFormat
+                state.X = state.X / 100.0
+            }
+
         case .currency:
             undoStack.push(state)
             state.Xfmt = CalcState.defaultCurrencyFormat

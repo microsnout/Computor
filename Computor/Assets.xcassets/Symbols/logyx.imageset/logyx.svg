@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="10.226463mm"
+   height="5.242332mm"
+   viewBox="0 0 10.226463 5.242332"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer1"
+     transform="translate(-36.760285,-142.62486)">
+    <g
+       id="g55"
+       transform="matrix(0.75757027,0,0,0.75757027,5.8127876,32.987882)">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:6.75703px;font-family:Serif;-inkscape-font-specification:'Serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;stroke-width:0.281542"
+         x="40.709122"
+         y="149.19574"
+         id="text51"><tspan
+           id="tspan51"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:6.75703px;font-family:Serif;-inkscape-font-specification:'Serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.281542"
+           x="40.709122"
+           y="149.19574">log</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.71547px;font-family:Serif;-inkscape-font-specification:'Serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;stroke-width:0.154811"
+         x="47.081997"
+         y="159.61681"
+         id="text53"
+         transform="scale(1.0578792,0.94528752)"><tspan
+           id="tspan53"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.71547px;font-family:Serif;-inkscape-font-specification:'Serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.154811"
+           x="47.081997"
+           y="159.61681">y</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:5.27078px;font-family:Serif;-inkscape-font-specification:'Serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;stroke-width:0.219615"
+         x="51.726208"
+         y="148.93956"
+         id="text54"
+         transform="scale(1.0013515,0.99865031)"><tspan
+           id="tspan54"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:5.27078px;font-family:Serif;-inkscape-font-specification:'Serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.219615"
+           x="51.726208"
+           y="148.93956">x</tspan></text>
+    </g>
+  </g>
+</svg>

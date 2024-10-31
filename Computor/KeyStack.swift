@@ -391,7 +391,10 @@ struct KeyView: View {
                     }
                     .if ( key.image != nil ) { view in
                         view.overlay(
-                            Image(key.image!).renderingMode(.template).foregroundColor(padSpec.keySpec.textColor), alignment: .center)
+                            Image(key.image!)
+                                .renderingMode(.template)
+                                .foregroundColor(padSpec.keySpec.textColor), alignment: .center)
+                            
                     }
                     .if( hasSubpad ) { view in
                         view.overlay(alignment: .topTrailing) {
