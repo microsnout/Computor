@@ -191,6 +191,7 @@ struct SubPopMenu: View {
                                 ForEach(nkeys, id: \.self) { kn in
                                     let r = keySet[kn].offsetBy(dx: hframe.origin.x, dy: hframe.origin.y)
                                     let key = subkeys[kn]
+                                    let fontsize = key.fontSize != nil ? key.fontSize! : keyData.subPad!.fontSize
                                     
                                     Rectangle()
                                         .frame( width: r.width, height: r.height )
@@ -198,10 +199,13 @@ struct SubPopMenu: View {
                                         .foregroundColor( kn == keyData.selSubIndex  ?  Color.blue : keySpec.keyColor)
                                         .if( key.text != nil ) { view in
                                             view.overlay(
-                                                Text( key.text! )
-                                                    .font(.system(size: key.fontSize != nil ? key.fontSize! : keyData.subPad!.fontSize))
+                                                SubSuperScriptText(
+                                                    inputString: key.text!,
+                                                    bodyFont: .system( size: fontsize, design: .serif),
+                                                    subScriptFont: .caption,
+                                                    baseLine: 6.0 )
                                                     .bold()
-                                                    .foregroundColor(keySpec.textColor))
+                                                    .foregroundColor(Color.white) )
                                         }
                                         .if ( key.image != nil ) { view in
                                             view.overlay(
@@ -338,6 +342,7 @@ struct KeyView: View {
         
         VStack {
             let txt = key.text ?? "??"
+            let fontsize = key.fontSize != nil ? key.fontSize! : padSpec.keySpec.fontSize
             
             GeometryReader { geometry in
                 let vframe = geometry.frame(in: CoordinateSpace.global)
@@ -384,8 +389,11 @@ struct KeyView: View {
                         })
                     .if( key.text != nil ) { view in
                         view.overlay(
-                            Text( key.text! )
-                                .font(.system(size: key.fontSize != nil ? key.fontSize! : padSpec.keySpec.fontSize ))
+                            SubSuperScriptText(
+                                inputString: key.text!,
+                                bodyFont: .system( size: fontsize, design: .serif),
+                                subScriptFont: .system( size: fontsize*0.7, design: .serif),
+                                baseLine: 6.0 )
                                 .bold()
                                 .foregroundColor(Color.white) )
                     }

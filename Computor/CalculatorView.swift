@@ -70,9 +70,9 @@ let psEnter = PadSpec(
 let psOperations = PadSpec(
     keySpec: ksNormal,
     cols: 3,
-    keys: [ Key(.divide, "÷", fontSize: 24), Key(.deg, "deg", fontSize: 12), Key(.y2x, image: .yx),
-            Key(.times, "×", fontSize: 24),  Key(.lastx, "LASTx", fontSize: 10),      Key(.inv, image: .onex),
-            Key(.minus, "−", fontSize: 24),  Key(.xy, "X\u{21c6}Y", fontSize: 12),    Key(.x2,  image: .x2),
+    keys: [ Key(.divide, "÷", fontSize: 24), Key(.deg, "deg", fontSize: 12), Key(.y2x, "y^{x}"),
+            Key(.times, "×", fontSize: 24),  Key(.lastx, "log_{2}", fontSize: 12),    Key(.inv, image: .onex),
+            Key(.minus, "−", fontSize: 24),  Key(.xy, "X\u{21c6}Y", fontSize: 12),    Key(.x2, "x^{2}"),
             Key(.plus,  "+", fontSize: 24),  Key(.roll, "R\u{2193}", fontSize: 12),   Key(.sqrt,image: .rx)
           ])
 
@@ -113,7 +113,7 @@ let psFunctionsR = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
         keys: [ Key(.log, "log"),
-                Key(.tenExp, image: .tenx),
+                Key(.tenExp, "10^{x}"),
                 Key(.pi,  "\u{1d70b}", fontSize: 20)
             ]
     )
@@ -168,8 +168,8 @@ func initKeyLayout() {
                        keys: [
                         Key(.log, "log"),
                         Key(.ln, "ln"),
-                        Key(.log2, image: .log2),
-                        Key(.logY, image: .logyx)
+                        Key(.log2, "log_{2}"),
+                        Key(.logY, "log_{y}x")
                        ],
                        fontSize: 14.0
     )
@@ -177,9 +177,9 @@ func initKeyLayout() {
     SubPadSpec.define( .tenExp,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.tenExp, image: .tenx),
-                        Key(.eExp, image: .ex),
-                        Key(.y2x, image: .yx),
+                        Key(.tenExp, "10^{x}"),
+                        Key(.eExp, "e^{x}"),
+                        Key(.y2x, "y^{x}"),
                        ],
                        fontSize: 14.0
     )
