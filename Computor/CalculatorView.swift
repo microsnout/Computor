@@ -293,7 +293,7 @@ struct CalculatorView: View {
                 .edgesIgnoringSafeArea( .all )
             
             KeyStack() {
-                VStack {
+                NavigationStack {
                     VStack {
                         MemoryDisplay( model: model, leadingOps: swipeLeadingOpTable )
                         
@@ -301,7 +301,10 @@ struct CalculatorView: View {
                         HStack {
                             Text("HP 33").foregroundColor(.black)/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
                             Spacer()
-                            Image( systemName: "gearshape")
+                            
+                            NavigationLink( destination: SettingsView() ) {
+                                Image( systemName: "gearshape").foregroundColor(.black)
+                            }
                         }
                         .frame( height: 25 )
                         
