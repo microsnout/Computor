@@ -482,14 +482,15 @@ class TypeDef {
         defineType( .time,     "day",  1.0/(24*60*60))
         defineType( .time,     "yr",   1.0/(365*24*60*60))
 
-        defineType( .mass,     "g",    1)
-        defineType( .mass,     "kg",   0.001)
-        defineType( .mass,     "mg",   1000)
-        defineType( .mass,     "tn",   0.000001)
+        defineType( .mass,     "kg",   1)
+        defineType( .mass,     "g",    1000.0)
+        defineType( .mass,     "mg",   1000*1000.0)
+        defineType( .mass,     "tn",   0.001)
 
-        defineType( .weight,   "lb",   1)
-        defineType( .weight,   "oz",   16.0)
-        defineType( .weight,   "ton",  1/2000.0)
+        defineType( .mass,   "lb",   2.2046226218488)
+        defineType( .mass,   "oz",   2.2046226218488 * 16.0)
+        defineType( .mass,   "ton",  2.2046226218488 / 2000.0)
+        defineType( .mass,   "st",   2.2046226218488 / 14.0)
 
         defineType( .temp,     "C",    1.0)
         defineType( .temp,     "F",    9.0/5.0, delta: 32)

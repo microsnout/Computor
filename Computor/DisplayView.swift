@@ -267,7 +267,7 @@ struct MemoryDisplay: View {
             }
         }
         .navigationViewStyle( StackNavigationViewStyle())
-        .padding(.top, 10)
+        .border(Color("Frame"), width: 3)
     }
 }
 

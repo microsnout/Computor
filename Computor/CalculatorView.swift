@@ -86,7 +86,7 @@ let psUnitsL = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
     keys: [ Key(.deg, "deg"),
-            Key(.rad, "rad"),
+            Key(.lb, "lb"),
             Key(.kg, "kg")
           ]
 )
@@ -259,6 +259,17 @@ func initKeyLayout() {
                        ],
                        fontSize: 14.0
     )
+
+    SubPadSpec.define( .lb,
+                       keySpec: ksSubpad,
+                       keys: [
+                        Key(.oz,    "oz"),
+                        Key(.lb,    "lb"),
+                        Key(.stone, "st"),
+                        Key(.ton,   "ton"),
+                       ],
+                       fontSize: 14.0
+    )
 }
 
 // ******************
@@ -283,53 +294,53 @@ struct CalculatorView: View {
             
             KeyStack() {
                 VStack {
-                    MemoryDisplay( model: model, leadingOps: swipeLeadingOpTable )
-                    
-                    // App name and drag handle
-                    HStack {
-                        Text("HP 33").foregroundColor(.black)/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
-                        Spacer()
-                    }
-                    .frame( height: 25 )
-                    
-                    // Main calculator display
-                    Display( model: model )
-                    
-//                    KeypadView( padSpec: psUnits, keyPressHandler: model )
-//                    Divider()
-
-                    HStack {
-                        KeypadView( padSpec: psUnitsL, keyPressHandler: model )
-                        Spacer()
-                        KeypadView( padSpec: psUnitsR, keyPressHandler: model )
-                    }
-                    HStack {
-                        KeypadView( padSpec: psFunctionsL, keyPressHandler: model )
-                        Spacer()
-                        KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
-                    }
-                    HStack {
-                        VStack( spacing: 15 ) {
-                            KeypadView( padSpec: psNumeric, keyPressHandler: model )
-                            KeypadView( padSpec: psEnter, keyPressHandler: model )
+                    VStack {
+                        MemoryDisplay( model: model, leadingOps: swipeLeadingOpTable )
+                        
+                        // App name and drag handle
+                        HStack {
+                            Text("HP 33").foregroundColor(.black)/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
+                            Spacer()
+                            Image( systemName: "gearshape")
+                        }
+                        .frame( height: 25 )
+                        
+                        // Main calculator display
+                        Display( model: model )
+                        
+                        HStack {
+                            KeypadView( padSpec: psUnitsL, keyPressHandler: model )
+                            Spacer()
+                            KeypadView( padSpec: psUnitsR, keyPressHandler: model )
+                        }
+                        HStack {
+                            KeypadView( padSpec: psFunctionsL, keyPressHandler: model )
+                            Spacer()
+                            KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
+                        }
+                        HStack {
+                            VStack( spacing: 15 ) {
+                                KeypadView( padSpec: psNumeric, keyPressHandler: model )
+                                KeypadView( padSpec: psEnter, keyPressHandler: model )
+                            }
+                            Spacer()
+                            VStack( spacing: 15 ) {
+                                KeypadView( padSpec: psOperations, keyPressHandler: model )
+                                KeypadView( padSpec: psClear, keyPressHandler: model )
+                            }
+                        }
+                        Divider()
+                        HStack {
+                            KeypadView( padSpec: psFormatL, keyPressHandler: model )
+                            Spacer()
+                            KeypadView( padSpec: psFormatR, keyPressHandler: model )
                         }
                         Spacer()
-                        VStack( spacing: 15 ) {
-                            KeypadView( padSpec: psOperations, keyPressHandler: model )
-                            KeypadView( padSpec: psClear, keyPressHandler: model )
-                        }
                     }
-                    Divider()
-                    HStack {
-                        KeypadView( padSpec: psFormatL, keyPressHandler: model )
-                        Spacer()
-                        KeypadView( padSpec: psFormatR, keyPressHandler: model )
-                    }
-                    Spacer()
+                    .padding(.horizontal, 30)
+                    .padding(.vertical, 5)
+                    .background( Color("Background"))
                 }
-                .padding(.horizontal, 30)
-                .padding(.vertical, 5)
-                .background( Color("Background"))
             }
             .ignoresSafeArea(.keyboard)
         }

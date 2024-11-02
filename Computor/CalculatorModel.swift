@@ -520,15 +520,20 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         .cm:  Convert( sym: "cm"  ),
         .mm:  Convert( sym: "mm"  ),
 
-        .inch:  Convert( sym: "in"  ),
-        .ft:  Convert( sym: "ft"  ),
-        .yd:  Convert( sym: "yd"  ),
-        .mi:  Convert( sym: "mi"  ),
+        .inch: Convert( sym: "in"  ),
+        .ft:   Convert( sym: "ft"  ),
+        .yd:   Convert( sym: "yd"  ),
+        .mi:   Convert( sym: "mi"  ),
         
         .gram:  Convert( sym: "g"   ),
         .kg:    Convert( sym: "kg"  ),
         .mg:    Convert( sym: "mg"  ),
         .tonne: Convert( sym: "tn"  ),
+        
+        .lb:    Convert( sym: "lb"  ),
+        .oz:    Convert( sym: "oz"  ),
+        .ton:   Convert( sym: "ton" ),
+        .stone: Convert( sym: "st"  ),
     ]
     
     

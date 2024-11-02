@@ -476,7 +476,7 @@ struct KeypadView: View {
 //                .border(.red)
             }
         }
-        .border(.green)
+//        .border(.green)
         .padding(0)
     }
 }
@@ -498,7 +498,7 @@ struct KeyStack<Content: View>: View {
         .onGeometryChange( for: CGRect.self, of: {proxy in proxy.frame(in: .global)} ) { newValue in
             keyData.zFrame = newValue
         }
-        .border(.brown)
+//        .border(.brown)
         .padding()
         .alignmentGuide(HorizontalAlignment.leading) { _ in  0 }
         .environmentObject(keyData)
