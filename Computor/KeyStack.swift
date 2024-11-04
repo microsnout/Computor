@@ -141,6 +141,9 @@ struct ModalBlock: View {
 
 
 struct SubPopMenu: View {
+    @AppStorage(.settingsSerifFontKey)
+    private var serifFont = false
+
     @EnvironmentObject var keyData: KeyData
     
     var body: some View {
@@ -201,7 +204,7 @@ struct SubPopMenu: View {
                                             view.overlay(
                                                 SubSuperScriptText(
                                                     inputString: key.text!,
-                                                    bodyFont: .system( size: fontsize, design: .serif),
+                                                    bodyFont: .system( size: fontsize, design: serifFont ? .serif : .default),
                                                     subScriptFont: .caption,
                                                     baseLine: 6.0 )
                                                     .bold()
@@ -227,6 +230,9 @@ struct SubPopMenu: View {
 // ****************************************************
 
 struct KeyView: View {
+    @AppStorage(.settingsSerifFontKey)
+    private var serifFont = false
+
     let padSpec: PadSpec
     let key: Key
     let keyPressHandler: KeyPressHandler
@@ -391,8 +397,8 @@ struct KeyView: View {
                         view.overlay(
                             SubSuperScriptText(
                                 inputString: key.text!,
-                                bodyFont: .system( size: fontsize, design: .serif),
-                                subScriptFont: .system( size: fontsize*0.7, design: .serif),
+                                bodyFont: .system( size: fontsize, design: serifFont ? .serif : .default),
+                                subScriptFont: .system( size: fontsize*0.7, design: .default),
                                 baseLine: 6.0 )
                                 .bold()
                                 .foregroundColor(Color.white) )

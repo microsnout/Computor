@@ -142,7 +142,7 @@ func initKeyLayout() {
     SubPadSpec.define( .sin,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.asin, "asin"),
+                        Key(.asin, "sin^{-1}"),
                        ],
                        fontSize: 14.0
     )
@@ -150,7 +150,7 @@ func initKeyLayout() {
     SubPadSpec.define( .cos,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.asin, "acos"),
+                        Key(.asin, "cos^{-1}"),
                        ],
                        fontSize: 14.0
     )
@@ -158,7 +158,7 @@ func initKeyLayout() {
     SubPadSpec.define( .tan,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.asin, "atan"),
+                        Key(.asin, "tan^{-1}"),
                        ],
                        fontSize: 14.0
     )

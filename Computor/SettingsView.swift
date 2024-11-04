@@ -7,8 +7,18 @@
 
 import SwiftUI
 
+extension String {
+    static var settingsDarkModeKey : String { "settings.darkMode" }
+    static var settingsSerifFontKey : String { "settings.serifFont" }
+}
+
+
 struct SettingsView: View {
-    @AppStorage("darkMode") var darkMode = false
+    @AppStorage(.settingsDarkModeKey)
+    private var darkMode = false
+    
+    @AppStorage(.settingsSerifFontKey)
+    private var serifFont = false
 
     var body: some View {
         Text("Computor Settings")
@@ -18,8 +28,10 @@ struct SettingsView: View {
                 Section( header: Text("Screen")) {
                     Toggle("Dark Mode", isOn: $darkMode)
                         .onChange(of: darkMode) { oldValue, value in
-                            // Update the app's appearance
-                            //            UIApplication.shared.windows.first?.overrideUserInterfaceStyle = value ? .dark : .light
+//                            UIWindowScene.windows.first?.overrideUserInterfaceStyle = value ? .dark : .light
+                        }
+                    Toggle("Serif Font", isOn: $serifFont)
+                        .onChange(of: serifFont) { oldValue, value in
                         }
                 }
             }
@@ -27,6 +39,6 @@ struct SettingsView: View {
     }
 }
 
-#Preview {
-    SettingsView()
-}
+//#Preview {
+//    SettingsView()
+//}

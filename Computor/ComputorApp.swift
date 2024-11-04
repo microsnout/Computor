@@ -9,6 +9,9 @@ import SwiftUI
 
 @main
 struct ComputorApp: App {
+    @AppStorage(.settingsDarkModeKey)
+    private var darkMode = false
+    
     init() {
         initKeyLayout()
         TypeDef.buildUnitData()
@@ -16,7 +19,7 @@ struct ComputorApp: App {
     
     var body: some Scene {
         WindowGroup {
-            CalculatorView()
+            CalculatorView().preferredColorScheme( darkMode ? .dark : .light)
         }
     }
 }
