@@ -21,21 +21,16 @@ struct SettingsView: View {
     private var serifFont = false
 
     var body: some View {
-        Text("Computor Settings")
-        
         NavigationView {
             List {
                 Section( header: Text("Screen")) {
                     Toggle("Dark Mode", isOn: $darkMode)
-                        .onChange(of: darkMode) { oldValue, value in
-//                            UIWindowScene.windows.first?.overrideUserInterfaceStyle = value ? .dark : .light
-                        }
                     Toggle("Serif Font", isOn: $serifFont)
-                        .onChange(of: serifFont) { oldValue, value in
-                        }
                 }
             }
+            .background(Color("Background"))
         }
+        .navigationBarTitle("Settings")
     }
 }
 

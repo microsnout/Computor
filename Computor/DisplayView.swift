@@ -151,6 +151,7 @@ struct Display: View {
         ZStack(alignment: .leading) {
             Rectangle()
                 .fill(Color("Display"))
+            
             VStack( alignment: .leading, spacing: 5) {
                 ForEach (0..<model.rowCount, id: \.self) { index in
                     TypedRegister( row: model.getRow(index: index), size: .large ).padding(.leading, 10)
@@ -158,8 +159,11 @@ struct Display: View {
             }
             .frame( height: rowHeight*Double(model.rowCount) )
         }
-        .padding(10)
-        .border(Color("Frame"), width: 10)
+        .padding( [.leading, .trailing], 10)
+        .background(Color("Display"))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color("Frame"), lineWidth: 6))
         .fixedSize(horizontal: false, vertical: true)
     }
 }

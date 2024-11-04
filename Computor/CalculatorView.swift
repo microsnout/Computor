@@ -299,7 +299,7 @@ struct CalculatorView: View {
                         
                         // App name and drag handle
                         HStack {
-                            Text("HP 33").foregroundColor(.black)/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
+                            Text("Computor").foregroundColor(Color("Frame"))/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
                             Spacer()
                             
                             NavigationLink( destination: SettingsView() ) {
@@ -311,6 +311,8 @@ struct CalculatorView: View {
                         // Main calculator display
                         Display( model: model )
                         
+                        Spacer().frame( height: 15)
+                        
                         HStack {
                             KeypadView( padSpec: psUnitsL, keyPressHandler: model )
                             Spacer()
@@ -321,6 +323,7 @@ struct CalculatorView: View {
                             Spacer()
                             KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
                         }
+                        Divider()
                         HStack {
                             VStack( spacing: 15 ) {
                                 KeypadView( padSpec: psNumeric, keyPressHandler: model )

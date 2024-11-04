@@ -482,7 +482,7 @@ struct KeypadView: View {
 //                .border(.red)
             }
         }
-//        .border(.green)
+        .border(.green)
         .padding(0)
     }
 }
