@@ -23,12 +23,14 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                Section( header: Text("Screen")) {
+                Section( header: Text("Screen").foregroundColor(Color("DisplayText"))  ) {
                     Toggle("Dark Mode", isOn: $darkMode)
                     Toggle("Serif Font", isOn: $serifFont)
                 }
+                .listRowBackground(Color("Display"))
             }
-            .background(Color("Background"))
+            .background(Color("ListBack"))
+            .scrollContentBackground(.hidden)
         }
         .navigationBarTitle("Settings")
     }

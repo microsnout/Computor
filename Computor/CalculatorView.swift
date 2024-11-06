@@ -303,7 +303,7 @@ struct CalculatorView: View {
                             Spacer()
                             
                             NavigationLink( destination: SettingsView() ) {
-                                Image( systemName: "gearshape").foregroundColor(.black)
+                                Image( systemName: "gearshape").foregroundColor(Color("Frame"))
                             }
                         }
                         .frame( height: 25 )
