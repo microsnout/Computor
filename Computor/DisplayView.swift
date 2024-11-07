@@ -230,7 +230,7 @@ struct MemoryDisplay: View {
             else {
                 List {
                     ForEach ( Array( rows.enumerated()), id: \.offset ) { index, item in
-                        VStack( alignment: .leading ) {
+                        VStack( alignment: .leading, spacing: 0 ) {
                             NavigationLink {
                                 MemoryDetailView(  model: model , index: index, item: item )
                             } label: {
@@ -243,6 +243,8 @@ struct MemoryDisplay: View {
                             }
                             TypedRegister( row: NoPrefix(item), size: .small ).padding( .horizontal, 20)
                         }
+                        .listRowSeparator(.hidden)
+                        .frame( height: 30 )
                         .swipeActions( edge: .leading, allowsFullSwipe: true ) {
                             ForEach ( leadingOps, id: \.key) { key, text, color in
                                 Button {
@@ -261,6 +263,7 @@ struct MemoryDisplay: View {
                     .listRowSeparatorTint( Color("DisplayText"))
                     
                 }
+                .listRowSpacing(0)
                 .navigationBarTitle( "", displayMode: .inline )
                 .navigationBarHidden(false)
                 .navigationBarItems( trailing: addButton)
