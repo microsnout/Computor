@@ -10,6 +10,7 @@ import SwiftUI
 extension String {
     static var settingsDarkModeKey : String { "settings.darkMode" }
     static var settingsSerifFontKey : String { "settings.serifFont" }
+    static var settingsDisplayRows : String { "settings.displayRows" }
 }
 
 
@@ -19,6 +20,9 @@ struct SettingsView: View {
     
     @AppStorage(.settingsSerifFontKey)
     private var serifFont = false
+    
+    @AppStorage(.settingsDisplayRows)
+    private var displayRows = 3
 
     var body: some View {
         NavigationView {
@@ -28,6 +32,16 @@ struct SettingsView: View {
                     Toggle("Serif Font", isOn: $serifFont)
                 }
                 .listRowBackground(Color("Display"))
+                
+                Section( header: Text("Display").foregroundColor(Color("DisplayText"))  ) {
+                    Picker( selection: $displayRows, label: Text("Registers")) {
+                        Text("X").tag(1)
+                        Text("X, Y").tag(2)
+                        Text("X, Y, Z").tag(3)
+                        Text("X, Y, Z, T").tag(4)
+                    }
+
+                }
             }
             .background(Color("ListBack"))
             .scrollContentBackground(.hidden)

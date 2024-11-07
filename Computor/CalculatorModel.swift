@@ -5,7 +5,7 @@
 //  Created by Barry Hall on 2021-10-28.
 //
 
-import Foundation
+import SwiftUI
 import Numerics
 import OSLog
 
@@ -93,15 +93,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     var undoStack = UndoStack()
 
     // Display window into register stack
-    static let displayRows = 3
-    var rowCount: Int { return CalculatorModel.displayRows }
+    @AppStorage(.settingsDisplayRows)
+    private var displayRows = 3
+    
+    var rowCount: Int { return displayRows}
     
     // Keycodes that are valid in data entry mode
     private let entryKeys:Set<KeyCode> = [.key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9, .dot, .sign, .back, .eex]
     
     private func bufferIndex(_ stackIndex: Int ) -> Int {
         // Convert a bottom up index into the stack array to a top down index into the displayed registers
-        return CalculatorModel.displayRows - stackIndex - 1
+        return displayRows - stackIndex - 1
     }
     
     func getRow( index: Int ) -> RowDataItem {
