@@ -171,79 +171,73 @@ struct Display: View {
 // ************************************************************* //
 
 struct MemoryDetailView: View {
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @StateObject var model: CalculatorModel
-    @State private var editMode = EditMode.inactive
     @State private var editText = ""
+    @FocusState private var nameFocused: Bool
+    @Binding var nameEdit: Bool
         
     var index: Int
     var item: RowDataItem
 
     var body: some View {
         Form {
-            TextField( "-Unnamed-", text: $editText,
-                onEditingChanged: { _ in model.renameMemoryItem(index: index, newName: editText) },
-                onCommit: { self.presentationMode.wrappedValue.dismiss() }
-            )
+            TextField( "-Unnamed-", text: $editText )
+            .focused($nameFocused)
             .disableAutocorrection(true)
             .autocapitalization(.none)
             .onAppear {
                 if let name = item.prefix {
                     editText = name
                 }
+                nameFocused = true
+            }
+            .onSubmit {
+                model.renameMemoryItem(index: index, newName: editText)
+                nameEdit = false
             }
 
             TypedRegister( row: NoPrefix(item), size: .normal ).padding( .leading, 0)
         }
-        
     }
 }
+
 
 struct MemoryDisplay: View {
     @StateObject var model: CalculatorModel
     
     let leadingOps: [(key: KeyCode, text: String, color: Color)]
     
-    @State private var editMode = EditMode.inactive
-
-    @ViewBuilder
-    private var addButton: some View {
-        if editMode == .inactive {
-            Button( action: { model.addMemoryItem() }) {
-                Image( systemName: "plus") }
-        } else {
-            EmptyView()
-        }
-    }
+    @State var nameEdit = false
+    @State private var rowIndex = 0
     
-    var body: some View {
-        NavigationView {
+    @ViewBuilder
+    var memoryList: some View {
+        VStack {
             let rows = model.state.memoryList
             
             if rows.isEmpty {
                 Text("Memory List\n(Press + to store X register)")
-                    .navigationBarTitle( "", displayMode: .inline )
-                    .navigationBarHidden(false)
-                    .navigationBarItems( trailing: addButton)
                     .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
             }
             else {
                 List {
                     ForEach ( Array( rows.enumerated()), id: \.offset ) { index, item in
                         VStack( alignment: .leading, spacing: 0 ) {
-                            NavigationLink {
-                                MemoryDetailView(  model: model , index: index, item: item )
-                            } label: {
-                                if let prefix = item.prefix {
-                                    Text(prefix).font(.footnote).bold().listRowBackground(Color("List0"))
-                                }
-                                else {
-                                    Text( "-Unnamed-" ).font(.footnote).foregroundColor(.gray).listRowBackground(Color("List0"))
-                                }
+                            let name = item.prefix != nil ? item.prefix! : "-name-"
+                            
+                            let color = item.prefix != nil ? Color("DisplayText") : Color(.gray)
+                            
+                            HStack {
+                                Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
+                                    .onTapGesture {
+                                        rowIndex = index
+                                        nameEdit = true
+                                    }
                             }
+                            
                             TypedRegister( row: NoPrefix(item), size: .small ).padding( .horizontal, 20)
                         }
-                        .listRowSeparator(.hidden)
+                        .listRowSeparatorTint(.blue)
                         .frame( height: 30 )
                         .swipeActions( edge: .leading, allowsFullSwipe: true ) {
                             ForEach ( leadingOps, id: \.key) { key, text, color in
@@ -261,20 +255,30 @@ struct MemoryDisplay: View {
                         }
                     }
                     .listRowSeparatorTint( Color("DisplayText"))
-                    
                 }
                 .listRowSpacing(0)
-                .navigationBarTitle( "", displayMode: .inline )
-                .navigationBarHidden(false)
-                .navigationBarItems( trailing: addButton)
-                .environment( \.editMode, $editMode)
                 .listStyle( PlainListStyle() )
                 .padding( .horizontal, 0)
                 .padding( .top, 0)
             }
         }
-        .navigationViewStyle( StackNavigationViewStyle())
-        .border(Color("Frame"), width: 3)
+    }
+
+    var body: some View {
+        let rows = model.state.memoryList
+        
+        if nameEdit {
+            MemoryDetailView( model: model, nameEdit: $nameEdit, index: rowIndex, item: rows[rowIndex])
+                .frame( maxWidth: .infinity, maxHeight: .infinity)
+                .background( Color("Display") )
+                .border(Color("Frame"), width: 3)
+        }
+        else {
+            memoryList
+                .frame( maxWidth: .infinity, maxHeight: .infinity)
+                .background( Color("MemoryDisplay") )
+                .border(Color("Frame"), width: 3)
+        }
     }
 }
 
