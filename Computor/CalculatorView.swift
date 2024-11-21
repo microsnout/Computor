@@ -70,8 +70,8 @@ let psEnter = PadSpec(
 let psOperations = PadSpec(
     keySpec: ksNormal,
     cols: 3,
-    keys: [ Key(.divide, "÷", fontSize: 24), Key(.deg, "deg", fontSize: 12), Key(.y2x, "y^{x}"),
-            Key(.times, "×", fontSize: 24),  Key(.lastx, "log_{2}", fontSize: 12),    Key(.inv, image: .onex),
+    keys: [ Key(.divide, "÷", fontSize: 24), Key(.deg, "deg\u{00B0}", fontSize: 14), Key(.y2x, "y^{x}"),
+            Key(.times, "×", fontSize: 24),  Key(.percent, "%", fontSize: 18),    Key(.inv, image: .onex),
             Key(.minus, "−", fontSize: 24),  Key(.xy, "X\u{21c6}Y", fontSize: 12),    Key(.x2, "x^{2}"),
             Key(.plus,  "+", fontSize: 24),  Key(.roll, "R\u{2193}", fontSize: 12),   Key(.sqrt,image: .rx)
           ])
@@ -85,7 +85,7 @@ let psClear = PadSpec(
 let psUnitsL = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
-    keys: [ Key(.deg, "deg"),
+    keys: [ Key(.noop, ""),
             Key(.lb, "lb"),
             Key(.kg, "kg")
           ]
@@ -123,7 +123,7 @@ let psFormatL = PadSpec (
     cols: 3,
     keys: [ Key(.fix, "fix"),
             Key(.sci, "sci"),
-            Key(.percent, "%"),
+            Key(.dms, "dms"),
         ],
     fontSize: 14.0
 )
@@ -243,6 +243,7 @@ func initKeyLayout() {
     SubPadSpec.define( .deg,
                        keySpec: ksSubpad,
                        keys: [
+                        Key(.dms, "dms"),
                         Key(.rad,  "rad"),
                         Key(.deg,"deg"),
                        ],

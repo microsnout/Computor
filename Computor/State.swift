@@ -18,10 +18,24 @@ let stackPrefixValues = ["X", "Y", "Z", "T"]
 // Register index values
 let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 4
 
-typealias FormatMode = NumberFormatter.Style
+enum FormatStyle : UInt {
+    
+    // These values match raw values with NumberFormater.Style
+    case none = 0
+    case decimal = 1
+    case currency = 2
+    case percent = 3
+    case scientific = 4
+    
+    // These are custom extension values
+    case complex = 100
+    case vector  = 101
+    case polar   = 102
+    case angleDMS = 110
+}
 
 struct FormatRec {
-    var mode: FormatMode = .decimal
+    var style: FormatStyle = .decimal
     var digits: Int = 4
     var minDigits: Int = 0
 }
@@ -79,10 +93,10 @@ struct CalcState {
     var noLift: Bool = false
     var memory = [NamedValue]()
     
-    static let defaultFormat: FormatRec = FormatRec( mode: .decimal, digits: 4 )
-    static let defaultSciFormat: FormatRec = FormatRec( mode: .scientific, digits: 4 )
-    static let defaultPercentFormat: FormatRec = FormatRec( mode: .percent, digits: 2 )
-    static let defaultCurrencyFormat: FormatRec = FormatRec( mode: .currency, digits: 2, minDigits: 2 )
+    static let defaultFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
+    static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )
+    static let defaultPercentFormat: FormatRec = FormatRec( style: .percent, digits: 2 )
+    static let defaultCurrencyFormat: FormatRec = FormatRec( style: .currency, digits: 2, minDigits: 2 )
 
     // Data entry state
     var entryMode: Bool = false
@@ -112,27 +126,48 @@ struct CalcState {
         
         let fmt = nv.value.fmt
         
-        let nf = NumberFormatter()
-        nf.numberStyle = fmt.mode
-        nf.minimumFractionDigits = fmt.minDigits
-        nf.maximumFractionDigits = fmt.digits
-
-        let str = nf.string(for: nv.value.reg) ?? ""
-
-        let strParts = str.split( separator: "E" )
-        
-        if strParts.count == 2 {
+        if fmt.style == .angleDMS {
+            // Degrees Minutes Seconds angle display
+            let neg = nv.value.reg < 0.0 ? -1.0 : 1.0
+            let angle = abs(nv.value.reg)
+            let deg = floor(angle)
+            let min = floor((angle - deg) * 60.0)
+            let sec = ((angle - deg)*60.0 - min) * 60.0
+            
+            let str = String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
+            
             return RegisterRow(
                 prefix: nv.name,
-                register: String(strParts[0]) + "x10",
-                exponent: String(strParts[1]),
+                register: str,
                 suffix: nv.value.tag.symbol)
         }
+        else if let nfStyle = NumberFormatter.Style(rawValue: fmt.style.rawValue) {
+            
+            let nf = NumberFormatter()
+            nf.numberStyle = nfStyle
+            nf.minimumFractionDigits = fmt.minDigits
+            nf.maximumFractionDigits = fmt.digits
+            
+            let str = nf.string(for: nv.value.reg) ?? ""
+            
+            let strParts = str.split( separator: "E" )
+            
+            if strParts.count == 2 {
+                return RegisterRow(
+                    prefix: nv.name,
+                    register: String(strParts[0]) + "x10",
+                    exponent: String(strParts[1]),
+                    suffix: nv.value.tag.symbol)
+            }
+            else {
+                return RegisterRow(
+                    prefix: nv.name,
+                    register: String(strParts[0]),
+                    suffix: nv.value.tag.symbol)
+            }
+        }
         else {
-            return RegisterRow(
-                prefix: nv.name,
-                register: String(strParts[0]),
-                suffix: nv.value.tag.symbol)
+            return RegisterRow( prefix: nv.name, register: "Unknown Fmt Style" )
         }
     }
     

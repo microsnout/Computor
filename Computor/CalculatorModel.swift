@@ -57,7 +57,7 @@ enum KeyCode: Int {
     case sec = 210, min, hr, day, yr
     
     // Angles
-    case deg = 220, rad
+    case deg = 220, rad, dms
     
     // Mass
     case kg = 230, mg, gram, tonne, lb, oz, ton, stone
@@ -419,9 +419,19 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         .x2:
             CustomOp { s0 in
-                var s1 = s0
                 if let (tag, ratio) = typeProduct(s0.Xt, s0.Xt) {
+                    var s1 = s0
                     s1.Xtv = TaggedValue(tag, s0.X * s0.X, format: s0.Xfmt)
+                    return s1
+                }
+                return nil
+            },
+        
+        .percent:
+            CustomOp { s0 in
+                if s0.Xt == tagUntyped {
+                    var s1 = s0
+                    s1.Xtv = TaggedValue(s0.Yt, s0.X / 100.0 * s0.Y, format: s0.Yfmt)
                     return s1
                 }
                 return nil
@@ -429,8 +439,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         .inv:
             CustomOp { s0 in
-                var s1 = s0
                 if let (tag, ratio) = typeProduct(tagUntyped, s0.Xt, quotient: true) {
+                    var s1 = s0
                     s1.Xtv = TaggedValue(tag, 1.0 / s0.X, format: s0.Xfmt)
                     return s1
                 }
@@ -657,18 +667,15 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
         case .fix:
             undoStack.push(state)
-            state.Xfmt.mode = .decimal
+            state.Xfmt.style = .decimal
             
         case .sci:
             undoStack.push(state)
-            state.Xfmt.mode = .scientific
+            state.Xfmt.style = .scientific
             
-        case .percent:
-            if state.Xt == tagUntyped && state.Xfmt.mode != .percent {
-                undoStack.push(state)
-                state.Xfmt = CalcState.defaultPercentFormat
-                state.X = state.X / 100.0
-            }
+        case .dms:
+            undoStack.push(state)
+            state.Xfmt.style = .angleDMS
 
         case .currency:
             undoStack.push(state)
@@ -682,7 +689,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 if let newState = op.transition( state ) {
                     // Operation has produced a new state
                     state = newState
-//                    state.noLift = false
+                    state.noLift = false
                 }
                 else {
                     // else no-op as there was no new state
