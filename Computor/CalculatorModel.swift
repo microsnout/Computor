@@ -300,20 +300,28 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     struct Convert: StateOperator {
         let toType: TypeTag
+        let toFmt: FormatRec?
         
-        init( to: TypeTag ) {
+        init( to: TypeTag, fmt: FormatRec? = nil ) {
             self.toType = to
+            self.toFmt = fmt
         }
         
-        init( sym: String ) {
+        init( sym: String, fmt: FormatRec? = nil ) {
             self.toType = TypeDef.symDict[sym, default: tagNone]
+            self.toFmt = fmt
         }
         
         func transition(_ s0: CalcState ) -> CalcState? {
             var s1 = s0
 
             if s1.convertX( toTag: toType) {
-                s1.Xfmt = s0.Xfmt
+                if let fmt = toFmt {
+                    s1.Xfmt = fmt
+                }
+                else {
+                    s1.Xfmt = s0.Xfmt
+                }
                 return s1
             }
             else {
@@ -518,8 +526,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 return s1
             },
 
-        .deg: Convert( sym: "deg" ),
-        .rad: Convert( sym: "rad" ),
+        .deg: Convert( sym: "deg", fmt: FormatRec( style: .decimal) ),
+        .rad: Convert( sym: "rad", fmt: FormatRec( style: .decimal) ),
+        .dms: Convert( sym: "deg", fmt: FormatRec( style: .angleDMS)),
         
         .sec: Convert( sym: "sec" ),
         .min: Convert( sym: "min" ),
@@ -673,13 +682,15 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             undoStack.push(state)
             state.Xfmt.style = .scientific
             
-        case .dms:
-            undoStack.push(state)
-            state.Xfmt.style = .angleDMS
-
         case .currency:
             undoStack.push(state)
             state.Xfmt = CalcState.defaultCurrencyFormat
+            
+        case .clX:
+            // Clear X register
+            undoStack.push(state)
+            state.Xtv = untypedZero
+            state.noLift = true
 
         default:
             if let op = opTable[keyCode] {

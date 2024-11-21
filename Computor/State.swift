@@ -138,8 +138,7 @@ struct CalcState {
             
             return RegisterRow(
                 prefix: nv.name,
-                register: str,
-                suffix: nv.value.tag.symbol)
+                register: str)
         }
         else if let nfStyle = NumberFormatter.Style(rawValue: fmt.style.rawValue) {
             
