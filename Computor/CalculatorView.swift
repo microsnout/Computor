@@ -197,6 +197,8 @@ func initKeyLayout() {
     SubPadSpec.define( .hr,
                        keySpec: ksSubpad,
                        keys: [
+                        Key(.us,  "\u{03BC}s"),
+                        Key(.ms,  "ms"),
                         Key(.sec, "sec"),
                         Key(.min, "min"),
                         Key(.hr,  "hr"),

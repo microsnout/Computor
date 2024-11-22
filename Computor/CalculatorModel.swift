@@ -50,17 +50,26 @@ enum KeyCode: Int {
     // Softkeys
     case sk0 = 190, sk1, sk2, sk3, sk4, sk5, sk6
     
+    case unitStart = 200
+    
     // Length
-    case km = 200, mm, cm, m, inch, ft, yd, mi
+    case km = 201, mm, cm, m, inch, ft, yd, mi
     
     // Time
-    case sec = 210, min, hr, day, yr
+    case sec = 210, min, hr, day, yr, ms, us
     
     // Angles
     case deg = 220, rad, dms
     
     // Mass
     case kg = 230, mg, gram, tonne, lb, oz, ton, stone
+    
+    // Temperature
+    case degC = 240, degF
+    
+    case unitEnd = 299
+    
+    var isUnit: Bool { return self.rawValue > KeyCode.unitStart.rawValue && self.rawValue < KeyCode.unitEnd.rawValue }
 }
 
 
@@ -529,32 +538,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         .deg: Convert( sym: "deg", fmt: FormatRec( style: .decimal) ),
         .rad: Convert( sym: "rad", fmt: FormatRec( style: .decimal) ),
         .dms: Convert( sym: "deg", fmt: FormatRec( style: .angleDMS)),
-        
-        .sec: Convert( sym: "sec" ),
-        .min: Convert( sym: "min" ),
-        .hr:  Convert( sym: "hr"  ),
-        .day: Convert( sym: "day" ),
-        .yr:  Convert( sym: "yr"  ),
-
-        .m:   Convert( sym: "m"   ),
-        .km:  Convert( sym: "km"  ),
-        .cm:  Convert( sym: "cm"  ),
-        .mm:  Convert( sym: "mm"  ),
-
-        .inch: Convert( sym: "in"  ),
-        .ft:   Convert( sym: "ft"  ),
-        .yd:   Convert( sym: "yd"  ),
-        .mi:   Convert( sym: "mi"  ),
-        
-        .gram:  Convert( sym: "g"   ),
-        .kg:    Convert( sym: "kg"  ),
-        .mg:    Convert( sym: "mg"  ),
-        .tonne: Convert( sym: "tn"  ),
-        
-        .lb:    Convert( sym: "lb"  ),
-        .oz:    Convert( sym: "oz"  ),
-        .ton:   Convert( sym: "ton" ),
-        .stone: Convert( sym: "st"  ),
     ]
     
     
@@ -706,6 +689,23 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     // else no-op as there was no new state
                     if let lastState = undoStack.pop() {
                         state = lastState
+                    }
+                }
+            }
+            else if keyCode.isUnit {
+                if let tag = TypeDef.kcDict[keyCode],
+                   let _   = TypeDef.typeDict[tag]
+                {
+                    undoStack.push(state)
+                    
+                    if state.convertX( toTag: tag) {
+                        state.noLift = false
+                    }
+                    else {
+                        // else no-op as there was no new state
+                        if let lastState = undoStack.pop() {
+                            state = lastState
+                        }
                     }
                 }
             }

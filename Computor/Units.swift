@@ -367,6 +367,7 @@ class TypeDef {
     var uid:   UnitId
     var tid:   TypeId
     var tc:    TypeCode
+    var kc:    KeyCode?
     var sym:   String?
     var ratio: Double
     var delta: Double
@@ -384,18 +385,20 @@ class TypeDef {
         self.uid = StdUnitId.untyped.rawValue
         self.tid = 0
         self.tc  = []
+        self.kc  = nil
         self.sym = nil
         self.ratio = 1.0
         self.delta = 0.0
     }
     
-    init( _ uid: StdUnitId, sym: String, _ ratio: Double, delta: Double = 0.0 ) {
+    init( _ uid: StdUnitId, _ kc: KeyCode, sym: String, _ ratio: Double, delta: Double = 0.0 ) {
         self.uid = uid.rawValue
         self.tid = TypeDef.getNewTid()
         self.sym = sym
         self.ratio = ratio
         self.delta = delta
         self.tc = [(TypeTag(uid, tid), 1)]
+        self.kc = kc
     }
 
     init( _ uid: UnitId, tsig: TypeSignature ) {
@@ -404,6 +407,7 @@ class TypeDef {
         self.ratio = 1.0
         self.delta = 0
         self.tc = toTypeCode( from: tsig)
+        self.kc = nil
     }
     
     var symbol: String {
@@ -418,6 +422,7 @@ class TypeDef {
     static var typeDict: [TypeTag : TypeDef] = [tagUntyped : TypeDef()]
     static var symDict:  [String : TypeTag] = [:]
     static var sigDict:  [TypeSignature : TypeTag] = [:]
+    static var kcDict:   [KeyCode : TypeTag] = [:]
     
     static func tagOf( _ sym: String ) -> TypeTag {
         // Required tag lookup or else bug
@@ -427,13 +432,14 @@ class TypeDef {
         return tag
     }
     
-    static func defineType( _ uid: StdUnitId, _ sym: String, _ ratio: Double, delta: Double = 0.0 ) {
+    static func defineType( _ uid: StdUnitId, _ kc: KeyCode, _ sym: String, _ ratio: Double, delta: Double = 0.0 ) {
         if let _ = UnitDef.unitDict[uid.rawValue] {
-            let def = TypeDef(uid, sym: sym, ratio, delta: delta)
+            let def = TypeDef(uid, kc, sym: sym, ratio, delta: delta)
             
             let tag = TypeTag(uid, def.tid)
             TypeDef.typeDict[tag] = def
             TypeDef.symDict[sym] = tag
+            TypeDef.kcDict[kc] = tag
         }
         else {
             logU.error("Cannot define type \(sym). UnitDef for uid \(uid2Str(uid.rawValue))")
@@ -463,37 +469,39 @@ class TypeDef {
         UnitDef.defineUnit( .acceleration, "length/time^2" )
         UnitDef.defineUnit( .pressure, "weight/length^2" )
         
-        defineType( .length,   "m",    1)
-        defineType( .length,   "mm",   1000)
-        defineType( .length,   "cm",   100)
-        defineType( .length,   "km",   0.001)
+        defineType( .length, .m,  "m",    1)
+        defineType( .length, .mm, "mm",   1000)
+        defineType( .length, .cm, "cm",   100)
+        defineType( .length, .km, "km",   0.001)
         
-        defineType( .length,   "in",   1000/25.4)
-        defineType( .length,   "ft",   1000/(12*25.4))
-        defineType( .length,   "yd",   1000/(36*25.4))
-        defineType( .length,   "mi",   1000/(5280*12*25.4))
+        defineType( .length, .inch, "in",   1000/25.4)
+        defineType( .length, .ft,   "ft",   1000/(12*25.4))
+        defineType( .length, .yd,   "yd",   1000/(36*25.4))
+        defineType( .length, .mi,   "mi",   1000/(5280*12*25.4))
 
-        defineType( .angle,    "rad",  1)
-        defineType( .angle,    "deg",  180/Double.pi)
+        defineType( .angle,  .rad,  "rad",  1)
+        defineType( .angle,  .deg,  "deg",  180/Double.pi)
 
-        defineType( .time,     "sec",  1.0)
-        defineType( .time,     "min",  1.0/60)
-        defineType( .time,     "hr",   1.0/(60*60))
-        defineType( .time,     "day",  1.0/(24*60*60))
-        defineType( .time,     "yr",   1.0/(365*24*60*60))
+        defineType( .time,  .sec,   "sec",  1.0)
+        defineType( .time,  .min,   "min",  1.0/60)
+        defineType( .time,  .hr,    "hr",   1.0/(60*60))
+        defineType( .time,  .day,   "day",  1.0/(24*60*60))
+        defineType( .time,  .yr,    "yr",   1.0/(365*24*60*60))
+        defineType( .time,  .ms,    "ms",   1000.0)
+        defineType( .time,  .us,    "\u{03BC}s", 1000000.0)
 
-        defineType( .mass,     "kg",   1)
-        defineType( .mass,     "g",    1000.0)
-        defineType( .mass,     "mg",   1000*1000.0)
-        defineType( .mass,     "tn",   0.001)
+        defineType( .mass,  .kg,    "kg",   1)
+        defineType( .mass,  .gram,  "g",    1000.0)
+        defineType( .mass,  .mg,    "mg",   1000*1000.0)
+        defineType( .mass,  .tonne, "tn",   0.001)
 
-        defineType( .mass,   "lb",   2.2046226218488)
-        defineType( .mass,   "oz",   2.2046226218488 * 16.0)
-        defineType( .mass,   "ton",  2.2046226218488 / 2000.0)
-        defineType( .mass,   "st",   2.2046226218488 / 14.0)
+        defineType( .mass, .lb,    "lb",   2.2046226218488)
+        defineType( .mass, .oz,    "oz",   2.2046226218488 * 16.0)
+        defineType( .mass, .ton,   "ton",  2.2046226218488 / 2000.0)
+        defineType( .mass, .stone, "st",   2.2046226218488 / 14.0)
 
-        defineType( .temp,     "C",    1.0)
-        defineType( .temp,     "F",    9.0/5.0, delta: 32)
+        defineType( .temp, .degC,    "C",    1.0)
+        defineType( .temp, .degF,    "F",    9.0/5.0, delta: 32)
         
         #if DEBUG
         // UnitDef

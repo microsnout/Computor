@@ -129,7 +129,7 @@ struct CalcState {
         if fmt.style == .angleDMS {
             // Degrees Minutes Seconds angle display
             let neg = nv.value.reg < 0.0 ? -1.0 : 1.0
-            let angle = abs(nv.value.reg)
+            let angle = abs(nv.value.reg) + 0.0000001
             let deg = floor(angle)
             let min = floor((angle - deg) * 60.0)
             let sec = ((angle - deg)*60.0 - min) * 60.0
