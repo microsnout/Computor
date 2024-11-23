@@ -684,6 +684,18 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     // Operation has produced a new state
                     state = newState
                     state.noLift = false
+                    
+                    // Autoswitch between scientific and decimal
+                    if state.Xfmt.style == .decimal {
+                        if abs(state.X) >= 10000000000000.0 {
+                            state.Xfmt.style = .scientific
+                        }
+                    }
+                    else if state.Xfmt.style == .scientific {
+                        if abs(state.X) < 1000.0 {
+                            state.Xfmt.style = .decimal
+                        }
+                    }
                 }
                 else {
                     // else no-op as there was no new state
