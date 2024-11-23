@@ -439,6 +439,7 @@ class TypeDef {
             let tag = TypeTag(uid, def.tid)
             TypeDef.typeDict[tag] = def
             TypeDef.symDict[sym] = tag
+            TypeDef.sigDict[sym] = tag
             TypeDef.kcDict[kc] = tag
         }
         else {
