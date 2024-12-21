@@ -115,7 +115,6 @@ class KeyData : ObservableObject {
 
     @Published var dragPt   = CGPoint.zero
     @Published var keyDown  = false
-    @Published var hello    = "Hello"
 }
 
 
@@ -315,13 +314,6 @@ struct KeyView: View {
             .onEnded { _ in
                 if let key = keyData.selSubkey
                 {
-                    if let txt = key.text {
-                        keyData.hello.append("\nKeypress: \(txt)")
-                    }
-                    else {
-                        keyData.hello.append("\nKeypress: ??")
-                    }
-                    
                      keyPressHandler.keyPress(key.kc)
                 }
                 
@@ -389,7 +381,6 @@ struct KeyView: View {
                     .onChange( of: isPressing) { _, newState in keyData.keyDown = newState }
                     .simultaneousGesture(
                         TapGesture().onEnded {
-                            keyData.hello.append("\nRegular tap: \(txt)")
                             hapticFeedback.impactOccurred()
                             keyPressHandler.keyPress(key.kc)
                         })
