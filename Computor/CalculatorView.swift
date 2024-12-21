@@ -28,10 +28,10 @@ extension View {
 // ***************************************************
 // Keypad Definitions
 
-let ksNormal = KeySpec( width: 45, height: 40,
+let ksNormal = KeySpec( width: 45, height: 35,
                         keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
-let ksSoftkey = KeySpec( width: 45, height: 30, fontSize: 14,
+let ksSoftkey = KeySpec( width: 45, height: 25, fontSize: 14,
                          keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
 let ksSubpad = KeySpec( width: 45, height: 30, fontSize: 14,
@@ -81,6 +81,24 @@ let psClear = PadSpec(
         cols: 3,
         keys: [ Key(.back, "BACK/UNDO", size: 2, fontSize: 12.0), Key(.clX, "CLx", fontSize: 14.0) ]
     )
+
+let psSoftkeyL = PadSpec (
+    keySpec: ksSoftkey,
+    cols: 3,
+    keys: [ Key(.sk1, ""),
+            Key(.sk2, ""),
+            Key(.sk3, "")
+          ]
+)
+
+let psSoftkeyR = PadSpec (
+    keySpec: ksSoftkey,
+    cols: 3,
+    keys: [ Key(.sk4, ""),
+            Key(.sk5, ""),
+            Key(.sk6, "")
+          ]
+)
 
 let psUnitsL = PadSpec (
     keySpec: ksSoftkey,
@@ -321,6 +339,11 @@ struct CalculatorView: View {
                         
                         Spacer().frame( height: 15)
                         
+                        HStack {
+                            KeypadView( padSpec: psSoftkeyL, keyPressHandler: model )
+                            Spacer()
+                            KeypadView( padSpec: psSoftkeyR, keyPressHandler: model )
+                        }
                         HStack {
                             KeypadView( padSpec: psUnitsL, keyPressHandler: model )
                             Spacer()

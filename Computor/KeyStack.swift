@@ -122,7 +122,7 @@ class KeyData : ObservableObject {
 let longPressTime = 0.5
 let keyInset      = 4.0
 let keyHspace     = 10.0
-let keyVspace     = 10.0
+let keyVspace     = 8.0
 let popCaptionH   = 13.0
 let captionFont   = 12.0
 
