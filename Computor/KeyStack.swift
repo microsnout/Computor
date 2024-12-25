@@ -34,10 +34,19 @@ extension View {
 
 typealias KeyID = Int
 
-typealias  KeyEvent = KeyCode
+typealias  KeyEvent0 = KeyCode
+
+struct KeyEvent {
+    var kc: KeyCode
+    
+    // Top level key pressed when kc is from popup menu
+    var kcTop: KeyCode?
+}
 
 protocol KeyPressHandler {
     func keyPress(_ event: KeyEvent )
+    
+    func getKeyText( _ kc: KeyCode ) -> String?
 }
 
 struct KeySpec {
@@ -63,6 +72,8 @@ struct Key: Identifiable {
     var image: ImageResource?
     
     var id: Int { return self.kc.rawValue }
+    
+    static var keyList: [KeyCode : Key] = [:]
 
     init( _ kc: KeyCode, _ label: String? = nil, size: Int = 1, fontSize: Double? = nil, image: ImageResource? = nil ) {
         self.kc = kc
@@ -70,6 +81,9 @@ struct Key: Identifiable {
         self.size = size
         self.image = image
         self.fontSize = fontSize
+        
+        // Maintain dictionary of all defined keys
+        Key.keyList[self.kc] = self
     }
 }
 
@@ -85,6 +99,14 @@ struct SubPadSpec {
     static func define( _ kc: KeyCode, keySpec: KeySpec, keys: [Key], fontSize: Double = 18.0, caption: String? = nil ) {
         SubPadSpec.specList[kc] =
             SubPadSpec( kc: kc, keySpec: keySpec, keys: keys, fontSize: fontSize, caption: caption)
+    }
+    
+    static func copySpec( from: KeyCode, list: [KeyCode]) {
+        if let spec = SubPadSpec.specList[from] {
+            for kc in list {
+                SubPadSpec.specList[kc] = spec
+            }
+        }
     }
 }
 
@@ -314,12 +336,13 @@ struct KeyView: View {
             .onEnded { _ in
                 if let key = keyData.selSubkey
                 {
-                     keyPressHandler.keyPress(key.kc)
+                    keyPressHandler.keyPress( KeyEvent( kc: key.kc, kcTop: keyData.pressedKey?.kc))
                 }
                 
                 keyData.dragPt = CGPoint.zero
-                keyData.selSubkey = nil
                 keyData.pressedKey = nil
+                keyData.selSubkey = nil
+                keyData.keyDown = false
             }
     }
     
@@ -339,8 +362,9 @@ struct KeyView: View {
         let hasSubpad = SubPadSpec.specList[key.kc] != nil
         
         VStack {
-            let txt = key.text ?? "??"
             let fontsize = key.fontSize != nil ? key.fontSize! : padSpec.keySpec.fontSize
+            
+            let text: String? = key.text == nil ? keyPressHandler.getKeyText(key.kc) : key.text
             
             GeometryReader { geometry in
                 let vframe = geometry.frame(in: CoordinateSpace.global)
@@ -382,12 +406,12 @@ struct KeyView: View {
                     .simultaneousGesture(
                         TapGesture().onEnded {
                             hapticFeedback.impactOccurred()
-                            keyPressHandler.keyPress(key.kc)
+                            keyPressHandler.keyPress( KeyEvent( kc: key.kc))
                         })
-                    .if( key.text != nil ) { view in
+                    .if( text != nil ) { view in
                         view.overlay(
                             SubSuperScriptText(
-                                inputString: key.text!,
+                                inputString: text!,
                                 bodyFont: .system( size: fontsize, design: serifFont ? .serif : .default),
                                 subScriptFont: .system( size: fontsize*0.7, design: .default),
                                 baseLine: 6.0 )
@@ -454,6 +478,8 @@ struct KeypadView: View {
     }
 
     var body: some View {
+        let _ = Self._printChanges()
+        
         let keyMatrix = partitionKeylist(keys: padSpec.keys, rowMax: padSpec.cols)
         
         VStack( spacing: keyVspace ) {

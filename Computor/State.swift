@@ -85,6 +85,11 @@ struct RegisterRow: RowDataItem {
     var suffix: String?
 }
 
+struct FnRec {
+    var caption: String
+    var macro: [KeyCode] = []
+}
+
 struct CalcState {
     /// Defines the exact state of the calculator at a given time
     ///
@@ -92,6 +97,36 @@ struct CalcState {
     var lastX: TaggedValue = untypedZero
     var noLift: Bool = false
     var memory = [NamedValue]()
+    
+    var fnList: [KeyCode : FnRec] = [:]
+    var kcRecording: KeyCode? = nil
+    
+    private let fnSet:Set<KeyCode> = [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6]
+    
+    mutating func recordFn( _ kc: KeyCode ) {
+        if fnSet.contains(kc) && kcRecording == nil {
+            if var fn = fnList[kc] {
+                fn.macro.removeAll()
+            }
+            else {
+                fnList[kc] = FnRec( caption: "Fn1")
+            }
+            
+            kcRecording = kc
+        }
+    }
+    
+    mutating func stopRecFn( _ kc: KeyCode ) {
+        if kc == kcRecording {
+            kcRecording = nil
+        }
+    }
+    
+    mutating func clearFn( _ kc: KeyCode ) {
+        if kc == kcRecording || kcRecording == nil {
+            fnList[kc] = nil
+        }
+    }
     
     static let defaultFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )

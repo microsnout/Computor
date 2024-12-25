@@ -36,7 +36,7 @@ enum KeyCode: Int {
     
     case y2x = 40, inv, x2, sqrt
     
-    case fn0 = 50, sin, cos, tan, pi, asin, acos, atan
+    case sin = 50, cos, tan, pi, asin, acos, atan
     
     case log = 80, ln, log2, logY
     
@@ -48,7 +48,10 @@ enum KeyCode: Int {
     case noop = 150, rcl, sto, mPlus, mMinus
     
     // Softkeys
-    case sk0 = 190, sk1, sk2, sk3, sk4, sk5, sk6
+    case fn0 = 160, fn1, fn2, fn3, fn4, fn5, fn6
+    
+    // Macro Op
+    case clrFn = 170, recFn
     
     case unitStart = 200
     
@@ -617,8 +620,22 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return true
     }
     
+    func recordFn( _ event: KeyEvent ) {
+        if let kc = event.kcTop {
+            state.recordFn(kc)
+        }
+    }
     
-    func keyPress(_ keyCode: KeyEvent) {
+    func clearFn( _ event: KeyEvent ) {
+        if let kc = event.kcTop {
+            state.clearFn(kc)
+        }
+    }
+    
+    
+    func keyPress(_ event: KeyEvent) {
+        let keyCode = event.kc
+        
         if state.entryMode && EntryModeKeypress(keyCode) {
             // We are in Entry mode and this event has been processed and we stay in this mode
             return
@@ -674,6 +691,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             undoStack.push(state)
             state.Xtv = untypedZero
             state.noLift = true
+            
+        case .recFn:
+            recordFn(event)
+            
+        case .clrFn:
+            clearFn(event)
 
         default:
             if let op = opTable[keyCode] {
@@ -722,5 +745,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
             }
         }
+    }
+    
+    
+    func getKeyText( _ kc: KeyCode ) -> String? {
+        if let fn = state.fnList[kc] {
+            return fn.caption
+        }
+        
+        return nil
     }
 }
