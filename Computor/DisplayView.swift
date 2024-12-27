@@ -132,7 +132,7 @@ struct TypedRegister: View {
                     Text(suffix).font(spec.suffixFont).bold().foregroundColor(Color("Units")).padding(.leading, 10)
                 }
             }
-            .frame( height: 20 )
+            .frame( height: 18 )
         }
         else {
             EmptyView()
@@ -148,11 +148,18 @@ struct Display: View {
     var body: some View {
         let _ = Self._printChanges()
         
+        let recText = model.isKeyRecording() ? "REC" : ""
+        
         ZStack(alignment: .leading) {
             Rectangle()
                 .fill(Color("Display"))
             
-            VStack( alignment: .leading, spacing: 5) {
+            VStack( alignment: .leading, spacing: 4) {
+                HStack {
+                    Spacer()
+                    Text(recText).font(.caption).foregroundColor( Color(.red))
+                }.frame( height: 10 ).padding(0)
+                
                 ForEach (0..<model.rowCount, id: \.self) { index in
                     TypedRegister( row: model.getRow(index: index), size: .large ).padding(.leading, 10)
                 }

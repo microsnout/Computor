@@ -28,13 +28,13 @@ extension View {
 // ***************************************************
 // Keypad Definitions
 
-let ksNormal = KeySpec( width: 45, height: 35,
+let ksNormal = KeySpec( width: 42, height: 35,
                         keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
-let ksSoftkey = KeySpec( width: 45, height: 25, fontSize: 14,
+let ksSoftkey = KeySpec( width: 42, height: 25, fontSize: 14,
                          keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
-let ksSubpad = KeySpec( width: 45, height: 30, fontSize: 14,
+let ksSubpad = KeySpec( width: 42, height: 30, fontSize: 14,
                         keyColor: Color(.brown), textColor: Color("KeyText"))
 
 let ksUnits = KeySpec( width: 60, height: 25, fontSize: 14,
@@ -71,9 +71,9 @@ let psOperations = PadSpec(
     keySpec: ksNormal,
     cols: 3,
     keys: [ Key(.divide, "÷", fontSize: 24), Key(.deg, "deg\u{00B0}", fontSize: 14), Key(.y2x, "y^{x}"),
-            Key(.times, "×", fontSize: 24),  Key(.percent, "%", fontSize: 18),    Key(.inv, image: .onex),
-            Key(.minus, "−", fontSize: 24),  Key(.xy, "X\u{21c6}Y", fontSize: 12),    Key(.x2, "x^{2}"),
-            Key(.plus,  "+", fontSize: 24),  Key(.roll, "R\u{2193}", fontSize: 12),   Key(.sqrt,image: .rx)
+            Key(.times, "×", fontSize: 24),  Key(.percent, "%", fontSize: 18),    Key(.inv, "1/x", fontSize: 14),
+            Key(.minus, "−", fontSize: 24),  Key(.xy, "X\u{21c6}Y", fontSize: 12),    Key(.x2, "x^{2}", fontSize: 14),
+            Key(.plus,  "+", fontSize: 24),  Key(.roll, "R\u{2193}", fontSize: 12),   Key(.sqrt, "\u{221a}x", fontSize: 14)
           ])
 
 let psClear = PadSpec(
@@ -162,6 +162,7 @@ func initKeyLayout() {
                        keys: [
                         Key(.clrFn, "Clr"),
                         Key(.recFn, "Rec"),
+                        Key(.stopFn, "Stop"),
                        ],
                        fontSize: 14.0
     )

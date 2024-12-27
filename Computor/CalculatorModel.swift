@@ -45,13 +45,13 @@ enum KeyCode: Int {
     // Format
     case fix = 120, sci, eng, percent, currency
     
-    case noop = 150, rcl, sto, mPlus, mMinus
+    case null = 150, noop, rcl, sto, mPlus, mMinus
     
     // Softkeys
     case fn0 = 160, fn1, fn2, fn3, fn4, fn5, fn6
     
     // Macro Op
-    case clrFn = 170, recFn
+    case macroOp = 170, clrFn, recFn, stopFn
     
     case unitStart = 200
     
@@ -73,6 +73,8 @@ enum KeyCode: Int {
     case unitEnd = 299
     
     var isUnit: Bool { return self.rawValue > KeyCode.unitStart.rawValue && self.rawValue < KeyCode.unitEnd.rawValue }
+    
+    var isMacroOp: Bool { return Int(self.rawValue / 10) == 17 }
 }
 
 
@@ -620,21 +622,46 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return true
     }
     
-    func recordFn( _ event: KeyEvent ) {
+    func macroKeypress( _ event: KeyEvent ) {
         if let kc = event.kcTop {
-            state.recordFn(kc)
+            
+            switch event.kc {
+            case .clrFn:
+                state.clearFn(kc)
+                
+            case .recFn:
+                state.startRecFn(kc)
+                
+            case .stopFn:
+                state.stopRecFn(kc)
+
+            default:
+                break
+            }
         }
-    }
-    
-    func clearFn( _ event: KeyEvent ) {
-        if let kc = event.kcTop {
-            state.clearFn(kc)
+        else {
+            switch event.kc {
+            case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
+                state.stopRecFn(event.kc)
+                
+            default:
+                break
+            }
         }
     }
     
     
     func keyPress(_ event: KeyEvent) {
+        if event.kc.isMacroOp || isKeyRecording(event.kc) {
+            macroKeypress(event)
+            return
+        }
+        
         let keyCode = event.kc
+        
+        if keyCode != .back {
+            state.recordKeyFn(keyCode)
+        }
         
         if state.entryMode && EntryModeKeypress(keyCode) {
             // We are in Entry mode and this event has been processed and we stay in this mode
@@ -692,11 +719,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.Xtv = untypedZero
             state.noLift = true
             
-        case .recFn:
-            recordFn(event)
-            
-        case .clrFn:
-            clearFn(event)
+        case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
+            if let macro = state.getMacroFn(keyCode) {
+                for kc in macro {
+                    keyPress( KeyEvent( kc: kc))
+                }
+            }
 
         default:
             if let op = opTable[keyCode] {
@@ -754,5 +782,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         return nil
+    }
+
+    
+    func isKeyRecording( _ kc: KeyCode = .null ) -> Bool {
+        if kc == .null {
+            return state.kcRecording != nil
+        }
+        return state.kcRecording == kc
     }
 }

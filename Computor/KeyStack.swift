@@ -47,6 +47,8 @@ protocol KeyPressHandler {
     func keyPress(_ event: KeyEvent )
     
     func getKeyText( _ kc: KeyCode ) -> String?
+    
+    func isKeyRecording( _ kc: KeyCode ) -> Bool
 }
 
 struct KeySpec {
@@ -95,6 +97,15 @@ struct SubPadSpec {
     var caption: String?
 
     static var specList: [KeyCode : SubPadSpec] = [:]
+    
+    static var disableList: Set<KeyCode> = []
+    
+    static func getSpec( _ kc: KeyCode ) -> SubPadSpec? {
+        if SubPadSpec.disableList.contains(kc) {
+            return nil
+        }
+        return SubPadSpec.specList[kc]
+    }
     
     static func define( _ kc: KeyCode, keySpec: KeySpec, keys: [Key], fontSize: Double = 18.0, caption: String? = nil ) {
         SubPadSpec.specList[kc] =
@@ -353,13 +364,19 @@ struct KeyView: View {
             .frame(width: 5, height: 5)
     }
     
+    var redCircle: some View {
+        Circle()
+            .foregroundStyle(.red)
+            .frame(width: 10, height: 10)
+    }
+
     
     
     var body: some View {
 
         let keyW = padSpec.keySpec.width * Double(key.size) + Double(key.size - 1) * keyHspace
         
-        let hasSubpad = SubPadSpec.specList[key.kc] != nil
+        let hasSubpad = SubPadSpec.getSpec(key.kc) != nil
         
         VStack {
             let fontsize = key.fontSize != nil ? key.fontSize! : padSpec.keySpec.fontSize
@@ -376,7 +393,7 @@ struct KeyView: View {
                         switch value {
                             
                         case .second(true, nil):
-                            if let subpad = SubPadSpec.specList[key.kc] {
+                            if let subpad = SubPadSpec.getSpec(key.kc) {
                                 // Start finger tracking
                                 keyData.subPad = subpad
                                 keyData.keyOrigin = vframe.origin
@@ -408,7 +425,7 @@ struct KeyView: View {
                             hapticFeedback.impactOccurred()
                             keyPressHandler.keyPress( KeyEvent( kc: key.kc))
                         })
-                    .if( text != nil ) { view in
+                    .if( text != nil && !keyPressHandler.isKeyRecording(key.kc) ) { view in
                         view.overlay(
                             SubSuperScriptText(
                                 inputString: text!,
@@ -430,6 +447,11 @@ struct KeyView: View {
                             yellowCircle
                                 .alignmentGuide(.top) { $0[.top] - 3}
                                 .alignmentGuide(.trailing) { $0[.trailing] + 3 }
+                        }
+                    }
+                    .if( keyPressHandler.isKeyRecording(key.kc) ) { view in
+                        view.overlay {
+                            redCircle
                         }
                     }
             }
