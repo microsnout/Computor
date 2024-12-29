@@ -103,7 +103,8 @@ protocol StateOperator {
 class CalculatorModel: ObservableObject, KeyPressHandler {
     // Current Calculator State
     @Published var state = CalcState()
-
+    @Published var entry = EntryState()
+    
     var undoStack = UndoStack()
 
     // Display window into register stack
@@ -123,12 +124,21 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     func getRow( index: Int ) -> RowDataItem {
         let stkIndex = bufferIndex(index)
         
+        // Are we are in data entry mode and looking for the X reg
+        if entry.entryMode && stkIndex == regX {
+            return RegisterRow(
+                prefix: state.stack[regX].name,
+                register: entry.entryText,
+                regAddon: entry.exponentEntry ? nil : "_",
+                exponent: entry.exponentEntry ? entry.exponentText : nil,
+                expAddon: entry.exponentEntry ? "_" : nil )
+        }
         return state.stackRow(stkIndex)
     }
     
     func memoryOp( key: KeyCode, index: Int ) {
         undoStack.push(state)
-        state.acceptTextEntry()
+        acceptTextEntry()
 
         // Leading edge swipe operations
         switch key {
@@ -160,19 +170,19 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func addMemoryItem() {
         undoStack.push(state)
-        state.acceptTextEntry()
+        acceptTextEntry()
         state.memory.append( NamedValue( value: state.Xtv) )
     }
     
     func delMemoryItems( set: IndexSet) {
         undoStack.push(state)
-        state.clearEntry()
+        entry.clearEntry()
         state.memory.remove( atOffsets: set )
     }
     
     func renameMemoryItem( index: Int, newName: String ) {
         undoStack.push(state)
-        state.clearEntry()
+        entry.clearEntry()
         state.memory[index].name = newName
     }
     
@@ -546,20 +556,56 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     ]
     
     
+    func acceptTextEntry() {
+        if entry.entryMode {
+            var num: String = entry.entryText
+            
+            logM.debug( "AcceptTextEntry: \(num)")
+            
+            if entry.exponentEntry {
+                /// Eliminate 'x10'
+                num.removeLast(3)
+            }
+            
+            // Remove all commas
+            num.removeAll( where: { $0 == "," })
+
+            var tv: TaggedValue = untypedZero
+            
+            if entry.exponentEntry && !entry.exponentText.isEmpty {
+                /// Exponential entered
+                let str: String = num + "E" + entry.exponentText
+                
+                tv.reg = Double(str)!
+                tv.tag = tagUntyped
+                tv.fmt = CalcState.defaultSciFormat
+            }
+            else {
+                tv.reg = Double(num)!
+                tv.tag = tagUntyped
+                tv.fmt = CalcState.defaultFormat
+            }
+            
+            state.stack[regX].value = tv
+            entry.clearEntry()
+        }
+    }
+
+    
     func EntryModeKeypress(_ keyCode: KeyCode ) -> Bool {
         if !entryKeys.contains(keyCode) {
             // Any key other than valid Entry mode keys cause en exit from the mode
             // with acceptance of the entered value
-            state.acceptTextEntry()
+            acceptTextEntry()
             return false
         }
         
-        if state.exponentEntry {
+        if entry.exponentEntry {
             switch keyCode {
             case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
                 // Append a digit to exponent
-                if state.exponentText.starts( with: "-") && state.exponentText.count < 4 || state.exponentText.count < 3 {
-                    state.appendExpEntry( String(keyCode.rawValue))
+                if entry.exponentText.starts( with: "-") && entry.exponentText.count < 4 || entry.exponentText.count < 3 {
+                    entry.appendExpEntry( String(keyCode.rawValue))
                 }
 
             case .dot, .eex:
@@ -567,20 +613,20 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 break
                 
             case .sign:
-                if state.exponentText.starts( with: "-") {
-                    state.exponentText.removeFirst()
+                if entry.exponentText.starts( with: "-") {
+                    entry.exponentText.removeFirst()
                 }
                 else {
-                    state.exponentText.insert( "-", at: state.exponentText.startIndex )
+                    entry.exponentText.insert( "-", at: entry.exponentText.startIndex )
                 }
 
             case .back:
-                if state.exponentText.isEmpty {
-                    state.exponentEntry = false
-                    state.entryText.removeLast(3)
+                if entry.exponentText.isEmpty {
+                    entry.exponentEntry = false
+                    entry.entryText.removeLast(3)
                 }
                 else {
-                    state.exponentText.removeLast()
+                    entry.exponentText.removeLast()
                 }
                 
             default:
@@ -593,21 +639,21 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             switch keyCode {
             case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
                 // Append a digit
-                state.appendTextEntry( String(keyCode.rawValue))
+                entry.appendTextEntry( String(keyCode.rawValue))
                 
             case .dot:
-                state.appendTextEntry(".")
+                entry.appendTextEntry(".")
                 
             case .eex:
-                state.startExpEntry()
+                entry.startExpEntry()
 
             case .sign:
-                state.flipTextSign()
+                entry.flipTextSign()
 
             case .back:
-                state.backspaceEntry()
+                entry.backspaceEntry()
                 
-                if !state.entryMode {
+                if !entry.entryMode {
                     // Exited entry mode
                     // Return false so .back is processed as a non entry mode undo
                     return false
@@ -663,7 +709,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.recordKeyFn(keyCode)
         }
         
-        if state.entryMode && EntryModeKeypress(keyCode) {
+        if entry.entryMode && EntryModeKeypress(keyCode) {
             // We are in Entry mode and this event has been processed and we stay in this mode
             return
         }
@@ -672,12 +718,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
             undoStack.push(state)
             state.stackLift()
-            state.startTextEntry( String(keyCode.rawValue) )
+            entry.startTextEntry( String(keyCode.rawValue) )
             
         case .dot:
             undoStack.push(state)
             state.stackLift()
-            state.startTextEntry( "0." )
+            entry.startTextEntry( "0." )
             
         case .back:
             // Undo last operation by restoring previous state
