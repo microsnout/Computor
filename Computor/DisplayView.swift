@@ -177,11 +177,16 @@ struct Display: View {
 
 // ************************************************************* //
 
+enum AuxDisp: Int {
+    case memoryList = 0, memoryDetail, auxList
+}
+
 struct MemoryDetailView: View {
     @StateObject var model: CalculatorModel
     @State private var editText = ""
     @FocusState private var nameFocused: Bool
-    @Binding var nameEdit: Bool
+    
+    @Binding var auxDisp: AuxDisp
         
     var index: Int
     var item: RowDataItem
@@ -200,7 +205,7 @@ struct MemoryDetailView: View {
             }
             .onSubmit {
                 model.renameMemoryItem(index: index, newName: editText)
-                nameEdit = false
+                auxDisp = .memoryList
             }
 
             TypedRegister( row: NoPrefix(item), size: .normal ).padding( .leading, 0)
@@ -209,16 +214,20 @@ struct MemoryDetailView: View {
 }
 
 
-struct MemoryDisplay: View {
+struct MemoryListView: View {
     @StateObject var model: CalculatorModel
+
+    @Binding var auxDisp: AuxDisp
+    @Binding var rowIndex: Int
     
-    let leadingOps: [(key: KeyCode, text: String, color: Color)]
+    let leadingOps: [(KeyCode, String, Color)] = [
+        ( .rcl,    "RCL", .mint ),
+        ( .sto,    "STO", .indigo ),
+        ( .mPlus,  "M+",  .cyan  ),
+        ( .mMinus, "M-",  .green )
+    ]
     
-    @State var nameEdit = false
-    @State private var rowIndex = 0
-    
-    @ViewBuilder
-    var memoryList: some View {
+    var body: some View {
         VStack {
             let rows = model.state.memoryList
             
@@ -235,25 +244,30 @@ struct MemoryDisplay: View {
                             let color = item.prefix != nil ? Color("DisplayText") : Color(.gray)
                             
                             HStack {
+                                // Memory name - tap to edit
                                 Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
                                     .onTapGesture {
                                         rowIndex = index
-                                        nameEdit = true
+                                        auxDisp = .memoryDetail
                                     }
                             }
                             
+                            // Memory value display
                             TypedRegister( row: NoPrefix(item), size: .small ).padding( .horizontal, 20)
                         }
                         .listRowSeparatorTint(.blue)
                         .frame( height: 30 )
                         .swipeActions( edge: .leading, allowsFullSwipe: true ) {
-                            ForEach ( leadingOps, id: \.key) { key, text, color in
+                            // Memory Op buttons on leading edge
+                            ForEach ( leadingOps.indices, id: \.self) { x in
+                                let (key, text, color): (KeyCode, String, Color) = leadingOps[x]
                                 Button {
                                     model.memoryOp( key: key, index: index )
                                 } label: { Text(text).bold() }.tint(color)
                             }
                         }
                         .swipeActions( edge: .trailing, allowsFullSwipe: false) {
+                            // Delete button on trailing edge
                             Button( role: .destructive) {
                                 model.delMemoryItems( set: IndexSet( [index] ))
                             } label: {
@@ -269,22 +283,47 @@ struct MemoryDisplay: View {
                 .padding( .top, 0)
             }
         }
+        .frame( maxWidth: .infinity, maxHeight: .infinity)
+        .background( Color("MemoryDisplay") )
+        .border(Color("Frame"), width: 3)
     }
+}
+
+
+struct AuxiliaryList: View {
+    @StateObject var model: CalculatorModel
+
+    @Binding var auxDisp: AuxDisp
+    
+    var body: some View {
+        VStack {
+            Rectangle()
+        }
+    }
+}
+
+
+struct AuxiliaryDisplay: View {
+    @StateObject var model: CalculatorModel
+    
+    @State var auxDisp: AuxDisp = .memoryList
+    @State var rowIndex = 0
 
     var body: some View {
         let rows = model.state.memoryList
         
-        if nameEdit {
-            MemoryDetailView( model: model, nameEdit: $nameEdit, index: rowIndex, item: rows[rowIndex])
+        switch auxDisp {
+        case .memoryList:
+            MemoryListView( model: model, auxDisp: $auxDisp, rowIndex: $rowIndex )
+            
+        case .memoryDetail:
+            MemoryDetailView( model: model, auxDisp: $auxDisp, index: rowIndex, item: rows[rowIndex])
                 .frame( maxWidth: .infinity, maxHeight: .infinity)
                 .background( Color("Display") )
                 .border(Color("Frame"), width: 3)
-        }
-        else {
-            memoryList
-                .frame( maxWidth: .infinity, maxHeight: .infinity)
-                .background( Color("MemoryDisplay") )
-                .border(Color("Frame"), width: 3)
+            
+        case .auxList:
+            AuxiliaryList( model: model, auxDisp: $auxDisp )
         }
     }
 }

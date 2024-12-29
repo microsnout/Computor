@@ -311,13 +311,6 @@ func initKeyLayout() {
 struct CalculatorView: View {
     @StateObject  var model = CalculatorModel()
     
-    let swipeLeadingOpTable: [(KeyCode, String, Color)] = [
-        ( .rcl,    "RCL", .mint ),
-        ( .sto,    "STO", .indigo ),
-        ( .mPlus,  "M+",  .cyan  ),
-        ( .mMinus, "M-",  .green )
-    ]
-    
     var body: some View {
         
         ZStack {
@@ -328,7 +321,7 @@ struct CalculatorView: View {
             KeyStack() {
                 NavigationStack {
                     VStack {
-                        MemoryDisplay( model: model, leadingOps: swipeLeadingOpTable )
+                        AuxiliaryDisplay( model: model )
                         
                         // App name and drag handle
                         HStack {
