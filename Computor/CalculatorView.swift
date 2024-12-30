@@ -163,6 +163,7 @@ func initKeyLayout() {
                         Key(.clrFn, "Clr"),
                         Key(.recFn, "Rec"),
                         Key(.stopFn, "Stop"),
+                        Key(.showFn, "Show"),
                        ],
                        fontSize: 14.0
     )

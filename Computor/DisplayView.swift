@@ -186,8 +186,6 @@ struct MemoryDetailView: View {
     @State private var editText = ""
     @FocusState private var nameFocused: Bool
     
-    @Binding var auxDisp: AuxDisp
-        
     var index: Int
     var item: RowDataItem
 
@@ -205,7 +203,7 @@ struct MemoryDetailView: View {
             }
             .onSubmit {
                 model.renameMemoryItem(index: index, newName: editText)
-                auxDisp = .memoryList
+                model.aux.mode = .memoryList
             }
 
             TypedRegister( row: NoPrefix(item), size: .normal ).padding( .leading, 0)
@@ -217,7 +215,6 @@ struct MemoryDetailView: View {
 struct MemoryListView: View {
     @StateObject var model: CalculatorModel
 
-    @Binding var auxDisp: AuxDisp
     @Binding var rowIndex: Int
     
     let leadingOps: [(KeyCode, String, Color)] = [
@@ -248,7 +245,7 @@ struct MemoryListView: View {
                                 Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
                                     .onTapGesture {
                                         rowIndex = index
-                                        auxDisp = .memoryDetail
+                                        model.aux.mode = .memoryDetail
                                     }
                             }
                             
@@ -293,11 +290,34 @@ struct MemoryListView: View {
 struct AuxiliaryList: View {
     @StateObject var model: CalculatorModel
 
-    @Binding var auxDisp: AuxDisp
-    
     var body: some View {
-        VStack {
-            Rectangle()
+        ScrollView {
+            VStack(spacing: 7) {
+                ForEach (model.aux.list.indices, id: \.self) { x in
+                    let kc = model.aux.list[x]
+                    if let key = Key.keyList[kc] {
+                        let str: String? = (key.text == nil ? model.getKeyText(kc) : key.text)
+                        
+                        if let txt = str {
+                            HStack {
+                                Text("`001 `").font(.system(size: 12)).foregroundColor(Color.gray)
+                                
+                                SubSuperScriptText(
+                                    inputString: txt,
+                                    bodyFont: .system( size: 12, design: .serif),
+                                    subScriptFont: .system( size: 8, design: .default),
+                                    baseLine: 6.0 )
+                                .bold()
+                                .foregroundColor(Color.black)
+                                
+                                Spacer()
+                            }
+                        }
+                    }
+                }
+            }
+            .padding([.leading, .trailing], 20)
+            .padding([.top, .bottom], 10)
         }
     }
 }
@@ -306,24 +326,26 @@ struct AuxiliaryList: View {
 struct AuxiliaryDisplay: View {
     @StateObject var model: CalculatorModel
     
-    @State var auxDisp: AuxDisp = .memoryList
     @State var rowIndex = 0
 
     var body: some View {
         let rows = model.state.memoryList
         
-        switch auxDisp {
+        switch model.aux.mode {
         case .memoryList:
-            MemoryListView( model: model, auxDisp: $auxDisp, rowIndex: $rowIndex )
+            MemoryListView( model: model, rowIndex: $rowIndex )
             
         case .memoryDetail:
-            MemoryDetailView( model: model, auxDisp: $auxDisp, index: rowIndex, item: rows[rowIndex])
+            MemoryDetailView( model: model, index: rowIndex, item: rows[rowIndex])
                 .frame( maxWidth: .infinity, maxHeight: .infinity)
                 .background( Color("Display") )
                 .border(Color("Frame"), width: 3)
             
-        case .auxList:
-            AuxiliaryList( model: model, auxDisp: $auxDisp )
+        case .fnList:
+            AuxiliaryList( model: model )
+                .frame( maxWidth: .infinity, maxHeight: .infinity)
+                .background( Color("Display") )
+                .border(Color("Frame"), width: 3)
         }
     }
 }

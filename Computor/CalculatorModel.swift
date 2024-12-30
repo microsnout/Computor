@@ -51,7 +51,7 @@ enum KeyCode: Int {
     case fn0 = 160, fn1, fn2, fn3, fn4, fn5, fn6
     
     // Macro Op
-    case macroOp = 170, clrFn, recFn, stopFn
+    case macroOp = 170, clrFn, recFn, stopFn, showFn
     
     case unitStart = 200
     
@@ -100,10 +100,21 @@ protocol StateOperator {
 }
 
 
+enum AuxDispMode: Int {
+    case memoryList = 0, memoryDetail, fnList
+}
+
+struct AuxState {
+    var mode: AuxDispMode = .memoryList
+    var list: [KeyCode] = []
+    
+}
+
 class CalculatorModel: ObservableObject, KeyPressHandler {
     // Current Calculator State
     @Published var state = CalcState()
     @Published var entry = EntryState()
+    @Published var aux   = AuxState()
     
     var undoStack = UndoStack()
 
@@ -680,6 +691,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 
             case .stopFn:
                 state.stopRecFn(kc)
+                
+            case .showFn:
+                if let fn = state.fnList[kc] {
+                    aux.list = fn.macro
+                    aux.mode = .fnList
+                }
 
             default:
                 break
