@@ -218,6 +218,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         undoStack.push(state)
         acceptTextEntry()
         state.memory.append( NamedValue( value: state.Xtv) )
+        aux.mode = .memoryList
     }
     
     func delMemoryItems( set: IndexSet) {
