@@ -108,7 +108,7 @@ enum AuxDispMode: Int {
 
 struct AuxState {
     var mode: AuxDispMode = .memoryList
-    var list: [KeyCode] = []
+    var list: [MacroOp] = []
     
     var kcRecording: KeyCode? = nil
     var recording: Bool { kcRecording != nil }
@@ -131,7 +131,7 @@ struct AuxState {
     mutating func recordKeyFn( _ kc: KeyCode ) {
         if recording
         {
-            list.append(kc)
+            list.append( MacroKey( kc: kc) )
         }
     }
     
@@ -143,6 +143,47 @@ struct AuxState {
             SubPadSpec.disableList.removeAll()
         }
     }
+}
+
+
+protocol MacroOp {
+    func execute( _ model: CalculatorModel )
+    
+    func getText( _ model: CalculatorModel ) -> String?
+}
+
+struct MacroKey: MacroOp {
+    var kc: KeyCode
+    
+    func execute( _ model: CalculatorModel ) {
+        model.keyPress( KeyEvent( kc: kc) )
+    }
+    
+    func getText( _ model: CalculatorModel ) -> String? {
+        if let key = Key.keyList[kc] {
+            return key.text == nil ? model.getKeyText(kc) : key.text
+        }
+        return nil
+    }
+}
+
+struct MacroValue: MacroOp {
+    var tv: TaggedValue
+    
+    func execute( _ model: CalculatorModel ) {
+        model.state.Xtv = tv
+    }
+    
+    func getText( _ model: CalculatorModel ) -> String? {
+        let str = String( format: "%f", tv.reg)
+        return str
+    }
+}
+
+
+struct FnRec {
+    var caption: String
+    var macro: [MacroOp] = []
 }
 
 class CalculatorModel: ObservableObject, KeyPressHandler {
@@ -158,6 +199,29 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     private var displayRows = 3
     
     var rowCount: Int { return displayRows}
+    
+    // **** Macro Recording Stuff ***
+    
+    var fnList: [KeyCode : FnRec] = [:]
+    
+    func setMacroFn( _ kc: KeyCode, _ list: [MacroOp] ) {
+        fnList[kc] = FnRec( caption: "Fn\(kc.rawValue % 10)", macro: list)
+    }
+    
+    func clearMacroFn( _ kc: KeyCode) {
+        fnList[kc] = nil
+    }
+    
+    func getMacroFn( _ kc: KeyCode ) -> [MacroOp]? {
+        if let fn = fnList[kc] {
+            return fn.macro
+        }
+        
+        return nil
+    }
+    
+    // *******
+    
     
     // Keycodes that are valid in data entry mode
     private let entryKeys:Set<KeyCode> = [.key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9, .dot, .sign, .back, .eex]
@@ -720,7 +784,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             switch event.kc {
             case .clrFn:
-                state.clearMacroFn(kc)
+                clearMacroFn(kc)
                 aux.stopRecFn(kc)
                 
             case .recFn:
@@ -728,12 +792,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 
             case .stopFn:
                 if aux.recording && !aux.list.isEmpty {
-                    state.setMacroFn(kc, aux.list)
+                    setMacroFn(kc, aux.list)
                 }
                 aux.stopRecFn(kc)
                 
             case .showFn:
-                if let fn = state.fnList[kc] {
+                if let fn = fnList[kc] {
                     aux.list = fn.macro
                     aux.mode = .fnList
                 }
@@ -746,7 +810,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             switch event.kc {
             case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
                 if aux.recording && !aux.list.isEmpty {
-                    state.setMacroFn(event.kc, aux.list)
+                    setMacroFn(event.kc, aux.list)
                 }
                 aux.stopRecFn(event.kc)
                 
@@ -826,9 +890,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.noLift = true
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
-            if let macro = state.getMacroFn(keyCode) {
-                for kc in macro {
-                    keyPress( KeyEvent( kc: kc))
+            if let macro = getMacroFn(keyCode) {
+                for op in macro {
+                    op.execute(self)
                 }
             }
 
@@ -883,7 +947,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     func getKeyText( _ kc: KeyCode ) -> String? {
-        if let fn = state.fnList[kc] {
+        if let fn = fnList[kc] {
             return fn.caption
         }
         

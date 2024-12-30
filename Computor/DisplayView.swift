@@ -295,28 +295,26 @@ struct AuxiliaryList: View {
             ScrollViewReader { proxy in
                 let list = model.aux.list
                 
+                let strList = list.map { op in op.getText(model) ?? "" }
+                
                 VStack(spacing: 7) {
-                    ForEach (list.indices, id: \.self) { x in
-                        let kc = model.aux.list[x]
-                        if let key = Key.keyList[kc] {
-                            let str: String? = (key.text == nil ? model.getKeyText(kc) : key.text)
+                    ForEach (strList.indices, id: \.self) { x in
+                        
+                        let txt = strList[x]
+                        
+                        HStack {
+                            let line = String( format: "%3d ", x)
+                            Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)
                             
-                            if let txt = str {
-                                HStack {
-                                    let line = String( format: "%3d ", x)
-                                    Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)
-                                    
-                                    SubSuperScriptText(
-                                        inputString: txt,
-                                        bodyFont: .system( size: 12, design: .serif),
-                                        subScriptFont: .system( size: 8, design: .default),
-                                        baseLine: 6.0 )
-                                    .bold()
-                                    .foregroundColor(Color.black)
-                                    
-                                    Spacer()
-                                }
-                            }
+                            SubSuperScriptText(
+                                inputString: txt,
+                                bodyFont: .system( size: 12, design: .serif),
+                                subScriptFont: .system( size: 8, design: .default),
+                                baseLine: 6.0 )
+                            .bold()
+                            .foregroundColor(Color.black)
+                            
+                            Spacer()
                         }
                     }
                     .onChange( of: list.indices.count ) {

@@ -85,11 +85,6 @@ struct RegisterRow: RowDataItem {
     var suffix: String?
 }
 
-struct FnRec {
-    var caption: String
-    var macro: [KeyCode] = []
-}
-
 struct CalcState {
     /// Defines the exact state of the calculator at a given time
     ///
@@ -97,24 +92,6 @@ struct CalcState {
     var lastX: TaggedValue = untypedZero
     var noLift: Bool = false
     var memory = [NamedValue]()
-    
-    var fnList: [KeyCode : FnRec] = [:]
-    
-    mutating func setMacroFn( _ kc: KeyCode, _ list: [KeyCode] ) {
-        fnList[kc] = FnRec( caption: "Fn\(kc.rawValue % 10)", macro: list)
-    }
-    
-    mutating func clearMacroFn( _ kc: KeyCode) {
-        fnList[kc] = nil
-    }
-    
-    func getMacroFn( _ kc: KeyCode ) -> [KeyCode]? {
-        if let fn = fnList[kc] {
-            return fn.macro
-        }
-        
-        return nil
-    }
     
     static let defaultFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )
