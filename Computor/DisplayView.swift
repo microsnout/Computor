@@ -292,32 +292,42 @@ struct AuxiliaryList: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 7) {
-                ForEach (model.aux.list.indices, id: \.self) { x in
-                    let kc = model.aux.list[x]
-                    if let key = Key.keyList[kc] {
-                        let str: String? = (key.text == nil ? model.getKeyText(kc) : key.text)
-                        
-                        if let txt = str {
-                            HStack {
-                                Text("`001 `").font(.system(size: 12)).foregroundColor(Color.gray)
-                                
-                                SubSuperScriptText(
-                                    inputString: txt,
-                                    bodyFont: .system( size: 12, design: .serif),
-                                    subScriptFont: .system( size: 8, design: .default),
-                                    baseLine: 6.0 )
-                                .bold()
-                                .foregroundColor(Color.black)
-                                
-                                Spacer()
+            ScrollViewReader { proxy in
+                let list = model.aux.list
+                
+                VStack(spacing: 7) {
+                    ForEach (list.indices, id: \.self) { x in
+                        let kc = model.aux.list[x]
+                        if let key = Key.keyList[kc] {
+                            let str: String? = (key.text == nil ? model.getKeyText(kc) : key.text)
+                            
+                            if let txt = str {
+                                HStack {
+                                    let line = String( format: "%3d ", x)
+                                    Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)
+                                    
+                                    SubSuperScriptText(
+                                        inputString: txt,
+                                        bodyFont: .system( size: 12, design: .serif),
+                                        subScriptFont: .system( size: 8, design: .default),
+                                        baseLine: 6.0 )
+                                    .bold()
+                                    .foregroundColor(Color.black)
+                                    
+                                    Spacer()
+                                }
                             }
                         }
                     }
+                    .onChange( of: list.indices.count ) {
+                        if list.count > 1 {
+                            proxy.scrollTo( list.indices[list.endIndex - 1] )
+                        }
+                    }
                 }
+                .padding([.leading, .trailing], 20)
+                .padding([.top, .bottom], 10)
             }
-            .padding([.leading, .trailing], 20)
-            .padding([.top, .bottom], 10)
         }
     }
 }

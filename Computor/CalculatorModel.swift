@@ -77,6 +77,8 @@ enum KeyCode: Int {
     var isMacroOp: Bool { return Int(self.rawValue / 10) == 17 }
 }
 
+let fnSet:Set<KeyCode> = [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6]
+
 
 struct UndoStack {
     private let maxItems = 12
@@ -108,6 +110,39 @@ struct AuxState {
     var mode: AuxDispMode = .memoryList
     var list: [KeyCode] = []
     
+    var kcRecording: KeyCode? = nil
+    var recording: Bool { kcRecording != nil }
+    
+    mutating func startRecFn( _ kc: KeyCode ) {
+        if fnSet.contains(kc) && kcRecording == nil {
+            kcRecording = kc
+            list = []
+            mode = .fnList
+            
+            // Disable all Fn keys except the one recording
+            for key in fnSet {
+                if key != kc {
+                    SubPadSpec.disableList.insert(key)
+                }
+            }
+        }
+    }
+    
+    mutating func recordKeyFn( _ kc: KeyCode ) {
+        if recording
+        {
+            list.append(kc)
+        }
+    }
+    
+    mutating func stopRecFn( _ kc: KeyCode ) {
+        if kc == kcRecording {
+            kcRecording = nil
+            list = []
+            mode = .memoryList
+            SubPadSpec.disableList.removeAll()
+        }
+    }
 }
 
 class CalculatorModel: ObservableObject, KeyPressHandler {
@@ -684,13 +719,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             switch event.kc {
             case .clrFn:
-                state.clearFn(kc)
+                state.clearMacroFn(kc)
+                aux.stopRecFn(kc)
                 
             case .recFn:
-                state.startRecFn(kc)
+                aux.startRecFn(kc)
                 
             case .stopFn:
-                state.stopRecFn(kc)
+                if aux.recording && !aux.list.isEmpty {
+                    state.setMacroFn(kc, aux.list)
+                }
+                aux.stopRecFn(kc)
                 
             case .showFn:
                 if let fn = state.fnList[kc] {
@@ -705,7 +744,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         else {
             switch event.kc {
             case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
-                state.stopRecFn(event.kc)
+                if aux.recording && !aux.list.isEmpty {
+                    state.setMacroFn(event.kc, aux.list)
+                }
+                aux.stopRecFn(event.kc)
                 
             default:
                 break
@@ -723,7 +765,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         let keyCode = event.kc
         
         if keyCode != .back {
-            state.recordKeyFn(keyCode)
+            aux.recordKeyFn(keyCode)
         }
         
         if entry.entryMode && EntryModeKeypress(keyCode) {
@@ -850,8 +892,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func isKeyRecording( _ kc: KeyCode = .null ) -> Bool {
         if kc == .null {
-            return state.kcRecording != nil
+            return aux.kcRecording != nil
         }
-        return state.kcRecording == kc
+        return aux.kcRecording == kc
     }
 }

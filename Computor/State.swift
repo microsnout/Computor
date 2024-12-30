@@ -99,54 +99,13 @@ struct CalcState {
     var memory = [NamedValue]()
     
     var fnList: [KeyCode : FnRec] = [:]
-    var kcRecording: KeyCode? = nil
     
-    var recording: Bool { kcRecording != nil }
-    
-    private let fnSet:Set<KeyCode> = [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6]
-    
-    mutating func startRecFn( _ kc: KeyCode ) {
-        if fnSet.contains(kc) && kcRecording == nil {
-            if var fn = fnList[kc] {
-                fn.macro.removeAll()
-            }
-            else {
-                fnList[kc] = FnRec( caption: "Fn\(kc.rawValue % 10)")
-            }
-            
-            kcRecording = kc
-            
-            // Disable all Fn keys except the one recording
-            for key in fnSet {
-                if key != kc {
-                    SubPadSpec.disableList.insert(key)
-                }
-            }
-        }
+    mutating func setMacroFn( _ kc: KeyCode, _ list: [KeyCode] ) {
+        fnList[kc] = FnRec( caption: "Fn\(kc.rawValue % 10)", macro: list)
     }
     
-    mutating func recordKeyFn( _ kc: KeyCode ) {
-        if let kcFn = kcRecording,
-           var _ = fnList[kcFn]
-        {
-            fnList[kcFn]?.macro.append(kc)
-        }
-    }
-    
-    mutating func stopRecFn( _ kc: KeyCode ) {
-        if kc == kcRecording {
-            kcRecording = nil
-            
-            SubPadSpec.disableList.removeAll()
-        }
-    }
-    
-    mutating func clearFn( _ kc: KeyCode ) {
-        if kc == kcRecording || kcRecording == nil {
-            fnList[kc] = nil
-            
-            SubPadSpec.disableList.removeAll()
-        }
+    mutating func clearMacroFn( _ kc: KeyCode) {
+        fnList[kc] = nil
     }
     
     func getMacroFn( _ kc: KeyCode ) -> [KeyCode]? {
