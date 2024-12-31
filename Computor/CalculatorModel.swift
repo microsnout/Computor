@@ -73,11 +73,13 @@ enum KeyCode: Int {
     case unitEnd = 299
     
     var isUnit: Bool { return self.rawValue > KeyCode.unitStart.rawValue && self.rawValue < KeyCode.unitEnd.rawValue }
-    
-    var isMacroOp: Bool { return Int(self.rawValue / 10) == 17 }
 }
 
+let digitSet:Set<KeyCode> = [.key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9]
+
 let fnSet:Set<KeyCode> = [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6]
+
+let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .showFn]
 
 
 struct UndoStack {
@@ -132,6 +134,13 @@ struct AuxState {
         if recording
         {
             list.append( MacroKey( kc: kc) )
+        }
+    }
+    
+    mutating func recordValueFn( _ tv: TaggedValue ) {
+        if recording
+        {
+            list.append( MacroValue( tv: tv) )
         }
     }
     
@@ -698,19 +707,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             }
             
             state.stack[regX].value = tv
+            aux.recordValueFn(tv)
             entry.clearEntry()
         }
     }
 
     
-    func EntryModeKeypress(_ keyCode: KeyCode ) -> Bool {
-        if !entryKeys.contains(keyCode) {
-            // Any key other than valid Entry mode keys cause en exit from the mode
-            // with acceptance of the entered value
-            acceptTextEntry()
-            return false
-        }
-        
+    func EntryModeKeypress(_ keyCode: KeyCode ) {
         if entry.exponentEntry {
             switch keyCode {
             case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
@@ -766,8 +769,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 
                 if !entry.entryMode {
                     // Exited entry mode
-                    // Return false so .back is processed as a non entry mode undo
-                    return false
+                    // We backspace/undo out of entry mode - need to pop stack
+                    // to restore state before entry mode
+                    if let lastState = undoStack.pop() {
+                        state = lastState
+                    }
                 }
 
             default:
@@ -775,8 +781,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 break
             }
         }
-        
-        return true
     }
     
     func macroKeypress( _ event: KeyEvent ) {
@@ -822,33 +826,48 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     func keyPress(_ event: KeyEvent) {
-        if event.kc.isMacroOp || isKeyRecording(event.kc) {
+        let keyCode = event.kc
+        
+        if macroOpSet.contains(keyCode) || isKeyRecording(event.kc) {
+            // Macro recording control key or the Fn key currently recording
             macroKeypress(event)
             return
         }
         
-        let keyCode = event.kc
-        
-        if keyCode != .back {
-            aux.recordKeyFn(keyCode)
+        if entry.entryMode {
+            // We are in data entry mode
+            if entryKeys.contains(keyCode) {
+                // Process data entry event
+                EntryModeKeypress(keyCode)
+                return
+            }
+            
+            // Any key other than valid Entry mode keys cause en exit from the mode
+            // with acceptance of the entered value, followed by regular processing of key
+            acceptTextEntry()
         }
         
-        if entry.entryMode && EntryModeKeypress(keyCode) {
-            // We are in Entry mode and this event has been processed and we stay in this mode
-            return
-        }
-        
-        switch keyCode {
-        case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
+        if digitSet.contains(keyCode) {
+            // Start data entry with a digit
             undoStack.push(state)
             state.stackLift()
             entry.startTextEntry( String(keyCode.rawValue) )
-            
-        case .dot:
+            return
+        }
+        else if keyCode == .dot {
+            // Start data entry with a decimal point
             undoStack.push(state)
             state.stackLift()
             entry.startTextEntry( "0." )
-            
+            return
+        }
+
+        if keyCode != .back {
+            // Record all keys except back/undo and data entry keys
+            aux.recordKeyFn(keyCode)
+        }
+        
+        switch keyCode {
         case .back:
             // Undo last operation by restoring previous state
             if let lastState = undoStack.pop() {
