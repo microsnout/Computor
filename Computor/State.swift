@@ -23,8 +23,6 @@ enum FormatStyle : UInt {
     // These values match raw values with NumberFormater.Style
     case none = 0
     case decimal = 1
-    case currency = 2
-    case percent = 3
     case scientific = 4
     
     // These are custom extension values
@@ -93,10 +91,8 @@ struct CalcState {
     var noLift: Bool = false
     var memory = [NamedValue]()
     
-    static let defaultFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
+    static let defaultDecFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )
-    static let defaultPercentFormat: FormatRec = FormatRec( style: .percent, digits: 2 )
-    static let defaultCurrencyFormat: FormatRec = FormatRec( style: .currency, digits: 2, minDigits: 2 )
 
     
     mutating func convertX( toTag: TypeTag ) -> Bool {

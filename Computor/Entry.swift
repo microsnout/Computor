@@ -67,7 +67,7 @@ struct EntryState {
             
             tv.reg = value
             tv.tag = tagUntyped
-            tv.fmt = CalcState.defaultFormat
+            tv.fmt = CalcState.defaultDecFormat
         }
         
         return tv

@@ -32,7 +32,7 @@ enum KeyCode: Int {
     
     case dot = 20, enter, clX, clY, clZ, clReg, back, sign, eex
     
-    case fixL = 30, fixR, roll, xy, xz, yz, lastx
+    case fixL = 30, fixR, roll, xy, xz, yz, lastx, percent
     
     case y2x = 40, inv, x2, sqrt
     
@@ -43,7 +43,7 @@ enum KeyCode: Int {
     case tenExp = 90, eExp, e
     
     // Format
-    case fix = 120, sci, eng, percent, currency
+    case fix = 120, sci, eng
     
     case null = 150, noop, rcl, sto, mPlus, mMinus
     
@@ -488,7 +488,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             s1.stackLift()
             s1.X = self.value
             s1.Xt = self.tag
-            s1.Xfmt = CalcState.defaultFormat
+            s1.Xfmt = CalcState.defaultDecFormat
             return s1
         }
     }
@@ -872,10 +872,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .sci:
             undoStack.push(state)
             state.Xfmt.style = .scientific
-            
-        case .currency:
-            undoStack.push(state)
-            state.Xfmt = CalcState.defaultCurrencyFormat
             
         case .clX:
             // Clear X register

@@ -51,7 +51,7 @@ struct MonoText: View {
             let chSeq = Array(self.content)
             ForEach(0..<self.content.count, id: \.self) { index in
                 let ch = chSeq[index]
-                let cw = ch == "%" ? self.charWidth + 5 : self.charWidth
+                let cw = self.charWidth
                 Text( String(ch))
                     .font(font)
                     .foregroundColor(Color("DisplayText")).frame(width: cw)

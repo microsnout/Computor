@@ -141,7 +141,7 @@ let psFormatL = PadSpec (
     cols: 3,
     keys: [ Key(.fix, "fix"),
             Key(.sci, "sci"),
-            Key(.dms, "dms"),
+            Key(.noop),
         ],
     fontSize: 14.0
 )
@@ -149,7 +149,7 @@ let psFormatL = PadSpec (
 let psFormatR = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
-    keys: [ Key(.currency, "$"),
+    keys: [ Key(.noop),
             Key(.fixL, ".00\u{2190}", fontSize: 12.0),
             Key(.fixR, ".00\u{2192}", fontSize: 12.0),
         ],
