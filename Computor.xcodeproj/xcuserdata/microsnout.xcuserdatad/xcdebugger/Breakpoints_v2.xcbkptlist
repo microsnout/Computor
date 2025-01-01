@@ -30,8 +30,8 @@
             filePath = "Computor/CalculatorModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "953"
-            endingLineNumber = "953"
+            startingLineNumber = "928"
+            endingLineNumber = "928"
             landmarkName = "keyPress(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -78,8 +78,8 @@
             filePath = "Computor/CalculatorModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "912"
-            endingLineNumber = "912"
+            startingLineNumber = "887"
+            endingLineNumber = "887"
             landmarkName = "keyPress(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -94,8 +94,8 @@
             filePath = "Computor/CalculatorModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "798"
-            endingLineNumber = "798"
+            startingLineNumber = "773"
+            endingLineNumber = "773"
             landmarkName = "macroKeypress(_:)"
             landmarkType = "7">
          </BreakpointContent>

@@ -677,35 +677,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     func acceptTextEntry() {
-        if entry.entryMode {
-            var num: String = entry.entryText
-            
-            logM.debug( "AcceptTextEntry: \(num)")
-            
-            if entry.exponentEntry {
-                /// Eliminate 'x10'
-                num.removeLast(3)
-            }
-            
-            // Remove all commas
-            num.removeAll( where: { $0 == "," })
-
-            var tv: TaggedValue = untypedZero
-            
-            if entry.exponentEntry && !entry.exponentText.isEmpty {
-                /// Exponential entered
-                let str: String = num + "E" + entry.exponentText
-                
-                tv.reg = Double(str)!
-                tv.tag = tagUntyped
-                tv.fmt = CalcState.defaultSciFormat
-            }
-            else {
-                tv.reg = Double(num)!
-                tv.tag = tagUntyped
-                tv.fmt = CalcState.defaultFormat
-            }
-            
+        if let tv = entry.makeTaggedValue() {
+            // Store tagged value in X reg
+            // Record data entry if recording
+            // and clear data entry state
             state.stack[regX].value = tv
             aux.recordValueFn(tv)
             entry.clearEntry()

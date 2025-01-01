@@ -26,6 +26,52 @@ struct EntryState {
     var exponentText: String = ""
     
     let digits: Set<Character> = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    
+    
+    func makeTaggedValue() -> TaggedValue? {
+        /// Create a TaggedValue from data entry fields
+        ///
+        guard entryMode else {
+            // Not in data entry mode, no valid value
+            return nil
+        }
+        
+        var num: String = entryText
+        
+        if exponentEntry {
+            /// Eliminate 'x10'
+            num.removeLast(3)
+        }
+        
+        // Remove all commas
+        num.removeAll( where: { $0 == "," })
+
+        var tv: TaggedValue = untypedZero
+        
+        if exponentEntry && !exponentText.isEmpty {
+            /// Exponential entered
+            let str: String = num + "E" + exponentText
+            
+            guard let value = Double(str) else {
+                return nil
+            }
+            
+            tv.reg = value
+            tv.tag = tagUntyped
+            tv.fmt = CalcState.defaultSciFormat
+        }
+        else {
+            guard let value = Double(num) else {
+                return nil
+            }
+            
+            tv.reg = value
+            tv.tag = tagUntyped
+            tv.fmt = CalcState.defaultFormat
+        }
+        
+        return tv
+    }
 
     // *** Data Entry Functions ***
     
@@ -86,6 +132,7 @@ struct EntryState {
                 let commaCount = (digitCount - 1) / 3
                 
                 for ix in 1...commaCount {
+                    // The next line is crazy but it works
                     seq.insert(",", at: (digitCount-1) % 3 + 1 + (ix-1)*4 )
                 }
                 
