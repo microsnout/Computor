@@ -46,6 +46,10 @@ struct TaggedValue {
     var uid: UnitId { self.tag.uid }
     var tid: TypeId { self.tag.tid }
     
+    func isType( _ tt: TypeTag ) -> Bool {
+        return tag == tt
+    }
+
     func isUnit( _ uid: UnitId ) -> Bool {
         return self.tag.uid == uid
     }
@@ -54,6 +58,51 @@ struct TaggedValue {
         self.tag = tag
         self.reg = reg
         self.fmt = format
+    }
+    
+    func getRegisterRow() -> RegisterRow {
+        if isType(tagNone) {
+            return RegisterRow( register: "-")
+        }
+        
+        if fmt.style == .angleDMS {
+            // Degrees Minutes Seconds angle display
+            let neg = reg < 0.0 ? -1.0 : 1.0
+            let angle = abs(reg) + 0.0000001
+            let deg = floor(angle)
+            let min = floor((angle - deg) * 60.0)
+            let sec = ((angle - deg)*60.0 - min) * 60.0
+            
+            let str = String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
+            
+            return RegisterRow( register: str)
+        }
+        else if let nfStyle = NumberFormatter.Style(rawValue: fmt.style.rawValue) {
+            
+            let nf = NumberFormatter()
+            nf.numberStyle = nfStyle
+            nf.minimumFractionDigits = fmt.minDigits
+            nf.maximumFractionDigits = fmt.digits
+            
+            let str = nf.string(for: reg) ?? ""
+            
+            let strParts = str.split( separator: "E" )
+            
+            if strParts.count == 2 {
+                return RegisterRow(
+                    register: String(strParts[0]) + "x10",
+                    exponent: String(strParts[1]),
+                    suffix: tag.symbol)
+            }
+            else {
+                return RegisterRow(
+                    register: String(strParts[0]),
+                    suffix: tag.symbol)
+            }
+        }
+        else {
+            return RegisterRow( register: "Unknown Fmt Style" )
+        }
     }
 }
 
@@ -71,6 +120,12 @@ struct NamedValue {
     init(_ name: String? = nil, value: TaggedValue ) {
         self.name = name
         self.value = value
+    }
+    
+    func getRegisterRow() -> RegisterRow {
+        var rr = value.getRegisterRow()
+        rr.prefix = name
+        return rr
     }
 }
 
@@ -105,59 +160,8 @@ struct CalcState {
         return false
     }
     
-    private func regRow( _ nv: NamedValue ) -> RegisterRow {
-        if nv.isType(tagNone) {
-            return RegisterRow( prefix: nv.name, register: "-")
-        }
-        
-        let fmt = nv.value.fmt
-        
-        if fmt.style == .angleDMS {
-            // Degrees Minutes Seconds angle display
-            let neg = nv.value.reg < 0.0 ? -1.0 : 1.0
-            let angle = abs(nv.value.reg) + 0.0000001
-            let deg = floor(angle)
-            let min = floor((angle - deg) * 60.0)
-            let sec = ((angle - deg)*60.0 - min) * 60.0
-            
-            let str = String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
-            
-            return RegisterRow(
-                prefix: nv.name,
-                register: str)
-        }
-        else if let nfStyle = NumberFormatter.Style(rawValue: fmt.style.rawValue) {
-            
-            let nf = NumberFormatter()
-            nf.numberStyle = nfStyle
-            nf.minimumFractionDigits = fmt.minDigits
-            nf.maximumFractionDigits = fmt.digits
-            
-            let str = nf.string(for: nv.value.reg) ?? ""
-            
-            let strParts = str.split( separator: "E" )
-            
-            if strParts.count == 2 {
-                return RegisterRow(
-                    prefix: nv.name,
-                    register: String(strParts[0]) + "x10",
-                    exponent: String(strParts[1]),
-                    suffix: nv.value.tag.symbol)
-            }
-            else {
-                return RegisterRow(
-                    prefix: nv.name,
-                    register: String(strParts[0]),
-                    suffix: nv.value.tag.symbol)
-            }
-        }
-        else {
-            return RegisterRow( prefix: nv.name, register: "Unknown Fmt Style" )
-        }
-    }
-    
     func stackRow( _ index: Int ) -> RegisterRow {
-        return regRow( self.stack[index] )
+        return self.stack[index].getRegisterRow()
     }
     
     func memoryRow( _ index: Int ) -> RegisterRow {
@@ -165,7 +169,7 @@ struct CalcState {
             return RegisterRow( register: "Error" )
         }
         
-        return regRow( self.memory[index] )
+        return self.memory[index].getRegisterRow()
     }
     
     var memoryList: [RegisterRow] {
