@@ -158,7 +158,11 @@ struct AuxState {
 protocol MacroOp {
     func execute( _ model: CalculatorModel )
     
+    var auxListMode: AuxListMode { get }
+    
     func getText( _ model: CalculatorModel ) -> String?
+    
+    func getRowData( _ model: CalculatorModel ) -> RowDataItem?
 }
 
 struct MacroKey: MacroOp {
@@ -168,12 +172,16 @@ struct MacroKey: MacroOp {
         model.keyPress( KeyEvent( kc: kc) )
     }
     
+    var auxListMode: AuxListMode { return .auxListSubSuper }
+    
     func getText( _ model: CalculatorModel ) -> String? {
         if let key = Key.keyList[kc] {
             return key.text == nil ? model.getKeyText(kc) : key.text
         }
         return nil
     }
+    
+    func getRowData( _ model: CalculatorModel ) -> RowDataItem? { return nil }
 }
 
 struct MacroValue: MacroOp {
@@ -183,9 +191,15 @@ struct MacroValue: MacroOp {
         model.state.Xtv = tv
     }
     
+    var auxListMode: AuxListMode { return .auxListTaggedValue }
+
     func getText( _ model: CalculatorModel ) -> String? {
         let str = String( format: "%f", tv.reg)
         return str
+    }
+    
+    func getRowData( _ model: CalculatorModel ) -> RowDataItem? {
+        return tv.getRegisterRow()
     }
 }
 

@@ -287,6 +287,10 @@ struct MemoryListView: View {
 }
 
 
+enum AuxListMode: Int {
+    case auxListSubSuper = 0, auxListTaggedValue
+}
+
 struct AuxiliaryList: View {
     @StateObject var model: CalculatorModel
 
@@ -295,26 +299,40 @@ struct AuxiliaryList: View {
             ScrollViewReader { proxy in
                 let list = model.aux.list
                 
-                let strList = list.map { op in op.getText(model) ?? "" }
-                
                 VStack(spacing: 7) {
-                    ForEach (strList.indices, id: \.self) { x in
+                    ForEach (list.indices, id: \.self) { x in
+                        let op: MacroOp = list[x]
                         
-                        let txt = strList[x]
-                        
-                        HStack {
-                            let line = String( format: "%3d ", x)
-                            Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)
+                        switch op.auxListMode {
+                        case .auxListSubSuper:
+                            let txt = op.getText(model) ?? ""
                             
-                            SubSuperScriptText(
-                                inputString: txt,
-                                bodyFont: .system( size: 12, design: .serif),
-                                subScriptFont: .system( size: 8, design: .default),
-                                baseLine: 6.0 )
-                            .bold()
-                            .foregroundColor(Color.black)
+                            HStack {
+                                let line = String( format: "%3d ", x)
+                                Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)
+                                
+                                SubSuperScriptText(
+                                    inputString: txt,
+                                    bodyFont: .system( size: 12, design: .serif),
+                                    subScriptFont: .system( size: 8, design: .default),
+                                    baseLine: 6.0 )
+                                .bold()
+                                .foregroundColor(Color.black)
+                                
+                                Spacer()
+                            }
                             
-                            Spacer()
+                        case .auxListTaggedValue:
+                            let row = op.getRowData(model)!
+                            
+                            HStack {
+                                let line = String( format: "%3d ", x)
+                                Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)
+                                
+                                TypedRegister( row: row, size: .small )
+                                Spacer()
+                            }
+
                         }
                     }
                     .onChange( of: list.indices.count ) {
