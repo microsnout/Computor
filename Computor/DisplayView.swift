@@ -293,7 +293,7 @@ enum AuxListMode: Int {
     case auxListSubSuper = 0, auxListTaggedValue
 }
 
-struct AuxiliaryList: View {
+struct MacroListView: View {
     @StateObject var model: CalculatorModel
 
     var body: some View {
@@ -368,8 +368,8 @@ struct AuxiliaryDisplay: View {
                 .background( Color("Display") )
                 .border(Color("Frame"), width: 3)
             
-        case .fnList:
-            AuxiliaryList( model: model )
+        case .macroList:
+            MacroListView( model: model )
                 .frame( maxWidth: .infinity, maxHeight: .infinity)
                 .background( Color("Display") )
                 .border(Color("Frame"), width: 3)

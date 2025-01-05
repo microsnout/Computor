@@ -121,7 +121,7 @@ protocol StateOperator {
 
 
 enum AuxDispMode: Int {
-    case memoryList = 0, memoryDetail, fnList
+    case memoryList = 0, memoryDetail, macroList
 }
 
 struct AuxState {
@@ -144,7 +144,7 @@ struct AuxState {
         if fnSet.contains(kc) && kcRecording == nil {
             kcRecording = kc
             list = []
-            mode = .fnList
+            mode = .macroList
             
             // Disable all Fn keys except the one recording
             for key in fnSet {
@@ -846,7 +846,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             case .showFn:
                 if let fn = fnList[kc] {
                     aux.list = fn.macro
-                    aux.mode = .fnList
+                    aux.mode = .macroList
                 }
 
             default:
