@@ -85,16 +85,32 @@ let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .showFn]
 struct UndoStack {
     private let maxItems = 12
     private var storage = [CalcState]()
+    private var pauseCount: Int = 0
     
     mutating func push(_ state: CalcState ) {
-        storage.append(state)
-        if storage.count > maxItems {
-            storage.removeFirst()
+        if pauseCount == 0 {
+            storage.append(state)
+            
+            if storage.count > maxItems {
+                storage.removeFirst()
+            }
         }
     }
     
     mutating func pop() -> CalcState? {
-        storage.popLast()
+        if pauseCount == 0 {
+            return storage.popLast()
+        }
+        
+        return nil
+    }
+    
+    mutating func pauseStack() {
+        pauseCount += 1
+    }
+
+    mutating func resumeStack() {
+        pauseCount -= 1
     }
 }
 
@@ -114,6 +130,15 @@ struct AuxState {
     
     var kcRecording: KeyCode? = nil
     var recording: Bool { kcRecording != nil }
+    var pauseCount: Int = 0
+    
+    mutating func pauseRecording() {
+        pauseCount += 1
+    }
+
+    mutating func resumeRecording() {
+        pauseCount -= 1
+    }
     
     mutating func startRecFn( _ kc: KeyCode ) {
         if fnSet.contains(kc) && kcRecording == nil {
@@ -131,9 +156,34 @@ struct AuxState {
     }
     
     mutating func recordKeyFn( _ kc: KeyCode ) {
+        if pauseCount > 0 {
+            return
+        }
+        
         if recording
         {
+            // Fold unit keys into value on stack if possible
+            if kc.isUnit {
+                if let last = list.last,
+                   let value = last as? MacroValue
+                {
+                    if value.tv.tag == tagUntyped {
+                        if let tag = TypeDef.kcDict[kc] {
+                            var tv = value.tv
+                            list.removeLast()
+                            tv.tag = tag
+                            list.append( MacroValue( tv: tv))
+                            return
+                        }
+                    }
+                }
+            }
+            
             list.append( MacroKey( kc: kc) )
+            
+            let ix = list.indices
+            
+            logM.debug("recordKey: \(ix)")
         }
     }
     
@@ -188,7 +238,9 @@ struct MacroValue: MacroOp {
     var tv: TaggedValue
     
     func execute( _ model: CalculatorModel ) {
+        model.state.stackLift()
         model.state.Xtv = tv
+        model.state.noLift = false
     }
     
     var auxListMode: AuxListMode { return .auxListTaggedValue }
@@ -781,6 +833,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 aux.stopRecFn(kc)
                 
             case .recFn:
+                // Accept data entry before starting recording to avoid recording the entry
+                acceptTextEntry()
                 aux.startRecFn(kc)
                 
             case .stopFn:
@@ -895,9 +949,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
             if let macro = getMacroFn(keyCode) {
+                undoStack.push(state)
+                
+                // Don't maintain undo stack during playback ops
+                undoStack.pauseStack()
+                aux.pauseRecording()
                 for op in macro {
                     op.execute(self)
                 }
+                aux.resumeRecording()
+                undoStack.resumeStack()
             }
 
         default:

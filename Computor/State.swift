@@ -149,7 +149,6 @@ struct CalcState {
     static let defaultDecFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )
 
-    
     mutating func convertX( toTag: TypeTag ) -> Bool {
         if let seq = unitConvert( from: Xt, to: toTag ) {
             Xtv = TaggedValue( toTag, seq.op(X) )

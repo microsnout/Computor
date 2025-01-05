@@ -49,9 +49,11 @@ struct MonoText: View {
     var body: some View {
         HStack( alignment: self.alignment, spacing: 0 ) {
             let chSeq = Array(self.content)
+            
             ForEach(0..<self.content.count, id: \.self) { index in
                 let ch = chSeq[index]
                 let cw = self.charWidth
+                
                 Text( String(ch))
                     .font(font)
                     .foregroundColor(Color("DisplayText")).frame(width: cw)
@@ -302,13 +304,13 @@ struct AuxiliaryList: View {
                 VStack(spacing: 7) {
                     ForEach (list.indices, id: \.self) { x in
                         let op: MacroOp = list[x]
-                        
+                        let line = String( format: "%3d ", x+1)
+
                         switch op.auxListMode {
                         case .auxListSubSuper:
                             let txt = op.getText(model) ?? ""
-                            
+
                             HStack {
-                                let line = String( format: "%3d ", x)
                                 Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)
                                 
                                 SubSuperScriptText(
@@ -326,7 +328,6 @@ struct AuxiliaryList: View {
                             let row = op.getRowData(model)!
                             
                             HStack {
-                                let line = String( format: "%3d ", x)
                                 Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)
                                 
                                 TypedRegister( row: row, size: .small )
