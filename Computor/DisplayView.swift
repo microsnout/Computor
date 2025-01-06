@@ -325,7 +325,8 @@ struct MacroListView: View {
                             }
                             
                         case .auxListTaggedValue:
-                            let row = op.getRowData(model)!
+                            
+                            let row = op.getRowData()!
                             
                             HStack {
                                 Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)

@@ -204,61 +204,39 @@ struct AuxState {
     }
 }
 
-
-protocol MacroOp {
-    func execute( _ model: CalculatorModel )
-    
-    var auxListMode: AuxListMode { get }
-    
-    func getText( _ model: CalculatorModel ) -> String?
-    
-    func getRowData( _ model: CalculatorModel ) -> RowDataItem?
-}
-
 struct MacroKey: MacroOp {
     var kc: KeyCode
     
-    func execute( _ model: CalculatorModel ) {
-        model.keyPress( KeyEvent( kc: kc) )
+    func execute( _ keypressHandler: KeyPressHandler ) {
+        keypressHandler.keyPress( KeyEvent( kc: kc) )
     }
     
     var auxListMode: AuxListMode { return .auxListSubSuper }
     
-    func getText( _ model: CalculatorModel ) -> String? {
+    func getText( _ keypressHandler: KeyPressHandler ) -> String? {
         if let key = Key.keyList[kc] {
-            return key.text == nil ? model.getKeyText(kc) : key.text
+            return key.text == nil ? keypressHandler.getKeyText(kc) : key.text
         }
         return nil
     }
     
-    func getRowData( _ model: CalculatorModel ) -> RowDataItem? { return nil }
+    func getRowData() -> RowDataItem? { return nil }
 }
 
 struct MacroValue: MacroOp {
     var tv: TaggedValue
     
-    func execute( _ model: CalculatorModel ) {
-        model.state.stackLift()
-        model.state.Xtv = tv
-        model.state.noLift = false
+    func execute( _ keypressHandler: KeyPressHandler ) {
+        keypressHandler.enterValue(tv)
     }
     
     var auxListMode: AuxListMode { return .auxListTaggedValue }
 
-    func getText( _ model: CalculatorModel ) -> String? {
-        let str = String( format: "%f", tv.reg)
-        return str
-    }
+    func getText( _ keypressHandler: KeyPressHandler ) -> String? { return nil }
     
-    func getRowData( _ model: CalculatorModel ) -> RowDataItem? {
+    func getRowData() -> RowDataItem? {
         return tv.getRegisterRow()
     }
-}
-
-
-struct FnRec {
-    var caption: String
-    var macro: [MacroOp] = []
 }
 
 class CalculatorModel: ObservableObject, KeyPressHandler {
@@ -1019,11 +997,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return nil
     }
 
-    
     func isKeyRecording( _ kc: KeyCode = .null ) -> Bool {
         if kc == .null {
             return aux.kcRecording != nil
         }
         return aux.kcRecording == kc
+    }
+    
+    func enterValue(_ tv: TaggedValue) {
+        state.stackLift()
+        state.Xtv = tv
+        state.noLift = false
     }
 }

@@ -49,6 +49,8 @@ protocol KeyPressHandler {
     func getKeyText( _ kc: KeyCode ) -> String?
     
     func isKeyRecording( _ kc: KeyCode ) -> Bool
+    
+    func enterValue( _ tv: TaggedValue )
 }
 
 struct KeySpec {
