@@ -120,89 +120,6 @@ protocol StateOperator {
 }
 
 
-enum AuxDispMode: Int {
-    case memoryList = 0, memoryDetail, macroList
-}
-
-struct AuxState {
-    var mode: AuxDispMode = .memoryList
-    var list: [MacroOp] = []
-    
-    var kcRecording: KeyCode? = nil
-    var recording: Bool { kcRecording != nil }
-    var pauseCount: Int = 0
-    
-    mutating func pauseRecording() {
-        pauseCount += 1
-    }
-
-    mutating func resumeRecording() {
-        pauseCount -= 1
-    }
-    
-    mutating func startRecFn( _ kc: KeyCode ) {
-        if fnSet.contains(kc) && kcRecording == nil {
-            kcRecording = kc
-            list = []
-            mode = .macroList
-            
-            // Disable all Fn keys except the one recording
-            for key in fnSet {
-                if key != kc {
-                    SubPadSpec.disableList.insert(key)
-                }
-            }
-        }
-    }
-    
-    mutating func recordKeyFn( _ kc: KeyCode ) {
-        if pauseCount > 0 {
-            return
-        }
-        
-        if recording
-        {
-            // Fold unit keys into value on stack if possible
-            if kc.isUnit {
-                if let last = list.last,
-                   let value = last as? MacroValue
-                {
-                    if value.tv.tag == tagUntyped {
-                        if let tag = TypeDef.kcDict[kc] {
-                            var tv = value.tv
-                            list.removeLast()
-                            tv.tag = tag
-                            list.append( MacroValue( tv: tv))
-                            return
-                        }
-                    }
-                }
-            }
-            
-            list.append( MacroKey( kc: kc) )
-            
-            let ix = list.indices
-            
-            logM.debug("recordKey: \(ix)")
-        }
-    }
-    
-    mutating func recordValueFn( _ tv: TaggedValue ) {
-        if recording
-        {
-            list.append( MacroValue( tv: tv) )
-        }
-    }
-    
-    mutating func stopRecFn( _ kc: KeyCode ) {
-        if kc == kcRecording {
-            kcRecording = nil
-            list = []
-            mode = .memoryList
-            SubPadSpec.disableList.removeAll()
-        }
-    }
-}
 
 struct MacroKey: MacroOp {
     var kc: KeyCode
@@ -255,18 +172,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // **** Macro Recording Stuff ***
     
-    var fnList: [KeyCode : FnRec] = [:]
-    
     func setMacroFn( _ kc: KeyCode, _ list: [MacroOp] ) {
-        fnList[kc] = FnRec( caption: "Fn\(kc.rawValue % 10)", macro: list)
+        state.fnList[kc] = FnRec( caption: "Fn\(kc.rawValue % 10)", macro: list)
     }
     
     func clearMacroFn( _ kc: KeyCode) {
-        fnList[kc] = nil
+        state.fnList[kc] = nil
     }
     
     func getMacroFn( _ kc: KeyCode ) -> [MacroOp]? {
-        if let fn = fnList[kc] {
+        if let fn = state.fnList[kc] {
             return fn.macro
         }
         
@@ -807,22 +722,26 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             switch event.kc {
             case .clrFn:
+                // Clear Function Key
                 clearMacroFn(kc)
                 aux.stopRecFn(kc)
                 
             case .recFn:
+                // Start Recording Function Key
                 // Accept data entry before starting recording to avoid recording the entry
                 acceptTextEntry()
                 aux.startRecFn(kc)
                 
             case .stopFn:
+                // Stop Function Key recording
                 if aux.recording && !aux.list.isEmpty {
                     setMacroFn(kc, aux.list)
                 }
                 aux.stopRecFn(kc)
                 
             case .showFn:
-                if let fn = fnList[kc] {
+                // Display Function Key steps in Aux view
+                if let fn = state.fnList[kc] {
                     aux.list = fn.macro
                     aux.mode = .macroList
                 }
@@ -835,6 +754,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             switch event.kc {
             case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
                 if aux.recording && !aux.list.isEmpty {
+                    // Stop recording pressed key
                     setMacroFn(event.kc, aux.list)
                 }
                 aux.stopRecFn(event.kc)
@@ -990,7 +910,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     func getKeyText( _ kc: KeyCode ) -> String? {
-        if let fn = fnList[kc] {
+        if let fn = state.fnList[kc] {
             return fn.caption
         }
         
