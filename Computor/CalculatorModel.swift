@@ -120,12 +120,21 @@ protocol StateOperator {
 }
 
 
+protocol MacroOp {
+    func execute( _ model: CalculatorModel )
+
+    var auxListMode: AuxListMode { get }
+    
+    func getText( _ keypressHandler: KeyPressHandler ) -> String?
+    
+    func getRowData() -> RowDataItem?
+}
 
 struct MacroKey: MacroOp {
     var kc: KeyCode
     
-    func execute( _ keypressHandler: KeyPressHandler ) {
-        keypressHandler.keyPress( KeyEvent( kc: kc) )
+    func execute( _ model: CalculatorModel ) {
+        model.keyPress( KeyEvent( kc: kc) )
     }
     
     var auxListMode: AuxListMode { return .auxListSubSuper }
@@ -143,8 +152,8 @@ struct MacroKey: MacroOp {
 struct MacroValue: MacroOp {
     var tv: TaggedValue
     
-    func execute( _ keypressHandler: KeyPressHandler ) {
-        keypressHandler.enterValue(tv)
+    func execute( _ model: CalculatorModel ) {
+        model.enterValue(tv)
     }
     
     var auxListMode: AuxListMode { return .auxListTaggedValue }
@@ -155,6 +164,7 @@ struct MacroValue: MacroOp {
         return tv.getRegisterRow()
     }
 }
+
 
 class CalculatorModel: ObservableObject, KeyPressHandler {
     // Current Calculator State

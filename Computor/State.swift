@@ -138,22 +138,11 @@ struct RegisterRow: RowDataItem {
     var suffix: String?
 }
 
-
-protocol MacroOp {
-    func execute( _ keypressHandler: KeyPressHandler )
-    
-    var auxListMode: AuxListMode { get }
-    
-    func getText( _ keypressHandler: KeyPressHandler ) -> String?
-    
-    func getRowData() -> RowDataItem?
-}
-
-
 struct FnRec {
     var caption: String
-    var macro: [any MacroOp] = []
+    var macro: [MacroOp] = []
 }
+
 
 struct CalcState {
     /// Defines the exact state of the calculator at a given time
