@@ -31,46 +31,6 @@ class ObservableArray<T>: ObservableObject {
 
 }
 
-struct MonoText: View {
-    let content: String
-    let addon: String?
-    let charWidth: CGFloat
-    let font: Font
-    let alignment: VerticalAlignment
-
-    init(_ content: String, addon: String?, charWidth: CGFloat, font: Font = .body, align: VerticalAlignment = .center ) {
-        self.content = content
-        self.addon = addon
-        self.charWidth = charWidth
-        self.font = font
-        self.alignment = align
-    }
-
-    var body: some View {
-        HStack( alignment: self.alignment, spacing: 0 ) {
-            let chSeq = Array(self.content)
-            
-            ForEach(0..<self.content.count, id: \.self) { index in
-                let ch = chSeq[index]
-                let cw = self.charWidth
-                
-                Text( String(ch))
-                    .font(font)
-                    .foregroundColor(Color("DisplayText")).frame(width: cw)
-            }
-            .if ( addon != nil ) { view in
-                // Used to add an underscore cursor in text entry mode
-                HStack( alignment: self.alignment, spacing: 0 ) {
-                    view
-                    Text(addon!)
-                        .font(font)
-                        .foregroundColor(Color(.red)).frame(width: self.charWidth)
-                }
-            }
-        }
-    }
-}
-
 typealias TextSpec = ( prefixFont: Font, registerFont: Font, suffixFont: Font, monoSpace: Double )
 
 enum TextSize {
@@ -114,33 +74,20 @@ struct TypedRegister: View {
     let size: TextSize
     
     var body: some View {
-        if let spec = textSpecTable[size] {
-            HStack( alignment: .bottom, spacing: 0 ) {
-                if let prefix = row.prefix {
-                    Text(prefix).font(spec.prefixFont).bold().foregroundColor(Color("Frame")).padding(.trailing, 10)
-                }
-                
-                MonoText(row.register, addon: row.regAddon, charWidth: spec.monoSpace, font: spec.registerFont)
-                
-                if let exp: String = row.exponent {
-                    MonoText(exp, 
-                             addon: row.expAddon,
-                             charWidth: spec.monoSpace - 3,
-                             font: spec.suffixFont,
-                             align: .bottom).alignmentGuide(.bottom, computeValue: { d in 25 })
-                }
-                
-                if let suffix = row.suffix {
-                    Text(suffix).font(spec.suffixFont).bold().foregroundColor(Color("Units")).padding(.leading, 10)
-                }
-            }
-            .frame( height: 18 )
+        let line = row.getRichText()
+        
+        HStack( alignment: .bottom, spacing: 0 ) {
+            RichTextView(
+                inputStr: line,
+                bodyFont: .system( size: 12, weight: .regular, design: .serif),
+                subScriptFont: .system( size: 8, design: .default),
+                baseLine: 6.0,
+                defaultColor: "DisplayText")
         }
-        else {
-            EmptyView()
-        }
+        .frame( height: 18 )
     }
 }
+
 
 struct Display: View {
     @StateObject var model: CalculatorModel

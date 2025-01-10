@@ -123,11 +123,7 @@ protocol StateOperator {
 protocol MacroOp {
     func execute( _ model: CalculatorModel )
 
-    var auxListMode: AuxListMode { get }
-    
-    func getText( _ keypressHandler: KeyPressHandler ) -> String?
-    
-    func getRowData() -> RowDataItem?
+    func getRichText( _ model: CalculatorModel ) -> String
 }
 
 struct MacroKey: MacroOp {
@@ -137,16 +133,12 @@ struct MacroKey: MacroOp {
         model.keyPress( KeyEvent( kc: kc) )
     }
     
-    var auxListMode: AuxListMode { return .auxListSubSuper }
-    
-    func getText( _ keypressHandler: KeyPressHandler ) -> String? {
+    func getRichText( _ model: CalculatorModel ) -> String {
         if let key = Key.keyList[kc] {
-            return key.text == nil ? keypressHandler.getKeyText(kc) : key.text
+            return key.text ?? model.getKeyText(kc) ?? "??"
         }
-        return nil
+        return "??"
     }
-    
-    func getRowData() -> RowDataItem? { return nil }
 }
 
 struct MacroValue: MacroOp {
@@ -156,12 +148,8 @@ struct MacroValue: MacroOp {
         model.enterValue(tv)
     }
     
-    var auxListMode: AuxListMode { return .auxListTaggedValue }
-
-    func getText( _ keypressHandler: KeyPressHandler ) -> String? { return nil }
-    
-    func getRowData() -> RowDataItem? {
-        return tv.getRegisterRow()
+    func getRichText( _ model: CalculatorModel ) -> String {
+        return tv.getRichText()
     }
 }
 

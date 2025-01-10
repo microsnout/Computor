@@ -236,13 +236,12 @@ struct SubPopMenu: View {
                                         .foregroundColor( kn == keyData.selSubIndex  ?  Color.blue : keySpec.keyColor)
                                         .if( key.text != nil ) { view in
                                             view.overlay(
-                                                SubSuperScriptText(
-                                                    inputString: key.text!,
-                                                    bodyFont: .system( size: fontsize, design: serifFont ? .serif : .default),
+                                                RichTextView(
+                                                    inputStr: key.text!,
+                                                    bodyFont: .system( size: fontsize, weight: .bold, design: serifFont ? .serif : .default),
                                                     subScriptFont: .caption,
-                                                    baseLine: 6.0 )
-                                                    .bold()
-                                                    .foregroundColor(Color.white) )
+                                                    baseLine: 6.0,
+                                                    defaultColor: "KeyText") )
                                         }
                                         .if ( key.image != nil ) { view in
                                             view.overlay(
@@ -429,13 +428,12 @@ struct KeyView: View {
                         })
                     .if( text != nil && !keyPressHandler.isKeyRecording(key.kc) ) { view in
                         view.overlay(
-                            SubSuperScriptText(
-                                inputString: text!,
-                                bodyFont: .system( size: fontsize, design: serifFont ? .serif : .default),
-                                subScriptFont: .system( size: fontsize*0.7, design: .default),
-                                baseLine: 6.0 )
-                                .bold()
-                                .foregroundColor(Color.white) )
+                            RichTextView(
+                                inputStr: text!,
+                                bodyFont: .system( size: fontsize, weight: .bold, design: serifFont ? .serif : .default),
+                                subScriptFont: .system( size: fontsize*0.7, weight: .bold, design: .default),
+                                baseLine: 6.0,
+                                defaultColor: "KeyText") )
                     }
                     .if ( key.image != nil ) { view in
                         view.overlay(

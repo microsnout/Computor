@@ -205,10 +205,6 @@ struct MemoryListView: View {
 }
 
 
-enum AuxListMode: Int {
-    case auxListSubSuper = 0, auxListTaggedValue
-}
-
 struct MacroListView: View {
     @StateObject var model: CalculatorModel
 
@@ -220,37 +216,25 @@ struct MacroListView: View {
                 VStack(spacing: 7) {
                     ForEach (list.indices, id: \.self) { x in
                         let op: MacroOp = list[x]
-                        let line = String( format: "%3d ", x+1)
+                        let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
+                        let txt = op.getRichText(model)
 
-                        switch op.auxListMode {
-                        case .auxListSubSuper:
-                            let txt = op.getText(model) ?? ""
-
-                            HStack {
-                                Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)
-                                
-                                SubSuperScriptText(
-                                    inputString: txt,
-                                    bodyFont: .system( size: 12, design: .serif),
-                                    subScriptFont: .system( size: 8, design: .default),
-                                    baseLine: 6.0 )
-                                .bold()
-                                .foregroundColor(Color.black)
-                                
-                                Spacer()
-                            }
+                        HStack {
+                            RichTextView(
+                                inputStr: line,
+                                bodyFont: .system( size: 12, weight: .regular, design: .serif),
+                                subScriptFont: .system( size: 8, design: .default),
+                                baseLine: 6.0,
+                                defaultColor: "DisplayText")
                             
-                        case .auxListTaggedValue:
+                            RichTextView(
+                                inputStr: txt,
+                                bodyFont: .system( size: 12, weight: .bold, design: .serif),
+                                subScriptFont: .system( size: 8, weight: .bold, design: .default),
+                                baseLine: 6.0,
+                                defaultColor: "DisplayText")
                             
-                            let row = op.getRowData()!
-                            
-                            HStack {
-                                Text("`\(line)`").font(.system(size: 12)).foregroundColor(Color.gray)
-                                
-                                TypedRegister( row: row, size: .small )
-                                Spacer()
-                            }
-
+                            Spacer()
                         }
                     }
                     .onChange( of: list.indices.count ) {

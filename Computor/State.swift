@@ -38,6 +38,46 @@ struct FormatRec {
     var minDigits: Int = 0
 }
 
+struct RegisterRow: RowDataItem {
+    var prefix: String?
+    var register: String
+    var regAddon: String?
+    var exponent: String?
+    var expAddon: String?
+    var suffix: String?
+}
+
+extension RowDataItem {
+    
+    func getRichText() -> String {
+        var txt = String("")
+        
+        if let prefix = prefix {
+            txt.append("ç{Frame}={\(prefix)  }ç{}")
+        }
+        
+        txt.append( "={\(register)}" )
+        
+        if let addon = regAddon {
+            txt.append( "ç{CursorText}={\(addon)}ç{}" )
+        }
+        
+        if let exp = exponent {
+            txt.append( "^{\(exp)}" )
+            
+            if let expAddon = expAddon {
+                txt.append( "ç{CursorText}^{\(expAddon)}ç{}" )
+            }
+        }
+        
+        if let suffix = suffix {
+            txt.append( "={ }ç{Units}\(suffix)ç{}" )
+        }
+        
+        return txt
+    }
+}
+
 struct TaggedValue {
     var tag: TypeTag
     var reg: Double
@@ -104,6 +144,12 @@ struct TaggedValue {
             return RegisterRow( register: "Unknown Fmt Style" )
         }
     }
+    
+    func getRichText() -> String {
+        let row = getRegisterRow()
+        
+        return row.getRichText()
+    }
 }
 
 let untypedZero: TaggedValue = TaggedValue(tagUntyped)
@@ -127,15 +173,12 @@ struct NamedValue {
         rr.prefix = name
         return rr
     }
-}
-
-struct RegisterRow: RowDataItem {
-    var prefix: String?
-    var register: String
-    var regAddon: String?
-    var exponent: String?
-    var expAddon: String?
-    var suffix: String?
+    
+    func getRichText() -> String {
+        let row = getRegisterRow()
+        
+        return row.getRichText()
+    }
 }
 
 struct FnRec {
