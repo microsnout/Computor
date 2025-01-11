@@ -27,7 +27,6 @@ enum FormatStyle : UInt {
     
     // These are custom extension values
     case complex = 100
-    case vector  = 101
     case polar   = 102
     case angleDMS = 110
 }
