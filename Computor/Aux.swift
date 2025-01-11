@@ -124,7 +124,7 @@ struct MemoryDetailView: View {
                 model.aux.mode = .memoryList
             }
 
-            TypedRegister( row: NoPrefix(item), size: .normal ).padding( .leading, 0)
+            TypedRegister( row: NoPrefix(item), size: .large ).padding( .leading, 0)
         }
     }
 }

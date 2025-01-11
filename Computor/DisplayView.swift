@@ -31,16 +31,16 @@ class ObservableArray<T>: ObservableObject {
 
 }
 
-typealias TextSpec = ( prefixFont: Font, registerFont: Font, suffixFont: Font, monoSpace: Double )
+typealias TextSizeSpec = ( body: Double, subscript: Double )
 
 enum TextSize {
-    case normal, small, large
+    case small, normal, large
 }
 
-let textSpecTable: [TextSize: TextSpec] = [
-    .normal : ( .footnote, .body, .footnote, 12.0 ),
-    .small  : ( .caption, .footnote, .caption, 9.0 ),
-    .large  : ( .footnote, .headline, .footnote, 12.0 )
+let textSpecTable: [TextSize: TextSizeSpec] = [
+    .small  : ( 12.0,  8.0 ),
+    .normal : ( 14.0, 10.0 ),
+    .large  : ( 16.0, 12.0 )
 ]
 
 protocol RowDataItem {
@@ -75,12 +75,13 @@ struct TypedRegister: View {
     
     var body: some View {
         let line = row.getRichText()
+        let (bodySize, subSize) = textSpecTable[size] ?? (15.0, 10.0)
         
         HStack( alignment: .bottom, spacing: 0 ) {
             RichTextView(
                 inputStr: line,
-                bodyFont: .system( size: 12, weight: .regular, design: .serif),
-                subScriptFont: .system( size: 8, design: .default),
+                bodyFont: .system( size: bodySize, weight: .bold, design: .serif),
+                subScriptFont: .system( size: subSize, weight: .bold, design: .default),
                 baseLine: 6.0,
                 defaultColor: "DisplayText")
         }
