@@ -31,17 +31,21 @@ class ObservableArray<T>: ObservableObject {
 
 }
 
-typealias TextSizeSpec = ( body: Double, subscript: Double )
+typealias TextSizeSpec = ( body: CGFloat, subscript: CGFloat, baseline: CGFloat )
 
 enum TextSize {
     case small, normal, large
 }
 
 let textSpecTable: [TextSize: TextSizeSpec] = [
-    .small  : ( 12.0,  8.0 ),
-    .normal : ( 14.0, 10.0 ),
-    .large  : ( 16.0, 12.0 )
+    .small  : ( 12.0,  8.0, 6.0 ),
+    .normal : ( 14.0, 10.0, 6.0 ),
+    .large  : ( 16.0, 12.0, 6.0 )
 ]
+
+func getTextSpec( _ size: TextSize ) -> TextSizeSpec {
+    return textSpecTable[size] ?? (14.0, 10.0, 6.0)
+}
 
 protocol RowDataItem {
     var prefix:   String? { get }
@@ -75,13 +79,14 @@ struct TypedRegister: View {
     
     var body: some View {
         let line = row.getRichText()
-        let (bodySize, subSize) = textSpecTable[size] ?? (15.0, 10.0)
+        let (bodySize, subSize, baseline) = getTextSpec(size)
         
         HStack( alignment: .bottom, spacing: 0 ) {
             RichText(
                 line,
                 bodyFont: .system( size: bodySize, weight: .bold, design: .serif),
-                subScriptFont: .system( size: subSize, weight: .bold, design: .default))
+                subScriptFont: .system( size: subSize, weight: .bold, design: .default),
+                baseLine: baseline)
         }
         .frame( height: 18 )
     }
@@ -98,7 +103,7 @@ struct Display: View {
         
         let recText = model.isKeyRecording() ? "REC" : ""
         
-        let (bodySize, subSize) = textSpecTable[.small] ?? (15.0, 10.0)
+        let (bodySize, subSize, baseline) = getTextSpec(.small)
         
         ZStack(alignment: .leading) {
             Rectangle()
@@ -112,6 +117,7 @@ struct Display: View {
                         recText,
                         bodyFont: .system( size: bodySize, design: .default),
                         subScriptFont: .system( size: subSize, design: .default),
+                        baseLine: baseline,
                         defaultColor: "StatusRedText" )
                 }.frame( height: 10 ).padding(0)
                 
