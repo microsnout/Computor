@@ -34,6 +34,9 @@ let ksNormal = KeySpec( width: 42, height: 35,
 let ksSoftkey = KeySpec( width: 42, height: 25, fontSize: 14,
                          keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
+let ksSubFn = KeySpec( width: 48, height: 30, fontSize: 12,
+                       keyColor: Color(.brown), textColor: Color("KeyText"))
+
 let ksSubpad = KeySpec( width: 42, height: 30, fontSize: 14,
                         keyColor: Color(.brown), textColor: Color("KeyText"))
 
@@ -158,9 +161,9 @@ let psFormatR = PadSpec (
 
 func initKeyLayout() {
     SubPadSpec.define( .fn0,
-                       keySpec: ksSubpad,
+                       keySpec: ksSubFn,
                        keys: [
-                        Key(.clrFn, "Clr"),
+                        Key(.clrFn, "Clear"),
                         Key(.recFn, "Rec"),
                         Key(.stopFn, "Stop"),
                         Key(.showFn, "Show"),

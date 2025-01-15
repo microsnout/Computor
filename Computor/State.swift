@@ -77,10 +77,19 @@ extension RowDataItem {
     }
 }
 
+typealias MatrixSize = UInt
+
 struct TaggedValue {
     var tag: TypeTag
-    var reg: Double
     var fmt: FormatRec
+    var mat: MatrixSize
+
+    var reg: Double {
+        get { storage[0] }
+        set { storage[0] = newValue }
+    }
+    
+    var storage: [Double] = [0.0]
     
     var uid: UnitId { self.tag.uid }
     var tid: TypeId { self.tag.tid }
@@ -95,8 +104,10 @@ struct TaggedValue {
     
     init( _ tag: TypeTag, _ reg: Double = 0.0, format: FormatRec = FormatRec() ) {
         self.tag = tag
-        self.reg = reg
         self.fmt = format
+        self.mat = 1001
+        
+        storage[0] = reg
     }
     
     func getRegisterRow() -> RegisterRow {

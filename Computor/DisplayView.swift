@@ -78,12 +78,10 @@ struct TypedRegister: View {
         let (bodySize, subSize) = textSpecTable[size] ?? (15.0, 10.0)
         
         HStack( alignment: .bottom, spacing: 0 ) {
-            RichTextView(
-                inputStr: line,
+            RichText(
+                line,
                 bodyFont: .system( size: bodySize, weight: .bold, design: .serif),
-                subScriptFont: .system( size: subSize, weight: .bold, design: .default),
-                baseLine: 6.0,
-                defaultColor: "DisplayText")
+                subScriptFont: .system( size: subSize, weight: .bold, design: .default))
         }
         .frame( height: 18 )
     }
@@ -100,14 +98,21 @@ struct Display: View {
         
         let recText = model.isKeyRecording() ? "REC" : ""
         
+        let (bodySize, subSize) = textSpecTable[.small] ?? (15.0, 10.0)
+        
         ZStack(alignment: .leading) {
             Rectangle()
                 .fill(Color("Display"))
             
             VStack( alignment: .leading, spacing: 4) {
+                // Status line above register displays
                 HStack {
                     Spacer()
-                    Text(recText).font(.caption).foregroundColor( Color(.red))
+                    RichText(
+                        recText,
+                        bodyFont: .system( size: bodySize, design: .default),
+                        subScriptFont: .system( size: subSize, design: .default),
+                        defaultColor: "StatusRedText" )
                 }.frame( height: 10 ).padding(0)
                 
                 ForEach (0..<model.rowCount, id: \.self) { index in

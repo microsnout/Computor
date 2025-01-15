@@ -18,12 +18,21 @@ import SwiftUI
 //      defaultColor
 //
 
-struct RichTextView: View {
+struct RichText: View {
     let inputStr: String
     let bodyFont: Font
     let subScriptFont: Font
     let baseLine: CGFloat
     let defaultColor: String
+    
+    init( _ inputStr: String, bodyFont: Font, subScriptFont: Font,
+          baseLine: CGFloat = 6.0, defaultColor: String = "DisplayText") {
+        self.inputStr = inputStr
+        self.bodyFont = bodyFont
+        self.subScriptFont = subScriptFont
+        self.baseLine = baseLine
+        self.defaultColor = defaultColor
+    }
     
     var body: some View {
         var string = inputStr

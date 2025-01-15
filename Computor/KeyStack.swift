@@ -236,11 +236,10 @@ struct SubPopMenu: View {
                                         .foregroundColor( kn == keyData.selSubIndex  ?  Color.blue : keySpec.keyColor)
                                         .if( key.text != nil ) { view in
                                             view.overlay(
-                                                RichTextView(
-                                                    inputStr: key.text!,
+                                                RichText(
+                                                    key.text!,
                                                     bodyFont: .system( size: fontsize, weight: .bold, design: serifFont ? .serif : .default),
                                                     subScriptFont: .caption,
-                                                    baseLine: 6.0,
                                                     defaultColor: "KeyText") )
                                         }
                                         .if ( key.image != nil ) { view in
@@ -283,9 +282,12 @@ struct KeyView: View {
     }
     
     private func computeSubpadGeometry() {
-        let n = keyData.subPad!.keys.count
-        let keyW = padSpec.keySpec.width
-        let keyH = padSpec.keySpec.height
+        guard let subPad = keyData.subPad else {
+            fatalError()
+        }
+        let n = subPad.keys.count
+        let keyW = subPad.keySpec.width
+        let keyH = subPad.keySpec.height
         let nkeys = 0..<n
         let popW = keyW * Double(n)
         let zOrigin = keyData.zFrame.origin
@@ -428,11 +430,10 @@ struct KeyView: View {
                         })
                     .if( text != nil && !keyPressHandler.isKeyRecording(key.kc) ) { view in
                         view.overlay(
-                            RichTextView(
-                                inputStr: text!,
+                            RichText(
+                                text!,
                                 bodyFont: .system( size: fontsize, weight: .bold, design: serifFont ? .serif : .default),
                                 subScriptFont: .system( size: fontsize*0.7, weight: .bold, design: .default),
-                                baseLine: 6.0,
                                 defaultColor: "KeyText") )
                     }
                     .if ( key.image != nil ) { view in

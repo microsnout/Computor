@@ -28,6 +28,9 @@ struct AuxState {
     
     mutating func startRecFn( _ kc: KeyCode ) {
         if fnSet.contains(kc) && kcRecording == nil {
+            // We can start recording key kc
+            // Start with an empty list of instructions
+            // Auxiliary display mode to macro list
             kcRecording = kc
             list = []
             mode = .macroList
@@ -220,19 +223,15 @@ struct MacroListView: View {
                         let txt = op.getRichText(model)
 
                         HStack {
-                            RichTextView(
-                                inputStr: line,
+                            RichText(
+                                line,
                                 bodyFont: .system( size: 12, weight: .regular, design: .serif),
-                                subScriptFont: .system( size: 8, design: .default),
-                                baseLine: 6.0,
-                                defaultColor: "DisplayText")
+                                subScriptFont: .system( size: 8, design: .default))
                             
-                            RichTextView(
-                                inputStr: txt,
+                            RichText(
+                                txt,
                                 bodyFont: .system( size: 12, weight: .bold, design: .serif),
-                                subScriptFont: .system( size: 8, weight: .bold, design: .default),
-                                baseLine: 6.0,
-                                defaultColor: "DisplayText")
+                                subScriptFont: .system( size: 8, weight: .bold, design: .default))
                             
                             Spacer()
                         }
