@@ -228,7 +228,9 @@ struct SubPopMenu: View {
                                 ForEach(nkeys, id: \.self) { kn in
                                     let r = keySet[kn].offsetBy(dx: hframe.origin.x, dy: hframe.origin.y)
                                     let key = subkeys[kn]
-                                    let fontsize = key.fontSize != nil ? key.fontSize! : keyData.subPad!.fontSize
+                                
+                                    // Not sure if custom key font sizes needed
+//                                    let fontsize = key.fontSize != nil ? key.fontSize! : keyData.subPad!.fontSize
                                     
                                     Rectangle()
                                         .frame( width: r.width, height: r.height )
@@ -238,9 +240,11 @@ struct SubPopMenu: View {
                                             view.overlay(
                                                 RichText(
                                                     key.text!,
-                                                    bodyFont: .system( size: fontsize, weight: .bold, design: serifFont ? .serif : .default),
-                                                    subScriptFont: .caption,
-                                                    defaultColor: "KeyText") )
+                                                    size: .small,
+                                                    weight: .bold,
+                                                    design: serifFont ? .serif : .default,
+                                                    defaultColor: "KeyText")
+                                            )
                                         }
                                         .if ( key.image != nil ) { view in
                                             view.overlay(

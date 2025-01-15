@@ -25,8 +25,23 @@ struct RichText: View {
     let baseLine: CGFloat
     let defaultColor: String
     
+    init( _ inputStr: String, size: TextSize,
+          weight: Font.Weight = .regular, design: Font.Design = .default,
+          defaultColor: String = "DisplayText") {
+        
+        let (body, sub, base) = getTextSpec(size)
+        
+        self.inputStr = inputStr
+        self.bodyFont = .system( size: body, weight: weight, design: design)
+        self.subScriptFont = .system( size: sub, weight: weight, design: design)
+        self.baseLine = base
+        self.defaultColor = defaultColor
+    }
+
     init( _ inputStr: String, bodyFont: Font, subScriptFont: Font,
           baseLine: CGFloat = 6.0, defaultColor: String = "DisplayText") {
+        
+        // Used for Key text with custom sizes for each key
         self.inputStr = inputStr
         self.bodyFont = bodyFont
         self.subScriptFont = subScriptFont

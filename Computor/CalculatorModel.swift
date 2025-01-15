@@ -160,6 +160,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var entry = EntryState()
     @Published var aux   = AuxState()
     
+    @Published var error = false
+    
     var undoStack = UndoStack()
 
     // Display window into register stack
@@ -884,7 +886,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     if let lastState = undoStack.pop() {
                         state = lastState
                     }
-                }
+                    
+                    // Display 'error' indicator in primary display
+                    self.error = true
+                    
+                    Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { timer in
+                        // Clear 'error' indication
+                        self.error = false
+                    }                }
             }
             else if keyCode.isUnit {
                 if let tag = TypeDef.kcDict[keyCode],

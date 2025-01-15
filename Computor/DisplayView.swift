@@ -79,14 +79,9 @@ struct TypedRegister: View {
     
     var body: some View {
         let line = row.getRichText()
-        let (bodySize, subSize, baseline) = getTextSpec(size)
         
         HStack( alignment: .bottom, spacing: 0 ) {
-            RichText(
-                line,
-                bodyFont: .system( size: bodySize, weight: .bold, design: .serif),
-                subScriptFont: .system( size: subSize, weight: .bold, design: .default),
-                baseLine: baseline)
+            RichText( line, size: size, weight: .bold, design: .serif )
         }
         .frame( height: 18 )
     }
@@ -101,10 +96,10 @@ struct Display: View {
     var body: some View {
         let _ = Self._printChanges()
         
-        let recText = model.isKeyRecording() ? "REC" : ""
+        let midText = model.error ? "ç{StatusRedText}Errorç{}" : ""
         
-        let (bodySize, subSize, baseline) = getTextSpec(.small)
-        
+        let rightText = model.isKeyRecording() ? "ç{StatusRedText}RECç{}" : ""
+
         ZStack(alignment: .leading) {
             Rectangle()
                 .fill(Color("Display"))
@@ -112,13 +107,11 @@ struct Display: View {
             VStack( alignment: .leading, spacing: 4) {
                 // Status line above register displays
                 HStack {
+                    RichText("", size: .small)
                     Spacer()
-                    RichText(
-                        recText,
-                        bodyFont: .system( size: bodySize, design: .default),
-                        subScriptFont: .system( size: subSize, design: .default),
-                        baseLine: baseline,
-                        defaultColor: "StatusRedText" )
+                    RichText( midText, size: .small, weight: .bold)
+                    Spacer()
+                    RichText( rightText, size: .small )
                 }.frame( height: 10 ).padding(0)
                 
                 ForEach (0..<model.rowCount, id: \.self) { index in

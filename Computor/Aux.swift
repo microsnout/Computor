@@ -223,16 +223,8 @@ struct MacroListView: View {
                         let txt = op.getRichText(model)
 
                         HStack {
-                            RichText(
-                                line,
-                                bodyFont: .system( size: 12, weight: .regular, design: .serif),
-                                subScriptFont: .system( size: 8, design: .default))
-                            
-                            RichText(
-                                txt,
-                                bodyFont: .system( size: 12, weight: .bold, design: .serif),
-                                subScriptFont: .system( size: 8, weight: .bold, design: .default))
-                            
+                            RichText( line, size: .small )
+                            RichText( txt, size: .small )
                             Spacer()
                         }
                     }
