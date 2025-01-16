@@ -301,7 +301,7 @@ struct KeyView: View {
         // Keys leading edge x value relative to zFrame
         let xKey = keyData.keyOrigin.x - zOrigin.x
         
-        // Set of all possible x position values for popup
+        // Compute all possible x position values for popup
         let xSet = nkeys.map( { xKey - Double($0)*keyW } )
         
         // Filter out values where the popup won't fit in the Z frame
@@ -326,6 +326,7 @@ struct KeyView: View {
     }
     
     private func trackDragPt() {
+        // Tracking finger movements with sub menu popup open
         if let subPad = keyData.subPad {
             if hitRect(keyData.popFrame).contains(keyData.dragPt) {
                 let x = Int( (keyData.dragPt.x - keyData.popFrame.minX) / padSpec.keySpec.width )
@@ -412,7 +413,7 @@ struct KeyView: View {
                                 
                                 computeSubpadGeometry()
                                                                 
-                                // This will pre-select the subkey option above the pressed key
+                                // This will pre-select the subkey directly above the pressed key
                                 keyData.dragPt = CGPoint( x: vframe.midX, y: vframe.minY)
                                 trackDragPt()
 
@@ -425,6 +426,7 @@ struct KeyView: View {
                         }
                     }
                 
+                // This is the key itself
                 Rectangle()
                     .foregroundColor( padSpec.keySpec.keyColor )
                     .frame( width: keyW, height: padSpec.keySpec.height )
@@ -433,10 +435,12 @@ struct KeyView: View {
                     .onChange( of: isPressing) { _, newState in keyData.keyDown = newState }
                     .simultaneousGesture(
                         TapGesture().onEnded {
+                            // Keypress event occured, send event
                             hapticFeedback.impactOccurred()
                             _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc))
                         })
                     .if( text != nil && !keyPressHandler.isKeyRecording(key.kc) ) { view in
+                        // Add rich text label to key
                         view.overlay(
                             RichText(
                                 text!,
@@ -445,6 +449,7 @@ struct KeyView: View {
                                 defaultColor: "KeyText") )
                     }
                     .if ( key.image != nil ) { view in
+                        // Add image to key - currently not used
                         view.overlay(
                             Image(key.image!)
                                 .renderingMode(.template)
@@ -452,6 +457,7 @@ struct KeyView: View {
                             
                     }
                     .if( hasSubpad ) { view in
+                        // Add subpad indicator dot to key
                         view.overlay(alignment: .topTrailing) {
                             yellowCircle
                                 .alignmentGuide(.top) { $0[.top] - 3}
@@ -459,6 +465,7 @@ struct KeyView: View {
                         }
                     }
                     .if( keyPressHandler.isKeyRecording(key.kc) ) { view in
+                        // Add red recording dot to macro key
                         view.overlay {
                             redCircle
                         }
@@ -467,6 +474,8 @@ struct KeyView: View {
             
         }
         .frame( maxWidth: keyW, maxHeight: padSpec.keySpec.height )
+        
+        // Debug border rectangle
         // .border(.blue)
     }
 }
@@ -527,7 +536,9 @@ struct KeypadView: View {
                 }
                 // Padding and border around key hstack
                 .padding(0)
-//                .border(.red)
+                
+                // Debug border rectangle
+                // .border(.red)
             }
         }
         .border(.green)

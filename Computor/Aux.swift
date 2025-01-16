@@ -224,7 +224,7 @@ struct MacroListView: View {
 
                         HStack {
                             RichText( line, size: .small )
-                            RichText( txt, size: .small )
+                            RichText( txt, size: .small, weight: .bold )
                             Spacer()
                         }
                     }
