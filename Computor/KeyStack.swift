@@ -43,14 +43,16 @@ struct KeyEvent {
     var kcTop: KeyCode?
 }
 
+enum KeyPressResult: Int {
+    case null = 0, dataEntry, macroOp, stateChange, stateUndo, stateError
+}
+
 protocol KeyPressHandler {
-    func keyPress(_ event: KeyEvent )
+    func keyPress(_ event: KeyEvent ) -> KeyPressResult
     
     func getKeyText( _ kc: KeyCode ) -> String?
     
     func isKeyRecording( _ kc: KeyCode ) -> Bool
-    
-    func enterValue( _ tv: TaggedValue )
 }
 
 struct KeySpec {
@@ -318,7 +320,8 @@ struct KeyView: View {
         let popH = padSpec.caption == nil ? keyH : keyH*2 + popCaptionH
         
         // Write popup location and size to state object
-        keyData.popFrame = CGRect( x: xPop + zOrigin.x, y: keyData.keyOrigin.y - keyH - padSpec.keySpec.radius,
+        keyData.popFrame = CGRect( x: xPop + zOrigin.x,
+                                   y: keyData.keyOrigin.y - keyH - padSpec.keySpec.radius,
                                    width: popW, height: popH)
     }
     
@@ -354,7 +357,8 @@ struct KeyView: View {
             .onEnded { _ in
                 if let key = keyData.selSubkey
                 {
-                    keyPressHandler.keyPress( KeyEvent( kc: key.kc, kcTop: keyData.pressedKey?.kc))
+                    // Subpop menu key event
+                    _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc, kcTop: keyData.pressedKey?.kc))
                 }
                 
                 keyData.dragPt = CGPoint.zero
@@ -430,7 +434,7 @@ struct KeyView: View {
                     .simultaneousGesture(
                         TapGesture().onEnded {
                             hapticFeedback.impactOccurred()
-                            keyPressHandler.keyPress( KeyEvent( kc: key.kc))
+                            _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc))
                         })
                     .if( text != nil && !keyPressHandler.isKeyRecording(key.kc) ) { view in
                         view.overlay(

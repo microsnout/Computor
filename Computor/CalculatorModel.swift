@@ -105,11 +105,11 @@ struct UndoStack {
         return nil
     }
     
-    mutating func pauseStack() {
+    mutating func pause() {
         pauseCount += 1
     }
 
-    mutating func resumeStack() {
+    mutating func resume() {
         pauseCount -= 1
     }
 }
@@ -121,7 +121,7 @@ protocol StateOperator {
 
 
 protocol MacroOp {
-    func execute( _ model: CalculatorModel )
+    func execute( _ model: CalculatorModel ) -> KeyPressResult
 
     func getRichText( _ model: CalculatorModel ) -> String
 }
@@ -129,8 +129,8 @@ protocol MacroOp {
 struct MacroKey: MacroOp {
     var kc: KeyCode
     
-    func execute( _ model: CalculatorModel ) {
-        model.keyPress( KeyEvent( kc: kc) )
+    func execute( _ model: CalculatorModel ) -> KeyPressResult {
+        return model.keyPress( KeyEvent( kc: kc) )
     }
     
     func getRichText( _ model: CalculatorModel ) -> String {
@@ -144,8 +144,9 @@ struct MacroKey: MacroOp {
 struct MacroValue: MacroOp {
     var tv: TaggedValue
     
-    func execute( _ model: CalculatorModel ) {
+    func execute( _ model: CalculatorModel ) -> KeyPressResult {
         model.enterValue(tv)
+        return KeyPressResult.stateChange
     }
     
     func getRichText( _ model: CalculatorModel ) -> String {
@@ -766,13 +767,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
-    func keyPress(_ event: KeyEvent) {
+    func keyPress(_ event: KeyEvent) -> KeyPressResult {
         let keyCode = event.kc
         
         if macroOpSet.contains(keyCode) || isKeyRecording(event.kc) {
             // Macro recording control key or the Fn key currently recording
             macroKeypress(event)
-            return
+            return KeyPressResult.macroOp
         }
         
         if entry.entryMode {
@@ -780,7 +781,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             if entryKeys.contains(keyCode) {
                 // Process data entry event
                 EntryModeKeypress(keyCode)
-                return
+                return KeyPressResult.dataEntry
             }
             
             // Any key other than valid Entry mode keys cause en exit from the mode
@@ -793,14 +794,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             undoStack.push(state)
             state.stackLift()
             entry.startTextEntry( String(keyCode.rawValue) )
-            return
+            return KeyPressResult.dataEntry
         }
         else if keyCode == .dot {
             // Start data entry with a decimal point
             undoStack.push(state)
             state.stackLift()
             entry.startTextEntry( "0." )
-            return
+            return KeyPressResult.dataEntry
         }
 
         if keyCode != .back {
@@ -813,6 +814,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             // Undo last operation by restoring previous state
             if let lastState = undoStack.pop() {
                 state = lastState
+                return KeyPressResult.stateUndo
             }
             
         case .enter:
@@ -847,16 +849,26 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
             if let macro = getMacroFn(keyCode) {
+                // Macro playback - save inital state just in case
                 undoStack.push(state)
                 
                 // Don't maintain undo stack during playback ops
-                undoStack.pauseStack()
+                undoStack.pause()
                 aux.pauseRecording()
                 for op in macro {
-                    op.execute(self)
+                    if op.execute(self) == KeyPressResult.stateError {
+                        aux.resumeRecording()
+                        undoStack.resume()
+                        
+                        // Rewind state to start of macro playback
+                        if let lastState = undoStack.pop() {
+                            state = lastState
+                        }
+                        return KeyPressResult.stateError
+                    }
                 }
                 aux.resumeRecording()
-                undoStack.resumeStack()
+                undoStack.resume()
             }
 
         default:
@@ -882,7 +894,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     }
                 }
                 else {
-                    // else no-op as there was no new state
+                    // Failed to produce a new state
                     if let lastState = undoStack.pop() {
                         state = lastState
                     }
@@ -893,15 +905,20 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { timer in
                         // Clear 'error' indication
                         self.error = false
-                    }                }
+                    }
+                    
+                    return KeyPressResult.stateError
+                }
             }
             else if keyCode.isUnit {
+                // Attempt conversion of X reg to unit type keyCode
                 if let tag = TypeDef.kcDict[keyCode],
                    let _   = TypeDef.typeDict[tag]
                 {
                     undoStack.push(state)
                     
                     if state.convertX( toTag: tag) {
+                        // Conversion succeded
                         state.noLift = false
                     }
                     else {
@@ -909,10 +926,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                         if let lastState = undoStack.pop() {
                             state = lastState
                         }
+                        return KeyPressResult.stateError
                     }
+                }
+                else {
+                    return KeyPressResult.stateError
                 }
             }
         }
+        
+        // Successful state change
+        return KeyPressResult.stateChange
     }
     
     
