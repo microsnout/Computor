@@ -144,7 +144,7 @@ let psFormatL = PadSpec (
     cols: 3,
     keys: [ Key(.fix, "fix"),
             Key(.sci, "sci"),
-            Key(.noop),
+            Key(.multiValue, "\u{27e8}..\u{27e9}"),
         ],
     fontSize: 14.0
 )
@@ -291,6 +291,16 @@ func initKeyLayout() {
                         Key(.lb,    "lb"),
                         Key(.stone, "st"),
                         Key(.ton,   "ton"),
+                       ]
+    )
+    
+    SubPadSpec.define( .multiValue,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.rationalV, "x / y"),
+                        Key(.vector2V,  "\u{27e8}x , y\u{27e9}"),
+                        Key(.polarV,    "Stop"),
+                        Key(.complexV,  "x + iy"),
                        ]
     )
 }

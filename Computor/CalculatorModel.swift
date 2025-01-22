@@ -53,6 +53,9 @@ enum KeyCode: Int {
     // Macro Op
     case macroOp = 170, clrFn, recFn, stopFn, showFn
     
+    // Multi valued types
+    case multiValue = 180, rationalV, vector2V, polarV, complexV
+    
     case unitStart = 200
     
     // Length
