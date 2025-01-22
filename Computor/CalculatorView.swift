@@ -135,7 +135,7 @@ let psFunctionsR = PadSpec(
         cols: 3,
         keys: [ Key(.log, "log"),
                 Key(.tenExp, "10^{x}"),
-                Key(.pi,  "\u{1d70b}")
+                Key(.pi,  "ƒ{1.3}\u{1d70b}")
             ]
     )
 
