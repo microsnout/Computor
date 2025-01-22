@@ -12,6 +12,8 @@ import SwiftUI
 //      ={} monospaced
 //      ç{} Return to default color
 //      ç{color} Set color to Asset str named color
+//      ƒ{scale} Resize fonts by multipling by real scale value
+//      ƒ{} Restore default font sizes
 //
 //      mainFont
 //      script font
@@ -25,6 +27,10 @@ struct RichText: View {
     let baseLine: CGFloat
     let defaultColor: String
     
+    let textSize: TextSize
+    let textWeight: Font.Weight
+    let textDesign: Font.Design
+    
     init( _ inputStr: String, size: TextSize,
           weight: Font.Weight = .regular, design: Font.Design = .default,
           defaultColor: String = "DisplayText") {
@@ -36,25 +42,20 @@ struct RichText: View {
         self.subScriptFont = .system( size: sub, weight: weight, design: design)
         self.baseLine = base
         self.defaultColor = defaultColor
+        
+        self.textSize   = size
+        self.textWeight = weight
+        self.textDesign = design
     }
 
-    init( _ inputStr: String, bodyFont: Font, subScriptFont: Font,
-          baseLine: CGFloat = 6.0, defaultColor: String = "DisplayText") {
-        
-        // Used for Key text with custom sizes for each key
-        self.inputStr = inputStr
-        self.bodyFont = bodyFont
-        self.subScriptFont = subScriptFont
-        self.baseLine = baseLine
-        self.defaultColor = defaultColor
-    }
-    
     var body: some View {
         var string = inputStr
         var text   = Text("")
         var color  = defaultColor
-        
-        let opCodeSet:Set<Character> = ["^", "_", "=", "ç"]
+        var bodyFont: Font = self.bodyFont
+        var subScriptFont: Font = self.subScriptFont
+
+        let opCodeSet:Set<Character> = ["^", "_", "=", "ç", "ƒ"]
         
         while let validIndex = string.firstIndex( where: { (ch) -> Bool in  return opCodeSet.contains(ch) }) {
             
@@ -112,6 +113,22 @@ struct RichText: View {
                 
             case "ç":
                 color = opStr.isEmpty ? defaultColor : opStr
+                
+            case "ƒ":
+                if opStr.isEmpty {
+                    // Restore default fonts
+                    bodyFont = self.bodyFont
+                    subScriptFont = self.subScriptFont
+                }
+                else {
+                    // Create scaled fonts
+                    var (body, sub, _ ) = getTextSpec(textSize)
+                    let scale = Double(opStr) ?? 1.0
+                    body *= scale
+                    sub  *= scale
+                    bodyFont = .system( size: body, weight: textWeight, design: textDesign)
+                    subScriptFont = .system( size: sub, weight: textWeight, design: textDesign)
+                }
                 
             default:
                 text = text + Text(opStr)

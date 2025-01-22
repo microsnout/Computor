@@ -52,7 +52,7 @@ extension RowDataItem {
         var txt = String("")
         
         if let prefix = prefix {
-            txt.append("ç{Frame}={\(prefix)  }ç{}")
+            txt.append("ƒ{0.8}ç{Frame}={\(prefix)  }ç{}ƒ{}")
         }
         
         txt.append( "={\(register)}" )
@@ -70,7 +70,7 @@ extension RowDataItem {
         }
         
         if let suffix = suffix {
-            txt.append( "={ }ç{Units}\(suffix)ç{}" )
+            txt.append( "ƒ{0.8}={ }ç{Units}\(suffix)ç{}ƒ{}" )
         }
         
         return txt

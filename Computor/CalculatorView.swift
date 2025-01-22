@@ -31,16 +31,16 @@ extension View {
 let ksNormal = KeySpec( width: 42, height: 35,
                         keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
-let ksSoftkey = KeySpec( width: 42, height: 25, fontSize: 14,
+let ksSoftkey = KeySpec( width: 42, height: 25,
                          keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
-let ksSubFn = KeySpec( width: 48, height: 30, fontSize: 12,
+let ksSubFn = KeySpec( width: 48, height: 30,
                        keyColor: Color(.brown), textColor: Color("KeyText"))
 
-let ksSubpad = KeySpec( width: 42, height: 30, fontSize: 14,
+let ksSubpad = KeySpec( width: 42, height: 30,
                         keyColor: Color(.brown), textColor: Color("KeyText"))
 
-let ksUnits = KeySpec( width: 60, height: 25, fontSize: 14,
+let ksUnits = KeySpec( width: 60, height: 25,
                        keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
 let psUnits = PadSpec (
@@ -57,32 +57,32 @@ let psUnits = PadSpec (
 let psNumeric = PadSpec(
     keySpec: ksNormal,
     cols: 3,
-    keys: [ Key(.key7, "7"), Key(.key8, "8"), Key(.key9, "9"),
-            Key(.key4, "4"), Key(.key5, "5"), Key(.key6, "6"),
-            Key(.key1, "1"), Key(.key2, "2"), Key(.key3, "3"),
-            Key(.key0, "0"), Key(.dot, "."),  Key(.sign, "+/-", fontSize: 15)
+    keys: [ Key(.key7, "ƒ{1.2}7"), Key(.key8, "ƒ{1.2}8"), Key(.key9, "ƒ{1.2}9"),
+            Key(.key4, "ƒ{1.2}4"), Key(.key5, "ƒ{1.2}5"), Key(.key6, "ƒ{1.2}6"),
+            Key(.key1, "ƒ{1.2}1"), Key(.key2, "ƒ{1.2}2"), Key(.key3, "ƒ{1.2}3"),
+            Key(.key0, "ƒ{1.2}0"), Key(.dot, "ƒ{1.2}."),  Key(.sign, "ƒ{1.2}+/-")
           ]
 )
 
 let psEnter = PadSpec(
         keySpec: ksNormal,
         cols: 3,
-        keys: [ Key(.enter, "Enter", size: 2, fontSize: 15), Key(.eex, "EE", fontSize: 15) ]
+        keys: [ Key(.enter, "Enter", size: 2), Key(.eex, "EE") ]
     )
 
 let psOperations = PadSpec(
     keySpec: ksNormal,
     cols: 3,
-    keys: [ Key(.divide, "÷", fontSize: 24), Key(.deg, "deg\u{00B0}", fontSize: 14), Key(.y2x, "y^{x}"),
-            Key(.times, "×", fontSize: 24),  Key(.percent, "%", fontSize: 18),    Key(.inv, "1/x", fontSize: 14),
-            Key(.minus, "−", fontSize: 24),  Key(.xy, "X\u{21c6}Y", fontSize: 12),    Key(.x2, "x^{2}", fontSize: 14),
-            Key(.plus,  "+", fontSize: 24),  Key(.roll, "R\u{2193}", fontSize: 12),   Key(.sqrt, "\u{221a}x", fontSize: 14)
+    keys: [ Key(.divide, "ƒ{1.4}÷"), Key(.deg, "deg\u{00B0}"), Key(.y2x, "y^{x}"),
+            Key(.times,  "ƒ{1.4}×"),  Key(.percent, "%"),    Key(.inv, "1/x"),
+            Key(.minus,  "ƒ{1.4}−"),  Key(.xy, "X\u{21c6}Y"),    Key(.x2, "x^{2}"),
+            Key(.plus,   "ƒ{1.4}+"),  Key(.roll, "R\u{2193}"),   Key(.sqrt, "\u{221a}x")
           ])
 
 let psClear = PadSpec(
         keySpec: ksNormal,
         cols: 3,
-        keys: [ Key(.back, "BACK/UNDO", size: 2, fontSize: 12.0), Key(.clX, "CLx", fontSize: 14.0) ]
+        keys: [ Key(.back, "ƒ{0.8}BACK/UNDO", size: 2), Key(.clX, "CLx") ]
     )
 
 let psSoftkeyL = PadSpec (
@@ -135,7 +135,7 @@ let psFunctionsR = PadSpec(
         cols: 3,
         keys: [ Key(.log, "log"),
                 Key(.tenExp, "10^{x}"),
-                Key(.pi,  "\u{1d70b}", fontSize: 20)
+                Key(.pi,  "\u{1d70b}")
             ]
     )
 
@@ -153,8 +153,8 @@ let psFormatR = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
     keys: [ Key(.noop),
-            Key(.fixL, ".00\u{2190}", fontSize: 12.0),
-            Key(.fixR, ".00\u{2192}", fontSize: 12.0),
+            Key(.fixL, "ƒ{0.8}.00\u{2190}"),
+            Key(.fixR, "ƒ{0.8}.00\u{2192}"),
         ],
     fontSize: 14.0
 )
@@ -167,8 +167,7 @@ func initKeyLayout() {
                         Key(.recFn, "Rec"),
                         Key(.stopFn, "Stop"),
                         Key(.showFn, "Show"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
     
     SubPadSpec.copySpec(from: .fn0, list: [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6])
@@ -177,24 +176,21 @@ func initKeyLayout() {
                        keySpec: ksSubpad,
                        keys: [
                         Key(.asin, "sin^{-1}"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
     
     SubPadSpec.define( .cos,
                        keySpec: ksSubpad,
                        keys: [
                         Key(.asin, "cos^{-1}"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
     
     SubPadSpec.define( .tan,
                        keySpec: ksSubpad,
                        keys: [
                         Key(.asin, "tan^{-1}"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
     
     SubPadSpec.define( .log,
@@ -204,8 +200,7 @@ func initKeyLayout() {
                         Key(.ln, "ln"),
                         Key(.log2, "log_{2}"),
                         Key(.logY, "log_{y}x")
-                       ],
-                       fontSize: 14.0
+                       ]
     )
 
     SubPadSpec.define( .tenExp,
@@ -214,18 +209,16 @@ func initKeyLayout() {
                         Key(.tenExp, "10^{x}"),
                         Key(.eExp, "e^{x}"),
                         Key(.y2x, "y^{x}"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
     
     SubPadSpec.define( .xy,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.xy, "X\u{21c6}Y", fontSize: 14.0),
-                        Key(.xz, "X\u{21c6}Z", fontSize: 14.0),
-                        Key(.yz, "Y\u{21c6}Z", fontSize: 14.0),
-                       ],
-                       fontSize: 14.0
+                        Key(.xy, "X\u{21c6}Y"),
+                        Key(.xz, "X\u{21c6}Z"),
+                        Key(.yz, "Y\u{21c6}Z"),
+                       ]
     )
 
     SubPadSpec.define( .hr,
@@ -238,8 +231,7 @@ func initKeyLayout() {
                         Key(.hr,  "hr"),
                         Key(.day, "day"),
                         Key(.yr,  "yr"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
 
     SubPadSpec.define( .km,
@@ -249,8 +241,7 @@ func initKeyLayout() {
                         Key(.cm, "cm"),
                         Key(.m,  "m"),
                         Key(.km, "km"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
 
     SubPadSpec.define( .mi,
@@ -260,8 +251,7 @@ func initKeyLayout() {
                         Key(.ft, "ft"),
                         Key(.yd,  "yd"),
                         Key(.mi, "mi"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
 
     SubPadSpec.define( .clX,
@@ -272,7 +262,6 @@ func initKeyLayout() {
                         Key(.clZ,  "Z"),
                         Key(.clReg,"Reg"),
                        ],
-                       fontSize: 14.0,
                        caption: "Clear"
     )
 
@@ -282,8 +271,7 @@ func initKeyLayout() {
                         Key(.dms, "dms"),
                         Key(.rad,  "rad"),
                         Key(.deg,"deg"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
 
     SubPadSpec.define( .kg,
@@ -293,8 +281,7 @@ func initKeyLayout() {
                         Key(.gram,  "g"),
                         Key(.kg,    "kg"),
                         Key(.tonne, "tn"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
 
     SubPadSpec.define( .lb,
@@ -304,8 +291,7 @@ func initKeyLayout() {
                         Key(.lb,    "lb"),
                         Key(.stone, "st"),
                         Key(.ton,   "ton"),
-                       ],
-                       fontSize: 14.0
+                       ]
     )
 }
 

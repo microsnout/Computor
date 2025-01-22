@@ -58,12 +58,10 @@ protocol KeyPressHandler {
 struct KeySpec {
     var width: Double
     var height: Double
-    var fontSize:Double = KeySpec.defFontSize
     var keyColor: Color = KeySpec.defKeyColor
     var textColor: Color = KeySpec.defTextColor
     var radius: Double = KeySpec.defRadius
     
-    static let defFontSize  = 18.0
     static let defRadius    = 10.0
     static let defKeyColor  = Color(.brown)
     static let defTextColor = Color(.white)
@@ -74,19 +72,17 @@ struct Key: Identifiable {
     var kc: KeyCode
     var size: Int           // Either 1 or 2, single width keys or double width
     var text: String?
-    var fontSize: Double?
     var image: ImageResource?
     
     var id: Int { return self.kc.rawValue }
     
     static var keyList: [KeyCode : Key] = [:]
 
-    init( _ kc: KeyCode, _ label: String? = nil, size: Int = 1, fontSize: Double? = nil, image: ImageResource? = nil ) {
+    init( _ kc: KeyCode, _ label: String? = nil, size: Int = 1, image: ImageResource? = nil ) {
         self.kc = kc
         self.text = label
         self.size = size
         self.image = image
-        self.fontSize = fontSize
         
         // Maintain dictionary of all defined keys
         Key.keyList[self.kc] = self
@@ -97,7 +93,6 @@ struct SubPadSpec {
     var kc: KeyCode
     var keySpec: KeySpec
     var keys: [Key]
-    var fontSize: Double
     var caption: String?
 
     static var specList: [KeyCode : SubPadSpec] = [:]
@@ -111,9 +106,9 @@ struct SubPadSpec {
         return SubPadSpec.specList[kc]
     }
     
-    static func define( _ kc: KeyCode, keySpec: KeySpec, keys: [Key], fontSize: Double = 18.0, caption: String? = nil ) {
+    static func define( _ kc: KeyCode, keySpec: KeySpec, keys: [Key], caption: String? = nil ) {
         SubPadSpec.specList[kc] =
-            SubPadSpec( kc: kc, keySpec: keySpec, keys: keys, fontSize: fontSize, caption: caption)
+            SubPadSpec( kc: kc, keySpec: keySpec, keys: keys, caption: caption)
     }
     
     static func copySpec( from: KeyCode, list: [KeyCode]) {
@@ -391,8 +386,6 @@ struct KeyView: View {
         let hasSubpad = SubPadSpec.getSpec(key.kc) != nil
         
         VStack {
-            let fontsize = key.fontSize != nil ? key.fontSize! : padSpec.keySpec.fontSize
-            
             let text: String? = key.text == nil ? keyPressHandler.getKeyText(key.kc) : key.text
             
             GeometryReader { geometry in
@@ -442,11 +435,8 @@ struct KeyView: View {
                     .if( text != nil && !keyPressHandler.isKeyRecording(key.kc) ) { view in
                         // Add rich text label to key
                         view.overlay(
-                            RichText(
-                                text!,
-                                bodyFont: .system( size: fontsize, weight: .bold, design: serifFont ? .serif : .default),
-                                subScriptFont: .system( size: fontsize*0.7, weight: .bold, design: .default),
-                                defaultColor: "KeyText") )
+                            RichText( text!, size: .normal, weight: .bold, defaultColor: "KeyText")
+                        )
                     }
                     .if ( key.image != nil ) { view in
                         // Add image to key - currently not used
