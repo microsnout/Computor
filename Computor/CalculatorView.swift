@@ -35,10 +35,10 @@ let ksSoftkey = KeySpec( width: 42, height: 25,
                          keyColor: Color("KeyColor"), textColor: Color("KeyText"))
 
 let ksSubFn = KeySpec( width: 48, height: 30,
-                       keyColor: Color(.brown), textColor: Color("KeyText"))
+                       keyColor: Color("PopBack"), textColor: Color("PopText"))
 
 let ksSubpad = KeySpec( width: 42, height: 30,
-                        keyColor: Color(.brown), textColor: Color("KeyText"))
+                        keyColor: Color("PopBack"), textColor: Color("PopText"))
 
 let ksUnits = KeySpec( width: 60, height: 25,
                        keyColor: Color("KeyColor"), textColor: Color("KeyText"))

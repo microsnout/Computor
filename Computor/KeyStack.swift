@@ -205,6 +205,7 @@ struct SubPopMenu: View {
                     RoundedRectangle(cornerRadius: keySpec.radius*2)
                         .shadow(radius: keySpec.radius*2)
                 }
+                .shadow( radius: 20 )
                 .overlay {
                     GeometryReader { geo in
                         let hframe = geo.frame(in: CoordinateSpace.global)
@@ -226,13 +227,10 @@ struct SubPopMenu: View {
                                     let r = keySet[kn].offsetBy(dx: hframe.origin.x, dy: hframe.origin.y)
                                     let key = subkeys[kn]
                                 
-                                    // Not sure if custom key font sizes needed
-//                                    let fontsize = key.fontSize != nil ? key.fontSize! : keyData.subPad!.fontSize
-                                    
                                     Rectangle()
                                         .frame( width: r.width, height: r.height )
                                         .cornerRadius(keySpec.radius)
-                                        .foregroundColor( kn == keyData.selSubIndex  ?  Color.blue : keySpec.keyColor)
+                                        .foregroundColor( kn == keyData.selSubIndex  ?  Color("PopSelect") : keySpec.keyColor)
                                         .if( key.text != nil ) { view in
                                             view.overlay(
                                                 RichText(
@@ -240,7 +238,7 @@ struct SubPopMenu: View {
                                                     size: .small,
                                                     weight: .bold,
                                                     design: serifFont ? .serif : .default,
-                                                    defaultColor: "KeyText")
+                                                    defaultColor: "PopText")
                                             )
                                         }
                                         .if ( key.image != nil ) { view in
@@ -531,8 +529,10 @@ struct KeypadView: View {
                 // .border(.red)
             }
         }
-        .border(.green)
         .padding(0)
+
+        // Debug border
+        // .border(.green)
     }
 }
 
