@@ -11,6 +11,8 @@ extension String {
     static var settingsDarkModeKey : String { "settings.darkMode" }
     static var settingsSerifFontKey : String { "settings.serifFont" }
     static var settingsDisplayRows : String { "settings.displayRows" }
+    static var settingsPriDispTextSize : String { "settings.priDispTextSize" }
+    static var settingsAuxDispTextSize : String { "settings.auxDispTextSize" }
 }
 
 
@@ -23,6 +25,12 @@ struct SettingsView: View {
     
     @AppStorage(.settingsDisplayRows)
     private var displayRows = 3
+    
+    @AppStorage(.settingsPriDispTextSize)
+    private var priDispTextSize = TextSize.normal
+    
+    @AppStorage(.settingsAuxDispTextSize)
+    private var auxDispTextSize = TextSize.normal
 
     var body: some View {
         NavigationView {
@@ -33,7 +41,13 @@ struct SettingsView: View {
                 }
                 .listRowBackground(Color("Display"))
                 
-                Section( header: Text("Display").foregroundColor(Color("DisplayText"))  ) {
+                Section( header: Text("Primary Display").foregroundColor(Color("DisplayText"))  ) {
+                    Picker( selection: $priDispTextSize, label: Text("Text Size")) {
+                        Text("Small").tag(TextSize.small)
+                        Text("Medium").tag(TextSize.normal)
+                        Text("Large").tag(TextSize.large)
+                    }
+                    
                     Picker( selection: $displayRows, label: Text("Registers")) {
                         Text("X").tag(1)
                         Text("X, Y").tag(2)
@@ -41,6 +55,14 @@ struct SettingsView: View {
                         Text("X, Y, Z, T").tag(4)
                     }
 
+                }
+                
+                Section( header: Text("Auxiliary Display").foregroundColor(Color("DisplayText"))  ) {
+                    Picker( selection: $auxDispTextSize, label: Text("Text Size")) {
+                        Text("Small").tag(TextSize.small)
+                        Text("Medium").tag(TextSize.normal)
+                        Text("Large").tag(TextSize.large)
+                    }
                 }
             }
             .background(Color("ListBack"))

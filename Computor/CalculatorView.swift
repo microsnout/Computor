@@ -300,7 +300,7 @@ func initKeyLayout() {
                         Key(.rationalV, "x / y"),
                         Key(.vector2V,  "\u{27e8}x , y\u{27e9}"),
                         Key(.polarV,    "Stop"),
-                        Key(.complexV,  "x + iy"),
+                        Key(.complexV,  "x ç{Units}+ç{} yç{Units}iç{}"),
                        ]
     )
 }

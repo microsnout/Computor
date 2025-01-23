@@ -33,8 +33,8 @@ class ObservableArray<T>: ObservableObject {
 
 typealias TextSizeSpec = ( body: CGFloat, subscript: CGFloat, baseline: CGFloat )
 
-enum TextSize {
-    case small, normal, large
+enum TextSize: Int, Hashable {
+    case small = 0, normal, large
 }
 
 let textSpecTable: [TextSize: TextSizeSpec] = [
@@ -90,8 +90,11 @@ struct TypedRegister: View {
 
 struct Display: View {
     @StateObject var model: CalculatorModel
+    
+    @AppStorage(.settingsPriDispTextSize)
+    private var priDispTextSize = TextSize.normal
 
-    let rowHeight:Double = 35.0
+    let rowHeightTable: [TextSize : Double] = [.small : 29, .normal : 32, .large : 35]
     
     var body: some View {
         let _ = Self._printChanges()
@@ -99,6 +102,8 @@ struct Display: View {
         let midText = model.error ? "ç{StatusRedText}Errorç{}" : ""
         
         let rightText = model.isKeyRecording() ? "ç{StatusRedText}RECç{}" : ""
+        
+        let rowHeight = rowHeightTable[priDispTextSize] ?? 35.0
 
         ZStack(alignment: .leading) {
             Rectangle()
@@ -115,7 +120,8 @@ struct Display: View {
                 }.frame( height: 10 ).padding(0)
                 
                 ForEach (0..<model.rowCount, id: \.self) { index in
-                    TypedRegister( row: model.getRow(index: index), size: .large ).padding(.leading, 10)
+                    TypedRegister( row: model.getRow(index: index), size: priDispTextSize )
+                        .padding(.leading, 10)
                 }
             }
             .frame( height: rowHeight*Double(model.rowCount) )
