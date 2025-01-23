@@ -18,6 +18,11 @@ let stackPrefixValues = ["X", "Y", "Z", "T"]
 // Register index values
 let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 4
 
+
+enum ScalarType : Int {
+    case real = 0, integer, rational, complex
+}
+
 enum FormatStyle : UInt {
     
     // These values match raw values with NumberFormater.Style
@@ -77,19 +82,59 @@ extension RowDataItem {
     }
 }
 
-typealias MatrixSize = UInt
+typealias MatrixShape = Int
+
 
 struct TaggedValue {
+    var stp: ScalarType
     var tag: TypeTag
     var fmt: FormatRec
-    var mat: MatrixSize
+    var mat: MatrixShape
+    
+    var scalarSize: Int { mat / 1000 / 1000 }
+    var rows: Int { mat / 1000 % 1000 }
+    var cols: Int { mat % 1000 }
+    
+    var isScalar: Bool { self.rows == 1 && self.cols == 1 }
 
     var reg: Double {
         get { storage[0] }
         set { storage[0] = newValue }
     }
     
+    func get1( _ row: Int = 0, _ col: Int = 0 ) -> Double {
+        let (ss, rows, _) = self.getShape()
+        let index = (ss*rows)*col + ss*row
+        return storage[index]
+    }
+    
+    func get2( _ row: Int = 0, _ col: Int = 0 ) -> (Double, Double) {
+        let (ss, rows, _) = self.getShape()
+        let index = (ss*rows)*col + ss*row
+        return (storage[index], storage[index+1])
+    }
+    
+    mutating func set2( _ v1: Double, _ v2: Double, row: Int = 0, col: Int = 0 ) {
+        let (ss, rows, _) = self.getShape()
+        let index = (ss*rows)*col + ss*row
+        self.setShape(2)
+        storage[index]   = v1
+        storage[index+1] = v2
+    }
+
     var storage: [Double] = [0.0]
+    
+    var capacity: Int { self.scalarSize * self.rows * self.cols }
+    
+    func getShape() -> (Int, Int, Int) {
+        return (self.scalarSize, self.rows, self.cols)
+    }
+    
+    mutating func setShape( _ ss: Int = 1, rows: Int = 1, cols: Int = 1 ) {
+        self.mat = cols + rows*1000 + ss*1000*1000
+        
+        self.storage = [Double]( repeating: 0.0, count: self.capacity )
+    }
     
     var uid: UnitId { self.tag.uid }
     var tid: TypeId { self.tag.tid }
@@ -103,6 +148,7 @@ struct TaggedValue {
     }
     
     init( _ tag: TypeTag, _ reg: Double = 0.0, format: FormatRec = FormatRec() ) {
+        self.stp = .real
         self.tag = tag
         self.fmt = format
         self.mat = 1001

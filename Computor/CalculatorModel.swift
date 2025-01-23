@@ -632,6 +632,19 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 s1.Xtv = s0.Ztv
                 return s1
             },
+        
+        .complexV:
+            // Form complex value from x, y
+            CustomOp { s0 in
+                guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
+                    return nil
+                }
+                var s1 = s0
+                s1.stackDrop()
+                s1.Xtv.set2( s0.X, s0.Y )
+                s1.Xtv.stp = .complex
+                return s1
+            },
 
         .deg: Convert( sym: "deg", fmt: FormatRec( style: .decimal) ),
         .rad: Convert( sym: "rad", fmt: FormatRec( style: .decimal) ),
