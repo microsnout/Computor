@@ -47,32 +47,6 @@ func getTextSpec( _ size: TextSize ) -> TextSizeSpec {
     return textSpecTable[size] ?? (14.0, 10.0, 6.0)
 }
 
-protocol RowDataItem {
-    var prefix:   String? { get }
-    var register: String  { get }
-    var regAddon: String? { get }
-    var exponent: String? { get }
-    var expAddon: String? { get }
-    var suffix:   String? { get }
-}
-
-struct NoPrefix: RowDataItem {
-    let prefix: String? = nil
-    let register: String
-    let regAddon: String?
-    let exponent: String?
-    let expAddon: String?
-    let suffix: String?
-    
-    init(_ row: RowDataItem ) {
-        self.register = row.register
-        self.regAddon = row.regAddon
-        self.exponent = row.exponent
-        self.expAddon = row.expAddon
-        self.suffix = row.suffix
-    }
-}
-
 struct TypedRegister: View {
     let text: String
     let size: TextSize

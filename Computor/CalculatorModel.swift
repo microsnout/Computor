@@ -153,7 +153,7 @@ struct MacroValue: MacroOp {
     }
     
     func getRichText( _ model: CalculatorModel ) -> String {
-        return tv.getRichText()
+        return tv.renderRichText()
     }
 }
 
@@ -201,21 +201,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     private func bufferIndex(_ stackIndex: Int ) -> Int {
         // Convert a bottom up index into the stack array to a top down index into the displayed registers
         return displayRows - stackIndex - 1
-    }
-    
-    func getRow( index: Int ) -> RowDataItem {
-        let stkIndex = bufferIndex(index)
-        
-        // Are we are in data entry mode and looking for the X reg
-        if entry.entryMode && stkIndex == regX {
-            return RegisterRow(
-                prefix: state.stack[regX].name,
-                register: entry.entryText,
-                regAddon: entry.exponentEntry ? nil : "_",
-                exponent: entry.exponentEntry ? entry.exponentText : nil,
-                expAddon: entry.exponentEntry ? "_" : nil )
-        }
-        return state.stackRow(stkIndex)
     }
     
     func renderRow( index: Int ) -> String {

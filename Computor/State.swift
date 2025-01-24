@@ -42,46 +42,6 @@ struct FormatRec {
     var minDigits: Int = 0
 }
 
-struct RegisterRow: RowDataItem {
-    var prefix: String?
-    var register: String
-    var regAddon: String?
-    var exponent: String?
-    var expAddon: String?
-    var suffix: String?
-}
-
-extension RowDataItem {
-    
-    func getRichText() -> String {
-        var txt = String("")
-        
-        if let prefix = prefix {
-            txt.append("ƒ{0.8}ç{Frame}={\(prefix)  }ç{}ƒ{}")
-        }
-        
-        txt.append( "={\(register)}" )
-        
-        if let addon = regAddon {
-            txt.append( "ç{CursorText}={\(addon)}ç{}" )
-        }
-        
-        if let exp = exponent {
-            txt.append( "^{\(exp)}" )
-            
-            if let expAddon = expAddon {
-                txt.append( "ç{CursorText}^{\(expAddon)}ç{}" )
-            }
-        }
-        
-        if let suffix = suffix {
-            txt.append( "ƒ{0.8}={ }ç{Units}\(suffix)ç{}ƒ{}" )
-        }
-        
-        return txt
-    }
-}
-
 typealias MatrixShape = Int
 
 
@@ -200,57 +160,6 @@ struct TaggedValue : RichRender {
         
         return "Unknown Fmt Style"
     }
-    
-    func getRegisterRow() -> RegisterRow {
-        if isType(tagNone) {
-            return RegisterRow( register: "-")
-        }
-        
-        if fmt.style == .angleDMS {
-            // Degrees Minutes Seconds angle display
-            let neg = reg < 0.0 ? -1.0 : 1.0
-            let angle = abs(reg) + 0.0000001
-            let deg = floor(angle)
-            let min = floor((angle - deg) * 60.0)
-            let sec = ((angle - deg)*60.0 - min) * 60.0
-            
-            let str = String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
-            
-            return RegisterRow( register: str)
-        }
-        else if let nfStyle = NumberFormatter.Style(rawValue: fmt.style.rawValue) {
-            
-            let nf = NumberFormatter()
-            nf.numberStyle = nfStyle
-            nf.minimumFractionDigits = fmt.minDigits
-            nf.maximumFractionDigits = fmt.digits
-            
-            let str = nf.string(for: reg) ?? ""
-            
-            let strParts = str.split( separator: "E" )
-            
-            if strParts.count == 2 {
-                return RegisterRow(
-                    register: String(strParts[0]) + "x10",
-                    exponent: String(strParts[1]),
-                    suffix: tag.symbol)
-            }
-            else {
-                return RegisterRow(
-                    register: String(strParts[0]),
-                    suffix: tag.symbol)
-            }
-        }
-        else {
-            return RegisterRow( register: "Unknown Fmt Style" )
-        }
-    }
-    
-    func getRichText() -> String {
-        let row = getRegisterRow()
-        
-        return row.getRichText()
-    }
 }
 
 let untypedZero: TaggedValue = TaggedValue(tagUntyped)
@@ -267,18 +176,6 @@ struct NamedValue : RichRender {
     init(_ name: String? = nil, value: TaggedValue ) {
         self.name = name
         self.value = value
-    }
-    
-    func getRegisterRow() -> RegisterRow {
-        var rr = value.getRegisterRow()
-        rr.prefix = name
-        return rr
-    }
-    
-    func getRichText() -> String {
-        let row = getRegisterRow()
-        
-        return row.getRichText()
     }
     
     func renderRichText() -> String {
@@ -317,24 +214,6 @@ struct CalcState {
         
         // Failed to find conversion
         return false
-    }
-    
-    func stackRow( _ index: Int ) -> RegisterRow {
-        return self.stack[index].getRegisterRow()
-    }
-    
-    func memoryRow( _ index: Int ) -> RegisterRow {
-        guard index >= 0 && index < self.memory.count else {
-            return RegisterRow( register: "Error" )
-        }
-        
-        return self.memory[index].getRegisterRow()
-    }
-    
-    var memoryList: [RegisterRow] {
-        get {
-            (0 ..< self.memory.count).map { self.memoryRow($0) }
-        }
     }
     
     // *** *** ***
