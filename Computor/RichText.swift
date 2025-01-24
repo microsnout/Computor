@@ -20,6 +20,11 @@ import SwiftUI
 //      defaultColor
 //
 
+
+protocol RichRender {
+    func renderRichText() -> String
+}
+
 struct RichText: View {
     let inputStr: String
     let bodyFont: Font

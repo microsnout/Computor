@@ -218,6 +218,34 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return state.stackRow(stkIndex)
     }
     
+    func renderRow( index: Int ) -> String {
+        let stkIndex = bufferIndex(index)
+
+        // Are we are in data entry mode and looking for the X reg
+        if entry.entryMode && stkIndex == regX {
+            let nv = state.stack[stkIndex]
+            
+            var text = String()
+            
+            if let prefix = nv.name {
+                text.append("ƒ{0.8}ç{Frame}={\(prefix)  }ç{}ƒ{}")
+            }
+            
+            text.append( "={\(entry.entryText)}" )
+            
+            if !entry.exponentEntry {
+                text.append( "ç{CursorText}={_}ç{}" )
+            }
+            
+            if entry.exponentEntry {
+                text.append( "^{\(entry.exponentText)}ç{CursorText}^{_}ç{}" )
+            }
+            
+            return text
+        }
+        return state.stack[stkIndex].renderRichText()
+    }
+    
     func memoryOp( key: KeyCode, index: Int ) {
         undoStack.push(state)
         acceptTextEntry()

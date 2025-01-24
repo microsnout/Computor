@@ -104,20 +104,22 @@ enum AuxDisp: Int {
 
 struct MemoryDetailView: View {
     @StateObject var model: CalculatorModel
+    var index: Int
+
     @State private var editText = ""
     @FocusState private var nameFocused: Bool
     
-    var index: Int
-    var item: RowDataItem
-
     var body: some View {
+        let nv = model.state.memory[index]
+        let textValue = nv.value.renderRichText()
+        
         Form {
             TextField( "-Unnamed-", text: $editText )
             .focused($nameFocused)
             .disableAutocorrection(true)
             .autocapitalization(.none)
             .onAppear {
-                if let name = item.prefix {
+                if let name = nv.name {
                     editText = name
                 }
                 nameFocused = true
@@ -127,7 +129,7 @@ struct MemoryDetailView: View {
                 model.aux.mode = .memoryList
             }
 
-            TypedRegister( row: NoPrefix(item), size: .large ).padding( .leading, 0)
+            TypedRegister( text: textValue, size: .large ).padding( .leading, 0)
         }
     }
 }
@@ -147,19 +149,23 @@ struct MemoryListView: View {
     
     var body: some View {
         VStack {
-            let rows = model.state.memoryList
-            
-            if rows.isEmpty {
+            if model.state.memory.isEmpty {
                 Text("Memory List\n(Press + to store X register)")
                     .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
             }
             else {
+                let strList = (0 ..< model.state.memory.count).map
+                    { ( model.state.memory[$0].name,
+                        model.state.memory[$0].value.renderRichText()) }
+                
                 List {
-                    ForEach ( Array( rows.enumerated()), id: \.offset ) { index, item in
+                    ForEach ( Array(strList.enumerated()), id: \.offset ) { index, item in
+                        let (prefix, value) = item
+                        
                         VStack( alignment: .leading, spacing: 0 ) {
-                            let name = item.prefix != nil ? item.prefix! : "-name-"
+                            let name: String = prefix ?? "-name-"
                             
-                            let color = item.prefix != nil ? Color("DisplayText") : Color(.gray)
+                            let color = prefix != nil ? Color("DisplayText") : Color(.gray)
                             
                             HStack {
                                 // Memory name - tap to edit
@@ -171,7 +177,7 @@ struct MemoryListView: View {
                             }
                             
                             // Memory value display
-                            TypedRegister( row: NoPrefix(item), size: .small ).padding( .horizontal, 20)
+                            TypedRegister( text: value, size: .small ).padding( .horizontal, 20)
                         }
                         .listRowSeparatorTint(.blue)
                         .frame( height: 30 )
@@ -248,14 +254,12 @@ struct AuxiliaryDisplay: View {
     @State var rowIndex = 0
 
     var body: some View {
-        let rows = model.state.memoryList
-        
         switch model.aux.mode {
         case .memoryList:
             MemoryListView( model: model, rowIndex: $rowIndex )
             
         case .memoryDetail:
-            MemoryDetailView( model: model, index: rowIndex, item: rows[rowIndex])
+            MemoryDetailView( model: model, index: rowIndex)
                 .frame( maxWidth: .infinity, maxHeight: .infinity)
                 .background( Color("Display") )
                 .border(Color("Frame"), width: 3)

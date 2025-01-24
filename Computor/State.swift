@@ -85,7 +85,7 @@ extension RowDataItem {
 typealias MatrixShape = Int
 
 
-struct TaggedValue {
+struct TaggedValue : RichRender {
     var stp: ScalarType
     var tag: TypeTag
     var fmt: FormatRec
@@ -156,6 +156,51 @@ struct TaggedValue {
         storage[0] = reg
     }
     
+    func renderRichText() -> String {
+        if isType(tagNone) {
+            return "-"
+        }
+        
+        if fmt.style == .angleDMS {
+            // Degrees Minutes Seconds angle display
+            let neg = reg < 0.0 ? -1.0 : 1.0
+            let angle = abs(reg) + 0.0000001
+            let deg = floor(angle)
+            let min = floor((angle - deg) * 60.0)
+            let sec = ((angle - deg)*60.0 - min) * 60.0
+            
+            return String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
+        }
+        
+        if let nfStyle = NumberFormatter.Style(rawValue: fmt.style.rawValue) {
+            var text = String()
+
+            // Use number formatter to render register value
+            let nf = NumberFormatter()
+            nf.numberStyle = nfStyle
+            nf.minimumFractionDigits = fmt.minDigits
+            nf.maximumFractionDigits = fmt.digits
+            let str = nf.string(for: reg) ?? ""
+            
+            // Separate mantissa from exponent
+            let strParts = str.split( separator: "E" )
+            
+            text += "={\(strParts[0])}"
+            
+            if strParts.count == 2 {
+                text += "x10"
+                text += "^{\(strParts[1])}"
+            }
+
+            if let sym = tag.symbol {
+                text.append( "ƒ{0.8}={ }ç{Units}\(sym)ç{}ƒ{}" )
+            }
+            return text
+        }
+        
+        return "Unknown Fmt Style"
+    }
+    
     func getRegisterRow() -> RegisterRow {
         if isType(tagNone) {
             return RegisterRow( register: "-")
@@ -211,7 +256,7 @@ struct TaggedValue {
 let untypedZero: TaggedValue = TaggedValue(tagUntyped)
 let valueNone: TaggedValue = TaggedValue(tagNone)
 
-struct NamedValue {
+struct NamedValue : RichRender {
     var name: String?
     var value: TaggedValue
     
@@ -234,6 +279,15 @@ struct NamedValue {
         let row = getRegisterRow()
         
         return row.getRichText()
+    }
+    
+    func renderRichText() -> String {
+        if let prefix = self.name {
+            var text = "ƒ{0.8}ç{Frame}={\(prefix)  }ç{}ƒ{}"
+            text.append( self.value.renderRichText() )
+            return text
+        }
+        return value.renderRichText()
     }
 }
 

@@ -74,14 +74,12 @@ struct NoPrefix: RowDataItem {
 }
 
 struct TypedRegister: View {
-    let row: RowDataItem
+    let text: String
     let size: TextSize
     
     var body: some View {
-        let line = row.getRichText()
-        
         HStack( alignment: .bottom, spacing: 0 ) {
-            RichText( line, size: size, weight: .bold, design: .serif )
+            RichText( text, size: size, weight: .bold, design: .serif )
         }
         .frame( height: 18 )
     }
@@ -119,8 +117,8 @@ struct Display: View {
                     RichText( rightText, size: .small )
                 }.frame( height: 10 ).padding(0)
                 
-                ForEach (0..<model.rowCount, id: \.self) { index in
-                    TypedRegister( row: model.getRow(index: index), size: priDispTextSize )
+                ForEach (0 ..< model.rowCount, id: \.self) { index in
+                    TypedRegister( text: model.renderRow(index: index), size: priDispTextSize )
                         .padding(.leading, 10)
                 }
             }
