@@ -12,11 +12,18 @@ import OSLog
 let logM = Logger(subsystem: "com.microsnout.calculator", category: "model")
 
 
-func isInt( _ x: Double ) -> Int? {
+func getInt( _ x: Double ) -> Int? {
     /// Test if a Double is an integer
     /// Valid down to 1.0000000000000005 or about 16 significant digits
     ///
     x == floor(x) ? Int(x) : nil
+}
+
+func isInt( _ x: Double ) -> Bool {
+    /// Test if a Double is an integer
+    /// Valid down to 1.0000000000000005 or about 16 significant digits
+    ///
+    x == floor(x)
 }
 
 func isEven( _ x: Int ) -> Bool {
@@ -428,7 +435,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         init( sym: String, fmt: FormatRec? = nil ) {
-            self.toType = TypeDef.symDict[sym, default: tagNone]
+            self.toType = TypeDef.symDict[sym, default: tagUntyped]
             self.toFmt = fmt
         }
         
@@ -531,7 +538,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     return s1
                 }
                 
-                if let exp = isInt(s0.X),
+                if let exp = getInt(s0.X),
                    let tag = typeExponent( s0.Yt, x: exp )
                 {
                     // Successful type exponentiation
@@ -646,6 +653,25 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 return s1
             },
         
+        .rationalV:
+            // Form rational value from x, y
+            CustomOp { s0 in
+                guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) && isInt(s0.X) && isInt(s0.Y) && s0.Y != 0.0
+                else {
+                    return nil
+                }
+                var s1 = s0
+                var (num, den) = (s0.X, s0.Y)
+                if den < 0 {
+                    num = -num
+                    den = -den
+                }
+                s1.stackDrop()
+                s1.set2( num, den )
+                s1.Xstp = .rational
+                return s1
+            },
+
         .complexV:
             // Form complex value from x, y
             CustomOp { s0 in
@@ -654,8 +680,21 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
                 var s1 = s0
                 s1.stackDrop()
-                s1.Xtv.set2( s0.X, s0.Y )
-                s1.Xtv.stp = .complex
+                s1.set2( s0.X, s0.Y )
+                s1.Xstp = .complex
+                return s1
+            },
+
+        .vector2V:
+            // Form vector value from x, y
+            CustomOp { s0 in
+                guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
+                    return nil
+                }
+                var s1 = s0
+                s1.stackDrop()
+                s1.set2( s0.X, s0.Y )
+                s1.Xstp = .vector
                 return s1
             },
 

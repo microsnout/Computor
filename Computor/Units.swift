@@ -14,7 +14,7 @@ let logU = Logger(subsystem: "com.microsnout.calculator", category: "units")
 // UnitId value is Int equal to rawValue but can exceed .user
 //
 enum StdUnitId: Int {
-    case none = 0, untyped, angle, length, area, volume, velocity, acceleration, time
+    case untyped = 0, angle, length, area, volume, velocity, acceleration, time
     case mass, weight, pressure, capacity, temp
     case user = 1000
 }
@@ -27,7 +27,6 @@ typealias TypeId = Int
 
 
 // Common UnitId values as Int
-let uidNone = StdUnitId.none.rawValue
 let uidUntyped = StdUnitId.untyped.rawValue
 let uidUser = StdUnitId.user.rawValue
 
@@ -79,7 +78,7 @@ extension TypeTag: CustomStringConvertible {
         if self.isType(.user) {
             return "{User\(self.uid - userIdBase):\(self.tid)}"
         }
-        return "{\(StdUnitId( rawValue: uid) ?? .none) :\(tid)}"
+        return "{\(StdUnitId( rawValue: uid) ?? .untyped) :\(tid)}"
     }
 }
 
@@ -87,7 +86,7 @@ func uid2Str( _ uid: UnitId ) -> String {
     if uid >= userIdBase {
         return "User\(uid - userIdBase)"
     }
-    return "\(StdUnitId( rawValue: uid) ?? .none)"
+    return "\(StdUnitId( rawValue: uid) ?? .untyped)"
 }
 
 extension String {
@@ -872,6 +871,5 @@ func lookupTypeTag( _ tc: TypeCode ) -> TypeTag? {
 
 
 // Common tag values
-let tagNone    = TypeTag(.none)
 let tagUntyped = TypeTag(.untyped)
 let tagRad     = TypeDef.tagOf("rad")

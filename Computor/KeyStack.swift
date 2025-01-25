@@ -213,13 +213,14 @@ struct SubPopMenu: View {
                         VStack(spacing: 0) {
                             if let caption = keyData.subPad!.caption {
                                 HStack {
+                                    Spacer()
                                     Text(caption)
                                         .bold()
                                         .font(.system(size: captionFont))
                                         .foregroundColor(keySpec.textColor)
-                                        .frame( maxWidth: .infinity, alignment: .leading)
-                                        .offset( x: 10, y: 4 )
-//                                    Spacer()
+                                        .frame( maxWidth: .infinity, alignment: .center)
+                                        .offset( x: 0, y: 4 )
+                                    Spacer()
                                 }
                             }
                             HStack( spacing: keyInset ) {

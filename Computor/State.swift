@@ -19,8 +19,8 @@ let stackPrefixValues = ["X", "Y", "Z", "T"]
 let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 4
 
 
-enum ScalarType : Int {
-    case real = 0, integer, rational, complex
+enum ValueType : Int {
+    case real = 0, rational, complex, vector
 }
 
 enum FormatStyle : UInt {
@@ -46,11 +46,13 @@ typealias MatrixShape = Int
 
 
 struct TaggedValue : RichRender {
-    var stp: ScalarType
+    var vtp: ValueType
     var tag: TypeTag
     var fmt: FormatRec
     var mat: MatrixShape
-    
+
+    var storage: [Double] = [0.0]
+
     var scalarSize: Int { mat / 1000 / 1000 }
     var rows: Int { mat / 1000 % 1000 }
     var cols: Int { mat % 1000 }
@@ -81,8 +83,6 @@ struct TaggedValue : RichRender {
         storage[index]   = v1
         storage[index+1] = v2
     }
-
-    var storage: [Double] = [0.0]
     
     var capacity: Int { self.scalarSize * self.rows * self.cols }
     
@@ -108,7 +108,7 @@ struct TaggedValue : RichRender {
     }
     
     init( _ tag: TypeTag, _ reg: Double = 0.0, format: FormatRec = FormatRec() ) {
-        self.stp = .real
+        self.vtp = .real
         self.tag = tag
         self.fmt = format
         self.mat = 1001
@@ -116,21 +116,7 @@ struct TaggedValue : RichRender {
         storage[0] = reg
     }
     
-    func renderRichText() -> String {
-        if isType(tagNone) {
-            return "-"
-        }
-        
-        if fmt.style == .angleDMS {
-            // Degrees Minutes Seconds angle display
-            let neg = reg < 0.0 ? -1.0 : 1.0
-            let angle = abs(reg) + 0.0000001
-            let deg = floor(angle)
-            let min = floor((angle - deg) * 60.0)
-            let sec = ((angle - deg)*60.0 - min) * 60.0
-            
-            return String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
-        }
+    func renderDouble( _ reg: Double ) -> String {
         
         if let nfStyle = NumberFormatter.Style(rawValue: fmt.style.rawValue) {
             var text = String()
@@ -151,19 +137,66 @@ struct TaggedValue : RichRender {
                 text += "x10"
                 text += "^{\(strParts[1])}"
             }
-
-            if let sym = tag.symbol {
-                text.append( "ƒ{0.8}={ }ç{Units}\(sym)ç{}ƒ{}" )
-            }
             return text
         }
         
-        return "Unknown Fmt Style"
+        return "Unknown Fmt"
+    }
+    
+    func renderRichText() -> String {
+        if fmt.style == .angleDMS {
+            // Degrees Minutes Seconds angle display
+            let neg = reg < 0.0 ? -1.0 : 1.0
+            let angle = abs(reg) + 0.0000001
+            let deg = floor(angle)
+            let min = floor((angle - deg) * 60.0)
+            let sec = ((angle - deg)*60.0 - min) * 60.0
+            
+            return String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
+        }
+        
+        var text = String()
+        
+        switch vtp {
+        case .real:
+            text.append( renderDouble(reg) )
+            
+        case .rational:
+            let (num, den) = get2()
+            text.append( renderDouble(num))
+            text.append( "={/}" )
+            text.append( renderDouble(den))
+
+        case .complex:
+            let (re, im) = get2()
+            let neg = im < 0.0
+            text.append( renderDouble(re))
+            text.append( neg ? "ç{Units}={ - }ç{}" : "ç{Units}={ + }ç{}")
+            text.append( renderDouble( neg ? -im : im))
+            text.append("ç{Units}={i}ç{}")
+
+        case .vector:
+            let (x, y) = get2()
+            text.append("ç{Units}\u{276c}ç{}")
+            text.append( renderDouble(x))
+            text.append( "ç{Units}={ ,}ç{}")
+            text.append( renderDouble(y))
+            text.append("ç{Units}\u{276d}ç{}")
+            
+        default:
+            text.append("Unknown scalar")
+        }
+
+        if let sym = tag.symbol {
+            text.append( "ƒ{0.8}={ }ç{Units}\(sym)ç{}ƒ{}" )
+        }
+        
+        return text
     }
 }
 
 let untypedZero: TaggedValue = TaggedValue(tagUntyped)
-let valueNone: TaggedValue = TaggedValue(tagNone)
+
 
 struct NamedValue : RichRender {
     var name: String?
@@ -235,9 +268,14 @@ struct CalcState {
     
     var Xtv: TaggedValue {
         get { stack[regX].value }
-        set { self.Xt = newValue.tag; self.X = newValue.reg; self.Xfmt = newValue.fmt }
+        set { self.stack[regX].value = newValue }
     }
     
+    var Xstp: ValueType {
+        get { stack[regX].value.vtp }
+        set { stack[regX].value.vtp = newValue }
+    }
+
     var Y: Double {
         get { stack[regY].value.reg }
         set { stack[regY].value.reg = newValue }
@@ -255,7 +293,7 @@ struct CalcState {
     
     var Ytv: TaggedValue {
         get { stack[regY].value }
-        set { self.Yt = newValue.tag; self.Y = newValue.reg; self.Yfmt = newValue.fmt }
+        set { self.stack[regY].value = newValue }
     }
     
     var Z: Double {
@@ -275,7 +313,7 @@ struct CalcState {
     
     var Ztv: TaggedValue {
         get { stack[regZ].value }
-        set { self.Zt = newValue.tag; self.Z = newValue.reg; self.Zfmt = newValue.fmt }
+        set { self.stack[regZ].value = newValue }
     }
 
     var T: Double {
@@ -283,6 +321,10 @@ struct CalcState {
         set { stack[regT].value.reg = newValue }
     }
     
+    mutating func set2( _ v1: Double, _ v2: Double, row: Int = 0, col: Int = 0 ) {
+        stack[regX].value.set2( v1, v2, row: row, col: col)
+    }
+
     mutating func stackDrop(_ by: Int = 1 ) {
         for rx in regX ..< stackSize-1 {
             self.stack[rx].value = self.stack[rx+1].value
