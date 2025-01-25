@@ -20,7 +20,7 @@ let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 4
 
 
 enum ValueType : Int {
-    case real = 0, rational, complex, vector
+    case real = 0, rational, complex, vector, polar
 }
 
 enum FormatStyle : UInt {
@@ -182,6 +182,14 @@ struct TaggedValue : RichRender {
             text.append( "ç{Units}={ ,}ç{}")
             text.append( renderDouble(y))
             text.append("ç{Units}\u{276d}ç{}")
+
+        case .polar:
+            let (x, y) = get2()
+            text.append("ç{Units}\u{276c} r:ç{}")
+            text.append( renderDouble(x))
+            text.append( "ç{Units}={,} \u{03b8}:ç{}")
+            text.append( renderDouble(y))
+            text.append("ç{Units}\u{276d}ç{}")
             
         default:
             text.append("Unknown scalar")
@@ -240,6 +248,11 @@ struct CalcState {
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )
 
     mutating func convertX( toTag: TypeTag ) -> Bool {
+        if Xstp != .real {
+            // Don't assign units to vectors and complex
+            return false
+        }
+        
         if let seq = unitConvert( from: Xt, to: toTag ) {
             Xtv = TaggedValue( toTag, seq.op(X) )
             return true

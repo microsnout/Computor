@@ -299,7 +299,7 @@ func initKeyLayout() {
                        keys: [
                         Key(.rationalV, "x / y"),
                         Key(.vector2V,  "\u{27e8}x , y\u{27e9}"),
-                        Key(.polarV,    "Stop"),
+                        Key(.polarV,    "\u{27e8}r , \u{03b8}\u{27e9}"),
                         Key(.complexV,  "x ç{Units}+ç{} yç{Units}iç{}"),
                        ]
     )

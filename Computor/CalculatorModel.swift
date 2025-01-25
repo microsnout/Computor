@@ -698,6 +698,19 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 return s1
             },
 
+        .polarV:
+            // Form polar value from x, y
+            CustomOp { s0 in
+                guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
+                    return nil
+                }
+                var s1 = s0
+                s1.stackDrop()
+                s1.set2( s0.X, s0.Y )
+                s1.Xstp = .polar
+                return s1
+            },
+
         .deg: Convert( sym: "deg", fmt: FormatRec( style: .decimal) ),
         .rad: Convert( sym: "rad", fmt: FormatRec( style: .decimal) ),
         .dms: Convert( sym: "deg", fmt: FormatRec( style: .angleDMS)),
@@ -960,22 +973,15 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                             state.Xfmt.style = .decimal
                         }
                     }
+                    
+                    // Successful state change
+                    return KeyPressResult.stateChange
                 }
                 else {
                     // Failed to produce a new state
                     if let lastState = undoStack.pop() {
                         state = lastState
                     }
-                    
-                    // Display 'error' indicator in primary display
-                    self.error = true
-                    
-                    Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { timer in
-                        // Clear 'error' indication
-                        self.error = false
-                    }
-                    
-                    return KeyPressResult.stateError
                 }
             }
             else if keyCode.isUnit {
@@ -988,19 +994,28 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     if state.convertX( toTag: tag) {
                         // Conversion succeded
                         state.noLift = false
+                        
+                        // Successful state change
+                        return KeyPressResult.stateChange
                     }
                     else {
                         // else no-op as there was no new state
                         if let lastState = undoStack.pop() {
                             state = lastState
                         }
-                        return KeyPressResult.stateError
                     }
                 }
-                else {
-                    return KeyPressResult.stateError
-                }
             }
+            
+            // Display 'error' indicator in primary display
+            self.error = true
+            
+            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { timer in
+                // Clear 'error' indication
+                self.error = false
+            }
+            
+            return KeyPressResult.stateError
         }
         
         // Successful state change
