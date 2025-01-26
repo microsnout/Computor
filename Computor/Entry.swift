@@ -192,4 +192,72 @@ struct EntryState {
         }
     }
     
+    
+    mutating func entryModeKeypress(_ keyCode: KeyCode ) -> KeyPressResult {
+        if exponentEntry {
+            switch keyCode {
+            case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
+                // Append a digit to exponent
+                if exponentText.starts( with: "-") && exponentText.count < 4 || exponentText.count < 3 {
+                    appendExpEntry( String(keyCode.rawValue))
+                }
+
+            case .dot, .eex:
+                // No op
+                break
+                
+            case .sign:
+                if exponentText.starts( with: "-") {
+                    exponentText.removeFirst()
+                }
+                else {
+                    exponentText.insert( "-", at: exponentText.startIndex )
+                }
+
+            case .back:
+                if exponentText.isEmpty {
+                    exponentEntry = false
+                    entryText.removeLast(3)
+                }
+                else {
+                    exponentText.removeLast()
+                }
+                
+            default:
+                // No op
+                break
+
+            }
+        }
+        else {
+            switch keyCode {
+            case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
+                // Append a digit
+                appendTextEntry( String(keyCode.rawValue))
+                
+            case .dot:
+                appendTextEntry(".")
+                
+            case .eex:
+                startExpEntry()
+
+            case .sign:
+                flipTextSign()
+
+            case .back:
+                backspaceEntry()
+                
+                if !entryMode {
+                    // The backspace has deleted the last digit entry - we cancel entry mode
+                    return KeyPressResult.cancelEntry
+                }
+
+            default:
+                // No op
+                break
+            }
+        }
+        
+        return KeyPressResult.dataEntry
+    }
 }

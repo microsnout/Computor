@@ -20,7 +20,7 @@ struct KeyEvent {
 }
 
 enum KeyPressResult: Int {
-    case null = 0, dataEntry, macroOp, stateChange, stateUndo, stateError
+    case null = 0, dataEntry, cancelEntry, macroOp, stateChange, stateUndo, stateError
 }
 
 protocol KeyPressHandler {

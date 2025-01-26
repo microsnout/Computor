@@ -707,77 +707,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             entry.clearEntry()
         }
     }
-
     
-    func EntryModeKeypress(_ keyCode: KeyCode ) {
-        if entry.exponentEntry {
-            switch keyCode {
-            case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
-                // Append a digit to exponent
-                if entry.exponentText.starts( with: "-") && entry.exponentText.count < 4 || entry.exponentText.count < 3 {
-                    entry.appendExpEntry( String(keyCode.rawValue))
-                }
-
-            case .dot, .eex:
-                // No op
-                break
-                
-            case .sign:
-                if entry.exponentText.starts( with: "-") {
-                    entry.exponentText.removeFirst()
-                }
-                else {
-                    entry.exponentText.insert( "-", at: entry.exponentText.startIndex )
-                }
-
-            case .back:
-                if entry.exponentText.isEmpty {
-                    entry.exponentEntry = false
-                    entry.entryText.removeLast(3)
-                }
-                else {
-                    entry.exponentText.removeLast()
-                }
-                
-            default:
-                // No op
-                break
-
-            }
-        }
-        else {
-            switch keyCode {
-            case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
-                // Append a digit
-                entry.appendTextEntry( String(keyCode.rawValue))
-                
-            case .dot:
-                entry.appendTextEntry(".")
-                
-            case .eex:
-                entry.startExpEntry()
-
-            case .sign:
-                entry.flipTextSign()
-
-            case .back:
-                entry.backspaceEntry()
-                
-                if !entry.entryMode {
-                    // Exited entry mode
-                    // We backspace/undo out of entry mode - need to pop stack
-                    // to restore state before entry mode
-                    if let lastState = undoStack.pop() {
-                        state = lastState
-                    }
-                }
-
-            default:
-                // No op
-                break
-            }
-        }
-    }
     
     func macroKeypress( _ event: KeyEvent ) {
         if let kc = event.kcTop {
@@ -838,10 +768,21 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         if entry.entryMode {
-            // We are in data entry mode
             if entryKeys.contains(keyCode) {
-                // Process data entry event
-                EntryModeKeypress(keyCode)
+                // Process data entry key event
+                let keyRes = entry.entryModeKeypress(keyCode)
+                
+                if keyRes == .cancelEntry {
+                    // Exited entry mode
+                    // We backspace/undo out of entry mode - need to pop stack
+                    // to restore state before entry mode
+                    if let lastState = undoStack.pop() {
+                        state = lastState
+                    }
+                    return KeyPressResult.stateUndo
+                }
+                
+                // Stay in entry mode
                 return KeyPressResult.dataEntry
             }
             
