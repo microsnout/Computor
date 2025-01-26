@@ -1,6 +1,12 @@
+//
+// ShowSizes.swift
+//
 // Author: SwiftUI-Lab (swiftui-lab.com)
+//
 // Description: Implementation of the showSizes() debugging modifier
+//
 // blog article: https://swiftui-lab.com/layout-protocol-part-2
+//
 
 import SwiftUI
 

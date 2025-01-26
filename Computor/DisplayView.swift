@@ -4,32 +4,8 @@
 //
 //  Created by Barry Hall on 2021-10-28.
 //
-import Combine
 import SwiftUI
 
-class ObservableArray<T>: ObservableObject {
-
-    @Published var array:[T] = []
-    var cancellables = [AnyCancellable]()
-
-    init(array: [T]) {
-        self.array = array
-
-    }
-
-    func observeChildrenChanges<K>(_ type:K.Type) throws ->ObservableArray<T> where K : ObservableObject{
-        let array2 = array as! [K]
-        array2.forEach({
-            let c = $0.objectWillChange.sink(receiveValue: { _ in self.objectWillChange.send() })
-
-            // Important: You have to keep the returned value allocated,
-            // otherwise the sink subscription gets cancelled
-            self.cancellables.append(c)
-        })
-        return self
-    }
-
-}
 
 typealias TextSizeSpec = ( body: CGFloat, subscript: CGFloat, baseline: CGFloat )
 

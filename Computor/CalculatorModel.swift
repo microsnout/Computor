@@ -12,26 +12,6 @@ import OSLog
 let logM = Logger(subsystem: "com.microsnout.calculator", category: "model")
 
 
-func getInt( _ x: Double ) -> Int? {
-    /// Test if a Double is an integer
-    /// Valid down to 1.0000000000000005 or about 16 significant digits
-    ///
-    x == floor(x) ? Int(x) : nil
-}
-
-func isInt( _ x: Double ) -> Bool {
-    /// Test if a Double is an integer
-    /// Valid down to 1.0000000000000005 or about 16 significant digits
-    ///
-    x == floor(x)
-}
-
-func isEven( _ x: Int ) -> Bool {
-    // Return true if x is evenly divisible by 2.
-    x % 2 == 0
-}
-
-
 enum KeyCode: Int {
     case key0 = 0, key1, key2, key3, key4, key5, key6, key7, key8, key9
     
