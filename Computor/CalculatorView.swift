@@ -135,7 +135,7 @@ let psFormatL = PadSpec (
 let psFormatR = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
-    keys: [ Key(.noop),
+    keys: [ Key(.matrix, "ƒ{0.8}={[ ]}"),
             Key(.fixL, "ƒ{0.8}.00\u{2190}"),
             Key(.fixR, "ƒ{0.8}.00\u{2192}"),
         ],
@@ -284,6 +284,13 @@ func initKeyLayout() {
                         Key(.vector2V,  "\u{27e8}x , y\u{27e9}"),
                         Key(.polarV,    "\u{27e8}r , \u{03b8}\u{27e9}"),
                         Key(.complexV,  "x ç{Units}+ç{} yç{Units}iç{}"),
+                       ]
+    )
+
+    SubPadSpec.define( .matrix,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.iota,  "nç{Units}\u{03b9}ç{}"),
                        ]
     )
 }

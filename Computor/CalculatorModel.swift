@@ -43,6 +43,9 @@ enum KeyCode: Int {
     // Multi valued types
     case multiValue = 180, rationalV, vector2V, polarV, complexV
     
+    // Matrix operations
+    case matrix = 190, iota
+    
     case unitStart = 200
     
     // Length
@@ -688,6 +691,18 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 s1.stackDrop()
                 s1.set2( s0.X, s0.Y )
                 s1.Xstp = .polar
+                return s1
+            },
+        
+        .iota:
+            CustomOp { s0 in
+                guard s0.Xtv.isInteger else {
+                    return nil
+                }
+                var s1 = s0
+                let n = floor(s0.X)
+                let seq = 1 ... n
+//                s1.stack[regX].value.setShape( 1, rows: n, cols: 1 )
                 return s1
             },
 

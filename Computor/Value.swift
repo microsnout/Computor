@@ -10,7 +10,7 @@ import OSLog
 let logV = Logger(subsystem: "com.microsnout.calculator", category: "value")
 
 
-enum ValueType : Int {
+enum ValueType : Int, Hashable {
     case real = 0, rational, complex, vector, polar
 }
 
@@ -44,17 +44,23 @@ struct TaggedValue : RichRender {
 
     var storage: [Double] = [0.0]
 
-    var scalarSize: Int { mat / 1000 / 1000 }
+    var simpleSize: Int { mat / 1000 / 1000 }
     var rows: Int { mat / 1000 % 1000 }
     var cols: Int { mat % 1000 }
-    
-    var isScalar: Bool { self.rows == 1 && self.cols == 1 }
 
     var reg: Double {
         get { storage[0] }
         set { storage[0] = newValue }
     }
-    
+
+    var isMatrix: Bool   { self.rows > 1 || self.cols > 1 }
+    var isSimple: Bool   { self.rows == 1 && self.cols == 1 }
+    var isReal: Bool     { isSimple && vtp == .real }
+    var isInteger: Bool  { isReal && isInt(reg) }
+    var isComplex: Bool  { isSimple && vtp == .complex }
+    var isRational: Bool { isSimple && vtp == .rational }
+    var isVector: Bool   { isSimple && vtp == .vector }
+
     func get1( _ row: Int = 0, _ col: Int = 0 ) -> Double {
         let (ss, rows, _) = self.getShape()
         let index = (ss*rows)*col + ss*row
@@ -75,10 +81,10 @@ struct TaggedValue : RichRender {
         storage[index+1] = v2
     }
     
-    var capacity: Int { self.scalarSize * self.rows * self.cols }
+    var capacity: Int { self.simpleSize * self.rows * self.cols }
     
     func getShape() -> (Int, Int, Int) {
-        return (self.scalarSize, self.rows, self.cols)
+        return (self.simpleSize, self.rows, self.cols)
     }
     
     mutating func setShape( _ ss: Int = 1, rows: Int = 1, cols: Int = 1 ) {
@@ -181,9 +187,6 @@ struct TaggedValue : RichRender {
             text.append( "ç{Units}={,} \u{03b8}:ç{}")
             text.append( renderDouble(y))
             text.append("ç{Units}\u{276d}ç{}")
-            
-        default:
-            text.append("Unknown scalar")
         }
 
         if let sym = tag.symbol {
