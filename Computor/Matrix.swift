@@ -44,7 +44,22 @@ func installMatrix( _ model: CalculatorModel ) {
                 
                 // No new state
                 return nil
-            }
+            },
+
+        .reduce:
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isMatrix && s0.Xtv.cols == 1 && s0.Ytv.isSimple else {
+                    // Require a single column vector of any type and a simple/scalar constant
+                    return nil
+                }
+                
+                // Create a Reduce function obj capturing the value list and mode reference
+                let reduceFn = ReduceFunction( valueList: s0.Xtv, model: model)
+                model.setModalFunction(reduceFn)
+                
+                // No new state
+                return nil
+            },
     ])
 }
 
@@ -98,6 +113,42 @@ struct MapFunction : ModalFunction {
         
         // Push final result list
         model.enterValue(resultList)
+        return KeyPressResult.stateChange
+    }
+}
+
+
+struct ReduceFunction : ModalFunction {
+    
+    let valueList:     TaggedValue
+    
+    let model: CalculatorModel
+    
+    var statusString: String? { "ç{Units}Reduce x:r_{0}, y:" }
+    
+    func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
+        
+        // Start with empty output list
+        let seqRows    = valueList.rows
+        
+        // Remove value list parameter from stack, but not initial result
+        model.state.stackDrop()
+
+        for r in 1 ... seqRows {
+            
+            if let value = valueList.getValue( row: r) {
+                
+                model.enterValue( value )
+
+                if model.keyPress( event ) != .stateChange {
+                    return KeyPressResult.stateError
+                }
+            }
+            
+            
+        }
+        
+        // Final result is already on stack X
         return KeyPressResult.stateChange
     }
 }
