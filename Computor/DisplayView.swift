@@ -47,7 +47,7 @@ struct Display: View {
     var body: some View {
         let _ = Self._printChanges()
         
-        let midText = model.error ? "ç{StatusRedText}Errorç{}" : ""
+        let midText = model.status.midText
         
         let rightText = model.isKeyRecording() ? "ç{StatusRedText}RECç{}" : ""
         

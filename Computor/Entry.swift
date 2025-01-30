@@ -46,7 +46,7 @@ struct EntryState {
         // Remove all commas
         num.removeAll( where: { $0 == "," })
 
-        var tv: TaggedValue = untypedZero
+        var tv = TaggedValue()
         
         if exponentEntry && !exponentText.isEmpty {
             /// Exponential entered

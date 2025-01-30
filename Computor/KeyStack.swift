@@ -20,7 +20,15 @@ struct KeyEvent {
 }
 
 enum KeyPressResult: Int {
-    case null = 0, dataEntry, cancelEntry, macroOp, stateChange, stateUndo, stateError
+    case null = 0,
+         dataEntry,         // Data enty keys like digits, EE
+         cancelEntry,       // An undo/back that canceled data entry
+         macroOp,           // A macro control op key like rec, stop, clear
+         stateChange,       // The key has produced a successful state change
+         stateUndo,         // An undo op, return to previous state
+         stateError,        // An error display Error status
+         modalFunction,     // Start modal function, no new state yet
+         modalFnNewState    // Start modal function with new state
 }
 
 protocol KeyPressHandler {

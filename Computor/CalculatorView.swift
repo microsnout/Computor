@@ -290,7 +290,9 @@ func initKeyLayout() {
     SubPadSpec.define( .matrix,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.iota,  "nç{Units}\u{03b9}ç{}"),
+                        Key(.seq,    "ƒ{0.8}Seq"),
+                        Key(.map,    "ƒ{0.8}Map"),
+                        Key(.reduce, "ƒ{0.8}Reduce"),
                        ]
     )
 }

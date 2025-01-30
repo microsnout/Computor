@@ -14,6 +14,14 @@ enum ValueType : Int, Hashable {
     case real = 0, rational, complex, vector, polar
 }
 
+let valueSize: [ValueType : Int] = [
+    .real : 1,
+    .rational : 2,
+    .complex : 2,
+    .vector : 2,
+    .polar : 2
+]
+
 enum FormatStyle : UInt {
     
     // These values match raw values with NumberFormater.Style
@@ -60,25 +68,66 @@ struct TaggedValue : RichRender {
     var isComplex: Bool  { isSimple && vtp == .complex }
     var isRational: Bool { isSimple && vtp == .rational }
     var isVector: Bool   { isSimple && vtp == .vector }
-
-    func get1( _ row: Int = 0, _ col: Int = 0 ) -> Double {
+    
+    private func storageIndex( _ ssx: Int = 1, row: Int, col: Int = 1 ) -> Int {
         let (ss, rows, _) = self.getShape()
-        let index = (ss*rows)*col + ss*row
-        return storage[index]
+        return (col-1)*ss*rows + (row-1)*ss + (ssx-1)
     }
     
-    func get2( _ row: Int = 0, _ col: Int = 0 ) -> (Double, Double) {
-        let (ss, rows, _) = self.getShape()
-        let index = (ss*rows)*col + ss*row
+    private func valueIndex( _ row: Int, _ col: Int = 1) -> Int {
+        let (ss, rows, _) = getShape()
+        return (col-1)*ss*rows + (row-1)*ss
+    }
+    
+    func get1( _ r: Int = 1, _ c: Int = 1 ) -> Double? {
+        let index = storageIndex( row: r, col: c)
+        return storage[index]
+    }
+
+    mutating func set1( _ value: Double, _ r: Int = 1, _ c: Int = 1 ) {
+        let index = storageIndex( row: r, col: c)
+        storage[index] = value
+    }
+
+    func get2( _ r: Int = 1, _ c: Int = 1 ) -> (Double, Double) {
+        let index = storageIndex( row: r, col: c)
         return (storage[index], storage[index+1])
     }
     
-    mutating func set2( _ v1: Double, _ v2: Double, row: Int = 0, col: Int = 0 ) {
-        let (ss, rows, _) = self.getShape()
-        let index = (ss*rows)*col + ss*row
+    mutating func set2( _ v1: Double, _ v2: Double, _ r: Int = 1, _ c: Int = 1 ) {
+        let index = storageIndex( row: r, col: c)
         self.setShape(2)
         storage[index]   = v1
         storage[index+1] = v2
+    }
+    
+    func getValue( row: Int = 1, col: Int = 1 ) -> TaggedValue? {
+        let (ss, rows, cols) = getShape()
+        
+        if ( row > rows || col > cols ) {
+            return nil
+        }
+
+        let index = valueIndex(row, col)
+        var value = TaggedValue(self.vtp, tag: self.tag, format: self.fmt)
+        
+        for n in 0 ..< ss {
+            value.storage[n] = self.storage[index+n]
+        }
+        return value
+    }
+
+    mutating func setValue( _ value: TaggedValue, row: Int = 1, col: Int = 1 ) {
+        let (ss, rows, cols) = getShape()
+        if ( row > rows || col > cols ) {
+            return
+        }
+
+        let index = valueIndex(row, col)
+
+        for n in 0 ..< ss {
+            storage[index+n] = value.storage[n]
+        }
     }
     
     var capacity: Int { self.simpleSize * self.rows * self.cols }
@@ -87,7 +136,7 @@ struct TaggedValue : RichRender {
         return (self.simpleSize, self.rows, self.cols)
     }
     
-    mutating func setShape( _ ss: Int = 1, rows: Int = 1, cols: Int = 1 ) {
+    mutating func setShape( _ ss: Int = 1, _ rows: Int = 1, _ cols: Int = 1 ) {
         self.mat = cols + rows*1000 + ss*1000*1000
         
         self.storage = [Double]( repeating: 0.0, count: self.capacity )
@@ -104,13 +153,21 @@ struct TaggedValue : RichRender {
         return self.tag.uid == uid
     }
     
-    init( _ tag: TypeTag, _ reg: Double = 0.0, format: FormatRec = FormatRec() ) {
-        self.vtp = .real
+    init( _ vtp: ValueType = .real, tag: TypeTag = tagUntyped, reg: Double = 0.0,
+          format: FormatRec = FormatRec(), rows: Int = 1, cols: Int = 1 ) {
+        self.vtp = vtp
         self.tag = tag
         self.fmt = format
-        self.mat = 1001
+        self.mat = 001001001
         
-        storage[0] = reg
+        // Lookup simple value size
+        let ss = valueSize[vtp] ?? 1
+        
+        setShape(ss, rows, cols)
+        
+        if isReal {
+            storage[0] = reg
+        }
     }
     
     func renderDouble( _ reg: Double ) -> String {
@@ -141,6 +198,11 @@ struct TaggedValue : RichRender {
     }
     
     func renderRichText() -> String {
+        if isMatrix {
+            let ( _, rows, cols) = getShape()
+            return "ç{Units}[ç{}\(rows)ç{Units} x ç{}\(cols)ç{Units}]ç{}"
+        }
+        
         if fmt.style == .angleDMS {
             // Degrees Minutes Seconds angle display
             let neg = reg < 0.0 ? -1.0 : 1.0
@@ -222,4 +284,4 @@ struct NamedValue : RichRender {
 }
 
 
-let untypedZero: TaggedValue = TaggedValue(tagUntyped)
+let untypedZero: TaggedValue = TaggedValue( tag: tagUntyped)

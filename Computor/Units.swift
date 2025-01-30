@@ -564,13 +564,13 @@ func normalizeTypeCode( _ tc: inout TypeCode ) {
 }
 
 
-protocol ConversionOp {
+protocol UnitConversionOp {
     func op( _ x: Double ) -> Double
     
     func opRev( _ x: Double ) -> Double
 }
 
-struct OffsetOp : ConversionOp {
+struct OffsetOp : UnitConversionOp {
     let offset: Double
     
     init( _ offset: Double ) {
@@ -586,7 +586,7 @@ struct OffsetOp : ConversionOp {
     }
 }
 
-struct ScaleOp : ConversionOp {
+struct ScaleOp : UnitConversionOp {
     let scale: Double
     
     init( _ scale: Double ) {
@@ -602,10 +602,10 @@ struct ScaleOp : ConversionOp {
     }
 }
 
-struct ConversionSeq : ConversionOp {
-    var opSeq: [ConversionOp]
+struct ConversionSeq : UnitConversionOp {
+    var opSeq: [UnitConversionOp]
     
-    init( _ seq: [ConversionOp] ) {
+    init( _ seq: [UnitConversionOp] ) {
         self.opSeq = seq
     }
     

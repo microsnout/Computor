@@ -15,6 +15,9 @@ struct ComputorApp: App {
     init() {
         initKeyLayout()
         TypeDef.buildUnitData()
+        
+        // Addon modules 
+//        installMatrix()
     }
     
     var body: some Scene {

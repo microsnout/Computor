@@ -12,10 +12,10 @@ let logS = Logger(subsystem: "com.microsnout.calculator", category: "state")
 
 
 // Standard HP calculator registers
-let stackPrefixValues = ["X", "Y", "Z", "T"]
+let stackPrefixValues = ["X", "Y", "Z", "T", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
 // Register index values
-let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 4
+let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 16
 
 struct FnRec {
     var caption: String
@@ -42,7 +42,7 @@ struct CalcState {
         }
         
         if let seq = unitConvert( from: Xt, to: toTag ) {
-            Xtv = TaggedValue( toTag, seq.op(X) )
+            Xtv = TaggedValue( tag: toTag, reg: seq.op(X) )
             return true
         }
         
@@ -122,8 +122,12 @@ struct CalcState {
         set { stack[regT].value.reg = newValue }
     }
     
-    mutating func set2( _ v1: Double, _ v2: Double, row: Int = 0, col: Int = 0 ) {
-        stack[regX].value.set2( v1, v2, row: row, col: col)
+    mutating func set2( _ v1: Double, _ v2: Double, row: Int = 1, col: Int = 1 ) {
+        self.stack[regX].value.set2( v1, v2, row, col)
+    }
+    
+    mutating func setShape( _ ss: Int = 1, rows: Int = 1, cols: Int = 1 ) {
+        stack[regX].value.setShape( ss, rows, cols)
     }
 
     mutating func stackDrop(_ by: Int = 1 ) {

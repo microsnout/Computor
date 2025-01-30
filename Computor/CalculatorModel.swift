@@ -44,7 +44,7 @@ enum KeyCode: Int {
     case multiValue = 180, rationalV, vector2V, polarV, complexV
     
     // Matrix operations
-    case matrix = 190, iota
+    case matrix = 190, seq, map, reduce
     
     case unitStart = 200
     
@@ -113,6 +113,90 @@ protocol StateOperator {
 }
 
 
+struct CustomOp: StateOperator {
+    let block: (CalcState) -> CalcState?
+    
+    init(_ block: @escaping (CalcState) -> CalcState? ) {
+        self.block = block
+    }
+    
+    func transition(_ s0: CalcState ) -> CalcState? {
+        return block(s0)
+    }
+}
+
+struct ConversionOp: StateOperator {
+    let block: (TaggedValue) -> TaggedValue?
+    
+    init(_ block: @escaping (TaggedValue) -> TaggedValue? ) {
+        self.block = block
+    }
+    
+    func transition(_ s0: CalcState ) -> CalcState? {
+        var s1 = s0
+        
+        if let newTV = block( s0.Xtv ) {
+            s1.Xtv = newTV
+            return s1
+        }
+        else {
+            return nil
+        }
+    }
+}
+
+struct Convert: StateOperator {
+    let toType: TypeTag
+    let toFmt: FormatRec?
+    
+    init( to: TypeTag, fmt: FormatRec? = nil ) {
+        self.toType = to
+        self.toFmt = fmt
+    }
+    
+    init( sym: String, fmt: FormatRec? = nil ) {
+        self.toType = TypeDef.symDict[sym, default: tagUntyped]
+        self.toFmt = fmt
+    }
+    
+    func transition(_ s0: CalcState ) -> CalcState? {
+        var s1 = s0
+
+        if s1.convertX( toTag: toType) {
+            if let fmt = toFmt {
+                s1.Xfmt = fmt
+            }
+            else {
+                s1.Xfmt = s0.Xfmt
+            }
+            return s1
+        }
+        else {
+            return nil
+        }
+    }
+}
+
+struct Constant: StateOperator {
+    let value: Double
+    let tag: TypeTag
+
+    init( _ value: Double, tag: TypeTag = tagUntyped ) {
+        self.value = value
+        self.tag = tag
+    }
+    
+    func transition(_ s0: CalcState ) -> CalcState? {
+        var s1 = s0
+        s1.stackLift()
+        s1.X = self.value
+        s1.Xt = self.tag
+        s1.Xfmt = CalcState.defaultDecFormat
+        return s1
+    }
+}
+
+
 protocol MacroOp {
     func execute( _ model: CalculatorModel ) -> KeyPressResult
 
@@ -148,21 +232,74 @@ struct MacroValue: MacroOp {
 }
 
 
+protocol ModalFunction {
+    
+    // String to display while modal function is active
+    var statusString: String? { get }
+    
+    // Key event handler for modal function
+    func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult
+}
+
+
+struct StatusState {
+    var statusLeft:  String? = nil
+    var statusMid:   String? = nil
+    var statusRight: String? = nil
+    
+    var error = false
+    
+    var midText: String {
+        if error {
+            return "ç{StatusRedText}Errorç{}"
+        }
+        
+        return statusMid ?? ""
+    }
+
+}
+
+
 class CalculatorModel: ObservableObject, KeyPressHandler {
     // Current Calculator State
-    @Published var state = CalcState()
-    @Published var entry = EntryState()
-    @Published var aux   = AuxState()
-    
-    @Published var error = false
+    @Published var state  = CalcState()
+    @Published var entry  = EntryState()
+    @Published var aux    = AuxState()
+    @Published var status = StatusState()
     
     var undoStack = UndoStack()
+    
+    private var modalFunction : ModalFunction? = nil
+    
+    func setModalFunction( _ fn: ModalFunction ) {
+        // Set fn as handler to receive next event, display status indicator
+        modalFunction = fn
+        status.statusMid = fn.statusString
+    }
+    
+    func clearModalFunction() {
+        modalFunction = nil
+        status.statusMid = nil
+    }
 
     // Display window into register stack
     @AppStorage(.settingsDisplayRows)
     private var displayRows = 3
     
     var rowCount: Int { return displayRows}
+    
+    init() {
+        self.state  = CalcState()
+        self.entry  = EntryState()
+        self.aux    = AuxState()
+        self.status = StatusState()
+        
+        self.undoStack   = UndoStack()
+        self.modalFunction = nil
+        self.displayRows = 3
+        
+        installMatrix(self)
+    }
     
     // **** Macro Recording Stuff ***
     
@@ -375,91 +512,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
     }
     
-    
-    struct CustomOp: StateOperator {
-        let block: (CalcState) -> CalcState?
-        
-        init(_ block: @escaping (CalcState) -> CalcState? ) {
-            self.block = block
-        }
-        
-        func transition(_ s0: CalcState ) -> CalcState? {
-            return block(s0)
-        }
+    static func defineOpCodes( _ newOpSet: [KeyCode : StateOperator] ) {
+        // Add new operators to opTable, replacing duplicates with new value
+        CalculatorModel.opTable.merge(newOpSet) { (_, newOp) in newOp }
     }
     
-    struct ConversionOp: StateOperator {
-        let block: (TaggedValue) -> TaggedValue?
-        
-        init(_ block: @escaping (TaggedValue) -> TaggedValue? ) {
-            self.block = block
-        }
-        
-        func transition(_ s0: CalcState ) -> CalcState? {
-            var s1 = s0
-            
-            if let newTV = block( s0.Xtv ) {
-                s1.Xtv = newTV
-                return s1
-            }
-            else {
-                return nil
-            }
-        }
-    }
-    
-    struct Convert: StateOperator {
-        let toType: TypeTag
-        let toFmt: FormatRec?
-        
-        init( to: TypeTag, fmt: FormatRec? = nil ) {
-            self.toType = to
-            self.toFmt = fmt
-        }
-        
-        init( sym: String, fmt: FormatRec? = nil ) {
-            self.toType = TypeDef.symDict[sym, default: tagUntyped]
-            self.toFmt = fmt
-        }
-        
-        func transition(_ s0: CalcState ) -> CalcState? {
-            var s1 = s0
-
-            if s1.convertX( toTag: toType) {
-                if let fmt = toFmt {
-                    s1.Xfmt = fmt
-                }
-                else {
-                    s1.Xfmt = s0.Xfmt
-                }
-                return s1
-            }
-            else {
-                return nil
-            }
-        }
-    }
-    
-    struct Constant: StateOperator {
-        let value: Double
-        let tag: TypeTag
-
-        init( _ value: Double, tag: TypeTag = tagUntyped ) {
-            self.value = value
-            self.tag = tag
-        }
-        
-        func transition(_ s0: CalcState ) -> CalcState? {
-            var s1 = s0
-            s1.stackLift()
-            s1.X = self.value
-            s1.Xt = self.tag
-            s1.Xfmt = CalcState.defaultDecFormat
-            return s1
-        }
-    }
-    
-    let opTable: [KeyCode : StateOperator] = [
+    static var opTable: [KeyCode : StateOperator] = [
         .plus:  BinaryOpAdditive( + ),
         .minus: BinaryOpAdditive( - ),
         .times: BinaryOpMultiplicative( .times ),
@@ -498,7 +556,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 if let tag = typeNthRoot(s0.Xt, n: 2) {
                     // Successful nth root of type tag
                     var s1 = s0
-                    s1.Xtv = TaggedValue(tag, sqrt(s0.X), format: s0.Xfmt)
+                    s1.Xtv = TaggedValue( tag: tag, reg: sqrt(s0.X), format: s0.Xfmt)
                     return s1
                 }
                 
@@ -507,7 +565,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             },
         
         .y2x:
-            CustomOp { s0 in
+            CustomOp { (s0: CalcState) -> CalcState? in
                 if s0.Xt != tagUntyped {
                     // Exponent must be untyped value
                     return nil
@@ -527,7 +585,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     // Successful type exponentiation
                     var s1 = s0
                     s1.stackDrop()
-                    s1.Xtv = TaggedValue(tag, pow(s0.Y, s0.X), format: s0.Yfmt)
+                    s1.Xtv = TaggedValue( tag: tag, reg: pow(s0.Y, s0.X), format: s0.Yfmt)
                     return s1
                 }
                 
@@ -539,7 +597,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             CustomOp { s0 in
                 if let (tag, ratio) = typeProduct(s0.Xt, s0.Xt) {
                     var s1 = s0
-                    s1.Xtv = TaggedValue(tag, s0.X * s0.X, format: s0.Xfmt)
+                    s1.Xtv = TaggedValue(tag: tag, reg: s0.X * s0.X, format: s0.Xfmt)
                     return s1
                 }
                 return nil
@@ -549,7 +607,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             CustomOp { s0 in
                 if s0.Xt == tagUntyped {
                     var s1 = s0
-                    s1.Xtv = TaggedValue(s0.Yt, s0.X / 100.0 * s0.Y, format: s0.Yfmt)
+                    s1.Xtv = TaggedValue( tag: s0.Yt, reg: s0.X / 100.0 * s0.Y, format: s0.Yfmt)
                     return s1
                 }
                 return nil
@@ -559,7 +617,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             CustomOp { s0 in
                 if let (tag, ratio) = typeProduct(tagUntyped, s0.Xt, quotient: true) {
                     var s1 = s0
-                    s1.Xtv = TaggedValue(tag, 1.0 / s0.X, format: s0.Xfmt)
+                    s1.Xtv = TaggedValue( tag: tag, reg: 1.0 / s0.X, format: s0.Xfmt)
                     return s1
                 }
                 return nil
@@ -594,9 +652,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             // Clear registers
             CustomOp { s0 in
                 var s1 = s0
-                s1.Xtv = untypedZero
-                s1.Ytv = untypedZero
-                s1.Ztv = untypedZero
+                
+                for i in 0 ..< stackSize {
+                    s1.stack[i].value = untypedZero
+                }
                 s1.noLift = true
                 return s1
             },
@@ -638,7 +697,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         .rationalV:
             // Form rational value from x, y
-            CustomOp { s0 in
+            CustomOp { (s0: CalcState) -> CalcState? in
                 guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) && isInt(s0.X) && isInt(s0.Y) && s0.Y != 0.0
                 else {
                     return nil
@@ -657,7 +716,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
 
         .complexV:
             // Form complex value from x, y
-            CustomOp { s0 in
+            CustomOp { (s0: CalcState) -> CalcState? in
                 guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
                     return nil
                 }
@@ -670,7 +729,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
 
         .vector2V:
             // Form vector value from x, y
-            CustomOp { s0 in
+            CustomOp { (s0: CalcState) -> CalcState? in
                 guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
                     return nil
                 }
@@ -683,7 +742,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
 
         .polarV:
             // Form polar value from x, y
-            CustomOp { s0 in
+            CustomOp { (s0: CalcState) -> CalcState? in
                 guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
                     return nil
                 }
@@ -694,18 +753,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 return s1
             },
         
-        .iota:
-            CustomOp { s0 in
-                guard s0.Xtv.isInteger else {
-                    return nil
-                }
-                var s1 = s0
-                let n = floor(s0.X)
-                let seq = 1 ... n
-//                s1.stack[regX].value.setShape( 1, rows: n, cols: 1 )
-                return s1
-            },
-
         .deg: Convert( sym: "deg", fmt: FormatRec( style: .decimal) ),
         .rad: Convert( sym: "rad", fmt: FormatRec( style: .decimal) ),
         .dms: Convert( sym: "deg", fmt: FormatRec( style: .angleDMS)),
@@ -826,6 +873,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             aux.recordKeyFn(keyCode)
         }
         
+        if let modalFn = self.modalFunction {
+            // Pass key event to sub function processor like reduce matrix
+            clearModalFunction()
+            
+            if keyCode == .back {
+                // Cancel modal function execution
+                return KeyPressResult.stateUndo
+            }
+            return modalFn.keyPress(event, model: self)
+        }
+        
         switch keyCode {
         case .back:
             // Undo last operation by restoring previous state
@@ -889,7 +947,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             }
 
         default:
-            if let op = opTable[keyCode] {
+            if let op = CalculatorModel.opTable[keyCode] {
                 // Transition to new calculator state based on operation
                 undoStack.push(state)
                 
@@ -918,6 +976,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     if let lastState = undoStack.pop() {
                         state = lastState
                     }
+                    
+                    if modalFunction != nil {
+                        // Modal function started with no state change, not an error
+                        return KeyPressResult.modalFunction
+                    }
+                    
                 }
             }
             else if keyCode.isUnit {
@@ -944,11 +1008,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             }
             
             // Display 'error' indicator in primary display
-            self.error = true
+            self.status.error = true
             
             Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { timer in
                 // Clear 'error' indication
-                self.error = false
+                self.status.error = false
             }
             
             return KeyPressResult.stateError
