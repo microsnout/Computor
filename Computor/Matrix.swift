@@ -10,6 +10,28 @@ import OSLog
 let logX = Logger(subsystem: "com.microsnout.calculator", category: "matrix")
 
 
+extension TaggedValue {
+    
+    func renderMatrix() -> String {
+        
+        let ( _, rows, cols) = getShape()
+        
+        if cols > 1 {
+            return "ç{Units}[ç{}\(rows)ç{Units} x ç{}\(cols)ç{Units}]ç{}"
+        }
+        
+        var text = "ç{Units}[ç{}"
+        
+        for r in 1 ... rows {
+            text.append( renderValueSimple(r))
+            text.append( r == rows ? "ç{Units}]ç{}" : "ç{Units}, ç{}")
+        }
+        
+        return text
+    }
+}
+
+
 func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpCodes( [
@@ -124,7 +146,7 @@ struct ReduceFunction : ModalFunction {
     
     let model: CalculatorModel
     
-    var statusString: String? { "ç{Units}Reduce x:r_{0}, y:" }
+    var statusString: String? { "ƒ{0.9}ç{Units}Reduce x:[] y:r_{0}" }
     
     func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
         
@@ -144,8 +166,6 @@ struct ReduceFunction : ModalFunction {
                     return KeyPressResult.stateError
                 }
             }
-            
-            
         }
         
         // Final result is already on stack X

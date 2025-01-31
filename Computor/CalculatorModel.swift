@@ -881,6 +881,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // Cancel modal function execution
                 return KeyPressResult.stateUndo
             }
+            undoStack.push(state)
             return modalFn.keyPress(event, model: self)
         }
         

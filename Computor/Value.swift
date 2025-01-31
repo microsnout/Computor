@@ -79,7 +79,7 @@ struct TaggedValue : RichRender {
         return (col-1)*ss*rows + (row-1)*ss
     }
     
-    func get1( _ r: Int = 1, _ c: Int = 1 ) -> Double? {
+    func get1( _ r: Int = 1, _ c: Int = 1 ) -> Double {
         let index = storageIndex( row: r, col: c)
         return storage[index]
     }
@@ -197,10 +197,75 @@ struct TaggedValue : RichRender {
         return "Unknown Fmt"
     }
     
+    func renderValueReal( _ row: Int = 1, _ col: Int = 1 ) -> String {
+        let value = get1( row, col)
+        return renderDouble(value)
+    }
+
+    func renderValueRational( _ row: Int = 1, _ col: Int = 1 ) -> String {
+        let (num, den) = get2( row, col)
+        var text = String()
+        text.append( renderDouble(num))
+        text.append( "={/}" )
+        text.append( renderDouble(den))
+        return text
+    }
+
+    func renderValueComplex( _ row: Int = 1, _ col: Int = 1 ) -> String {
+        let (re, im) = get2( row, col)
+        var text = String()
+        let neg = im < 0.0
+        text.append( renderDouble(re))
+        text.append( neg ? "ç{Units}={ - }ç{}" : "ç{Units}={ + }ç{}")
+        text.append( renderDouble( neg ? -im : im))
+        text.append("ç{Units}={i}ç{}")
+        return text
+    }
+    
+    func renderValueVector( _ row: Int = 1, _ col: Int = 1 ) -> String {
+        let (x, y) = get2( row, col)
+        var text = String()
+        text.append("ç{Units}\u{276c}ç{}")
+        text.append( renderDouble(x))
+        text.append( "ç{Units}={ ,}ç{}")
+        text.append( renderDouble(y))
+        text.append("ç{Units}\u{276d}ç{}")
+        return text
+    }
+    
+    func renderValuePolar( _ row: Int = 1, _ col: Int = 1 ) -> String {
+        let (r, w) = get2( row, col)
+        var text = String()
+        text.append("ç{Units}\u{276c} r:ç{}")
+        text.append( renderDouble(r))
+        text.append( "ç{Units}={,} \u{03b8}:ç{}")
+        text.append( renderDouble(w))
+        text.append("ç{Units}\u{276d}ç{}")
+        return text
+    }
+    
+    func renderValueSimple( _ row: Int = 1, _ col: Int = 1 ) -> String {
+        switch vtp {
+        case .real:
+            return renderValueReal(row, col)
+            
+        case .rational:
+            return renderValueRational(row, col)
+
+        case .complex:
+            return renderValueComplex(row, col)
+
+        case .vector:
+            return renderValueVector(row, col)
+
+        case .polar:
+            return renderValuePolar(row, col)
+        }
+    }
+
     func renderRichText() -> String {
         if isMatrix {
-            let ( _, rows, cols) = getShape()
-            return "ç{Units}[ç{}\(rows)ç{Units} x ç{}\(cols)ç{Units}]ç{}"
+            return renderMatrix()
         }
         
         if fmt.style == .angleDMS {
@@ -214,48 +279,7 @@ struct TaggedValue : RichRender {
             return String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
         }
         
-        var text = String()
-        
-        switch vtp {
-        case .real:
-            text.append( renderDouble(reg) )
-            
-        case .rational:
-            let (num, den) = get2()
-            text.append( renderDouble(num))
-            text.append( "={/}" )
-            text.append( renderDouble(den))
-
-        case .complex:
-            let (re, im) = get2()
-            let neg = im < 0.0
-            text.append( renderDouble(re))
-            text.append( neg ? "ç{Units}={ - }ç{}" : "ç{Units}={ + }ç{}")
-            text.append( renderDouble( neg ? -im : im))
-            text.append("ç{Units}={i}ç{}")
-
-        case .vector:
-            let (x, y) = get2()
-            text.append("ç{Units}\u{276c}ç{}")
-            text.append( renderDouble(x))
-            text.append( "ç{Units}={ ,}ç{}")
-            text.append( renderDouble(y))
-            text.append("ç{Units}\u{276d}ç{}")
-
-        case .polar:
-            let (x, y) = get2()
-            text.append("ç{Units}\u{276c} r:ç{}")
-            text.append( renderDouble(x))
-            text.append( "ç{Units}={,} \u{03b8}:ç{}")
-            text.append( renderDouble(y))
-            text.append("ç{Units}\u{276d}ç{}")
-        }
-
-        if let sym = tag.symbol {
-            text.append( "ƒ{0.8}={ }ç{Units}\(sym)ç{}ƒ{}" )
-        }
-        
-        return text
+        return renderValueSimple()
     }
 }
 
