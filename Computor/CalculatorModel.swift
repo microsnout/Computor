@@ -44,7 +44,7 @@ enum KeyCode: Int {
     case multiValue = 180, rationalV, vector2V, polarV, complexV
     
     // Matrix operations
-    case matrix = 190, seq, map, reduce
+    case matrix = 190, range, seq, map, reduce
     
     case unitStart = 200
     
@@ -193,41 +193,6 @@ struct Constant: StateOperator {
         s1.Xt = self.tag
         s1.Xfmt = CalcState.defaultDecFormat
         return s1
-    }
-}
-
-
-protocol MacroOp {
-    func execute( _ model: CalculatorModel ) -> KeyPressResult
-
-    func getRichText( _ model: CalculatorModel ) -> String
-}
-
-struct MacroKey: MacroOp {
-    var kc: KeyCode
-    
-    func execute( _ model: CalculatorModel ) -> KeyPressResult {
-        return model.keyPress( KeyEvent( kc: kc) )
-    }
-    
-    func getRichText( _ model: CalculatorModel ) -> String {
-        if let key = Key.keyList[kc] {
-            return key.text ?? model.getKeyText(kc) ?? "??"
-        }
-        return "??"
-    }
-}
-
-struct MacroValue: MacroOp {
-    var tv: TaggedValue
-    
-    func execute( _ model: CalculatorModel ) -> KeyPressResult {
-        model.enterValue(tv)
-        return KeyPressResult.stateChange
-    }
-    
-    func getRichText( _ model: CalculatorModel ) -> String {
-        return tv.renderRichText()
     }
 }
 

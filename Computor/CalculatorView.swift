@@ -291,6 +291,7 @@ func initKeyLayout() {
                        keySpec: ksSubFn,
                        keys: [
                         Key(.seq,    "ƒ{0.8}Seq"),
+                        Key(.range,  "ƒ{0.8}Range"),
                         Key(.map,    "ƒ{0.8}Map"),
                         Key(.reduce, "ƒ{0.8}Reduce"),
                        ]

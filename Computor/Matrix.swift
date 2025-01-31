@@ -14,16 +14,27 @@ extension TaggedValue {
     
     func renderMatrix() -> String {
         
+        let maxStrCount = 15
+        
         let ( _, rows, cols) = getShape()
         
         if cols > 1 {
             return "ç{Units}[ç{}\(rows)ç{Units} x ç{}\(cols)ç{Units}]ç{}"
         }
         
-        var text = "ç{Units}[ç{}"
+        var text  = "ç{Units}[ç{}"
+        var count = 1
         
         for r in 1 ... rows {
-            text.append( renderValueSimple(r))
+            let str = renderValueSimple(r)
+            
+            count += str.count - 3
+            
+            if count > maxStrCount {
+                text.append( "ç{Units}={..]}ç{}" )
+                return text
+            }
+            text.append(str)
             text.append( r == rows ? "ç{Units}]ç{}" : "ç{Units}, ç{}")
         }
         
@@ -36,6 +47,54 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpCodes( [
         .seq:
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isInteger && s0.Ytv.isSimple && s0.Ztv.isSimple else {
+                    return nil
+                }
+                // Copy parameters n and inc from s0
+                let n = Int(floor(s0.X))
+                let seq = 1 ... n
+                let inc = s0.Ytv
+
+                // Copy intial value from s0 and create result array of size n
+                var result = s0.Ztv
+                let ss = result.simpleSize
+                result.setShape( ss, n, 1 )
+                
+                // Remove N and increment value from stack
+                model.state.stackDrop()
+                model.state.stackDrop()
+                
+                model.undoStack.pause()
+                model.aux.pauseRecording()
+                
+                for r in seq {
+                    // Copy current result value to result array
+                    result.setValue(model.state.Xtv, row: r)
+                    
+                    // Increment X value by inc
+                    model.enterValue(inc)
+                    
+                    if model.keyPress( KeyEvent( kc: .plus)) != .stateChange {
+                        // Addition error
+                        model.aux.resumeRecording()
+                        model.undoStack.resume()
+                        return nil
+                    }
+                    
+                }
+                model.aux.resumeRecording()
+                model.undoStack.resume()
+
+                // Copy state, remove parameters and put result in X
+                var s1 = s0
+                s1.stackDrop()
+                s1.stackDrop()
+                s1.stack[regX].value = result
+                return s1
+            },
+        
+        .range:
             CustomOp { (s0: CalcState) -> CalcState? in
                 guard s0.Xtv.isInteger else {
                     return nil
