@@ -199,7 +199,14 @@ struct TaggedValue : RichRender {
     
     func renderValueReal( _ row: Int = 1, _ col: Int = 1 ) -> String {
         let value = get1( row, col)
-        return renderDouble(value)
+        var text = renderDouble(value)
+        
+        if tag != tagUntyped {
+            if let sym = tag.symbol {
+                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+            }
+        }
+        return text
     }
 
     func renderValueRational( _ row: Int = 1, _ col: Int = 1 ) -> String {
