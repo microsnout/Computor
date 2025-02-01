@@ -40,7 +40,8 @@ struct MacroValue: MacroOp {
     }
     
     func getRichText( _ model: CalculatorModel ) -> String {
-        return tv.renderRichText()
+        let (str, _) = tv.renderRichText()
+        return str
     }
 }
 

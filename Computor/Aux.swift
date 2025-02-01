@@ -111,7 +111,7 @@ struct MemoryDetailView: View {
     
     var body: some View {
         let nv = model.state.memory[index]
-        let textValue = nv.value.renderRichText()
+        let (textValue, _) = nv.value.renderRichText()
         
         Form {
             TextField( "-Unnamed-", text: $editText )
@@ -160,7 +160,9 @@ struct MemoryListView: View {
                 
                 List {
                     ForEach ( Array(strList.enumerated()), id: \.offset ) { index, item in
-                        let (prefix, value) = item
+                        
+                        // Not using render count for now
+                        let (prefix, (value, _)) = item
                         
                         VStack( alignment: .leading, spacing: 0 ) {
                             let name: String = prefix ?? "-name-"

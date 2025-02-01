@@ -12,33 +12,42 @@ let logX = Logger(subsystem: "com.microsnout.calculator", category: "matrix")
 
 extension TaggedValue {
     
-    func renderMatrix() -> String {
+    func renderMatrix() -> (String, Int) {
         
-        let maxStrCount = 15
+        let maxStrCount = 20
         
         let ( _, rows, cols) = getShape()
         
         if cols > 1 {
-            return "ç{Units}[ç{}\(rows)ç{Units} x ç{}\(cols)ç{Units}]ç{}"
+            let rowStr = String(rows)
+            let colStr = String(cols)
+            let text = "ç{Units}[ç{}\(rowStr)ç{Units} x ç{}\(colStr)ç{Units}]ç{}"
+            return (text, rowStr.count + colStr.count + 5)
         }
         
         var text  = "ç{Units}[ç{}"
         var count = 1
         
         for r in 1 ... rows {
-            let str = renderValueSimple(r)
+            let (simpleStr, simpleCount) = renderValueSimple(r)
             
-            count += str.count - 3
-            
-            if count > maxStrCount {
+            if count + simpleCount > maxStrCount {
                 text.append( "ç{Units}={..]}ç{}" )
-                return text
+                return (text, count + 3)
             }
-            text.append(str)
-            text.append( r == rows ? "ç{Units}]ç{}" : "ç{Units}, ç{}")
+            text.append(simpleStr)
+            
+            if r == rows {
+                text.append( "ç{Units}]ç{}" )
+                count += simpleCount + 1
+            }
+            else {
+                text.append( "ç{Units}, ç{}" )
+                count += simpleCount + 2
+            }
         }
         
-        return text
+        return (text, count)
     }
 }
 

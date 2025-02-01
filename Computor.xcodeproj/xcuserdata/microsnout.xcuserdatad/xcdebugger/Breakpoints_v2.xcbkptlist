@@ -30,8 +30,8 @@
             filePath = "Computor/CalculatorModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "960"
-            endingLineNumber = "960"
+            startingLineNumber = "961"
+            endingLineNumber = "961"
             landmarkName = "keyPress(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -46,8 +46,8 @@
             filePath = "Computor/CalculatorModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "892"
-            endingLineNumber = "892"
+            startingLineNumber = "893"
+            endingLineNumber = "893"
             landmarkName = "keyPress(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -140,8 +140,8 @@
             filePath = "Computor/CalculatorModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "714"
-            endingLineNumber = "714"
+            startingLineNumber = "715"
+            endingLineNumber = "715"
             landmarkName = "opTable"
             landmarkType = "24">
          </BreakpointContent>
@@ -156,8 +156,8 @@
             filePath = "Computor/CalculatorModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "639"
-            endingLineNumber = "639"
+            startingLineNumber = "640"
+            endingLineNumber = "640"
             landmarkName = "opTable"
             landmarkType = "24">
          </BreakpointContent>

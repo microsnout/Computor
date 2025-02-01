@@ -170,7 +170,7 @@ struct TaggedValue : RichRender {
         }
     }
     
-    func renderDouble( _ reg: Double ) -> String {
+    func renderDouble( _ reg: Double ) -> (String, Int) {
         
         if let nfStyle = NumberFormatter.Style(rawValue: fmt.style.rawValue) {
             var text = String()
@@ -187,71 +187,93 @@ struct TaggedValue : RichRender {
             
             text += "={\(strParts[0])}"
             
+            var count = strParts[0].count
+            
             if strParts.count == 2 {
                 text += "x10"
                 text += "^{\(strParts[1])}"
+                
+                count += strParts[1].count + 3
             }
-            return text
+            return (text, count)
         }
         
-        return "Unknown Fmt"
+        return ("Unknown Fmt", 11)
     }
     
-    func renderValueReal( _ row: Int = 1, _ col: Int = 1 ) -> String {
+    func renderValueReal( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
         let value = get1( row, col)
-        var text = renderDouble(value)
+        var (text, valueCount) = renderDouble(value)
         
         if tag != tagUntyped {
             if let sym = tag.symbol {
                 text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                
+                valueCount += sym.count + 1
             }
         }
-        return text
+        return (text, valueCount)
     }
 
-    func renderValueRational( _ row: Int = 1, _ col: Int = 1 ) -> String {
+    func renderValueRational( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
         let (num, den) = get2( row, col)
+        let (numStr, numCount) = renderDouble(num)
+        let (denStr, denCount) = renderDouble(den)
+        
         var text = String()
-        text.append( renderDouble(num))
+        text.append(numStr)
         text.append( "={/}" )
-        text.append( renderDouble(den))
-        return text
+        text.append(denStr)
+        
+        return (text, numCount + denCount + 1)
     }
 
-    func renderValueComplex( _ row: Int = 1, _ col: Int = 1 ) -> String {
+    func renderValueComplex( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
         let (re, im) = get2( row, col)
-        var text = String()
         let neg = im < 0.0
-        text.append( renderDouble(re))
+        let (reStr, reCount) = renderDouble(re)
+        let (imStr, imCount) = renderDouble( neg ? -im : im )
+
+        var text = String()
+        text.append(reStr)
         text.append( neg ? "ç{Units}={ - }ç{}" : "ç{Units}={ + }ç{}")
-        text.append( renderDouble( neg ? -im : im))
+        text.append(imStr)
         text.append("ç{Units}={i}ç{}")
-        return text
+        
+        return (text, reCount + imCount + 3)
     }
     
-    func renderValueVector( _ row: Int = 1, _ col: Int = 1 ) -> String {
+    func renderValueVector( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
         let (x, y) = get2( row, col)
+        let (xStr, xCount) = renderDouble(x)
+        let (yStr, yCount) = renderDouble(y)
+        
         var text = String()
         text.append("ç{Units}\u{276c}ç{}")
-        text.append( renderDouble(x))
+        text.append(xStr)
         text.append( "ç{Units}={ ,}ç{}")
-        text.append( renderDouble(y))
+        text.append(yStr)
         text.append("ç{Units}\u{276d}ç{}")
-        return text
+        
+        return (text, xCount + yCount + 4)
     }
     
-    func renderValuePolar( _ row: Int = 1, _ col: Int = 1 ) -> String {
+    func renderValuePolar( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
         let (r, w) = get2( row, col)
+        let (rStr, rCount) = renderDouble(r)
+        let (wStr, wCount) = renderDouble(w)
+        
         var text = String()
         text.append("ç{Units}\u{276c} r:ç{}")
-        text.append( renderDouble(r))
+        text.append(rStr)
         text.append( "ç{Units}={,} \u{03b8}:ç{}")
-        text.append( renderDouble(w))
+        text.append(wStr)
         text.append("ç{Units}\u{276d}ç{}")
-        return text
+        
+        return (text, rCount + wCount + 9)
     }
     
-    func renderValueSimple( _ row: Int = 1, _ col: Int = 1 ) -> String {
+    func renderValueSimple( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
         switch vtp {
         case .real:
             return renderValueReal(row, col)
@@ -270,7 +292,7 @@ struct TaggedValue : RichRender {
         }
     }
 
-    func renderRichText() -> String {
+    func renderRichText() -> (String, Int) {
         if isMatrix {
             return renderMatrix()
         }
@@ -283,7 +305,15 @@ struct TaggedValue : RichRender {
             let min = floor((angle - deg) * 60.0)
             let sec = ((angle - deg)*60.0 - min) * 60.0
             
-            return String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
+            let degStr = String( format: "%.0f", neg*deg )
+            let minStr = String( format: "%.0f", min )
+            let secStr = String( format: "%.*f", sec )
+            
+            let str   = String( format: "\(degStr)\u{00B0}\(minStr)\u{2032}\(secStr)\u{2033}" )
+            let count = degStr.count + minStr.count + secStr.count + 3
+            return (str, count)
+            
+//            let str = String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
         }
         
         return renderValueSimple()
@@ -304,11 +334,13 @@ struct NamedValue : RichRender {
         self.value = value
     }
     
-    func renderRichText() -> String {
+    func renderRichText() -> (String, Int) {
         if let prefix = self.name {
             var text = "ƒ{0.8}ç{Frame}={\(prefix)  }ç{}ƒ{}"
-            text.append( self.value.renderRichText() )
-            return text
+            let (valueStr, valueCount) = self.value.renderRichText()
+            let count = valueCount + prefix.count + 2
+            text += valueStr
+            return (text, count)
         }
         return value.renderRichText()
     }

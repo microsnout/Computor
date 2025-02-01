@@ -22,7 +22,7 @@ import SwiftUI
 
 
 protocol RichRender {
-    func renderRichText() -> String
+    func renderRichText() -> (String, Int)
 }
 
 struct RichText: View {

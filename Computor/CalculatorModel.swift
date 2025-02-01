@@ -320,7 +320,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             return text
         }
-        return state.stack[stkIndex].renderRichText()
+        let (str, _) = state.stack[stkIndex].renderRichText()
+        return str
     }
     
     func memoryOp( key: KeyCode, index: Int ) {
