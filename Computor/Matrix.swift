@@ -14,7 +14,7 @@ extension TaggedValue {
     
     func renderMatrix() -> (String, Int) {
         
-        let maxStrCount = 20
+        let maxStrCount = 30
         
         let ( _, rows, cols) = getShape()
         
@@ -170,6 +170,9 @@ struct MapFunction : ModalFunction {
         // Remove parameter value from stack
         model.state.stackDrop()
 
+        model.undoStack.pause()
+        model.aux.pauseRecording()
+        
         for r in 1 ... seqRows {
             
             if let value = valueList.getValue( row: r) {
@@ -196,11 +199,17 @@ struct MapFunction : ModalFunction {
                     // Remove intermediate result
                     model.state.stackDrop()
                 }
+                else {
+                    model.aux.resumeRecording()
+                    model.undoStack.resume()
+                    return KeyPressResult.stateError
+                }
             }
-            
-            
         }
-        
+        model.aux.resumeRecording()
+        model.undoStack.resume()
+
+
         // Push final result list
         model.enterValue(resultList)
         return KeyPressResult.stateChange
@@ -224,6 +233,9 @@ struct ReduceFunction : ModalFunction {
         // Remove value list parameter from stack, but not initial result
         model.state.stackDrop()
 
+        model.undoStack.pause()
+        model.aux.pauseRecording()
+        
         for r in 1 ... seqRows {
             
             if let value = valueList.getValue( row: r) {
@@ -231,11 +243,15 @@ struct ReduceFunction : ModalFunction {
                 model.enterValue( value )
 
                 if model.keyPress( event ) != .stateChange {
+                    model.aux.resumeRecording()
+                    model.undoStack.resume()
                     return KeyPressResult.stateError
                 }
             }
         }
-        
+        model.aux.resumeRecording()
+        model.undoStack.resume()
+
         // Final result is already on stack X
         return KeyPressResult.stateChange
     }
