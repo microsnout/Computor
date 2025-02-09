@@ -32,7 +32,7 @@ enum KeyCode: Int {
     // Format
     case fix = 120, sci, eng
     
-    case null = 150, noop, rcl, sto, mPlus, mMinus
+    case null = 150, noop, rcl, sto, mPlus, mMinus, mRename
     
     // Softkeys
     case fn0 = 160, fn1, fn2, fn3, fn4, fn5, fn6

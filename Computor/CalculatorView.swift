@@ -12,19 +12,19 @@ import SwiftUI
 // Keypad Definitions
 
 let ksNormal = KeySpec( width: 42, height: 35,
-                        keyColor: Color("KeyColor"), textColor: Color("KeyText"))
+                        keyColor: "KeyColor", textColor: "KeyText")
 
 let ksSoftkey = KeySpec( width: 42, height: 25,
-                         keyColor: Color("KeyColor"), textColor: Color("KeyText"))
+                         keyColor: "KeyColor", textColor: "KeyText")
 
 let ksSubFn = KeySpec( width: 48, height: 30,
-                       keyColor: Color("PopBack"), textColor: Color("PopText"))
+                       keyColor: "PopBack", textColor: "PopText")
 
 let ksSubpad = KeySpec( width: 42, height: 30,
-                        keyColor: Color("PopBack"), textColor: Color("PopText"))
+                        keyColor: "PopBack", textColor: "PopText")
 
 let ksUnits = KeySpec( width: 60, height: 25,
-                       keyColor: Color("KeyColor"), textColor: Color("KeyText"))
+                       keyColor: "KeyColor", textColor: "KeyText")
 
 let psUnits = PadSpec (
     keySpec: ksUnits,
@@ -315,7 +315,9 @@ struct CalculatorView: View {
                 NavigationStack {
                     VStack {
                         AuxiliaryDisplay( model: model )
-                        
+                            .background( Color("Display") )
+                            .border(Color("Frame"), width: 3)
+
                         // App name and drag handle
                         HStack {
                             Text("Computor").foregroundColor(Color("Frame"))/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()

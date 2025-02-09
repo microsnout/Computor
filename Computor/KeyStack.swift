@@ -42,13 +42,13 @@ protocol KeyPressHandler {
 struct KeySpec {
     var width: Double
     var height: Double
-    var keyColor: Color = KeySpec.defKeyColor
-    var textColor: Color = KeySpec.defTextColor
+    var keyColor: String = KeySpec.defKeyColor
+    var textColor: String = KeySpec.defTextColor
     var radius: Double = KeySpec.defRadius
     
     static let defRadius    = 10.0
-    static let defKeyColor  = Color(.brown)
-    static let defTextColor = Color(.white)
+    static let defKeyColor  = "KeyColor"
+    static let defTextColor = "KeyText"
 }
 
 
@@ -183,7 +183,7 @@ struct SubPopMenu: View {
 //
             Rectangle()
                 .frame( width: w + keyInset, height: popH)
-                .foregroundColor(keySpec.keyColor)
+                .foregroundColor( Color(keySpec.keyColor))
                 .cornerRadius(keySpec.radius*2)
                 .background {
                     RoundedRectangle(cornerRadius: keySpec.radius*2)
@@ -201,7 +201,7 @@ struct SubPopMenu: View {
                                     Text(caption)
                                         .bold()
                                         .font(.system(size: captionFont))
-                                        .foregroundColor(keySpec.textColor)
+                                        .foregroundColor( Color(keySpec.textColor))
                                         .frame( maxWidth: .infinity, alignment: .center)
                                         .offset( x: 0, y: 4 )
                                     Spacer()
@@ -215,7 +215,7 @@ struct SubPopMenu: View {
                                     Rectangle()
                                         .frame( width: r.width, height: r.height )
                                         .cornerRadius(keySpec.radius)
-                                        .foregroundColor( kn == keyData.selSubIndex  ?  Color("PopSelect") : keySpec.keyColor)
+                                        .foregroundColor( kn == keyData.selSubIndex  ?  Color("PopSelect") : Color(keySpec.keyColor))
                                         .if( key.text != nil ) { view in
                                             view.overlay(
                                                 RichText(
@@ -228,7 +228,7 @@ struct SubPopMenu: View {
                                         }
                                         .if ( key.image != nil ) { view in
                                             view.overlay(
-                                                Image(key.image!).renderingMode(.template).foregroundColor(keySpec.textColor), alignment: .center)
+                                                Image(key.image!).renderingMode(.template).foregroundColor( Color(keySpec.textColor)), alignment: .center)
                                         }
                                 }
                             }
@@ -404,7 +404,7 @@ struct KeyView: View {
                 
                 // This is the key itself
                 Rectangle()
-                    .foregroundColor( padSpec.keySpec.keyColor )
+                    .foregroundColor( Color(padSpec.keySpec.keyColor) )
                     .frame( width: keyW, height: padSpec.keySpec.height )
                     .cornerRadius( padSpec.keySpec.radius )
                     .simultaneousGesture( longPress )
@@ -418,7 +418,8 @@ struct KeyView: View {
                     .if( text != nil && !keyPressHandler.isKeyRecording(key.kc) ) { view in
                         // Add rich text label to key
                         view.overlay(
-                            RichText( text!, size: .normal, weight: .bold, defaultColor: "KeyText")
+                            RichText( text!, size: .normal, weight: .bold,
+                                      defaultColor: padSpec.keySpec.textColor)
                         )
                     }
                     .if ( key.image != nil ) { view in
@@ -426,7 +427,7 @@ struct KeyView: View {
                         view.overlay(
                             Image(key.image!)
                                 .renderingMode(.template)
-                                .foregroundColor(padSpec.keySpec.textColor), alignment: .center)
+                                .foregroundColor( Color(padSpec.keySpec.textColor)), alignment: .center)
                             
                     }
                     .if( hasSubpad ) { view in

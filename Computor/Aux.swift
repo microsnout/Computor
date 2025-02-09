@@ -6,12 +6,15 @@
 //
 import SwiftUI
 
-enum AuxDispMode: Int {
+enum AuxDispMode: Int, Hashable {
     case memoryList = 0, memoryDetail, macroList
 }
 
 struct AuxState {
     var mode: AuxDispMode = .memoryList
+    
+    var detailItemIndex: Int = 0
+    
     var list: [MacroOp] = []
     
     var kcRecording: KeyCode? = nil
@@ -98,38 +101,152 @@ struct AuxState {
 // Auxiliary Display
 //
 
-enum AuxDisp: Int {
-    case memoryList = 0, memoryDetail, auxList
-}
+let auxRight: [AuxDispMode : AuxDispMode] = [
+    .memoryList : .memoryDetail,
+    .memoryDetail : .macroList
+]
 
-struct MemoryDetailView: View {
+let auxLeft: [AuxDispMode : AuxDispMode] = [
+    .macroList : .memoryDetail,
+    .memoryDetail : .memoryList
+]
+
+
+let ksMemDetail = KeySpec( width: 36, height: 22,
+                           keyColor: "AuxKey", textColor: "BlackText")
+
+let psMemDetail = PadSpec(
+        keySpec: ksMemDetail,
+        cols: 6,
+        keys: [
+            Key(.mPlus,   "ƒ{0.8}M+"),
+            Key(.mMinus,  "ƒ{0.8}M-"),
+            Key(.rcl,     "ƒ{0.8}Rcl"),
+            Key(.sto,     "ƒ{0.8}Sto"),
+            Key(.mRename, "ƒ{0.8}Rename", size: 2),
+        ]
+    )
+
+
+struct MemRenameView: View {
     @StateObject var model: CalculatorModel
-    var index: Int
-
-    @State private var editText = ""
+    
     @FocusState private var nameFocused: Bool
     
+    @Environment(\.dismiss) var dismiss
+    
+    @State private var editName = ""
+
     var body: some View {
-        let nv = model.state.memory[index]
-        let (textValue, _) = nv.value.renderRichText()
+        let index = model.aux.detailItemIndex
+        let value = model.state.memory[index]
         
         Form {
-            TextField( "-Unnamed-", text: $editText )
+            TextField( "-Unnamed-", text: $editName )
             .focused($nameFocused)
             .disableAutocorrection(true)
             .autocapitalization(.none)
             .onAppear {
-                if let name = nv.name {
-                    editText = name
+                if let name = value.name {
+                    editName = name
                 }
                 nameFocused = true
             }
             .onSubmit {
-                model.renameMemoryItem(index: index, newName: editText)
-                model.aux.mode = .memoryList
+                model.renameMemoryItem(index: index, newName: editName)
+                dismiss()
+            }
+        }
+        .scrollContentBackground(.hidden) // iOS 16+
+    }
+}
+
+
+struct MemoryDetailView: View {
+    @StateObject var model: CalculatorModel
+    
+    @State var renameSheet = false
+    
+    @State private var position: ScrollPosition = .init(idType: Int.self)
+
+    struct MemoryDetailKeypress : KeyPressHandler {
+        var model: CalculatorModel
+        
+        @Binding var renameSheet: Bool
+
+        func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+            let index = model.aux.detailItemIndex
+            
+            switch event.kc {
+            case .rcl, .sto, .mPlus, .mMinus:
+                model.memoryOp(key: event.kc, index: index)
+                
+            case .mRename:
+                renameSheet = true
+                
+            default:
+                break
+            }
+            return KeyPressResult.stateChange
+        }
+        
+        func getKeyText( _ kc: KeyCode ) -> String? { nil }
+        
+        func isKeyRecording( _ kc: KeyCode ) -> Bool { false }
+    }
+
+
+    var body: some View {
+        VStack {
+            Spacer()
+            
+            if model.state.memory.isEmpty {
+                Text("Memory List\n(Press + to store X register)")
+                    .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+            }
+            else {
+                ScrollViewReader { proxy in
+                    ScrollView(.vertical) {
+                        LazyVStack {
+                            let count = model.state.memory.count
+                            
+                            ForEach( 0 ..< count, id: \.self ) { index in
+                                let nv = model.state.memory[index]
+                                let nameStr = nv.name ?? "-Unnamed-"
+                                let (valueStr, _) = nv.value.renderRichText()
+                                let color = nv.name != nil ? "DisplayText" : "GrayText"
+
+                                VStack {
+                                    RichText( "ƒ{1.5}ç{\(color)}\(nameStr)", size: .large )
+                                    TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
+                                }
+                                .containerRelativeFrame(.vertical, count: 1, spacing: 0)
+                            }
+                        }
+                        .scrollTargetLayout()
+                    }
+                    .scrollTargetBehavior(.viewAligned)
+                    .scrollPosition($position)
+                    .onChange(of: position ) {
+                        if let index: Int = position.viewID(type: Int.self) {
+                            model.aux.detailItemIndex = index
+                        }
+                    }
+                }
             }
 
-            TypedRegister( text: textValue, size: .large ).padding( .leading, 0)
+            Spacer()
+            KeypadView( padSpec: psMemDetail,
+                        keyPressHandler: MemoryDetailKeypress( model: model, renameSheet: $renameSheet))
+        }
+        .padding( [.bottom, .top], 10 )
+        .sheet(isPresented: $renameSheet) {
+            ZStack {
+                Color("ListBack").edgesIgnoringSafeArea(.all)
+                MemRenameView( model: model )
+                .presentationDetents([.fraction(0.4)])
+                .presentationBackground( Color("ListBack") )
+            }
         }
     }
 }
@@ -138,8 +255,6 @@ struct MemoryDetailView: View {
 struct MemoryListView: View {
     @StateObject var model: CalculatorModel
 
-    @Binding var rowIndex: Int
-    
     let leadingOps: [(KeyCode, String, Color)] = [
         ( .rcl,    "RCL", .mint ),
         ( .sto,    "STO", .indigo ),
@@ -165,7 +280,7 @@ struct MemoryListView: View {
                         let (prefix, (value, _)) = item
                         
                         VStack( alignment: .leading, spacing: 0 ) {
-                            let name: String = prefix ?? "-name-"
+                            let name: String = prefix ?? "-unnamed-"
                             
                             let color = prefix != nil ? Color("DisplayText") : Color(.gray)
                             
@@ -173,7 +288,7 @@ struct MemoryListView: View {
                                 // Memory name - tap to edit
                                 Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
                                     .onTapGesture {
-                                        rowIndex = index
+                                        model.aux.detailItemIndex = index
                                         model.aux.mode = .memoryDetail
                                     }
                             }
@@ -209,9 +324,6 @@ struct MemoryListView: View {
                 .padding( .top, 0)
             }
         }
-        .frame( maxWidth: .infinity, maxHeight: .infinity)
-        .background( Color("MemoryDisplay") )
-        .border(Color("Frame"), width: 3)
     }
 }
 
@@ -253,25 +365,53 @@ struct MacroListView: View {
 struct AuxiliaryDisplay: View {
     @StateObject var model: CalculatorModel
     
-    @State var rowIndex = 0
-
     var body: some View {
-        switch model.aux.mode {
-        case .memoryList:
-            MemoryListView( model: model, rowIndex: $rowIndex )
+        HStack( spacing: 0) {
+            VStack {
+                Spacer()
+                Image( systemName: "chevron.compact.left")
+                    .onTapGesture {
+                        if let new = auxLeft[model.aux.mode] {
+                            model.aux.mode = new
+                        }
+                    }
+                Spacer()
+            }
+            .padding([.leading], 0)
+            .padding([.top], 10)
+            .frame( minWidth: 18, maxWidth: 18, maxHeight: .infinity, alignment: .center)
+            // .border(.green)
+
+            switch model.aux.mode {
+            case .memoryList:
+                MemoryListView( model: model )
+                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+
+            case .memoryDetail:
+                MemoryDetailView( model: model )
+                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+
+            case .macroList:
+                MacroListView( model: model )
+                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+            }
             
-        case .memoryDetail:
-            MemoryDetailView( model: model, index: rowIndex)
-                .frame( maxWidth: .infinity, maxHeight: .infinity)
-                .background( Color("Display") )
-                .border(Color("Frame"), width: 3)
-            
-        case .macroList:
-            MacroListView( model: model )
-                .frame( maxWidth: .infinity, maxHeight: .infinity)
-                .background( Color("Display") )
-                .border(Color("Frame"), width: 3)
+            VStack {
+                Spacer()
+                Image( systemName: "chevron.compact.right")
+                    .onTapGesture {
+                        if let new = auxRight[model.aux.mode] {
+                            model.aux.mode = new
+                        }
+                    }
+                Spacer()
+            }
+            .padding([.trailing], 0)
+            .padding([.top], 10)
+            .frame( minWidth: 18, maxWidth: 18, maxHeight: .infinity, alignment: .center)
+            // .border(.green)
         }
+        .padding([.leading, .trailing, .top, .bottom], 0)
     }
 }
 
