@@ -113,6 +113,22 @@ protocol StateOperator {
 }
 
 
+struct OpPattern : StateOperator {
+    let specList: RegisterPattern
+    
+    let block: (CalcState) -> CalcState?
+    
+    init( _ pattern: [RegisterSpec], _ block: @escaping (CalcState) -> CalcState? ) {
+        self.specList = pattern
+        self.block = block
+    }
+
+    func transition(_ s0: CalcState ) -> CalcState? {
+        return block(s0)
+    }
+}
+
+
 struct CustomOp: StateOperator {
     let block: (CalcState) -> CalcState?
     
@@ -264,6 +280,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         self.displayRows = 3
         
         installMatrix(self)
+        installComplex(self)
     }
     
     // **** Macro Recording Stuff ***
@@ -477,6 +494,20 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             return s1
         }
     }
+    
+    
+    static var patternTable: [KeyCode : [OpPattern]] = [:]
+
+    static func defineOpPatterns( _ kc: KeyCode, _ patterns: [OpPattern]) {
+        if var pList = CalculatorModel.patternTable[kc] {
+            pList.append( contentsOf: patterns )
+            CalculatorModel.patternTable[kc] = pList
+        }
+        else {
+            CalculatorModel.patternTable[kc] = patterns
+        }
+    }
+    
     
     static func defineOpCodes( _ newOpSet: [KeyCode : StateOperator] ) {
         // Add new operators to opTable, replacing duplicates with new value
@@ -914,6 +945,25 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             }
 
         default:
+            if let patternList = CalculatorModel.patternTable[keyCode] {
+                for pattern in patternList {
+                    if state.patternMatch(pattern.specList) {
+                        // Transition to new calculator state based on operation
+                        undoStack.push(state)
+                        
+                        if let newState = pattern.transition(state) {
+                            state = newState
+                            state.noLift = false
+                            
+                            // Successful state change
+                            return KeyPressResult.stateChange
+                        }
+                        
+                        return KeyPressResult.stateError
+                    }
+                }
+            }
+            
             if let op = CalculatorModel.opTable[keyCode] {
                 // Transition to new calculator state based on operation
                 undoStack.push(state)

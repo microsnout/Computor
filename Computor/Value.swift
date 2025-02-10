@@ -5,6 +5,7 @@
 //  Created by Barry Hall on 2025-01-26.
 //
 import Foundation
+import Numerics
 import OSLog
 
 let logV = Logger(subsystem: "com.microsnout.calculator", category: "value")
@@ -14,6 +15,10 @@ enum ValueType : Int, Hashable {
     case real = 0, rational, complex, vector, polar
 }
 
+enum ValueShape : Int {
+    case simple = 0, matrix
+}
+
 let valueSize: [ValueType : Int] = [
     .real : 1,
     .rational : 2,
@@ -21,6 +26,8 @@ let valueSize: [ValueType : Int] = [
     .vector : 2,
     .polar : 2
 ]
+
+typealias Comp = Complex<Double>
 
 enum FormatStyle : UInt {
     
@@ -42,6 +49,15 @@ struct FormatRec {
 }
 
 typealias MatrixShape = Int
+
+
+enum RegisterSpec {
+    case X( _ vt: ValueType, _ vs: ValueShape = .simple )
+    case Y( _ vt: ValueType, _ vs: ValueShape = .simple )
+    case Z( _ vt: ValueType, _ vs: ValueShape = .simple )
+}
+
+typealias RegisterPattern = [RegisterSpec]
 
 
 struct TaggedValue : RichRender {
@@ -68,6 +84,8 @@ struct TaggedValue : RichRender {
     var isComplex: Bool  { isSimple && vtp == .complex }
     var isRational: Bool { isSimple && vtp == .rational }
     var isVector: Bool   { isSimple && vtp == .vector }
+    
+    var valueShape: ValueShape { isSimple ? .simple : .matrix }
     
     private func storageIndex( _ ssx: Int = 1, row: Int, col: Int = 1 ) -> Int {
         let (ss, rows, _) = self.getShape()
@@ -99,6 +117,15 @@ struct TaggedValue : RichRender {
         self.setShape(2)
         storage[index]   = v1
         storage[index+1] = v2
+    }
+    
+    func getComplex( _ r: Int = 1, _ c: Int = 1 ) -> Comp {
+        let (re, im) = get2(r,c)
+        return Comp(re, im)
+    }
+
+    mutating func setComplex( _ z: Comp, _ r: Int = 1, _ c: Int = 1 ) {
+        set2( z.real, z.imaginary, r,c)
     }
     
     func getValue( row: Int = 1, col: Int = 1 ) -> TaggedValue? {

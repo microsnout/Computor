@@ -50,6 +50,29 @@ struct CalcState {
         return false
     }
     
+    func patternMatch( _ pattern: RegisterPattern ) -> Bool {
+        for spec in pattern {
+            switch spec {
+                
+            case .X( let vt, let vs):
+                if Xtv.vtp != vt || Xtv.valueShape != vs {
+                    return false
+                }
+                
+            case .Y( let vt, let vs):
+                if Ytv.vtp != vt || Ytv.valueShape != vs {
+                    return false
+                }
+                
+            case .Z( let vt, let vs):
+                if Ytv.vtp != vt || Ytv.valueShape != vs {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
     // *** *** ***
 
     var X: Double {
