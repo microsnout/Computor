@@ -149,6 +149,11 @@ struct ConversionOp: StateOperator {
     }
     
     func transition(_ s0: CalcState ) -> CalcState? {
+        guard s0.Xtv.isReal else {
+            // Real values only for now
+            return nil
+        }
+        
         var s1 = s0
         
         if let newTV = block( s0.Xtv ) {
@@ -176,6 +181,11 @@ struct Convert: StateOperator {
     }
     
     func transition(_ s0: CalcState ) -> CalcState? {
+        guard s0.Xtv.isReal else {
+            // Real values only for now
+            return nil
+        }
+        
         var s1 = s0
 
         if s1.convertX( toTag: toType) {
@@ -404,6 +414,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         func transition(_ s0: CalcState ) -> CalcState? {
+            guard s0.Xtv.isReal else {
+                // Real values only
+                return nil
+            }
             var s1 = s0
             
             if let xType = self.parmType {
@@ -430,6 +444,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         func transition(_ s0: CalcState ) -> CalcState? {
+            guard s0.Xtv.isReal && s0.Ytv.isReal else {
+                // Real values only
+                return nil
+            }
+            
             if s0.Yt.uid != uidUntyped || s0.Xt.uid != uidUntyped {
                 // Cannot use typed values
                 return nil
@@ -450,6 +469,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         func transition(_ s0: CalcState ) -> CalcState? {
+            guard s0.Xtv.isReal && s0.Ytv.isReal else {
+                // Real values only
+                return nil
+            }
+            
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
                 // Operation is possible with scaling of X value
                 var s1 = s0
@@ -477,6 +501,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         func transition(_ s0: CalcState ) -> CalcState? {
+            guard s0.Xtv.isReal && s0.Ytv.isReal else {
+                // Real values only
+                return nil
+            }
+            
             var s1 = s0
             s1.stackDrop()
             
@@ -543,6 +572,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         .sqrt:
             CustomOp { s0 in
+                guard s0.Xtv.isReal else {
+                    // Real values only
+                    return nil
+                }
+                
                 if s0.Xt == tagUntyped {
                     // Simple case, X is untyped value
                     var s1 = s0
@@ -563,6 +597,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         .y2x:
             CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal && s0.Ytv.isReal else {
+                    // Real values only
+                    return nil
+                }
+                
                 if s0.Xt != tagUntyped {
                     // Exponent must be untyped value
                     return nil
@@ -591,7 +630,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             },
         
         .x2:
-            CustomOp { s0 in
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal else {
+                    // Real values only
+                    return nil
+                }
+                
                 if let (tag, ratio) = typeProduct(s0.Xt, s0.Xt) {
                     var s1 = s0
                     s1.Xtv = TaggedValue(tag: tag, reg: s0.X * s0.X, format: s0.Xfmt)
@@ -601,7 +645,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             },
         
         .percent:
-            CustomOp { s0 in
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal && s0.Ytv.isReal else {
+                    // Real values only
+                    return nil
+                }
+                
                 if s0.Xt == tagUntyped {
                     var s1 = s0
                     s1.Xtv = TaggedValue( tag: s0.Yt, reg: s0.X / 100.0 * s0.Y, format: s0.Yfmt)
@@ -611,7 +660,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             },
         
         .inv:
-            CustomOp { s0 in
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal else {
+                    // Real values only
+                    return nil
+                }
+                
                 if let (tag, ratio) = typeProduct(tagUntyped, s0.Xt, quotient: true) {
                     var s1 = s0
                     s1.Xtv = TaggedValue( tag: tag, reg: 1.0 / s0.X, format: s0.Xfmt)
@@ -622,7 +676,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         .clX:
             // Clear X register
-            CustomOp { s0 in
+            CustomOp { (s0: CalcState) -> CalcState? in
                 var s1 = s0
                 s1.Xtv = untypedZero
                 s1.noLift = true
@@ -695,10 +749,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         .rationalV:
             // Form rational value from x, y
             CustomOp { (s0: CalcState) -> CalcState? in
-                guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) && isInt(s0.X) && isInt(s0.Y) && s0.Y != 0.0
-                else {
+                guard s0.Xtv.isInteger && s0.Ytv.isInteger else {
                     return nil
                 }
+                guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) && s0.Y != 0 else {
+                    return nil
+                }
+                
                 var s1 = s0
                 var (num, den) = (s0.X, s0.Y)
                 if den < 0 {
@@ -714,6 +771,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         .complexV:
             // Form complex value from x, y
             CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal && s0.Ytv.isReal else {
+                    return nil
+                }
                 guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
                     return nil
                 }
@@ -727,6 +787,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         .vector2V:
             // Form vector value from x, y
             CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal && s0.Ytv.isReal else {
+                    return nil
+                }
                 guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
                     return nil
                 }
@@ -740,6 +803,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         .polarV:
             // Form polar value from x, y
             CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal && s0.Ytv.isReal else {
+                    return nil
+                }
                 guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
                     return nil
                 }
@@ -945,24 +1011,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             }
 
         default:
-            if let patternList = CalculatorModel.patternTable[keyCode] {
-                for pattern in patternList {
-                    if state.patternMatch(pattern.specList) {
-                        // Transition to new calculator state based on operation
-                        undoStack.push(state)
-                        
-                        if let newState = pattern.transition(state) {
-                            state = newState
-                            state.noLift = false
-                            
-                            // Successful state change
-                            return KeyPressResult.stateChange
-                        }
-                        
-                        return KeyPressResult.stateError
-                    }
-                }
-            }
             
             if let op = CalculatorModel.opTable[keyCode] {
                 // Transition to new calculator state based on operation
@@ -993,12 +1041,30 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     if let lastState = undoStack.pop() {
                         state = lastState
                     }
-                    
+
                     if modalFunction != nil {
                         // Modal function started with no state change, not an error
                         return KeyPressResult.modalFunction
                     }
-                    
+
+                    if let patternList = CalculatorModel.patternTable[keyCode] {
+                        for pattern in patternList {
+                            if state.patternMatch(pattern.specList) {
+                                // Transition to new calculator state based on operation
+                                undoStack.push(state)
+                                
+                                if let newState = pattern.transition(state) {
+                                    state = newState
+                                    state.noLift = false
+                                    
+                                    // Successful state change
+                                    return KeyPressResult.stateChange
+                                }
+                                
+                                // Fall through to error indication
+                            }
+                        }
+                    }
                 }
             }
             else if keyCode.isUnit {
