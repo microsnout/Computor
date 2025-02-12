@@ -9,12 +9,15 @@ import Foundation
 
 func installComplex( _ model: CalculatorModel ) {
     
+    // Set of allowed types
+    let zSet: ValueTypeSet = [.complex, .real, .rational]
+    
     // One operand must be complex
-    let complexTest: StateTest = {$0.Xvtp == .complex || $0.Yvtp == .complex}
+    let zTest: StateTest = {$0.Xvtp == .complex || $0.Yvtp == .complex}
     
     CalculatorModel.defineOpPatterns( .plus, [
         
-        OpPattern( [ .X([.complex]), .Y([.complex])], where: complexTest ) { s0 in
+        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { s0 in
             
             // Complex addition
             var s1 = s0
@@ -28,7 +31,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .minus, [
         
-        OpPattern( [ .X([.complex]), .Y([.complex])], where: complexTest ) { s0 in
+        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { s0 in
             
             // Complex addition
             var s1 = s0
@@ -42,7 +45,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .times, [
         
-        OpPattern( [ .X([.complex]), .Y([.complex])], where: complexTest ) { s0 in
+        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { s0 in
             
             // Complex addition
             var s1 = s0
