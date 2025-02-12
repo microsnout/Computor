@@ -15,6 +15,8 @@ enum ValueType : Int, Hashable {
     case real = 0, rational, complex, vector, polar
 }
 
+typealias ValueTypeSet = Set<ValueType>
+
 enum ValueShape : Int {
     case simple = 0, matrix
 }
@@ -52,9 +54,9 @@ typealias MatrixShape = Int
 
 
 enum RegisterSpec {
-    case X( _ vt: ValueType, _ vs: ValueShape = .simple )
-    case Y( _ vt: ValueType, _ vs: ValueShape = .simple )
-    case Z( _ vt: ValueType, _ vs: ValueShape = .simple )
+    case X( _ vt: ValueTypeSet, _ vs: ValueShape = .simple )
+    case Y( _ vt: ValueTypeSet, _ vs: ValueShape = .simple )
+    case Z( _ vt: ValueTypeSet, _ vs: ValueShape = .simple )
 }
 
 typealias RegisterPattern = [RegisterSpec]

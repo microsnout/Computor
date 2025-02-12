@@ -9,9 +9,12 @@ import Foundation
 
 func installComplex( _ model: CalculatorModel ) {
     
+    // One operand must be complex
+    let complexTest: StateTest = {$0.Xvtp == .complex || $0.Yvtp == .complex}
+    
     CalculatorModel.defineOpPatterns( .plus, [
         
-        OpPattern( [ .X(.complex), .Y(.complex)] ) { (s0: CalcState) -> CalcState? in
+        OpPattern( [ .X([.complex]), .Y([.complex])], where: complexTest ) { s0 in
             
             // Complex addition
             var s1 = s0
@@ -25,7 +28,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .minus, [
         
-        OpPattern( [ .X(.complex), .Y(.complex)] ) { (s0: CalcState) -> CalcState? in
+        OpPattern( [ .X([.complex]), .Y([.complex])], where: complexTest ) { s0 in
             
             // Complex addition
             var s1 = s0
@@ -39,7 +42,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .times, [
         
-        OpPattern( [ .X(.complex), .Y(.complex)] ) { (s0: CalcState) -> CalcState? in
+        OpPattern( [ .X([.complex]), .Y([.complex])], where: complexTest ) { s0 in
             
             // Complex addition
             var s1 = s0

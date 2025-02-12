@@ -23,6 +23,8 @@ struct FnRec {
 }
 
 
+typealias StateTest = ( _ s0: CalcState) -> Bool
+
 struct CalcState {
     /// Defines the exact state of the calculator at a given time
     ///
@@ -36,7 +38,7 @@ struct CalcState {
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )
 
     mutating func convertX( toTag: TypeTag ) -> Bool {
-        if Xstp != .real {
+        if Xvtp != .real {
             // Don't assign units to vectors and complex
             return false
         }
@@ -50,25 +52,29 @@ struct CalcState {
         return false
     }
     
-    func patternMatch( _ pattern: RegisterPattern ) -> Bool {
-        for spec in pattern {
+    func patternMatch( _ pattern: OpPattern ) -> Bool {
+        for spec in pattern.regPattern {
             switch spec {
                 
             case .X( let vt, let vs):
-                if Xtv.vtp != vt || Xtv.valueShape != vs {
+                if !vt.contains(Xvtp) || Xtv.valueShape != vs {
                     return false
                 }
                 
             case .Y( let vt, let vs):
-                if Ytv.vtp != vt || Ytv.valueShape != vs {
+                if !vt.contains(Yvtp) || Ytv.valueShape != vs {
                     return false
                 }
                 
             case .Z( let vt, let vs):
-                if Ytv.vtp != vt || Ytv.valueShape != vs {
+                if !vt.contains(Zvtp) || Ztv.valueShape != vs {
                     return false
                 }
             }
+        }
+        
+        if let test = pattern.stateTest {
+            return test(self)
         }
         return true
     }
@@ -95,7 +101,7 @@ struct CalcState {
         set { self.stack[regX].value = newValue }
     }
     
-    var Xstp: ValueType {
+    var Xvtp: ValueType {
         get { stack[regX].value.vtp }
         set { stack[regX].value.vtp = newValue }
     }
@@ -120,6 +126,11 @@ struct CalcState {
         set { self.stack[regY].value = newValue }
     }
     
+    var Yvtp: ValueType {
+        get { stack[regY].value.vtp }
+        set { stack[regY].value.vtp = newValue }
+    }
+
     var Z: Double {
         get { stack[regZ].value.reg }
         set { stack[regZ].value.reg = newValue }
@@ -138,6 +149,11 @@ struct CalcState {
     var Ztv: TaggedValue {
         get { stack[regZ].value }
         set { self.stack[regZ].value = newValue }
+    }
+    
+    var Zvtp: ValueType {
+        get { stack[regZ].value.vtp }
+        set { stack[regZ].value.vtp = newValue }
     }
 
     var T: Double {

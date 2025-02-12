@@ -114,12 +114,15 @@ protocol StateOperator {
 
 
 struct OpPattern : StateOperator {
-    let specList: RegisterPattern
+    let regPattern: RegisterPattern
+    
+    let stateTest: StateTest?
     
     let block: (CalcState) -> CalcState?
     
-    init( _ pattern: [RegisterSpec], _ block: @escaping (CalcState) -> CalcState? ) {
-        self.specList = pattern
+    init( _ pattern: [RegisterSpec], where test: StateTest? = nil, _ block: @escaping (CalcState) -> CalcState? ) {
+        self.regPattern = pattern
+        self.stateTest  = test
         self.block = block
     }
 
@@ -764,7 +767,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
                 s1.stackDrop()
                 s1.set2( num, den )
-                s1.Xstp = .rational
+                s1.Xvtp = .rational
                 return s1
             },
 
@@ -780,7 +783,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 var s1 = s0
                 s1.stackDrop()
                 s1.set2( s0.X, s0.Y )
-                s1.Xstp = .complex
+                s1.Xvtp = .complex
                 return s1
             },
 
@@ -796,7 +799,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 var s1 = s0
                 s1.stackDrop()
                 s1.set2( s0.X, s0.Y )
-                s1.Xstp = .vector
+                s1.Xvtp = .vector
                 return s1
             },
 
@@ -812,7 +815,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 var s1 = s0
                 s1.stackDrop()
                 s1.set2( s0.X, s0.Y )
-                s1.Xstp = .polar
+                s1.Xvtp = .polar
                 return s1
             },
         
@@ -1049,7 +1052,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
 
                     if let patternList = CalculatorModel.patternTable[keyCode] {
                         for pattern in patternList {
-                            if state.patternMatch(pattern.specList) {
+                            if state.patternMatch(pattern) {
                                 // Transition to new calculator state based on operation
                                 undoStack.push(state)
                                 
