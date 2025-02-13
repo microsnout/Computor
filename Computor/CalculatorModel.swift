@@ -21,7 +21,7 @@ enum KeyCode: Int {
     
     case fixL = 30, fixR, roll, xy, xz, yz, lastx, percent
     
-    case y2x = 40, inv, x2, sqrt
+    case y2x = 40, inv, x2, sqrt, abs
     
     case sin = 50, cos, tan, pi, asin, acos, atan
     
@@ -41,7 +41,7 @@ enum KeyCode: Int {
     case macroOp = 170, clrFn, recFn, stopFn, showFn
     
     // Multi valued types
-    case multiValue = 180, rationalV, vector2V, polarV, complexV
+    case multiValue = 180, rationalV, vector2D, polarV, complexV
     
     // Matrix operations
     case matrix = 190, range, seq, map, reduce
@@ -294,6 +294,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         installMatrix(self)
         installComplex(self)
+        installVector(self)
     }
     
     // **** Macro Recording Stuff ***
@@ -573,6 +574,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         .pi:    Constant( Double.pi ),
         .e:     Constant( exp(1.0) ),
         
+        .abs:   UnaryOp( { x in abs(x) } ),
+        
         .sqrt:
             CustomOp { s0 in
                 guard s0.Xtv.isReal else {
@@ -784,38 +787,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 s1.stackDrop()
                 s1.set2( s0.X, s0.Y )
                 s1.Xvtp = .complex
-                return s1
-            },
-
-        .vector2V:
-            // Form vector value from x, y
-            CustomOp { (s0: CalcState) -> CalcState? in
-                guard s0.Xtv.isReal && s0.Ytv.isReal else {
-                    return nil
-                }
-                guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
-                    return nil
-                }
-                var s1 = s0
-                s1.stackDrop()
-                s1.set2( s0.X, s0.Y )
-                s1.Xvtp = .vector
-                return s1
-            },
-
-        .polarV:
-            // Form polar value from x, y
-            CustomOp { (s0: CalcState) -> CalcState? in
-                guard s0.Xtv.isReal && s0.Ytv.isReal else {
-                    return nil
-                }
-                guard s0.Xt.isType(.untyped) && s0.Yt.isType(.untyped) else {
-                    return nil
-                }
-                var s1 = s0
-                s1.stackDrop()
-                s1.set2( s0.X, s0.Y )
-                s1.Xvtp = .polar
                 return s1
             },
         
@@ -1050,27 +1021,29 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                         return KeyPressResult.modalFunction
                     }
 
-                    if let patternList = CalculatorModel.patternTable[keyCode] {
-                        for pattern in patternList {
-                            if state.patternMatch(pattern) {
-                                // Transition to new calculator state based on operation
-                                undoStack.push(state)
-                                
-                                if let newState = pattern.transition(state) {
-                                    state = newState
-                                    state.noLift = false
-                                    
-                                    // Successful state change
-                                    return KeyPressResult.stateChange
-                                }
-                                
-                                // Fall through to error indication
-                            }
+                }
+            }
+            
+            if let patternList = CalculatorModel.patternTable[keyCode] {
+                for pattern in patternList {
+                    if state.patternMatch(pattern) {
+                        // Transition to new calculator state based on operation
+                        undoStack.push(state)
+                        
+                        if let newState = pattern.transition(state) {
+                            state = newState
+                            state.noLift = false
+                            
+                            // Successful state change
+                            return KeyPressResult.stateChange
                         }
+                        
+                        // Fall through to error indication
                     }
                 }
             }
-            else if keyCode.isUnit {
+
+            if keyCode.isUnit {
                 // Attempt conversion of X reg to unit type keyCode
                 if let tag = TypeDef.kcDict[keyCode],
                    let _   = TypeDef.typeDict[tag]

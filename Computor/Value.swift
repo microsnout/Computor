@@ -12,7 +12,7 @@ let logV = Logger(subsystem: "com.microsnout.calculator", category: "value")
 
 
 enum ValueType : Int, Hashable {
-    case real = 0, rational, complex, vector, polar
+    case real = 0, rational, complex, vector2D, polar
 }
 
 typealias ValueTypeSet = Set<ValueType>
@@ -25,7 +25,7 @@ let valueSize: [ValueType : Int] = [
     .real : 1,
     .rational : 2,
     .complex : 2,
-    .vector : 2,
+    .vector2D : 2,
     .polar : 2
 ]
 
@@ -85,7 +85,7 @@ struct TaggedValue : RichRender {
     var isInteger: Bool  { isReal && isInt(reg) }
     var isComplex: Bool  { isSimple && vtp == .complex }
     var isRational: Bool { isSimple && vtp == .rational }
-    var isVector: Bool   { isSimple && vtp == .vector }
+    var isVector: Bool   { isSimple && vtp == .vector2D }
     
     var valueShape: ValueShape { isSimple ? .simple : .matrix }
     
@@ -140,21 +140,29 @@ struct TaggedValue : RichRender {
 
         }
     }
+    
+    mutating func setReal( _ x: Double ) {
+        vtp = .real
+        setShape(1)
+        set1(x)
+    }
 
-    mutating func setComplex( _ z: Comp, _ r: Int = 1, _ c: Int = 1 ) {
-        if valueInRange(2, r, c) {
+    mutating func setComplex( _ z: Comp ) {
             vtp = .complex
-            set2( z.real, z.imaginary, r,c)
-        }
-        else {
-            let (_, rows, cols) = getShape()
+            setShape(2)
+            set2( z.real, z.imaginary)
+    }
+    
+    mutating func setVector2D( _ x: Double, _ y: Double ) {
+        vtp = .vector2D
+        setShape(2)
+        set2( x,y )
+    }
 
-            if r <= rows && c <= cols {
-                setShape(2, rows, cols)
-                vtp = .complex
-                set2( z.real, z.imaginary, r,c)
-            }
-        }
+    mutating func setPolar2D( _ r: Double, _ w: Double ) {
+        vtp = .polar
+        setShape(2)
+        set2( r,w )
     }
     
     func getValue( row: Int = 1, col: Int = 1 ) -> TaggedValue? {
@@ -346,7 +354,7 @@ struct TaggedValue : RichRender {
         case .complex:
             return renderValueComplex(row, col)
 
-        case .vector:
+        case .vector2D:
             return renderValueVector(row, col)
 
         case .polar:

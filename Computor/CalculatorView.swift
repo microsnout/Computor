@@ -281,7 +281,7 @@ func initKeyLayout() {
                        keySpec: ksSubFn,
                        keys: [
                         Key(.rationalV, "x / y"),
-                        Key(.vector2V,  "\u{27e8}x , y\u{27e9}"),
+                        Key(.vector2D,  "\u{27e8}x , y\u{27e9}"),
                         Key(.polarV,    "\u{27e8}r , \u{03b8}\u{27e9}"),
                         Key(.complexV,  "x ç{Units}+ç{} yç{Units}iç{}"),
                        ]
@@ -294,6 +294,13 @@ func initKeyLayout() {
                         Key(.range,  "ƒ{0.8}Range"),
                         Key(.map,    "ƒ{0.8}Map"),
                         Key(.reduce, "ƒ{0.8}Reduce"),
+                       ]
+    )
+
+    SubPadSpec.define( .x2,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.abs,    "|x|"),
                        ]
     )
 }
