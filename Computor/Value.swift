@@ -122,12 +122,39 @@ struct TaggedValue : RichRender {
     }
     
     func getComplex( _ r: Int = 1, _ c: Int = 1 ) -> Comp {
-        let (re, im) = get2(r,c)
-        return Comp(re, im)
+        switch vtp {
+        case .complex:
+            let (re, im) = get2(r,c)
+            return Comp(re, im)
+            
+        case .real:
+            let (re, im) = (reg, 0.0)
+            return Comp(re, im)
+            
+        case .rational:
+            let (num, den) = get2(r,c)
+            return Comp( num/den, 0.0)
+            
+        default:
+            return Comp(0, 0)
+
+        }
     }
 
     mutating func setComplex( _ z: Comp, _ r: Int = 1, _ c: Int = 1 ) {
-        set2( z.real, z.imaginary, r,c)
+        if valueInRange(2, r, c) {
+            vtp = .complex
+            set2( z.real, z.imaginary, r,c)
+        }
+        else {
+            let (_, rows, cols) = getShape()
+
+            if r <= rows && c <= cols {
+                setShape(2, rows, cols)
+                vtp = .complex
+                set2( z.real, z.imaginary, r,c)
+            }
+        }
     }
     
     func getValue( row: Int = 1, col: Int = 1 ) -> TaggedValue? {
@@ -169,6 +196,12 @@ struct TaggedValue : RichRender {
         self.mat = cols + rows*1000 + ss*1000*1000
         
         self.storage = [Double]( repeating: 0.0, count: self.capacity )
+    }
+    
+    func valueInRange( _ ssV: Int = 1, _ rowV: Int = 1, _ colV: Int = 1 ) -> Bool {
+        let (ss, rows, cols) = getShape()
+        
+        return ssV <= ss && rowV <= rows && colV <= cols
     }
     
     var uid: UnitId { self.tag.uid }
