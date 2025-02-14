@@ -218,7 +218,7 @@ struct Constant: StateOperator {
     func transition(_ s0: CalcState ) -> CalcState? {
         var s1 = s0
         s1.stackLift()
-        s1.X = self.value
+        s1.stack[regX].value.setReal(self.value)
         s1.Xt = self.tag
         s1.Xfmt = CalcState.defaultDecFormat
         return s1
