@@ -36,6 +36,36 @@ struct CalcState {
 
     static let defaultDecFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )
+    
+    mutating func setRealValue( reg index: Int = regX, _ value: Double,
+                                tag: TypeTag = tagUntyped,
+                                fmt: FormatRec = CalcState.defaultDecFormat ) {
+        stack[index].value.setShape(1)
+        stack[index].value.vtp = .real
+        stack[index].value.reg = value
+        stack[index].value.tag = tag
+        stack[index].value.fmt = fmt
+    }
+
+    mutating func setVectorValue( reg index: Int = regX, _ x: Double, _ y: Double,
+                                  tag: TypeTag = tagUntyped,
+                                  fmt: FormatRec = CalcState.defaultDecFormat ) {
+        stack[index].value.setShape(2)
+        stack[index].value.vtp = .vector2D
+        stack[index].value.set2(x,y)
+        stack[index].value.tag = tag
+        stack[index].value.fmt = fmt
+    }
+
+    mutating func setPolarValue( reg index: Int = regX, _ r: Double, _ w: Double,
+                                 tag: TypeTag = tagUntyped,
+                                 fmt: FormatRec = CalcState.defaultDecFormat ) {
+        stack[index].value.setShape(2)
+        stack[index].value.vtp = .polar
+        stack[index].value.set2(r,w)
+        stack[index].value.tag = tag
+        stack[index].value.fmt = fmt
+    }
 
     mutating func convertX( toTag: TypeTag ) -> Bool {
         if Xvtp != .real {

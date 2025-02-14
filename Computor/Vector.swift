@@ -14,14 +14,14 @@ func installVector( _ model: CalculatorModel ) {
         OpPattern( [ .X([.vector2D]) ] ) { s0 in
             var s1 = s0
             let (x, y) = s0.Xtv.get2()
-            s1.stack[regX].value.setReal( sqrt( x*x + y*y ) )
+            s1.setRealValue( sqrt(x*x + y*y) )
             return s1
         },
 
         OpPattern( [ .X([.polar]) ] ) { s0 in
             var s1 = s0
             let (r, _) = s0.Xtv.get2()
-            s1.stack[regX].value.setReal( abs(r) )
+            s1.setRealValue( abs(r) )
             return s1
         },
     ])
@@ -35,7 +35,7 @@ func installVector( _ model: CalculatorModel ) {
             s1.stackDrop()
             let x: Double = s0.Xtv.reg
             let y: Double = s0.Ytv.reg
-            s1.stack[regX].value.setVector2D( x,y )
+            s1.setVectorValue( x,y )
             return s1
         },
 
@@ -46,7 +46,7 @@ func installVector( _ model: CalculatorModel ) {
             let (r, w) = s0.Xtv.get2()
             let x: Double = r * cos(w)
             let y: Double = r * sin(w)
-            s1.stack[regX].value.setVector2D( x,y )
+            s1.setVectorValue( x,y )
             return s1
         },
     ])
@@ -60,7 +60,7 @@ func installVector( _ model: CalculatorModel ) {
             s1.stackDrop()
             let r: Double = s0.Xtv.reg
             let w: Double = s0.Ytv.reg
-            s1.stack[regX].value.setPolar2D( r,w )
+            s1.setPolarValue( r,w )
             return s1
         },
 
@@ -71,7 +71,7 @@ func installVector( _ model: CalculatorModel ) {
             let (x, y) = s0.Xtv.get2()
             let r: Double = sqrt( x*x + y*y)
             let w: Double = atan( x/y )
-            s1.stack[regX].value.setPolar2D( r,w )
+            s1.setPolarValue( r,w )
             return s1
         },
     ])
@@ -85,7 +85,7 @@ func installVector( _ model: CalculatorModel ) {
             s1.stackDrop()
             let (x1, y1) = s0.Xtv.get2()
             let (x2, y2) = s0.Ytv.get2()
-            s1.stack[regX].value.set2( x1+x2, y1+y2 )
+            s1.setVectorValue( x1+x2, y1+y2 )
             return s1
         }
     ])
@@ -99,7 +99,7 @@ func installVector( _ model: CalculatorModel ) {
             s1.stackDrop()
             let (x1, y1) = s0.Xtv.get2()
             let (x2, y2) = s0.Ytv.get2()
-            s1.stack[regX].value.set2( x2-x1, y2-y1 )
+            s1.setVectorValue( x2-x1, y2-y1 )
             return s1
         }
     ])
@@ -113,7 +113,7 @@ func installVector( _ model: CalculatorModel ) {
             s1.stackDrop()
             let s: Double = s0.Xtv.reg
             let (x, y) = s0.Ytv.get2()
-            s1.stack[regX].value.set2( s*x, s*y )
+            s1.setVectorValue( s*x, s*y )
             return s1
         }
     ])
