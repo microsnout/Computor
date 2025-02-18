@@ -499,6 +499,15 @@ class TypeDef {
         defineType( .mass, .oz,    "oz",   2.2046226218488 * 16.0)
         defineType( .mass, .ton,   "ton",  2.2046226218488 / 2000.0)
         defineType( .mass, .stone, "st",   2.2046226218488 / 14.0)
+        
+        defineType( .capacity, .mL,    "mL",        1.0)
+        defineType( .capacity, .liter, "L",         1.0/1000)
+        defineType( .capacity, .floz,  "fl-oz",     1.0/29.5735295625)
+        defineType( .capacity, .cup,   "cup",       1.0/(29.5735295625 * 8))
+        defineType( .capacity, .pint,  "pint",      1.0/(29.5735295625 * 16))
+        defineType( .capacity, .quart,  "quart",    1.0/(29.5735295625 * 32))
+        defineType( .capacity, .us_gal,"US-gal",    1.0/(29.5735295625 * 128))
+        defineType( .capacity, .gal,   "gal",       1.0/(1000 * 4.54609))
 
         defineType( .temp, .degC,    "C",    1.0)
         defineType( .temp, .degF,    "F",    9.0/5.0, delta: 32)

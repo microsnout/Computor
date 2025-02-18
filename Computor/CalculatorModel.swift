@@ -60,8 +60,11 @@ enum KeyCode: Int {
     // Mass
     case kg = 230, mg, gram, tonne, lb, oz, ton, stone
     
+    // Capacity
+    case mL = 240, liter, floz, cup, pint, quart, us_gal, gal
+    
     // Temperature
-    case degC = 240, degF
+    case degC = 250, degF
     
     case unitEnd = 299
     
