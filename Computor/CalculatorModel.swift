@@ -23,11 +23,11 @@ enum KeyCode: Int {
     
     case y2x = 40, inv, x2, sqrt, abs
     
-    case sin = 50, cos, tan, pi, asin, acos, atan
+    case sin = 50, cos, tan, asin, acos, atan, csc, sec, cot, acsc, asec, acot, sinh, cosh, tanh, asinh, acosh, atanh
     
     case log = 80, ln, log2, logY
     
-    case tenExp = 90, eExp, e
+    case tenExp = 90, eExp, e, pi
     
     // Format
     case fix = 120, sci, eng
@@ -52,7 +52,7 @@ enum KeyCode: Int {
     case km = 201, mm, cm, m, inch, ft, yd, mi
     
     // Time
-    case sec = 210, min, hr, day, yr, ms, us
+    case second = 210, min, hr, day, yr, ms, us
     
     // Angles
     case deg = 220, rad, dms
@@ -594,6 +594,22 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         .acos:   UnaryOp( parm: tagUntyped, result: tagRad, acos ),
         .atan:   UnaryOp( parm: tagUntyped, result: tagRad, atan ),
             
+        .csc:   UnaryOp( parm: tagRad, result: tagUntyped, { 1.0/sin($0) } ),
+        .sec:   UnaryOp( parm: tagRad, result: tagUntyped, { 1.0/cos($0) } ),
+        .cot:   UnaryOp( parm: tagRad, result: tagUntyped, { 1.0/tan($0) } ),
+        
+        .acsc:   UnaryOp( parm: tagUntyped, result: tagRad, { asin(1.0/$0) } ),
+        .asec:   UnaryOp( parm: tagUntyped, result: tagRad, { acos(1.0/$0) } ),
+        .acot:   UnaryOp( parm: tagUntyped, result: tagRad, { atan(1.0/$0) } ),
+                
+        .sinh:   UnaryOp( parm: tagUntyped, result: tagUntyped, sinh ),
+        .cosh:   UnaryOp( parm: tagUntyped, result: tagUntyped, cosh ),
+        .tanh:   UnaryOp( parm: tagUntyped, result: tagUntyped, tanh ),
+        
+        .asinh:   UnaryOp( parm: tagUntyped, result: tagUntyped, asinh ),
+        .acosh:   UnaryOp( parm: tagUntyped, result: tagUntyped, acosh ),
+        .atanh:   UnaryOp( parm: tagUntyped, result: tagUntyped, atanh ),
+                
         .log:   UnaryOp( result: tagUntyped, log10 ),
         .ln:    UnaryOp( result: tagUntyped, log ),
         .log2:  UnaryOp( result: tagUntyped, { x in log10(x)/log10(2) } ),

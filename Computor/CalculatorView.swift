@@ -176,21 +176,33 @@ func initKeyLayout() {
     SubPadSpec.define( .sin,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.asin, "sin^{-1}"),
+                        Key(.csc, "csc"),
+                        Key(.acsc, "acsc"),
+                        Key(.asin, "asin"),
+                        Key(.sinh, "sinh"),
+                        Key(.asinh, "asinh"),
                        ]
     )
     
     SubPadSpec.define( .cos,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.asin, "cos^{-1}"),
+                        Key(.sec, "sec"),
+                        Key(.asec, "asec"),
+                        Key(.asin, "acos"),
+                        Key(.cosh, "cosh"),
+                        Key(.acosh, "acosh"),
                        ]
     )
     
     SubPadSpec.define( .tan,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.asin, "tan^{-1}"),
+                        Key(.cot, "cot"),
+                        Key(.acot, "acot"),
+                        Key(.asin, "atan"),
+                        Key(.tanh, "tanh"),
+                        Key(.atanh, "atanh"),
                        ]
     )
     
@@ -227,7 +239,7 @@ func initKeyLayout() {
                        keys: [
                         Key(.us,  "\u{03BC}s"),
                         Key(.ms,  "ms"),
-                        Key(.sec, "sec"),
+                        Key(.second, "sec"),
                         Key(.min, "min"),
                         Key(.hr,  "hr"),
                         Key(.day, "day"),

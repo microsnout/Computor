@@ -482,7 +482,7 @@ class TypeDef {
         defineType( .angle,  .rad,  "rad",  1)
         defineType( .angle,  .deg,  "deg",  180/Double.pi)
 
-        defineType( .time,  .sec,   "sec",  1.0)
+        defineType( .time,  .second,   "sec",  1.0)
         defineType( .time,  .min,   "min",  1.0/60)
         defineType( .time,  .hr,    "hr",   1.0/(60*60))
         defineType( .time,  .day,   "day",  1.0/(24*60*60))
