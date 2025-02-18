@@ -122,6 +122,24 @@ let psFunctionsR = PadSpec(
             ]
     )
 
+let psFunctions2L = PadSpec(
+        keySpec: ksSoftkey,
+        cols: 3,
+        keys: [ Key(.noop),
+                Key(.noop),
+                Key(.openBrace, "{"),
+            ]
+    )
+
+let psFunctions2R = PadSpec(
+        keySpec: ksSoftkey,
+        cols: 3,
+        keys: [ Key(.closeBrace, "}"),
+                Key(.noop),
+                Key(.noop)
+            ]
+    )
+
 let psFormatL = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
@@ -320,7 +338,7 @@ struct CalculatorView: View {
             
             KeyStack() {
                 NavigationStack {
-                    VStack {
+                    VStack( spacing: 5 ) {
                         AuxiliaryDisplay( model: model )
                             .background( Color("Display") )
                             .border(Color("Frame"), width: 3)
@@ -344,40 +362,52 @@ struct CalculatorView: View {
                         // Main calculator display
                         Display( model: model )
                         
-                        Spacer().frame( height: 15)
+                        Spacer().frame( height: 3)
                         
-                        HStack {
-                            KeypadView( padSpec: psSoftkeyL, keyPressHandler: model )
-                            Spacer()
-                            KeypadView( padSpec: psSoftkeyR, keyPressHandler: model )
-                        }
-                        HStack {
-                            KeypadView( padSpec: psUnitsL, keyPressHandler: model )
-                            Spacer()
-                            KeypadView( padSpec: psUnitsR, keyPressHandler: model )
-                        }
-                        HStack {
-                            KeypadView( padSpec: psFunctionsL, keyPressHandler: model )
-                            Spacer()
-                            KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
-                        }
-                        Divider()
-                        HStack {
-                            VStack( spacing: 15 ) {
-                                KeypadView( padSpec: psNumeric, keyPressHandler: model )
-                                KeypadView( padSpec: psEnter, keyPressHandler: model )
+                        VStack( spacing: 7 ) {
+                            HStack {
+                                KeypadView( padSpec: psSoftkeyL, keyPressHandler: model )
+                                Spacer()
+                                KeypadView( padSpec: psSoftkeyR, keyPressHandler: model )
                             }
-                            Spacer()
-                            VStack( spacing: 15 ) {
-                                KeypadView( padSpec: psOperations, keyPressHandler: model )
-                                KeypadView( padSpec: psClear, keyPressHandler: model )
+                            HStack {
+                                KeypadView( padSpec: psUnitsL, keyPressHandler: model )
+                                Spacer()
+                                KeypadView( padSpec: psUnitsR, keyPressHandler: model )
+                            }
+                            HStack {
+                                KeypadView( padSpec: psFunctionsL, keyPressHandler: model )
+                                Spacer()
+                                KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
+                            }
+                            HStack {
+                                KeypadView( padSpec: psFunctions2L, keyPressHandler: model )
+                                Spacer()
+                                KeypadView( padSpec: psFunctions2R, keyPressHandler: model )
                             }
                         }
-                        Divider()
-                        HStack {
-                            KeypadView( padSpec: psFormatL, keyPressHandler: model )
-                            Spacer()
-                            KeypadView( padSpec: psFormatR, keyPressHandler: model )
+                        
+                        VStack( spacing: 5) {
+                            Divider()
+                            HStack {
+                                VStack( spacing: 10 ) {
+                                    KeypadView( padSpec: psNumeric, keyPressHandler: model )
+                                    KeypadView( padSpec: psEnter, keyPressHandler: model )
+                                }
+                                Spacer()
+                                VStack( spacing: 10 ) {
+                                    KeypadView( padSpec: psOperations, keyPressHandler: model )
+                                    KeypadView( padSpec: psClear, keyPressHandler: model )
+                                }
+                            }
+                        }
+                        VStack( spacing: 5 ) {
+                            Divider().frame(height: 1)
+                            HStack {
+                                KeypadView( padSpec: psFormatL, keyPressHandler: model )
+                                Spacer()
+                                KeypadView( padSpec: psFormatR, keyPressHandler: model )
+                            }
                         }
                         Spacer()
                     }

@@ -65,7 +65,7 @@ struct Display: View {
                     RichText( midText, size: .small, weight: .bold)
                     Spacer()
                     RichText( rightText, size: .small )
-                }.frame( height: 10 ).padding(0)
+                }.frame( height: 8 ).padding(0)
                 
                 ForEach (0 ..< model.rowCount, id: \.self) { index in
                     TypedRegister( text: model.renderRow(index: index), size: priDispTextSize )

@@ -28,7 +28,8 @@ enum KeyPressResult: Int {
          stateUndo,         // An undo op, return to previous state
          stateError,        // An error display Error status
          modalFunction,     // Start modal function, no new state yet
-         modalFnNewState    // Start modal function with new state
+         modalFnNewState,    // Start modal function with new state
+         recordOnly
 }
 
 protocol KeyPressHandler {

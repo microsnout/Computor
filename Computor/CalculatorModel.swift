@@ -38,7 +38,7 @@ enum KeyCode: Int {
     case fn0 = 160, fn1, fn2, fn3, fn4, fn5, fn6
     
     // Macro Op
-    case macroOp = 170, clrFn, recFn, stopFn, showFn
+    case macroOp = 170, clrFn, recFn, stopFn, showFn, openBrace, closeBrace, macro
     
     // Multi valued types
     case multiValue = 180, rationalV, vector2D, polarV, complexV
@@ -70,9 +70,9 @@ enum KeyCode: Int {
 
 let digitSet:Set<KeyCode> = [.key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9]
 
-let fnSet:Set<KeyCode> = [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6]
+let fnSet:Set<KeyCode> = [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6, .openBrace]
 
-let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .showFn]
+let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .showFn, .openBrace]
 
 
 struct UndoStack {
@@ -224,13 +224,34 @@ struct Constant: StateOperator {
 }
 
 
-protocol ModalFunction {
+class ModalFunction {
     
     // String to display while modal function is active
-    var statusString: String? { get }
+    var statusString: String? { nil }
     
+    var macroFn: [MacroOp] = []
+
     // Key event handler for modal function
-    func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult
+    func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
+        KeyPressResult.null
+    }
+    
+    func runMacro( model: CalculatorModel ) -> KeyPressResult {
+        for op in macroFn {
+            if op.execute( model ) == KeyPressResult.stateError {
+                return KeyPressResult.stateError
+            }
+        }
+        return KeyPressResult.stateChange
+    }
+    
+    func executeFn( _ event: KeyEvent, model: CalculatorModel ) -> KeyPressResult {
+        if event.kc == .macro {
+            return runMacro(model: model)
+        }
+        
+        return model.keyPress(event)
+    }
 }
 
 
@@ -263,6 +284,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     private var modalFunction : ModalFunction? = nil
     
+    var modalActive: Bool { modalFunction != nil }
+    
     func setModalFunction( _ fn: ModalFunction ) {
         // Set fn as handler to receive next event, display status indicator
         modalFunction = fn
@@ -272,6 +295,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     func clearModalFunction() {
         modalFunction = nil
         status.statusMid = nil
+    }
+    
+    private var execPauseCount: Int = 0
+    
+    func pauseExecution() {
+        execPauseCount += 1
+    }
+    
+    func resumeExecution() -> Int {
+        execPauseCount -= 1
+        return execPauseCount
     }
 
     // Display window into register stack
@@ -799,9 +833,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             // Store tagged value in X reg
             // Record data entry if recording
             // and clear data entry state
-            state.stack[regX].value = tv
             aux.recordValueFn(tv)
             entry.clearEntry()
+            
+            if execPauseCount > 0 {
+                // Restore the stack by removing X
+                state.stackDrop()
+            }
+            else {
+                // Keep new entered X value
+                state.stack[regX].value = tv
+            }
         }
     }
     
@@ -848,6 +890,22 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
                 aux.stopRecFn(event.kc)
                 
+            case .openBrace:
+                acceptTextEntry()
+                if modalActive {
+                    if aux.recording {
+                        // If we are already recording, this is a nested {fn} so
+                        // we record the open { for future playback
+                        aux.recordKeyFn(.openBrace)
+                    }
+                    else {
+                        // Start recording but don't record the open {
+                        aux.startRecFn(event.kc)
+                    }
+                    // Increment the pause count so we resume at final }
+                    pauseExecution()
+                }
+
             default:
                 break
             }
@@ -902,12 +960,35 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             entry.startTextEntry( "0." )
             return KeyPressResult.dataEntry
         }
+        
+        if modalActive && execPauseCount > 0 {
+            if keyCode == .closeBrace {
+                if resumeExecution() > 0 {
+                    if keyCode != .back && keyCode != .closeBrace {
+                        // Record all keys except back/undo and data entry keys
+                        aux.recordKeyFn(keyCode)
+                    }
+                    return KeyPressResult.recordOnly
+                }
+                
+                // Top level } seen
+                // Drop through to close modal fn
+            }
+            else {
+                if keyCode != .back && keyCode != .closeBrace {
+                    // Record all keys except back/undo and data entry keys
+                    aux.recordKeyFn(keyCode)
+                }
+                // Do not continue to execute keypress
+                return KeyPressResult.recordOnly
+            }
+        }
 
-        if keyCode != .back {
+        if keyCode != .back && keyCode != .closeBrace {
             // Record all keys except back/undo and data entry keys
             aux.recordKeyFn(keyCode)
         }
-        
+
         if let modalFn = self.modalFunction {
             // Pass key event to sub function processor like reduce matrix
             clearModalFunction()
@@ -916,6 +997,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // Cancel modal function execution
                 return KeyPressResult.stateUndo
             }
+            
+            if keyCode == .closeBrace {
+                // We have a macro function {}
+                modalFn.macroFn = aux.list
+                aux.stopRecFn(.openBrace)
+                undoStack.push(state)
+                return modalFn.keyPress( KeyEvent( kc: .macro), model: self)
+            }
+            
+            // Function assigned to a key
             undoStack.push(state)
             return modalFn.keyPress(event, model: self)
         }

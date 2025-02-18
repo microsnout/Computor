@@ -154,14 +154,19 @@ func installMatrix( _ model: CalculatorModel ) {
 }
 
 
-struct MapFunction : ModalFunction {
+class MapFunction : ModalFunction {
     
     let valueList:  TaggedValue
     let model:      CalculatorModel
     
-    var statusString: String? { "ç{Units}Map f(x)" }
+    init(valueList: TaggedValue, model: CalculatorModel) {
+        self.valueList = valueList
+        self.model = model
+    }
     
-    func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
+    override var statusString: String? { "ç{Units}Map f(x)" }
+    
+    override func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
         
         // Start with empty output list
         let seqRows    = valueList.rows
@@ -179,7 +184,7 @@ struct MapFunction : ModalFunction {
                 
                 model.enterValue( value )
                 
-                if model.keyPress( event ) == .stateChange {
+                if executeFn( event, model: model) == .stateChange {
                     
                     if r == 1 {
                         // Grab the first result to define the type tag and format for result
@@ -217,15 +222,20 @@ struct MapFunction : ModalFunction {
 }
 
 
-struct ReduceFunction : ModalFunction {
+class ReduceFunction : ModalFunction {
     
     let valueList:     TaggedValue
     
     let model: CalculatorModel
     
-    var statusString: String? { "ƒ{0.9}ç{Units}Reduce x:[] y:r_{0}" }
+    init(valueList: TaggedValue, model: CalculatorModel) {
+        self.valueList = valueList
+        self.model = model
+    }
     
-    func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
+    override var statusString: String? { "ƒ{0.9}ç{Units}Reduce x:[] y:r_{0}" }
+    
+    override func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
         
         // Start with empty output list
         let seqRows    = valueList.rows
@@ -242,7 +252,7 @@ struct ReduceFunction : ModalFunction {
                 
                 model.enterValue( value )
 
-                if model.keyPress( event ) != .stateChange {
+                if executeFn( event, model: model) != .stateChange {
                     model.aux.resumeRecording()
                     model.undoStack.resume()
                     return KeyPressResult.stateError

@@ -12,11 +12,8 @@ enum AuxDispMode: Int, Hashable {
 
 struct AuxState {
     var mode: AuxDispMode = .memoryList
-    
     var detailItemIndex: Int = 0
-    
     var list: [MacroOp] = []
-    
     var kcRecording: KeyCode? = nil
     var recording: Bool { kcRecording != nil }
     var pauseCount: Int = 0
