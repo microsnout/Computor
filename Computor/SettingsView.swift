@@ -13,6 +13,11 @@ extension String {
     static var settingsDisplayRows : String { "settings.displayRows" }
     static var settingsPriDispTextSize : String { "settings.priDispTextSize" }
     static var settingsAuxDispTextSize : String { "settings.auxDispTextSize" }
+    static var settingsSoftkeyUnits : String { "settings.softkeyUnits" }
+}
+
+enum SoftkeyUnits: Int, Hashable {
+    case mixed = 0, metric, imperial, physics, electrical, navigation
 }
 
 
@@ -31,6 +36,9 @@ struct SettingsView: View {
     
     @AppStorage(.settingsAuxDispTextSize)
     private var auxDispTextSize = TextSize.normal
+    
+    @AppStorage(.settingsSoftkeyUnits)
+    private var softkeyUnits = SoftkeyUnits.mixed
 
     var body: some View {
         NavigationView {
@@ -56,12 +64,24 @@ struct SettingsView: View {
                     }
 
                 }
-                
+
                 Section( header: Text("Auxiliary Display").foregroundColor(Color("DisplayText"))  ) {
                     Picker( selection: $auxDispTextSize, label: Text("Text Size")) {
                         Text("Small").tag(TextSize.small)
                         Text("Medium").tag(TextSize.normal)
                         Text("Large").tag(TextSize.large)
+                    }
+                }
+                
+                Section( header: Text("Keyboard").foregroundColor(Color("DisplayText")) ) {
+
+                    Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
+                        Text("Default").tag(SoftkeyUnits.mixed)
+                        Text("Metric").tag(SoftkeyUnits.metric)
+                        Text("Imperial").tag(SoftkeyUnits.imperial)
+                        Text("Physics").tag(SoftkeyUnits.physics)
+                        Text("Electrical").tag(SoftkeyUnits.electrical)
+                        Text("Navigation").tag(SoftkeyUnits.navigation)
                     }
                 }
             }

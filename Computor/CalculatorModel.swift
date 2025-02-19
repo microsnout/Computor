@@ -240,11 +240,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     // *******
-    
-    
-    // Keycodes that are valid in data entry mode
-    private let entryKeys:Set<KeyCode> = [.key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9, .dot, .sign, .back, .eex]
-    
+
     private func bufferIndex(_ stackIndex: Int ) -> Int {
         // Convert a bottom up index into the stack array to a top down index into the displayed registers
         return displayRows - stackIndex - 1
@@ -435,6 +431,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
+    // Set of keys that cause data entry mode to begin, digits and dot
+    private static let entryStartKeys = digitSet.union( Set<KeyCode>([.dot]) )
+
+    // Set of keys valid in data entry mode, all of above plus sign, back and enter exp
+    private static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.sign, .back, .eex]) )
+
+    
     func keyPress(_ event: KeyEvent) -> KeyPressResult {
         let keyCode = event.kc
         
@@ -445,7 +448,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         if entry.entryMode {
-            if entryKeys.contains(keyCode) {
+            if CalculatorModel.entryKeys.contains(keyCode) {
                 // Process data entry key event
                 let keyRes = entry.entryModeKeypress(keyCode)
                 
@@ -468,18 +471,19 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             acceptTextEntry()
         }
         
-        if digitSet.contains(keyCode) {
-            // Start data entry with a digit
+        if CalculatorModel.entryStartKeys.contains(keyCode) {
+            
+            // Start data entry with a digit or a dot
             undoStack.push(state)
             state.stackLift()
-            entry.startTextEntry( String(keyCode.rawValue) )
-            return KeyPressResult.dataEntry
-        }
-        else if keyCode == .dot {
-            // Start data entry with a decimal point
-            undoStack.push(state)
-            state.stackLift()
-            entry.startTextEntry( "0." )
+            
+            if keyCode == .dot {
+                entry.startTextEntry( "0." )
+            }
+            else {
+                // Start with single digit
+                entry.startTextEntry( String(keyCode.rawValue) )
+            }
             return KeyPressResult.dataEntry
         }
         
