@@ -56,9 +56,9 @@ let psEnter = PadSpec(
 let psOperations = PadSpec(
     keySpec: ksNormal,
     cols: 3,
-    keys: [ Key(.divide, "ƒ{1.4}÷"), Key(.deg, "deg\u{00B0}"), Key(.y2x, "y^{x}"),
+    keys: [ Key(.divide, "ƒ{1.4}÷"), Key(.deg, "ƒ{0.9}deg\u{00B0}"), Key(.y2x, "y^{x}"),
             Key(.times,  "ƒ{1.4}×"),  Key(.percent, "%"),    Key(.inv, "1/x"),
-            Key(.minus,  "ƒ{1.4}−"),  Key(.xy, "X\u{21c6}Y"),    Key(.x2, "x^{2}"),
+            Key(.minus,  "ƒ{1.4}−"),  Key(.xy, "ƒ{0.9}X\u{21c6}Y"),    Key(.x2, "x^{2}"),
             Key(.plus,   "ƒ{1.4}+"),  Key(.roll, "R\u{2193}"),   Key(.sqrt, "\u{221a}x")
           ])
 
