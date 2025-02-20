@@ -12,7 +12,7 @@ let logV = Logger(subsystem: "com.microsnout.calculator", category: "value")
 
 
 enum ValueType : Int, Hashable {
-    case real = 0, rational, complex, vector, polar, polarDeg
+    case real = 0, rational, complex, vector, polar
 }
 
 typealias ValueTypeSet = Set<ValueType>
@@ -46,6 +46,7 @@ struct FormatRec {
     var style: FormatStyle = .decimal
     var digits: Int = 4
     var minDigits: Int = 0
+    var polarDeg: Bool = false
 }
 
 typealias MatrixShape = Int
@@ -161,11 +162,6 @@ struct TaggedValue : RichRender {
             let (r, w) = get2()
             return ( r * cos(w), r * sin(w) )
             
-        case .polarDeg:
-            let (r, d) = get2()
-            let w = d * Double.pi / 180.0
-            return ( r * cos(w), r * sin(w) )
-
         default:
             return (0.0, 0.0)
         }
@@ -182,10 +178,6 @@ struct TaggedValue : RichRender {
         case .polar:
             let (r, w) = get2()
             return (r, w)
-            
-        case .polarDeg:
-            let (r, d) = get2()
-            return (r, d * Double.pi / 180.0)
             
         case .vector:
             let (x, y) = get2()
@@ -350,10 +342,13 @@ struct TaggedValue : RichRender {
         return (text, reCount + imCount + 3)
     }
     
+    
     func renderValueVector( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
         let (x, y) = get2( row, col)
         let (xStr, xCount) = renderDouble(x)
         let (yStr, yCount) = renderDouble(y)
+        
+        var unitCount = 0
         
         var text = String()
         text.append("ç{Units}\u{276c}ç{}")
@@ -362,11 +357,25 @@ struct TaggedValue : RichRender {
         text.append(yStr)
         text.append("ç{Units}\u{276d}ç{}")
         
-        return (text, xCount + yCount + 4)
+        if tag != tagUntyped {
+            // Add unit string
+            if let sym = tag.symbol {
+                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                unitCount += sym.count + 1
+            }
+        }
+        
+        return (text, xCount + yCount + 4 + unitCount)
     }
     
+    
     func renderValuePolar( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        let (r, w) = get2( row, col)
+        var (r, w) = get2( row, col)
+        
+        if fmt.polarDeg {
+            w *= 180.0 / Double.pi
+        }
+        
         let (rStr, rCount) = renderDouble(r)
         let (wStr, wCount) = renderDouble(w)
         
@@ -387,7 +396,7 @@ struct TaggedValue : RichRender {
         text.append( "ç{Units}={,} \u{03b8}:ç{}")
         text.append(wStr)
         
-        if vtp == .polarDeg {
+        if fmt.polarDeg {
             text.append( "\u{00B0}" )
             unitCount += 1
         }
@@ -411,7 +420,7 @@ struct TaggedValue : RichRender {
         case .vector:
             return renderValueVector(row, col)
 
-        case .polar, .polarDeg:
+        case .polar:
             return renderValuePolar(row, col)
         }
     }
