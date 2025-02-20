@@ -53,6 +53,7 @@ func installVector( _ model: CalculatorModel ) {
     ])
 
     
+    // Angle parm of polar value must be Rad, Deg or untyped ( = Rad)
     let degTest: StateTest = {$0.Ytv.isReal && ($0.Yt == tagDeg || $0.Yt == tagRad || $0.Yt == tagUntyped) }
     
     
@@ -90,16 +91,27 @@ func installVector( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .plus, [
         
-        OpPattern( [ .X([.vector]), .Y([.vector])] ) { s0 in
+        OpPattern( [ .X([.vector, .polar]), .Y([.vector])] ) { s0 in
             
             // 2D vector addition
             var s1 = s0
             s1.stackDrop()
-            let (x1, y1) = s0.Xtv.get2()
-            let (x2, y2) = s0.Ytv.get2()
+            let (x1, y1) = s0.Xtv.getVector2D()
+            let (x2, y2) = s0.Ytv.getVector2D()
             s1.setVectorValue( x1+x2, y1+y2 )
             return s1
-        }
+        },
+        
+        OpPattern( [ .X([.polar, .polarDeg, .vector]), .Y([.polar, .polarDeg])] ) { s0 in
+            
+            var s1 = s0
+            s1.stackDrop()
+            let (x1, y1) = s0.Xtv.getVector2D()
+            let (x2, y2) = s0.Ytv.getVector2D()
+            let (x, y)   = (x1+x2, y1+y2)
+            s1.setPolarValue( sqrt(x*x + y*y), atan(y/x), as: s0.Yvtp )
+            return s1
+        },
     ])
 
     CalculatorModel.defineOpPatterns( .minus, [

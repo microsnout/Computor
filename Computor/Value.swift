@@ -151,10 +151,49 @@ struct TaggedValue : RichRender {
             set2( z.real, z.imaginary)
     }
     
+    func getVector2D() -> (Double, Double) {
+        switch vtp {
+        case .vector:
+            let (x, y) = get2()
+            return (x, y)
+            
+        case .polar:
+            let (r, w) = get2()
+            return ( r * cos(w), r * sin(w) )
+            
+        case .polarDeg:
+            let (r, d) = get2()
+            let w = d * Double.pi / 180.0
+            return ( r * cos(w), r * sin(w) )
+
+        default:
+            return (0.0, 0.0)
+        }
+    }
+    
     mutating func setVector2D( _ x: Double, _ y: Double ) {
         vtp = .vector
         setShape(2)
         set2( x,y )
+    }
+    
+    func getPolar2D() -> (Double, Double) {
+        switch vtp {
+        case .polar:
+            let (r, w) = get2()
+            return (r, w)
+            
+        case .polarDeg:
+            let (r, d) = get2()
+            return (r, d * Double.pi / 180.0)
+            
+        case .vector:
+            let (x, y) = get2()
+            return ( sqrt(x*x + y*y), atan(y/x) )
+            
+        default:
+            return (0.0, 0.0)
+        }
     }
 
     mutating func setPolar2D( _ r: Double, _ w: Double ) {

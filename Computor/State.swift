@@ -57,11 +57,16 @@ struct CalcState {
         stack[index].value.fmt = fmt
     }
 
-    mutating func setPolarValue( reg index: Int = regX, _ r: Double, _ w: Double,
+    mutating func setPolarValue( reg index: Int = regX, _ r: Double, _ a: Double,
                                  tag: TypeTag = tagUntyped,
-                                 fmt: FormatRec = CalcState.defaultDecFormat ) {
+                                 as vtp: ValueType = .polar,
+                                 fmt: FormatRec = CalcState.defaultDecFormat )
+    {
+        // Convert default radians to degrees if requested
+        let w = vtp == .polarDeg ? a / Double.pi * 180.0 : a
+        
         stack[index].value.setShape(2)
-        stack[index].value.vtp = .polar
+        stack[index].value.vtp = vtp
         stack[index].value.set2(r,w)
         stack[index].value.tag = tag
         stack[index].value.fmt = fmt
