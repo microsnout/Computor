@@ -12,7 +12,7 @@ let logV = Logger(subsystem: "com.microsnout.calculator", category: "value")
 
 
 enum ValueType : Int, Hashable {
-    case real = 0, rational, complex, vector2D, polar
+    case real = 0, rational, complex, vector, polar, polarDeg
 }
 
 typealias ValueTypeSet = Set<ValueType>
@@ -25,7 +25,7 @@ let valueSize: [ValueType : Int] = [
     .real : 1,
     .rational : 2,
     .complex : 2,
-    .vector2D : 2,
+    .vector : 2,
     .polar : 2
 ]
 
@@ -39,8 +39,6 @@ enum FormatStyle : UInt {
     case scientific = 4
     
     // These are custom extension values
-    case complex = 100
-    case polar   = 102
     case angleDMS = 110
 }
 
@@ -85,7 +83,7 @@ struct TaggedValue : RichRender {
     var isInteger: Bool  { isReal && isInt(reg) }
     var isComplex: Bool  { isSimple && vtp == .complex }
     var isRational: Bool { isSimple && vtp == .rational }
-    var isVector: Bool   { isSimple && vtp == .vector2D }
+    var isVector: Bool   { isSimple && vtp == .vector }
     
     var valueShape: ValueShape { isSimple ? .simple : .matrix }
     
@@ -154,7 +152,7 @@ struct TaggedValue : RichRender {
     }
     
     mutating func setVector2D( _ x: Double, _ y: Double ) {
-        vtp = .vector2D
+        vtp = .vector
         setShape(2)
         set2( x,y )
     }
@@ -333,14 +331,31 @@ struct TaggedValue : RichRender {
         let (rStr, rCount) = renderDouble(r)
         let (wStr, wCount) = renderDouble(w)
         
+        var unitCount = 0
         var text = String()
+        
         text.append("ç{Units}\u{276c} r:ç{}")
         text.append(rStr)
+        
+        if tag != tagUntyped {
+            // Add unit string
+            if let sym = tag.symbol {
+                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                unitCount += sym.count + 1
+            }
+        }
+
         text.append( "ç{Units}={,} \u{03b8}:ç{}")
         text.append(wStr)
+        
+        if vtp == .polarDeg {
+            text.append( "\u{00B0}" )
+            unitCount += 1
+        }
+        
         text.append("ç{Units}\u{276d}ç{}")
         
-        return (text, rCount + wCount + 9)
+        return (text, rCount + wCount + unitCount + 9)
     }
     
     func renderValueSimple( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
@@ -354,10 +369,10 @@ struct TaggedValue : RichRender {
         case .complex:
             return renderValueComplex(row, col)
 
-        case .vector2D:
+        case .vector:
             return renderValueVector(row, col)
 
-        case .polar:
+        case .polar, .polarDeg:
             return renderValuePolar(row, col)
         }
     }

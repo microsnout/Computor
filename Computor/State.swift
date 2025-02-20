@@ -51,7 +51,7 @@ struct CalcState {
                                   tag: TypeTag = tagUntyped,
                                   fmt: FormatRec = CalcState.defaultDecFormat ) {
         stack[index].value.setShape(2)
-        stack[index].value.vtp = .vector2D
+        stack[index].value.vtp = .vector
         stack[index].value.set2(x,y)
         stack[index].value.tag = tag
         stack[index].value.fmt = fmt

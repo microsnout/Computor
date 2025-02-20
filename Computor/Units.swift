@@ -882,3 +882,4 @@ func lookupTypeTag( _ tc: TypeCode ) -> TypeTag? {
 // Common tag values
 let tagUntyped = TypeTag(.untyped)
 let tagRad     = TypeDef.tagOf("rad")
+let tagDeg     = TypeDef.tagOf("deg")

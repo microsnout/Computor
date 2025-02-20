@@ -11,14 +11,14 @@ func installVector( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .abs, [
         
-        OpPattern( [ .X([.vector2D]) ] ) { s0 in
+        OpPattern( [ .X([.vector]) ] ) { s0 in
             var s1 = s0
             let (x, y) = s0.Xtv.get2()
             s1.setRealValue( sqrt(x*x + y*y) )
             return s1
         },
 
-        OpPattern( [ .X([.polar]) ] ) { s0 in
+        OpPattern( [ .X([.polar, .polarDeg]) ] ) { s0 in
             var s1 = s0
             let (r, _) = s0.Xtv.get2()
             s1.setRealValue( abs(r) )
@@ -39,32 +39,44 @@ func installVector( _ model: CalculatorModel ) {
             return s1
         },
 
-        OpPattern( [ .X([.polar]) ] ) { s0 in
+        OpPattern( [ .X([.polar, .polarDeg]) ] ) { s0 in
             
             // Convert polar to rect co-ords
             var s1 = s0
             let (r, w) = s0.Xtv.get2()
-            let x: Double = r * cos(w)
-            let y: Double = r * sin(w)
+            let theta = s0.Xtv.vtp == .polarDeg ? w * Double.pi / 180.0 : w
+            let x: Double = r * cos(theta)
+            let y: Double = r * sin(theta)
             s1.setVectorValue( x,y )
             return s1
         },
     ])
 
+    
+    let degTest: StateTest = {$0.Ytv.isReal && ($0.Yt == tagDeg || $0.Yt == tagRad || $0.Yt == tagUntyped) }
+    
+    
     CalculatorModel.defineOpPatterns( .polarV, [
         
-        OpPattern( [ .X([.real]), .Y([.real])] ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.real])], where: degTest ) { s0 in
             
             // Create 2D polar value
             var s1 = s0
             s1.stackDrop()
             let r: Double = s0.Xtv.reg
             let w: Double = s0.Ytv.reg
-            s1.setPolarValue( r,w )
+            
+            // Set unit tag same as X parm
+            s1.setPolarValue( r,w, tag: s0.Xt )
+            
+            if s0.Yt == tagDeg {
+                // Input parm Y was in deg
+                s1.Xvtp = .polarDeg
+            }
             return s1
         },
 
-        OpPattern( [ .X([.vector2D]) ] ) { s0 in
+        OpPattern( [ .X([.vector]) ] ) { s0 in
             
             // Convert 2D vector to polar
             var s1 = s0
@@ -78,7 +90,7 @@ func installVector( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .plus, [
         
-        OpPattern( [ .X([.vector2D]), .Y([.vector2D])] ) { s0 in
+        OpPattern( [ .X([.vector]), .Y([.vector])] ) { s0 in
             
             // 2D vector addition
             var s1 = s0
@@ -92,7 +104,7 @@ func installVector( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .minus, [
         
-        OpPattern( [ .X([.vector2D]), .Y([.vector2D])] ) { s0 in
+        OpPattern( [ .X([.vector]), .Y([.vector])] ) { s0 in
             
             // 2D vector subtraction
             var s1 = s0
@@ -106,7 +118,7 @@ func installVector( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .times, [
         
-        OpPattern( [ .X([.real]), .Y([.vector2D])] ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.vector])] ) { s0 in
             
             // Scale 2D vector
             var s1 = s0
