@@ -25,6 +25,17 @@ struct FnRec {
 
 typealias StateTest = ( _ s0: CalcState) -> Bool
 
+struct RegisterPattern {
+    var specList: [RegisterSpec]
+    var stateTest: StateTest?
+    
+    init( _ specList: [RegisterSpec], _ stateTest: StateTest? = nil) {
+        self.specList = specList
+        self.stateTest = stateTest
+    }
+}
+
+
 struct CalcState {
     /// Defines the exact state of the calculator at a given time
     ///
@@ -83,8 +94,8 @@ struct CalcState {
         return false
     }
     
-    func patternMatch( _ pattern: OpPattern ) -> Bool {
-        for spec in pattern.regPattern {
+    func patternMatch( _ pattern: RegisterPattern ) -> Bool {
+        for spec in pattern.specList {
             switch spec {
                 
             case .X( let vt, let vs):

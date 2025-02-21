@@ -175,4 +175,48 @@ func installVector( _ model: CalculatorModel ) {
         },
     ])
     
+    CalculatorModel.defineConversionPatterns([
+        
+        ConversionPattern( [ .X([.vector]) ] ) { s0, tagTo in
+            
+            if let seq = unitConvert( from: s0.Xt, to: tagTo ) {
+                var s1 = s0
+                let (x, y) = s0.Xtv.getVector2D()
+                s1.setVectorValue( seq.op(x), seq.op(y), tag: tagTo, fmt: s0.Xfmt )
+                return s1
+            }
+            
+            // Conversion not possible
+            return nil
+        },
+        
+        ConversionPattern( [ .X([.polar]) ] ) { s0, tagTo in
+            
+            var s1 = s0
+            
+            if tagTo == tagDeg {
+                if !s0.Xfmt.polarDeg {
+                    s1.Xfmt.polarDeg = true
+                    return s1
+                }
+                return nil
+            }
+
+            if tagTo == tagRad {
+                if s0.Xfmt.polarDeg {
+                    s1.Xfmt.polarDeg = false
+                    return s1
+                }
+                return nil
+            }
+            
+            if let seq = unitConvert( from: s0.Xt, to: tagTo ) {
+                let (r, w) = s0.Xtv.getPolar2D()
+                s1.setPolarValue( seq.op(r), w, tag: tagTo, fmt: s0.Xfmt )
+                return s1
+            }
+            
+            return nil
+        },
+    ])
 }

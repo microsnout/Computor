@@ -326,7 +326,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         state.memory[index].name = newName
     }
     
-    
     static var patternTable: [KeyCode : [OpPattern]] = [:]
 
     static func defineOpPatterns( _ kc: KeyCode, _ patterns: [OpPattern]) {
@@ -338,7 +337,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             CalculatorModel.patternTable[kc] = patterns
         }
     }
-    
+
+    static var conversionTable: [ConversionPattern] = []
+
+    static func defineConversionPatterns( _ patterns: [ConversionPattern]) {
+        CalculatorModel.conversionTable.append( contentsOf: patterns )
+    }
     
     static func defineOpCodes( _ newOpSet: [KeyCode : StateOperator] ) {
         // Add new operators to opTable, replacing duplicates with new value
@@ -641,7 +645,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             if let patternList = CalculatorModel.patternTable[keyCode] {
                 for pattern in patternList {
-                    if state.patternMatch(pattern) {
+                    if state.patternMatch(pattern.regPattern) {
                         // Transition to new calculator state based on operation
                         undoStack.push(state)
                         
@@ -660,10 +664,23 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
 
             if keyCode.isUnit {
                 // Attempt conversion of X reg to unit type keyCode
-                if let tag = TypeDef.kcDict[keyCode],
-                   let _   = TypeDef.typeDict[tag]
+                if let tag = TypeDef.kcDict[keyCode]
                 {
                     undoStack.push(state)
+                    
+                    for pattern in CalculatorModel.conversionTable {
+                        if state.patternMatch(pattern.regPattern) {
+                            undoStack.push(state)
+
+                            if let newState = pattern.convert(state, to: tag) {
+                                state = newState
+                                state.noLift = false
+                                
+                                // Successful state change
+                                return KeyPressResult.stateChange
+                            }
+                        }
+                    }
                     
                     if state.convertX( toTag: tag) {
                         // Conversion succeded

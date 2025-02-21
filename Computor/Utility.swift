@@ -41,6 +41,16 @@ func polar2rect( _ r: Double, _ w:  Double ) -> (Double, Double) {
 }
 
 
+func deg2rad( _ d: Double ) -> Double {
+    d / 180.0 * Double.pi
+}
+
+
+func rad2deg( _ w: Double ) -> Double {
+    w / Double.pi * 180.0
+}
+
+
 // **************
 // Swift Utiliies
 

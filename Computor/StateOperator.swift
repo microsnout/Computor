@@ -11,18 +11,31 @@ import OSLog
 struct OpPattern : StateOperator {
     let regPattern: RegisterPattern
     
-    let stateTest: StateTest?
-    
     let block: (CalcState) -> CalcState?
     
     init( _ pattern: [RegisterSpec], where test: StateTest? = nil, _ block: @escaping (CalcState) -> CalcState? ) {
-        self.regPattern = pattern
-        self.stateTest  = test
+        self.regPattern = RegisterPattern(pattern, test)
         self.block = block
     }
 
     func transition(_ s0: CalcState ) -> CalcState? {
         return block(s0)
+    }
+}
+
+
+struct ConversionPattern {
+    let regPattern: RegisterPattern
+    
+    let block: (CalcState, TypeTag) -> CalcState?
+    
+    init( _ pattern: [RegisterSpec], where test: StateTest? = nil, _ block: @escaping (CalcState, TypeTag) -> CalcState? ) {
+        self.regPattern = RegisterPattern(pattern, test)
+        self.block = block
+    }
+
+    func convert(_ s0: CalcState, to toTag: TypeTag ) -> CalcState? {
+        return block(s0, toTag)
     }
 }
 

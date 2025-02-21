@@ -58,8 +58,6 @@ enum RegisterSpec {
     case Z( _ vt: ValueTypeSet, _ vs: ValueShape = .simple )
 }
 
-typealias RegisterPattern = [RegisterSpec]
-
 
 struct TaggedValue : RichRender {
     var vtp: ValueType
