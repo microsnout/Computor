@@ -37,8 +37,7 @@ func installVector( _ model: CalculatorModel ) {
             // Convert polar to rect co-ords
             var s1 = s0
             let (r, w) = s0.Xtv.get2()
-            let x: Double = r * cos(w)
-            let y: Double = r * sin(w)
+            let (x, y) = polar2rect(r,w)
             s1.setVectorValue( x,y, tag: s0.Xt, fmt: s0.Xfmt )
             return s1
         },
@@ -79,8 +78,7 @@ func installVector( _ model: CalculatorModel ) {
             // Convert 2D vector to polar
             var s1 = s0
             let (x, y) = s0.Xtv.getVector2D()
-            let r: Double = sqrt( x*x + y*y)
-            let w: Double = atan( x/y )
+            let (r, w) = rect2polar(x,y)
             s1.setPolarValue( r,w, tag: s0.Xt, fmt: s0.Xfmt )
             return s1
         },
@@ -116,8 +114,9 @@ func installVector( _ model: CalculatorModel ) {
                 let (x2, y2) = s0.Ytv.getVector2D()
                 
                 let (x, y)   = (x1*ratio + x2, y1*ratio + y2)
+                let (r, w) = rect2polar(x,y)
                 
-                s1.setPolarValue( sqrt(x*x + y*y), atan(y/x), tag: s0.Yt, fmt: s0.Yfmt)
+                s1.setPolarValue( r,w, tag: s0.Yt, fmt: s0.Yfmt)
                 return s1
             }
             
@@ -160,7 +159,20 @@ func installVector( _ model: CalculatorModel ) {
             
             s1.setVectorValue( s*x, s*y, tag: s0.Yt, fmt: s0.Yfmt )
             return s1
-        }
+        },
+
+        OpPattern( [ .X([.real]), .Y([.polar])], where: { $0.Xt == tagUntyped } ) { s0 in
+            
+            // Scale 2D vector
+            var s1 = s0
+            s1.stackDrop()
+            
+            let s: Double = s0.Xtv.reg
+            let (r, w) = s0.Ytv.getPolar2D()
+            
+            s1.setPolarValue( s*r, w, tag: s0.Yt, fmt: s0.Yfmt )
+            return s1
+        },
     ])
     
 }

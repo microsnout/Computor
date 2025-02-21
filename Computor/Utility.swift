@@ -31,6 +31,16 @@ func isEven( _ x: Int ) -> Bool {
 }
 
 
+func rect2polar( _ x: Double, _ y: Double ) -> (Double, Double) {
+    ( sqrt(x*x + y*y), atan2(y,x) )
+}
+
+
+func polar2rect( _ r: Double, _ w:  Double ) -> (Double, Double) {
+    ( r*cos(w), r*sin(w) )
+}
+
+
 // **************
 // Swift Utiliies
 

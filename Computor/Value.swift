@@ -160,7 +160,7 @@ struct TaggedValue : RichRender {
             
         case .polar:
             let (r, w) = get2()
-            return ( r * cos(w), r * sin(w) )
+            return polar2rect(r,w)
             
         default:
             return (0.0, 0.0)
@@ -181,7 +181,7 @@ struct TaggedValue : RichRender {
             
         case .vector:
             let (x, y) = get2()
-            return ( sqrt(x*x + y*y), atan(y/x) )
+            return rect2polar(x,y)
             
         default:
             return (0.0, 0.0)
