@@ -14,7 +14,7 @@ func installVector( _ model: CalculatorModel ) {
         OpPattern( [ .X([.vector, .polar]) ] ) { s0 in
             var s1 = s0
             let (r, _) = s0.Xtv.getPolar2D()
-            s1.setRealValue( abs(r) )
+            s1.setRealValue( abs(r), tag: s0.Xt, fmt: s0.Xfmt )
             return s1
         },
     ])
@@ -39,6 +39,15 @@ func installVector( _ model: CalculatorModel ) {
             let (r, w) = s0.Xtv.get2()
             let (x, y) = polar2rect(r,w)
             s1.setVectorValue( x,y, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        },
+
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Convert complex to vector
+            var s1 = s0
+            let z = s0.Xtv.getComplex()
+            s1.setVectorValue( z.real, z.imaginary, tag: s0.Xt, fmt: s0.Xfmt )
             return s1
         },
     ])
@@ -80,6 +89,15 @@ func installVector( _ model: CalculatorModel ) {
             let (x, y) = s0.Xtv.getVector2D()
             let (r, w) = rect2polar(x,y)
             s1.setPolarValue( r,w, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        },
+
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Convert complex to polar
+            var s1 = s0
+            let z = s0.Xtv.getComplex()
+            s1.setPolarValue( z.length, z.phase, tag: s0.Xt, fmt: s0.Xfmt )
             return s1
         },
     ])
@@ -175,7 +193,10 @@ func installVector( _ model: CalculatorModel ) {
         },
     ])
     
-    CalculatorModel.defineConversionPatterns([
+    
+    // *** UNIT Conversions ***
+    
+    CalculatorModel.defineUnitConversions([
         
         ConversionPattern( [ .X([.vector]) ] ) { s0, tagTo in
             

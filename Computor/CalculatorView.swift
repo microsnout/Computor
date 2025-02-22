@@ -127,16 +127,16 @@ let psFunctions2L = PadSpec(
         cols: 3,
         keys: [ Key(.noop),
                 Key(.noop),
-                Key(.openBrace, "{"),
+                Key(.noop),
             ]
     )
 
 let psFunctions2R = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
-        keys: [ Key(.closeBrace, "}"),
-                Key(.noop),
-                Key(.zRe, "ƒ{0.8}Re(z)"),
+        keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
+                Key(.openBrace, "{"),
+                Key(.closeBrace, "}"),
             ]
     )
 
@@ -351,12 +351,12 @@ func initKeyLayout() {
     SubPadSpec.define( .zRe,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.zRe,  "ƒ{0.8}Re(z)"),
-                        Key(.zIm,  "ƒ{0.8}Im(z)"),
-                        Key(.abs,  "ƒ{0.8}|z|"),
-                        Key(.zArg, "ƒ{0.8}Arg(z)"),
-                        Key(.zConj,"ƒ{0.8}Conj(z)"),
-                        Key(.zNorm,"ƒ{0.8}Norm(z)"),
+                        Key(.zRe,  "ƒ{0.8}Re(x)"),
+                        Key(.zIm,  "ƒ{0.8}Im(x)"),
+                        Key(.abs,  "ƒ{0.8}|x|"),
+                        Key(.zArg, "ƒ{0.8}Arg(x)"),
+                        Key(.zConj,"ƒ{0.8}Conj(x)"),
+                        Key(.zNorm,"ƒ{0.8}Norm(x)"),
                        ]
     )
 }
@@ -414,14 +414,14 @@ struct CalculatorView: View {
                                 KeypadView( padSpec: psUnitsR, keyPressHandler: model )
                             }
                             HStack {
-                                KeypadView( padSpec: psFunctionsL, keyPressHandler: model )
-                                Spacer()
-                                KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
-                            }
-                            HStack {
                                 KeypadView( padSpec: psFunctions2L, keyPressHandler: model )
                                 Spacer()
                                 KeypadView( padSpec: psFunctions2R, keyPressHandler: model )
+                            }
+                            HStack {
+                                KeypadView( padSpec: psFunctionsL, keyPressHandler: model )
+                                Spacer()
+                                KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
                             }
                         }
                         

@@ -276,7 +276,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     // *** UNIT Conversions ***
 
-    CalculatorModel.defineConversionPatterns([
+    CalculatorModel.defineUnitConversions([
         
         ConversionPattern( [ .X([.complex]) ] ) { s0, tagTo in
             

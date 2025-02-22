@@ -343,7 +343,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
 
     static var conversionTable: [ConversionPattern] = []
 
-    static func defineConversionPatterns( _ patterns: [ConversionPattern]) {
+    static func defineUnitConversions( _ patterns: [ConversionPattern]) {
         CalculatorModel.conversionTable.append( contentsOf: patterns )
     }
     
