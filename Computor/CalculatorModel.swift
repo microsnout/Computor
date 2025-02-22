@@ -29,6 +29,9 @@ enum KeyCode: Int {
     
     case tenExp = 90, eExp, e, pi
     
+    // Complex operations
+    case zRe = 100, zIm, zArg, zConj, zNorm
+    
     // Format
     case fix = 120, sci, eng
     

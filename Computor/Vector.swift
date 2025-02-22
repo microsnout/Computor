@@ -88,7 +88,7 @@ func installVector( _ model: CalculatorModel ) {
         
         OpPattern( [ .X([.vector, .polar]), .Y([.vector])] ) { s0 in
             
-            // 2D vector addition
+            // 2D vector ADDITION
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
                 var s1 = s0
                 s1.stackDrop()

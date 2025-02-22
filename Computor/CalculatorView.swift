@@ -136,7 +136,7 @@ let psFunctions2R = PadSpec(
         cols: 3,
         keys: [ Key(.closeBrace, "}"),
                 Key(.noop),
-                Key(.noop)
+                Key(.zRe, "ƒ{0.8}Re(z)"),
             ]
     )
 
@@ -345,6 +345,18 @@ func initKeyLayout() {
                        keySpec: ksSubFn,
                        keys: [
                         Key(.abs,    "|x|"),
+                       ]
+    )
+
+    SubPadSpec.define( .zRe,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.zRe,  "ƒ{0.8}Re(z)"),
+                        Key(.zIm,  "ƒ{0.8}Im(z)"),
+                        Key(.abs,  "ƒ{0.8}|z|"),
+                        Key(.zArg, "ƒ{0.8}Arg(z)"),
+                        Key(.zConj,"ƒ{0.8}Conj(z)"),
+                        Key(.zNorm,"ƒ{0.8}Norm(z)"),
                        ]
     )
 }

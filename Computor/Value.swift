@@ -331,13 +331,23 @@ struct TaggedValue : RichRender {
         let (reStr, reCount) = renderDouble(re)
         let (imStr, imCount) = renderDouble( neg ? -im : im )
 
+        var unitCount = 0
+        
         var text = String()
         text.append(reStr)
         text.append( neg ? "ç{Units}={ - }ç{}" : "ç{Units}={ + }ç{}")
         text.append(imStr)
         text.append("ç{Units}={i}ç{}")
         
-        return (text, reCount + imCount + 3)
+        if tag != tagUntyped {
+            // Add unit string
+            if let sym = tag.symbol {
+                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                unitCount += sym.count + 1
+            }
+        }
+
+        return (text, reCount + imCount + 3 + unitCount)
     }
     
     
