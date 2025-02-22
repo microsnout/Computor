@@ -18,6 +18,22 @@ func installVector( _ model: CalculatorModel ) {
             return s1
         },
     ])
+    
+    CalculatorModel.defineOpPatterns( .zArg, [
+        
+        OpPattern( [ .X([.vector, .polar]) ] ) { s0 in
+            var s1 = s0
+            let (_, w) = s0.Xtv.getPolar2D()
+            
+            if s0.Xvtp == .polar && s0.Xfmt.polarDeg {
+                s1.setRealValue( rad2deg(w), tag: tagDeg, fmt: s0.Xfmt )
+            }
+            else {
+                s1.setRealValue( w, tag: s0.Xt, fmt: s0.Xfmt )
+            }
+            return s1
+        },
+    ])
 
     CalculatorModel.defineOpPatterns( .vector2D, [
         
