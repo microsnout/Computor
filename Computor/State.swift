@@ -79,6 +79,17 @@ struct CalcState {
         stack[index].value.fmt = fmt
     }
 
+    mutating func setComplexValue( reg index: Int = regX, _ z: Comp,
+                                   tag: TypeTag = tagUntyped,
+                                   fmt: FormatRec = CalcState.defaultDecFormat )
+    {
+        stack[index].value.setShape(2)
+        stack[index].value.vtp = .complex
+        stack[index].value.set2( z.real, z.imaginary )
+        stack[index].value.tag = tag
+        stack[index].value.fmt = fmt
+    }
+
     mutating func convertX( toTag: TypeTag ) -> Bool {
         if Xvtp != .real {
             // Don't assign units to vectors and complex
