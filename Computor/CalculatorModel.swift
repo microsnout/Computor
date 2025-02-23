@@ -227,7 +227,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // **** Macro Recording Stuff ***
     
     func setMacroFn( _ kc: KeyCode, _ list: MacroOpSeq ) {
-        state.fnList[kc] = FnRec( caption: "Fn\(kc.rawValue % 10)", macro: list)
+        state.fnList[kc] = FnRec( fnKey: kc, macro: list)
     }
     
     func clearMacroFn( _ kc: KeyCode) {
@@ -718,13 +718,23 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     func getKeyText( _ kc: KeyCode ) -> String? {
-        if let fn = state.fnList[kc] {
-            return fn.caption
+        if let fn = state.fnList[kc],
+           let text = fn.caption
+        {
+            // Fn key has provided caption text
+            return text
         }
         
+        if fnSet.contains(kc) {
+            // Fn key has no caption text - make caption from key code
+            return "Fn\(kc.rawValue % 10)"
+        }
+        
+        // Not a Fn key
         return nil
     }
 
+    
     func isKeyRecording( _ kc: KeyCode = .null ) -> Bool {
         if kc == .null {
             return aux.kcRecording != nil

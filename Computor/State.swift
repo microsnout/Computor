@@ -17,8 +17,9 @@ let stackPrefixValues = ["X", "Y", "Z", "T", "A", "B", "C", "D", "E", "F", "G", 
 // Register index values
 let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 16
 
-struct FnRec {
-    var caption: String
+struct FnRec: Codable {
+    var fnKey: KeyCode
+    var caption: String? = nil
     var macro: MacroOpSeq
 }
 
