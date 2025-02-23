@@ -13,7 +13,7 @@ enum AuxDispMode: Int, Hashable {
 struct AuxState {
     var mode: AuxDispMode = .memoryList
     var detailItemIndex: Int = 0
-    var list: [MacroOp] = []
+    var list = MacroOpSeq()
     var kcRecording: KeyCode? = nil
     var recording: Bool { kcRecording != nil }
     var pauseCount: Int = 0
@@ -32,7 +32,7 @@ struct AuxState {
             // Start with an empty list of instructions
             // Auxiliary display mode to macro list
             kcRecording = kc
-            list = []
+            list.clear()
             mode = .macroList
             
             // Disable all Fn keys except the one recording
@@ -53,24 +53,24 @@ struct AuxState {
         {
             // Fold unit keys into value on stack if possible
             if kc.isUnit {
-                if let last = list.last,
+                if let last = list.opSeq.last,
                    let value = last as? MacroValue
                 {
                     if value.tv.tag == tagUntyped {
                         if let tag = TypeDef.kcDict[kc] {
                             var tv = value.tv
-                            list.removeLast()
+                            list.opSeq.removeLast()
                             tv.tag = tag
-                            list.append( MacroValue( tv: tv))
+                            list.opSeq.append( MacroValue( tv: tv))
                             return
                         }
                     }
                 }
             }
             
-            list.append( MacroKey( kc: kc) )
+            list.opSeq.append( MacroKey( kc: kc) )
             
-            let ix = list.indices
+            let ix = list.opSeq.indices
             
             logM.debug("recordKey: \(ix)")
         }
@@ -79,14 +79,14 @@ struct AuxState {
     mutating func recordValueFn( _ tv: TaggedValue ) {
         if recording
         {
-            list.append( MacroValue( tv: tv) )
+            list.opSeq.append( MacroValue( tv: tv) )
         }
     }
     
     mutating func stopRecFn( _ kc: KeyCode ) {
         if kc == kcRecording {
             kcRecording = nil
-            list = []
+            list.clear()
             mode = .memoryList
             SubPadSpec.disableList.removeAll()
         }
@@ -334,8 +334,8 @@ struct MacroListView: View {
                 let list = model.aux.list
                 
                 VStack(spacing: 7) {
-                    ForEach (list.indices, id: \.self) { x in
-                        let op: MacroOp = list[x]
+                    ForEach (list.opSeq.indices, id: \.self) { x in
+                        let op: MacroOp = list.opSeq[x]
                         let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
                         let txt = op.getRichText(model)
 
@@ -345,9 +345,9 @@ struct MacroListView: View {
                             Spacer()
                         }
                     }
-                    .onChange( of: list.indices.count ) {
-                        if list.count > 1 {
-                            proxy.scrollTo( list.indices[list.endIndex - 1] )
+                    .onChange( of: list.opSeq.indices.count ) {
+                        if list.opSeq.count > 1 {
+                            proxy.scrollTo( list.opSeq.indices[list.opSeq.endIndex - 1] )
                         }
                     }
                 }

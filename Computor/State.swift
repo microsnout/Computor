@@ -19,7 +19,7 @@ let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 16
 
 struct FnRec {
     var caption: String
-    var macro: [MacroOp] = []
+    var macro: MacroOpSeq
 }
 
 

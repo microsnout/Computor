@@ -12,7 +12,7 @@ import OSLog
 let logM = Logger(subsystem: "com.microsnout.calculator", category: "model")
 
 
-enum KeyCode: Int {
+enum KeyCode: Int, Codable {
     case key0 = 0, key1, key2, key3, key4, key5, key6, key7, key8, key9
     
     case plus = 10, minus, times, divide
@@ -119,7 +119,7 @@ class ModalFunction {
     // String to display while modal function is active
     var statusString: String? { nil }
     
-    var macroFn: [MacroOp] = []
+    var macroFn: MacroOpSeq = MacroOpSeq()
 
     // Key event handler for modal function
     func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
@@ -127,7 +127,7 @@ class ModalFunction {
     }
     
     func runMacro( model: CalculatorModel ) -> KeyPressResult {
-        for op in macroFn {
+        for op in macroFn.opSeq {
             if op.execute( model ) == KeyPressResult.stateError {
                 return KeyPressResult.stateError
             }
@@ -226,7 +226,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // **** Macro Recording Stuff ***
     
-    func setMacroFn( _ kc: KeyCode, _ list: [MacroOp] ) {
+    func setMacroFn( _ kc: KeyCode, _ list: MacroOpSeq ) {
         state.fnList[kc] = FnRec( caption: "Fn\(kc.rawValue % 10)", macro: list)
     }
     
@@ -234,7 +234,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         state.fnList[kc] = nil
     }
     
-    func getMacroFn( _ kc: KeyCode ) -> [MacroOp]? {
+    func getMacroFn( _ kc: KeyCode ) -> MacroOpSeq? {
         if let fn = state.fnList[kc] {
             return fn.macro
         }
@@ -390,7 +390,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 
             case .stopFn:
                 // Stop Function Key recording
-                if aux.recording && !aux.list.isEmpty {
+                if aux.recording && !aux.list.opSeq.isEmpty {
                     setMacroFn(kc, aux.list)
                 }
                 aux.stopRecFn(kc)
@@ -409,7 +409,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         else {
             switch event.kc {
             case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
-                if aux.recording && !aux.list.isEmpty {
+                if aux.recording && !aux.list.opSeq.isEmpty {
                     // Stop recording pressed key
                     setMacroFn(event.kc, aux.list)
                 }
@@ -590,7 +590,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // Don't maintain undo stack during playback ops
                 undoStack.pause()
                 aux.pauseRecording()
-                for op in macro {
+                for op in macro.opSeq {
                     if op.execute(self) == KeyPressResult.stateError {
                         aux.resumeRecording()
                         undoStack.resume()

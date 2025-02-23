@@ -11,13 +11,13 @@ import OSLog
 let logV = Logger(subsystem: "com.microsnout.calculator", category: "value")
 
 
-enum ValueType : Int, Hashable {
+enum ValueType : Int, Codable, Hashable {
     case real = 0, rational, complex, vector, polar
 }
 
 typealias ValueTypeSet = Set<ValueType>
 
-enum ValueShape : Int {
+enum ValueShape : Int, Codable {
     case simple = 0, matrix
 }
 
@@ -31,7 +31,7 @@ let valueSize: [ValueType : Int] = [
 
 typealias Comp = Complex<Double>
 
-enum FormatStyle : UInt {
+enum FormatStyle : UInt, Codable {
     
     // These values match raw values with NumberFormater.Style
     case none = 0
@@ -42,7 +42,7 @@ enum FormatStyle : UInt {
     case angleDMS = 110
 }
 
-struct FormatRec {
+struct FormatRec: Codable {
     var style: FormatStyle = .decimal
     var digits: Int = 4
     var minDigits: Int = 0
@@ -59,7 +59,7 @@ enum RegisterSpec {
 }
 
 
-struct TaggedValue : RichRender {
+struct TaggedValue : RichRender & Codable {
     var vtp: ValueType
     var tag: TypeTag
     var fmt: FormatRec

@@ -31,7 +31,7 @@ let uidUntyped = StdUnitId.untyped.rawValue
 let uidUser = StdUnitId.user.rawValue
 
 
-struct TypeTag: Hashable {
+struct TypeTag: Hashable & Codable {
     var uid : UnitId
     var tid : TypeId
     
