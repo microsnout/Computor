@@ -12,75 +12,6 @@ import OSLog
 let logM = Logger(subsystem: "com.microsnout.calculator", category: "model")
 
 
-enum KeyCode: Int, Codable {
-    case key0 = 0, key1, key2, key3, key4, key5, key6, key7, key8, key9
-    
-    case plus = 10, minus, times, divide
-    
-    case dot = 20, enter, clX, clY, clZ, clReg, back, sign, eex
-    
-    case fixL = 30, fixR, roll, xy, xz, yz, lastx, percent
-    
-    case y2x = 40, inv, x2, sqrt, abs
-    
-    case sin = 50, cos, tan, asin, acos, atan, csc, sec, cot, acsc, asec, acot, sinh, cosh, tanh, asinh, acosh, atanh
-    
-    case log = 80, ln, log2, logY
-    
-    case tenExp = 90, eExp, e, pi
-    
-    // Complex operations
-    case zRe = 100, zIm, zArg, zConj, zNorm
-    
-    // Format
-    case fix = 120, sci, eng
-    
-    case null = 150, noop, rcl, sto, mPlus, mMinus, mRename
-    
-    // Softkeys
-    case fn0 = 160, fn1, fn2, fn3, fn4, fn5, fn6
-    
-    // Macro Op
-    case macroOp = 170, clrFn, recFn, stopFn, showFn, openBrace, closeBrace, macro
-    
-    // Multi valued types
-    case multiValue = 180, rationalV, vector2D, polarV, complexV
-    
-    // Matrix operations
-    case matrix = 190, range, seq, map, reduce
-    
-    case unitStart = 200
-    
-    // Length
-    case km = 201, mm, cm, m, inch, ft, yd, mi
-    
-    // Time
-    case second = 210, min, hr, day, yr, ms, us
-    
-    // Angles
-    case deg = 220, rad, dms
-    
-    // Mass
-    case kg = 230, mg, gram, tonne, lb, oz, ton, stone
-    
-    // Capacity
-    case mL = 240, liter, floz, cup, pint, quart, us_gal, gal
-    
-    // Temperature
-    case degC = 250, degF
-    
-    case unitEnd = 299
-    
-    var isUnit: Bool { return self.rawValue > KeyCode.unitStart.rawValue && self.rawValue < KeyCode.unitEnd.rawValue }
-}
-
-let digitSet:Set<KeyCode> = [.key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9]
-
-let fnSet:Set<KeyCode> = [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6, .openBrace]
-
-let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .showFn, .openBrace]
-
-
 struct UndoStack {
     private let maxItems = 12
     private var storage = [CalcState]()
@@ -439,7 +370,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     // Set of keys that cause data entry mode to begin, digits and dot
-    private static let entryStartKeys = digitSet.union( Set<KeyCode>([.dot]) )
+    private static let entryStartKeys = KeyCode.digitSet.union( Set<KeyCode>([.dot]) )
 
     // Set of keys valid in data entry mode, all of above plus sign, back and enter exp
     private static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.sign, .back, .eex]) )
@@ -448,7 +379,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     func keyPress(_ event: KeyEvent) -> KeyPressResult {
         let keyCode = event.kc
         
-        if macroOpSet.contains(keyCode) || isKeyRecording(event.kc) {
+        if KeyCode.macroOpSet.contains(keyCode) || isKeyRecording(event.kc) {
             // Macro recording control key or the Fn key currently recording
             macroKeypress(event)
             return KeyPressResult.macroOp
@@ -726,7 +657,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         // NEED TO CHECK IF KEY HAS A MACRO
-        if fnSet.contains(kc) {
+        if KeyCode.fnSet.contains(kc) {
             // Fn key has no caption text - make caption from key code
             return "Fn\(kc.rawValue % 10)"
         }

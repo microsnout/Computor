@@ -36,7 +36,7 @@ struct TypedRegister: View {
 }
 
 
-struct Display: View {
+struct DisplayView: View {
     @StateObject var model: CalculatorModel
     
     @AppStorage(.settingsPriDispTextSize)
@@ -83,3 +83,23 @@ struct Display: View {
     }
 }
 
+
+struct DisplayView_Previews: PreviewProvider {
+    
+    static var previews: some View {
+        @StateObject  var model = CalculatorModel()
+        
+        ZStack {
+            Rectangle()
+                .fill(Color("Background"))
+                .edgesIgnoringSafeArea( .all )
+            
+            VStack {
+                DisplayView( model: model )
+                    .preferredColorScheme(.light)
+            }
+            .padding(.horizontal, 30)
+            .padding(.vertical, 5)
+        }
+    }
+}

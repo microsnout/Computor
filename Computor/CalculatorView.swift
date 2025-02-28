@@ -377,9 +377,7 @@ struct CalculatorView: View {
             KeyStack() {
                 NavigationStack {
                     VStack( spacing: 5 ) {
-                        AuxiliaryDisplay( model: model )
-                            .background( Color("Display") )
-                            .border(Color("Frame"), width: 3)
+                        AuxiliaryDisplayView( model: model )
 
                         // App name and drag handle
                         HStack {
@@ -398,7 +396,7 @@ struct CalculatorView: View {
                         .frame( height: 25 )
                         
                         // Main calculator display
-                        Display( model: model )
+                        DisplayView( model: model )
                         
                         Spacer().frame( height: 3)
                         
@@ -460,10 +458,10 @@ struct CalculatorView: View {
 }
 
 
-//struct CalculatorView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        CalculatorView()
-//            .padding()
-//    }
-//}
+struct CalculatorView_Previews: PreviewProvider {
+    static var previews: some View {
+        CalculatorView()
+            .preferredColorScheme(.light)
+    }
+}
 
