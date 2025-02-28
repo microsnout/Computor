@@ -725,6 +725,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             return text
         }
         
+        // NEED TO CHECK IF KEY HAS A MACRO
         if fnSet.contains(kc) {
             // Fn key has no caption text - make caption from key code
             return "Fn\(kc.rawValue % 10)"

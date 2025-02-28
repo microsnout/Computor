@@ -29,6 +29,19 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		0CB0DB782D6BE74800BEC61F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		0C3354CA2CC7A51E00776F58 /* Computor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Computor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C3354DA2CC7A52100776F58 /* ComputorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ComputorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -87,6 +100,7 @@
 				0C3354CC2CC7A51E00776F58 /* Computor */,
 				0C3354DD2CC7A52100776F58 /* ComputorTests */,
 				0C3354E72CC7A52100776F58 /* ComputorUITests */,
+				0CB0DB6C2D6BC04F00BEC61F /* Frameworks */,
 				0C3354CB2CC7A51E00776F58 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -101,6 +115,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		0CB0DB6C2D6BC04F00BEC61F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -111,6 +132,7 @@
 				0C3354C62CC7A51E00776F58 /* Sources */,
 				0C3354C72CC7A51E00776F58 /* Frameworks */,
 				0C3354C82CC7A51E00776F58 /* Resources */,
+				0CB0DB782D6BE74800BEC61F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
