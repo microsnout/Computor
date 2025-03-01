@@ -64,18 +64,41 @@ struct TaggedValue : RichRender & Codable {
     var tag: TypeTag
     var fmt: FormatRec
     var mat: MatrixShape
-
-    var storage: [Double] = [0.0]
-
-    var simpleSize: Int { mat / 1000 / 1000 }
-    var rows: Int { mat / 1000 % 1000 }
-    var cols: Int { mat % 1000 }
-
     var reg: Double {
         get { storage[0] }
         set { storage[0] = newValue }
     }
 
+    var uid: UnitId { self.tag.uid }
+    var tid: TypeId { self.tag.tid }
+
+    var size: Int { mat / 1000 / 1000 }
+    var rows: Int { mat / 1000 % 1000 }
+    var cols: Int { mat % 1000 }
+    
+    private var storage: [Double] = [0.0]
+    
+    init( _ vtp: ValueType = .real, tag: TypeTag = tagUntyped, reg: Double = 0.0,
+          format: FormatRec = FormatRec(), rows: Int = 1, cols: Int = 1 ) {
+        self.vtp = vtp
+        self.tag = tag
+        self.fmt = format
+        self.mat = 001001001
+        
+        // Lookup simple value size
+        let ss = valueSize[vtp] ?? 1
+        
+        setShape(ss, rows, cols)
+        
+        if isReal {
+            storage[0] = reg
+        }
+    }
+}
+
+
+extension TaggedValue {
+    
     var isMatrix: Bool   { self.rows > 1 || self.cols > 1 }
     var isSimple: Bool   { self.rows == 1 && self.cols == 1 }
     var isReal: Bool     { isSimple && vtp == .real }
@@ -86,6 +109,32 @@ struct TaggedValue : RichRender & Codable {
     
     var valueShape: ValueShape { isSimple ? .simple : .matrix }
     
+    var capacity: Int { self.size * self.rows * self.cols }
+    
+    func getShape() -> (Int, Int, Int) {
+        return (self.size, self.rows, self.cols)
+    }
+    
+    mutating func setShape( _ ss: Int = 1, _ rows: Int = 1, _ cols: Int = 1 ) {
+        self.mat = cols + rows*1000 + ss*1000*1000
+        
+        self.storage = [Double]( repeating: 0.0, count: self.capacity )
+    }
+    
+    func valueInRange( _ ssV: Int = 1, _ rowV: Int = 1, _ colV: Int = 1 ) -> Bool {
+        let (ss, rows, cols) = getShape()
+        
+        return ssV <= ss && rowV <= rows && colV <= cols
+    }
+    
+    func isType( _ tt: TypeTag ) -> Bool {
+        return tag == tt
+    }
+
+    func isUnit( _ uid: UnitId ) -> Bool {
+        return self.tag.uid == uid
+    }
+
     private func storageIndex( _ ssx: Int = 1, row: Int, col: Int = 1 ) -> Int {
         let (ss, rows, _) = self.getShape()
         return (col-1)*ss*rows + (row-1)*ss + (ssx-1)
@@ -118,6 +167,20 @@ struct TaggedValue : RichRender & Codable {
         storage[index+1] = v2
     }
     
+    // Get and Set Real, Rational, Complex, Vector
+    
+    func getReal() -> Double { get1() }
+    
+    mutating func setReal( _ value: Double,
+                             tag: TypeTag = tagUntyped,
+                             fmt: FormatRec = CalcState.defaultDecFormat ) {
+        setShape(1)
+        self.vtp = .real
+        self.reg = value
+        self.tag = tag
+        self.fmt = fmt
+    }
+
     func getComplex( _ r: Int = 1, _ c: Int = 1 ) -> Comp {
         switch vtp {
         case .complex:
@@ -137,17 +200,15 @@ struct TaggedValue : RichRender & Codable {
 
         }
     }
-    
-    mutating func setReal( _ x: Double ) {
-        vtp = .real
-        setShape(1)
-        set1(x)
-    }
 
-    mutating func setComplex( _ z: Comp ) {
-            vtp = .complex
-            setShape(2)
-            set2( z.real, z.imaginary)
+    mutating func setComplex( _ z: Comp,
+                              tag: TypeTag = tagUntyped,
+                              fmt: FormatRec = CalcState.defaultDecFormat) {
+        setShape(2)
+        self.vtp = .complex
+        self.tag = tag
+        self.fmt = fmt
+        set2( z.real, z.imaginary)
     }
     
     func getVector2D() -> (Double, Double) {
@@ -165,9 +226,13 @@ struct TaggedValue : RichRender & Codable {
         }
     }
     
-    mutating func setVector2D( _ x: Double, _ y: Double ) {
-        vtp = .vector
+    mutating func setVector2D( _ x: Double, _ y: Double,
+                               tag: TypeTag = tagUntyped,
+                               fmt: FormatRec = CalcState.defaultDecFormat) {
         setShape(2)
+        self.vtp = .vector
+        self.tag = tag
+        self.fmt = fmt
         set2( x,y )
     }
     
@@ -186,11 +251,17 @@ struct TaggedValue : RichRender & Codable {
         }
     }
 
-    mutating func setPolar2D( _ r: Double, _ w: Double ) {
-        vtp = .polar
+    mutating func setPolar2D( _ r: Double, _ w: Double,
+                              tag: TypeTag = tagUntyped,
+                              fmt: FormatRec = CalcState.defaultDecFormat) {
         setShape(2)
+        self.vtp = .polar
+        self.tag = tag
+        self.fmt = fmt
         set2( r,w )
     }
+    
+    // Get and Set Tagged values from this tagged value - from matric to scalar
     
     func getValue( row: Int = 1, col: Int = 1 ) -> TaggedValue? {
         let (ss, rows, cols) = getShape()
@@ -218,52 +289,6 @@ struct TaggedValue : RichRender & Codable {
 
         for n in 0 ..< ss {
             storage[index+n] = value.storage[n]
-        }
-    }
-    
-    var capacity: Int { self.simpleSize * self.rows * self.cols }
-    
-    func getShape() -> (Int, Int, Int) {
-        return (self.simpleSize, self.rows, self.cols)
-    }
-    
-    mutating func setShape( _ ss: Int = 1, _ rows: Int = 1, _ cols: Int = 1 ) {
-        self.mat = cols + rows*1000 + ss*1000*1000
-        
-        self.storage = [Double]( repeating: 0.0, count: self.capacity )
-    }
-    
-    func valueInRange( _ ssV: Int = 1, _ rowV: Int = 1, _ colV: Int = 1 ) -> Bool {
-        let (ss, rows, cols) = getShape()
-        
-        return ssV <= ss && rowV <= rows && colV <= cols
-    }
-    
-    var uid: UnitId { self.tag.uid }
-    var tid: TypeId { self.tag.tid }
-    
-    func isType( _ tt: TypeTag ) -> Bool {
-        return tag == tt
-    }
-
-    func isUnit( _ uid: UnitId ) -> Bool {
-        return self.tag.uid == uid
-    }
-    
-    init( _ vtp: ValueType = .real, tag: TypeTag = tagUntyped, reg: Double = 0.0,
-          format: FormatRec = FormatRec(), rows: Int = 1, cols: Int = 1 ) {
-        self.vtp = vtp
-        self.tag = tag
-        self.fmt = format
-        self.mat = 001001001
-        
-        // Lookup simple value size
-        let ss = valueSize[vtp] ?? 1
-        
-        setShape(ss, rows, cols)
-        
-        if isReal {
-            storage[0] = reg
         }
     }
     
@@ -489,3 +514,29 @@ struct NamedValue : RichRender {
 
 
 let untypedZero: TaggedValue = TaggedValue( tag: tagUntyped)
+
+
+extension TaggedValue {
+    static func getSampleData() -> [TaggedValue] {
+        var data = [TaggedValue]( repeating: TaggedValue(), count: 4)
+        
+        data[0].setReal( 3.14159 )
+        data[1].setVector2D( 3.0, 4.0 )
+        data[3].setComplex( Comp(1.0, -2.0))
+        data[2].setPolar2D( 1.0, Double.pi/6, fmt: FormatRec( polarDeg: true))
+        return data
+    }
+}
+
+
+extension NamedValue {
+    static let names = ["Pi", "Path", "Nav", "Voltage"]
+    
+    static func getSampleData() -> [NamedValue] {
+        let values = TaggedValue.getSampleData()
+        
+        return zip(names, values).map() { (name, value) in
+            NamedValue(name, value: value)
+        }
+    }
+}

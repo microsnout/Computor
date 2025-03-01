@@ -67,7 +67,7 @@ func installMatrix( _ model: CalculatorModel ) {
 
                 // Copy intial value from s0 and create result array of size n
                 var result = s0.Ztv
-                let ss = result.simpleSize
+                let ss = result.size
                 result.setShape( ss, n, 1 )
                 
                 // Remove N and increment value from stack
@@ -189,7 +189,7 @@ class MapFunction : ModalFunction {
                     if r == 1 {
                         // Grab the first result to define the type tag and format for result
                         let firstValue = model.state.Xtv
-                        let ss = firstValue.simpleSize
+                        let ss = firstValue.size
                         
                         // Establish size of result and add first value
                         resultList = firstValue
