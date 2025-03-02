@@ -10,6 +10,7 @@ import SwiftUI
 
 @main
 struct ComputorApp: App {
+    
     @AppStorage(.settingsDarkModeKey)
     private var darkMode = false
     
@@ -20,7 +21,8 @@ struct ComputorApp: App {
     
     var body: some Scene {
         WindowGroup {
-            CalculatorView().preferredColorScheme( darkMode ? .dark : .light)
+            CalculatorView()
+                .preferredColorScheme( darkMode ? .dark : .light)
         }
     }
 }

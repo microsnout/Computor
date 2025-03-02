@@ -37,7 +37,7 @@ struct RegisterPattern {
 }
 
 
-struct CalcState {
+struct CalcState: Codable {
     /// Defines the exact state of the calculator at a given time
     ///
     var stack: [NamedValue] = stackPrefixValues.map { NamedValue( $0, value: untypedZero) }
@@ -45,6 +45,10 @@ struct CalcState {
     var noLift: Bool = false
     var memory = [NamedValue]()
     var fnList: [KeyCode : FnRec] = [:]
+}
+
+
+extension CalcState {
 
     static let defaultDecFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )

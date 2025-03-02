@@ -98,14 +98,53 @@ protocol StateOperator {
     func transition(_ s0: CalcState ) -> CalcState?
 }
 
-
 class CalculatorModel: ObservableObject, KeyPressHandler {
+    
     // Current Calculator State
     @Published var state  = CalcState()
     @Published var entry  = EntryState()
     @Published var aux    = AuxState()
     @Published var status = StatusState()
     
+    // *** Store ***
+    private static func fileURL() throws -> URL {
+        try FileManager.default.url(for: .documentDirectory,
+                                    in: .userDomainMask,
+                                    appropriateFor: nil,
+                                    create: false)
+        .appendingPathComponent("computor.state")
+    }
+    
+    func loadState() async throws {
+        let task = Task<CalcState, Error> {
+            let fileURL = try Self.fileURL()
+            guard let data = try? Data(contentsOf: fileURL) else {
+                return CalcState()
+            }
+            
+            let state = try JSONDecoder().decode(CalcState.self, from: data)
+            return state
+        }
+        
+        let state = try await task.value
+        
+        Task { @MainActor in
+            // Update the @Published property here
+            self.state = state
+        }
+
+    }
+    
+    func saveState() async throws {
+        let task = Task {
+            let data = try JSONEncoder().encode(self.state)
+            let outfile = try Self.fileURL()
+            try data.write(to: outfile)
+        }
+        _ = try await task.value
+    }
+    // *** Store End ***
+
     var undoStack = UndoStack()
     
     private var modalFunction : ModalFunction? = nil
@@ -649,17 +688,20 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     func getKeyText( _ kc: KeyCode ) -> String? {
-        if let fn = state.fnList[kc],
-           let text = fn.caption
-        {
-            // Fn key has provided caption text
-            return text
-        }
         
-        // NEED TO CHECK IF KEY HAS A MACRO
         if KeyCode.fnSet.contains(kc) {
-            // Fn key has no caption text - make caption from key code
-            return "Fn\(kc.rawValue % 10)"
+            
+            if let fn = state.fnList[kc] {
+                
+                if let text = fn.caption {
+                    // Fn key has provided caption text
+                    return text
+                }
+                
+                // Fn key has no caption text - make caption from key code
+                return "Fn\(kc.rawValue % 10)"
+            }
+
         }
         
         // Not a Fn key

@@ -487,7 +487,7 @@ extension TaggedValue {
 }
 
 
-struct NamedValue : RichRender {
+struct NamedValue : RichRender, Codable {
     var name: String?
     var value: TaggedValue
     
