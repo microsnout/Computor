@@ -47,6 +47,14 @@ extension TaggedValue {
             }
         }
         
+        if tag != tagUntyped {
+            // Add unit string
+            if let sym = tag.symbol {
+                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                count += sym.count + 1
+            }
+        }
+
         return (text, count)
     }
 }
@@ -150,6 +158,38 @@ func installMatrix( _ model: CalculatorModel ) {
                 // No new state
                 return nil
             },
+    ])
+
+    // *** UNIT Conversions ***
+
+    CalculatorModel.defineUnitConversions([
+        
+        ConversionPattern( [ .X( [.real, .vector, .complex, .polar], .matrix) ] ) { s0, tagTo in
+            
+            if let seq = unitConvert( from: s0.Xt, to: tagTo ) {
+                var s1 = s0
+            
+                if s0.Xvtp == .polar {
+                    s1.Xtv.transformValues() { value, s, r, c in
+                        // Only scale the r value of polar types, not theta
+                        let newValue = seq.op(value)
+                        return s == 1 ? newValue : value
+                    }
+                }
+                else {
+                    s1.Xtv.transformValues() { value, s, r, c in
+                        let newValue = seq.op(value)
+                        return newValue
+                    }
+                }
+                
+                s1.Xt = tagTo
+                return s1
+            }
+            
+            // Conversion not possible
+            return nil
+        },
     ])
 }
 

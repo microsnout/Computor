@@ -292,6 +292,23 @@ extension TaggedValue {
         }
     }
     
+    mutating func transformValues( _ fn: (Double, Int, Int, Int) -> Double ) {
+        let (ss, rows, cols) = getShape()
+        
+        for c in 1...cols {
+            for r in 1...rows {
+                for s in 1...ss {
+                    let index = storageIndex(s, row: r, col: c)
+                    let oldValue = storage[index]
+                    let newValue = fn(oldValue, s, r, c)
+                    storage[index] = newValue
+                }
+            }
+        }
+    }
+    
+    // Value string render functions
+    
     func renderDouble( _ reg: Double ) -> (String, Int) {
         
         if let nfStyle = NumberFormatter.Style(rawValue: fmt.style.rawValue) {
@@ -327,7 +344,7 @@ extension TaggedValue {
         let value = get1( row, col)
         var (text, valueCount) = renderDouble(value)
         
-        if tag != tagUntyped {
+        if isSimple && tag != tagUntyped {
             if let sym = tag.symbol {
                 text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
                 
@@ -364,7 +381,7 @@ extension TaggedValue {
         text.append(imStr)
         text.append("ç{Units}={i}ç{}")
         
-        if tag != tagUntyped {
+        if isSimple && tag != tagUntyped {
             // Add unit string
             if let sym = tag.symbol {
                 text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
@@ -390,7 +407,7 @@ extension TaggedValue {
         text.append(yStr)
         text.append("ç{Units}\u{276d}ç{}")
         
-        if tag != tagUntyped {
+        if isSimple && tag != tagUntyped {
             // Add unit string
             if let sym = tag.symbol {
                 text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
@@ -418,7 +435,7 @@ extension TaggedValue {
         text.append("ç{Units}\u{276c} r:ç{}")
         text.append(rStr)
         
-        if tag != tagUntyped {
+        if isSimple && tag != tagUntyped {
             // Add unit string
             if let sym = tag.symbol {
                 text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
