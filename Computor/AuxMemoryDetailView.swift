@@ -26,7 +26,7 @@ let psMemDetail = PadSpec(
 struct MemoryDetailView: View {
     @StateObject var model: CalculatorModel
     
-    @State var renameSheet = false
+    @State private var renameSheet = false
     
     @State private var position: ScrollPosition = .init(idType: Int.self)
 
@@ -59,6 +59,8 @@ struct MemoryDetailView: View {
 
     var body: some View {
         VStack {
+            AuxHeaderView( caption: "Memory Detail", theme: Theme.lightGreen )
+            
             Spacer()
             
             if model.state.memory.isEmpty {
@@ -100,7 +102,7 @@ struct MemoryDetailView: View {
             KeypadView( padSpec: psMemDetail,
                         keyPressHandler: MemoryDetailKeypress( model: model, renameSheet: $renameSheet))
         }
-        .padding( [.bottom, .top], 10 )
+        .padding( [.bottom, .top], 0 )
         .sheet(isPresented: $renameSheet) {
             ZStack {
                 Color("ListBack").edgesIgnoringSafeArea(.all)

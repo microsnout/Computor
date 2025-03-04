@@ -19,6 +19,9 @@ struct MemoryListView: View {
     
     var body: some View {
         VStack {
+            AuxHeaderView( caption: "Memory List", theme: Theme.lightBlue )
+            Spacer()
+            
             if model.state.memory.isEmpty {
                 Text("Memory List\n(Press + to store X register)")
                     .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
@@ -78,6 +81,7 @@ struct MemoryListView: View {
                 .padding( .horizontal, 0)
                 .padding( .top, 0)
             }
+            Spacer()
         }
     }
 }

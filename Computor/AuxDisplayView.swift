@@ -7,7 +7,7 @@
 import SwiftUI
 
 enum AuxDispMode: Int, Hashable {
-    case memoryList = 0, memoryDetail, macroList
+    case memoryList = 0, memoryDetail, macroList, stackBrowser
 }
 
 
@@ -27,50 +27,29 @@ struct AuxiliaryDisplayView: View {
     @StateObject var model: CalculatorModel
     
     var body: some View {
-        HStack( spacing: 0) {
-            VStack {
-                Spacer()
-                Image( systemName: "chevron.compact.left")
-                    .onTapGesture {
-                        if let new = auxLeft[model.aux.mode] {
-                            model.aux.mode = new
-                        }
-                    }
-                Spacer()
-            }
-            .padding([.leading], 0)
-            .padding([.top], 10)
-            .frame( minWidth: 18, maxWidth: 18, maxHeight: .infinity, alignment: .center)
-            // .border(.green)
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                LazyHStack {
+                    
+                    MemoryListView( model: model )
+                        .frame( maxWidth: .infinity, maxHeight: .infinity)
+                        .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
-            switch model.aux.mode {
-            case .memoryList:
-                MemoryListView( model: model )
-                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+                    MemoryDetailView( model: model )
+                        .frame( maxWidth: .infinity, maxHeight: .infinity)
+                        .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
-            case .memoryDetail:
-                MemoryDetailView( model: model )
-                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+                    MacroListView( model: model )
+                        .frame( maxWidth: .infinity, maxHeight: .infinity)
+                        .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
-            case .macroList:
-                MacroListView( model: model )
-                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+                    ValueBrowserView( model: model )
+                        .frame( maxWidth: .infinity, maxHeight: .infinity)
+                        .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+                }
+                .scrollTargetLayout()
             }
-            
-            VStack {
-                Spacer()
-                Image( systemName: "chevron.compact.right")
-                    .onTapGesture {
-                        if let new = auxRight[model.aux.mode] {
-                            model.aux.mode = new
-                        }
-                    }
-                Spacer()
-            }
-            .padding([.trailing], 0)
-            .padding([.top], 10)
-            .frame( minWidth: 18, maxWidth: 18, maxHeight: .infinity, alignment: .center)
-            // .border(.green)
+            .scrollTargetBehavior(.viewAligned)
         }
         .padding([.leading, .trailing, .top, .bottom], 0)
         .background( Color("Display") )
