@@ -19,7 +19,10 @@ struct ValueBrowserView: View {
         let color = nv.name != nil ? "DisplayText" : "GrayText"
 
         VStack {
-            AuxHeaderView( caption: "\(nameStr) Register", theme: Theme.lightRed )
+            AuxHeaderView( theme: Theme.lightRed ) {
+                RichText( "\(nameStr) Register", size: .small )
+            }
+            
             Spacer()
             
             if nv.value.isSimple {

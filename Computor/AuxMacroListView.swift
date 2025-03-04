@@ -17,7 +17,16 @@ struct MacroListView: View {
             VStack {
                 let captionTxt = "Macro " + ( name ?? "ç{StatusRedText}REC" )
                 
-                AuxHeaderView( caption: captionTxt, theme: Theme.lightYellow )
+                AuxHeaderView( theme: Theme.lightYellow ) {
+                    
+                    HStack {
+                        Spacer()
+                        
+                        RichText(captionTxt, size: .small )
+                        
+                        Spacer()
+                    }
+                }
                 
                 ScrollView {
                     ScrollViewReader { proxy in
@@ -49,7 +58,10 @@ struct MacroListView: View {
         }
         else {
             VStack {
-                AuxHeaderView( caption: "Macro List", theme: Theme.lightYellow )
+                AuxHeaderView( theme: Theme.lightYellow ) {
+                    RichText( "Macro List", size: .small  )
+                }
+                
                 Spacer()
             }
         }

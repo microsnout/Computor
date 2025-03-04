@@ -28,13 +28,9 @@ struct CalculatorView: View {
                         // App name and drag handle
                         HStack {
                             Text("Computor").foregroundColor(Color("Frame"))/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
+                            
                             Spacer()
                             
-                            EditButton()
-                            
-                            Button( action: { model.addMemoryItem() }) {
-                                Image( systemName: "plus") }
-
                             NavigationLink( destination: SettingsView() ) {
                                 Image( systemName: "gearshape").foregroundColor(Color("Frame"))
                             }

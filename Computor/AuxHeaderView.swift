@@ -7,15 +7,19 @@
 import SwiftUI
 
 
-struct AuxHeaderView: View {
-    var caption: String
+struct AuxHeaderView<Content: View>: View {
+    
     var theme: Theme
     
+    @ViewBuilder let content: Content
+
     var body: some View {
         
-        RichText(caption, size: .small )
-            .frame( maxWidth: .infinity, maxHeight: 24 )
-            .background( theme.mainColor )
+        VStack {
+            content
+        }
+        .frame( maxWidth: .infinity, maxHeight: 24 )
+        .background( theme.mainColor )
     }
     
 }
@@ -34,9 +38,11 @@ struct AuxHeaderView_Previews: PreviewProvider {
             
             VStack {
                 VStack {
-                    AuxHeaderView( caption: "Test Header",  theme: Theme.lightGreen)
-                        .frame( maxWidth: .infinity )
-                        .preferredColorScheme(.light)
+                    AuxHeaderView( theme: Theme.lightGreen ) {
+                        Text("Test")
+                    }
+                    .frame( maxWidth: .infinity )
+                    .preferredColorScheme(.light)
                     
                     Spacer()
                 }

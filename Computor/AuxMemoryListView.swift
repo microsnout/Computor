@@ -19,7 +19,19 @@ struct MemoryListView: View {
     
     var body: some View {
         VStack {
-            AuxHeaderView( caption: "Memory List", theme: Theme.lightBlue )
+            AuxHeaderView( theme: Theme.lightBlue ) {
+                
+                HStack {
+                    Spacer()
+                    RichText( "Memory List", size: .small )
+                    Spacer()
+                    
+                    Button( action: { model.addMemoryItem() }) {
+                        Image( systemName: "plus")
+                    }.padding( [.trailing], 10 )
+                }
+            }
+            
             Spacer()
             
             if model.state.memory.isEmpty {
