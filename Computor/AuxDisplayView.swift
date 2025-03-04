@@ -55,7 +55,9 @@ struct AuxiliaryDisplayView: View {
         .scrollPosition( id: $scrollPosId )
         .scrollTargetBehavior(.viewAligned)
         .onChange( of: auxViewId ) { oldId, newId in
-            scrollPosId = newId
+            withAnimation() {
+                scrollPosId = newId
+            }
         }
         .padding([.leading, .trailing, .top, .bottom], 0)
         .background( Color("Display") )
@@ -66,10 +68,10 @@ struct AuxiliaryDisplayView: View {
 
 struct AuxiliaryDisplayView_Previews: PreviewProvider {
     
-    @State private var pos = ScrollPosition( id: AuxDispView.memoryList.id )
-    
     static var previews: some View {
         @StateObject  var model = CalculatorModel()
+        
+        @State var viewId = AuxDispView.memoryList.id
         
         ZStack {
             Rectangle()
@@ -77,8 +79,8 @@ struct AuxiliaryDisplayView_Previews: PreviewProvider {
                 .edgesIgnoringSafeArea( .all )
             
             VStack {
-//                AuxiliaryDisplayView( model: model, scrollPos: $pos )
-//                    .preferredColorScheme(.light)
+                AuxiliaryDisplayView( model: model, auxViewId: $viewId )
+                    .preferredColorScheme(.light)
             }
             .padding(.horizontal, 30)
             .padding(.vertical, 5)
