@@ -19,7 +19,7 @@ struct ValueBrowserView: View {
         let color = nv.name != nil ? "DisplayText" : "GrayText"
 
         VStack {
-            AuxHeaderView( caption: "Value Browser", theme: Theme.lightRed )
+            AuxHeaderView( caption: "\(nameStr) Register", theme: Theme.lightRed )
             Spacer()
             
             if nv.value.isSimple {
@@ -37,8 +37,6 @@ struct ValueBrowserView: View {
                 let ( _, rows, _ ) = tvMatrix.getShape()
                 
                 VStack( spacing: 0 ) {
-                    RichText( "ƒ{1.2}ç{\(color)}\(nameStr)", size: .large )
-                    
                     ScrollView {
                         ScrollViewReader { proxy in
                             
@@ -63,7 +61,6 @@ struct ValueBrowserView: View {
                             .padding([.top, .bottom], 0)
                         }
                     }
-                    Spacer()
                 }
             }
         }

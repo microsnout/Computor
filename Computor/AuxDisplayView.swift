@@ -6,50 +6,56 @@
 //
 import SwiftUI
 
-enum AuxDispMode: Int, Hashable {
-    case memoryList = 0, memoryDetail, macroList, stackBrowser
+enum AuxDispView: String {
+    case memoryList, memoryDetail, macroList, valueBrowser
+    
+    var id: String {
+        rawValue
+    }
+
+    var ID: String {
+        rawValue
+    }
 }
-
-
-let auxRight: [AuxDispMode : AuxDispMode] = [
-    .memoryList : .memoryDetail,
-    .memoryDetail : .macroList
-]
-
-
-let auxLeft: [AuxDispMode : AuxDispMode] = [
-    .macroList : .memoryDetail,
-    .memoryDetail : .memoryList
-]
 
 
 struct AuxiliaryDisplayView: View {
     @StateObject var model: CalculatorModel
     
+    @Binding var auxViewId: String
+    
+    @State private var scrollPosId: String? = AuxDispView.memoryList.id
+    
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal) {
-                LazyHStack {
-                    
-                    MemoryListView( model: model )
-                        .frame( maxWidth: .infinity, maxHeight: .infinity)
-                        .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+        ScrollView(.horizontal) {
+            LazyHStack {
+                
+                MemoryListView( model: model )
+                    .id( AuxDispView.memoryList.id )
+                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+                    .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
-                    MemoryDetailView( model: model )
-                        .frame( maxWidth: .infinity, maxHeight: .infinity)
-                        .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+                MemoryDetailView( model: model )
+                    .id( AuxDispView.memoryDetail.id )
+                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+                    .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
-                    MacroListView( model: model )
-                        .frame( maxWidth: .infinity, maxHeight: .infinity)
-                        .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+                MacroListView( model: model )
+                    .id( AuxDispView.macroList.id )
+                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+                    .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
-                    ValueBrowserView( model: model )
-                        .frame( maxWidth: .infinity, maxHeight: .infinity)
-                        .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
-                }
-                .scrollTargetLayout()
+                ValueBrowserView( model: model )
+                    .id( AuxDispView.valueBrowser.id )
+                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+                    .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
             }
-            .scrollTargetBehavior(.viewAligned)
+            .scrollTargetLayout()
+        }
+        .scrollPosition( id: $scrollPosId )
+        .scrollTargetBehavior(.viewAligned)
+        .onChange( of: auxViewId ) { oldId, newId in
+            scrollPosId = newId
         }
         .padding([.leading, .trailing, .top, .bottom], 0)
         .background( Color("Display") )
@@ -60,6 +66,8 @@ struct AuxiliaryDisplayView: View {
 
 struct AuxiliaryDisplayView_Previews: PreviewProvider {
     
+    @State private var pos = ScrollPosition( id: AuxDispView.memoryList.id )
+    
     static var previews: some View {
         @StateObject  var model = CalculatorModel()
         
@@ -69,8 +77,8 @@ struct AuxiliaryDisplayView_Previews: PreviewProvider {
                 .edgesIgnoringSafeArea( .all )
             
             VStack {
-                AuxiliaryDisplayView( model: model )
-                    .preferredColorScheme(.light)
+//                AuxiliaryDisplayView( model: model, scrollPos: $pos )
+//                    .preferredColorScheme(.light)
             }
             .padding(.horizontal, 30)
             .padding(.vertical, 5)

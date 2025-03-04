@@ -13,8 +13,8 @@ struct AuxHeaderView: View {
     
     var body: some View {
         
-        Text(caption)
-            .frame( maxWidth: .infinity, maxHeight: 30 )
+        RichText(caption, size: .small )
+            .frame( maxWidth: .infinity, maxHeight: 24 )
             .background( theme.mainColor )
     }
     

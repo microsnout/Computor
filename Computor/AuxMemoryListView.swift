@@ -47,7 +47,7 @@ struct MemoryListView: View {
                                 Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
                                     .onTapGesture {
                                         model.aux.detailItemIndex = index
-                                        model.aux.mode = .memoryDetail
+                                        model.aux.setActiveView(.memoryDetail)
                                     }
                             }
                             

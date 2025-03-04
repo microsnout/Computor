@@ -284,7 +284,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         undoStack.push(state)
         acceptTextEntry()
         state.memory.append( NamedValue( value: state.Xtv) )
-        aux.mode = .memoryList
+        aux.setActiveView(.memoryList)
     }
     
     func delMemoryItems( set: IndexSet) {
@@ -360,7 +360,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 
             case .stopFn:
                 // Stop Function Key recording
-                if aux.recording && !aux.list.opSeq.isEmpty {
+                if aux.isRecording && !aux.list.opSeq.isEmpty {
                     setMacroFn(kc, aux.list)
                 }
                 aux.stopRecFn(kc)
@@ -369,7 +369,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // Display Function Key steps in Aux view
                 if let fn = state.fnList[kc] {
                     aux.list = fn.macro
-                    aux.mode = .macroList
+                    aux.macroKey = fn.fnKey
+                    aux.setActiveView(.macroList)
                 }
 
             default:
@@ -379,7 +380,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         else {
             switch event.kc {
             case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
-                if aux.recording && !aux.list.opSeq.isEmpty {
+                if aux.isRecording && !aux.list.opSeq.isEmpty {
                     // Stop recording pressed key
                     setMacroFn(event.kc, aux.list)
                 }
@@ -388,7 +389,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             case .openBrace:
                 acceptTextEntry()
                 if modalActive {
-                    if aux.recording {
+                    if aux.isRecording {
                         // If we are already recording, this is a nested {fn} so
                         // we record the open { for future playback
                         aux.recordKeyFn(.openBrace)

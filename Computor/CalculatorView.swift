@@ -23,7 +23,7 @@ struct CalculatorView: View {
             KeyStack() {
                 NavigationStack {
                     VStack( spacing: 5 ) {
-                        AuxiliaryDisplayView( model: model )
+                        AuxiliaryDisplayView( model: model, auxViewId: $model.aux.activeView )
 
                         // App name and drag handle
                         HStack {

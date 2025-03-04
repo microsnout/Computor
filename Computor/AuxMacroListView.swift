@@ -9,36 +9,48 @@ import SwiftUI
 
 struct MacroListView: View {
     @StateObject var model: CalculatorModel
-
+    
     var body: some View {
-        VStack {
-            AuxHeaderView( caption: "Macro List", theme: Theme.lightYellow )
+        let name = model.getKeyText( model.aux.macroKey )
             
-            ScrollView {
-                ScrollViewReader { proxy in
-                    let list = model.aux.list
-                    
-                    VStack(spacing: 7) {
-                        ForEach (list.opSeq.indices, id: \.self) { x in
-                            let op: MacroOp = list.opSeq[x]
-                            let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
-                            let txt = op.getRichText(model)
-                            
-                            HStack {
-                                RichText( line, size: .small )
-                                RichText( txt, size: .small, weight: .bold )
-                                Spacer()
+        if name != nil || model.aux.isRecording  {
+            VStack {
+                let captionTxt = "Macro " + ( name ?? "ç{StatusRedText}REC" )
+                
+                AuxHeaderView( caption: captionTxt, theme: Theme.lightYellow )
+                
+                ScrollView {
+                    ScrollViewReader { proxy in
+                        let list = model.aux.list
+                        
+                        VStack(spacing: 7) {
+                            ForEach (list.opSeq.indices, id: \.self) { x in
+                                let op: MacroOp = list.opSeq[x]
+                                let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
+                                let txt = op.getRichText(model)
+                                
+                                HStack {
+                                    RichText( line, size: .small )
+                                    RichText( txt, size: .small, weight: .bold )
+                                    Spacer()
+                                }
+                            }
+                            .onChange( of: list.opSeq.indices.count ) {
+                                if list.opSeq.count > 1 {
+                                    proxy.scrollTo( list.opSeq.indices[list.opSeq.endIndex - 1] )
+                                }
                             }
                         }
-                        .onChange( of: list.opSeq.indices.count ) {
-                            if list.opSeq.count > 1 {
-                                proxy.scrollTo( list.opSeq.indices[list.opSeq.endIndex - 1] )
-                            }
-                        }
+                        .padding([.leading, .trailing], 20)
+                        .padding([.top, .bottom], 10)
                     }
-                    .padding([.leading, .trailing], 20)
-                    .padding([.top, .bottom], 10)
                 }
+            }
+        }
+        else {
+            VStack {
+                AuxHeaderView( caption: "Macro List", theme: Theme.lightYellow )
+                Spacer()
             }
         }
     }

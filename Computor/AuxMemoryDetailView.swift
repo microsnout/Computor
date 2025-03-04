@@ -55,8 +55,7 @@ struct MemoryDetailView: View {
         
         func isKeyRecording( _ kc: KeyCode ) -> Bool { false }
     }
-
-
+    
     var body: some View {
         VStack {
             AuxHeaderView( caption: "Memory Detail", theme: Theme.lightGreen )
@@ -102,7 +101,8 @@ struct MemoryDetailView: View {
             KeypadView( padSpec: psMemDetail,
                         keyPressHandler: MemoryDetailKeypress( model: model, renameSheet: $renameSheet))
         }
-        .padding( [.bottom, .top], 0 )
+        .padding( [.top], 0 )
+        .padding( [.bottom], 10 )
         .sheet(isPresented: $renameSheet) {
             ZStack {
                 Color("ListBack").edgesIgnoringSafeArea(.all)

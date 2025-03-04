@@ -8,11 +8,22 @@ import SwiftUI
 
 
 struct AuxState {
-    var mode: AuxDispMode = .memoryList
+    var activeView = AuxDispView.memoryList.id
+    
+    mutating func setActiveView( _ av: AuxDispView ) {
+        activeView = av.id
+    }
+    
+    // Memory Detail Item state
     var detailItemIndex: Int = 0
+    
+    // Macro List state
+    var macroKey: KeyCode = .noop
     var list = MacroOpSeq()
+    
     var kcRecording: KeyCode? = nil
-    var recording: Bool { kcRecording != nil }
+    var isRecording: Bool { kcRecording != nil }
+    
     var pauseCount: Int = 0
     
     mutating func pauseRecording() {
@@ -28,9 +39,13 @@ struct AuxState {
             // We can start recording key kc
             // Start with an empty list of instructions
             // Auxiliary display mode to macro list
-            kcRecording = kc
+            
+            // Clear display of existing macro if any
+            macroKey = .noop
             list.clear()
-            mode = .macroList
+            
+            kcRecording = kc
+            setActiveView(.macroList)
             
             // Disable all Fn keys except the one recording
             for key in KeyCode.fnSet {
@@ -46,7 +61,7 @@ struct AuxState {
             return
         }
         
-        if recording
+        if isRecording
         {
             // Fold unit keys into value on stack if possible
             if kc.isUnit {
@@ -74,7 +89,7 @@ struct AuxState {
     }
     
     mutating func recordValueFn( _ tv: TaggedValue ) {
-        if recording
+        if isRecording
         {
             list.opSeq.append( MacroValue( tv: tv) )
         }
@@ -82,9 +97,12 @@ struct AuxState {
     
     mutating func stopRecFn( _ kc: KeyCode ) {
         if kc == kcRecording {
+            // Change macro display to show the new macro
+            macroKey = kcRecording ?? .noop
             kcRecording = nil
-            list.clear()
-            mode = .memoryList
+            
+            macroKey = .noop
+            setActiveView(.memoryList)
             SubPadSpec.disableList.removeAll()
         }
     }
