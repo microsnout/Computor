@@ -10,13 +10,6 @@ import SwiftUI
 struct MemoryListView: View {
     @StateObject var model: CalculatorModel
 
-    let leadingOps: [(KeyCode, String, Color)] = [
-        ( .rcl,    "RCL", .mint ),
-        ( .sto,    "STO", .indigo ),
-        ( .mPlus,  "M+",  .cyan  ),
-        ( .mMinus, "M-",  .green )
-    ]
-    
     var body: some View {
         VStack {
             AuxHeaderView( theme: Theme.lightBlue ) {
@@ -68,23 +61,6 @@ struct MemoryListView: View {
                         }
                         .listRowSeparatorTint(.blue)
                         .frame( height: 30 )
-                        .swipeActions( edge: .leading, allowsFullSwipe: true ) {
-                            // Memory Op buttons on leading edge
-                            ForEach ( leadingOps.indices, id: \.self) { x in
-                                let (key, text, color): (KeyCode, String, Color) = leadingOps[x]
-                                Button {
-                                    model.memoryOp( key: key, index: index )
-                                } label: { Text(text).bold() }.tint(color)
-                            }
-                        }
-                        .swipeActions( edge: .trailing, allowsFullSwipe: false) {
-                            // Delete button on trailing edge
-                            Button( role: .destructive) {
-                                model.delMemoryItems( set: IndexSet( [index] ))
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
                     }
                     .listRowSeparatorTint( Color("DisplayText"))
                 }
