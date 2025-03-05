@@ -35,40 +35,43 @@ struct AuxiliaryDisplayView: View {
     
     @Binding var auxView: AuxDispView
     
-    @State private var scrollPosId: String? = AuxDispView.memoryList.id
+    @State private var scrollPos: AuxDispView? = AuxDispView.memoryList
     
     var body: some View {
         ScrollView(.horizontal) {
             LazyHStack {
                 
                 MemoryListView( model: model )
-                    .id( AuxDispView.memoryList.id )
+                    .id( AuxDispView.memoryList )
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
                 MemoryDetailView( model: model )
-                    .id( AuxDispView.memoryDetail.id )
+                    .id( AuxDispView.memoryDetail )
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
                 MacroListView( model: model )
-                    .id( AuxDispView.macroList.id )
+                    .id( AuxDispView.macroList )
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
                 ValueBrowserView( model: model )
-                    .id( AuxDispView.valueBrowser.id )
+                    .id( AuxDispView.valueBrowser )
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
             }
             .scrollTargetLayout()
         }
-        .scrollPosition( id: $scrollPosId )
+        .scrollPosition( id: $scrollPos )
         .scrollTargetBehavior(.viewAligned)
         .onChange( of: auxView ) { oldView, newView in
             withAnimation() {
-                scrollPosId = newView.id
+                scrollPos = newView
             }
+        }
+        .onChange( of: scrollPos ) { oldPos, newPos in
+            auxView = scrollPos ?? AuxDispView.memoryList
         }
         .padding([.leading, .trailing, .top, .bottom], 0)
         .background( Color("Display") )

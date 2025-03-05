@@ -23,12 +23,12 @@ struct CalculatorView: View {
             KeyStack() {
                 NavigationStack {
                     VStack( spacing: 5 ) {
-                        AuxiliaryDisplayView( model: model, auxView: $model.aux.activeView )
-
-                        // App name and drag handle
-                        ZStack {
+                        VStack( spacing: 0 ) {
+                            AuxiliaryDisplayView( model: model, auxView: $model.aux.activeView )
+                            
                             DotIndicatorView( currentView: $model.aux.activeView )
-                                .padding( .bottom, 12 )
+                                .padding( .top, 4 )
+                                .frame( maxHeight: 8)
                             
                             HStack {
                                 Text("Computor").foregroundColor(Color("Frame"))/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
@@ -39,9 +39,10 @@ struct CalculatorView: View {
                                     Image( systemName: "gearshape").foregroundColor(Color("Frame"))
                                 }
                             }
-                            .frame( height: 25 )
+                            .frame( maxHeight: 22 )
                         }
-                        
+                        .padding(0)
+
                         // Main calculator display
                         DisplayView( model: model )
                         
