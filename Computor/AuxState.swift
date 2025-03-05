@@ -8,10 +8,10 @@ import SwiftUI
 
 
 struct AuxState {
-    var activeView = AuxDispView.memoryList.id
+    var activeView = AuxDispView.memoryList
     
     mutating func setActiveView( _ av: AuxDispView ) {
-        activeView = av.id
+        activeView = av
     }
     
     // Memory Detail Item state

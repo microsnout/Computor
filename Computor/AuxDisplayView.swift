@@ -6,15 +6,26 @@
 //
 import SwiftUI
 
-enum AuxDispView: String {
+enum AuxDispView: String, CaseIterable, Identifiable {
     case memoryList, memoryDetail, macroList, valueBrowser
     
     var id: String {
         rawValue
     }
-
-    var ID: String {
-        rawValue
+    
+    var backColor: Color {
+        Color(rawValue)
+    }
+    
+    static let themeMap: [AuxDispView : Theme] = [
+        .memoryList : Theme.lightBlue,
+        .memoryDetail : Theme.lightGreen,
+        .macroList : Theme.lightYellow,
+        .valueBrowser: Theme.lightRed,
+    ]
+    
+    var theme: Theme {
+        AuxDispView.themeMap[self] ?? Theme.lightGrey
     }
 }
 
@@ -22,7 +33,7 @@ enum AuxDispView: String {
 struct AuxiliaryDisplayView: View {
     @StateObject var model: CalculatorModel
     
-    @Binding var auxViewId: String
+    @Binding var auxView: AuxDispView
     
     @State private var scrollPosId: String? = AuxDispView.memoryList.id
     
@@ -54,9 +65,9 @@ struct AuxiliaryDisplayView: View {
         }
         .scrollPosition( id: $scrollPosId )
         .scrollTargetBehavior(.viewAligned)
-        .onChange( of: auxViewId ) { oldId, newId in
+        .onChange( of: auxView ) { oldView, newView in
             withAnimation() {
-                scrollPosId = newId
+                scrollPosId = newView.id
             }
         }
         .padding([.leading, .trailing, .top, .bottom], 0)
@@ -71,7 +82,7 @@ struct AuxiliaryDisplayView_Previews: PreviewProvider {
     static var previews: some View {
         @StateObject  var model = CalculatorModel()
         
-        @State var viewId = AuxDispView.memoryList.id
+        @State var view = AuxDispView.memoryList
         
         ZStack {
             Rectangle()
@@ -79,7 +90,7 @@ struct AuxiliaryDisplayView_Previews: PreviewProvider {
                 .edgesIgnoringSafeArea( .all )
             
             VStack {
-                AuxiliaryDisplayView( model: model, auxViewId: $viewId )
+                AuxiliaryDisplayView( model: model, auxView: $view )
                     .preferredColorScheme(.light)
             }
             .padding(.horizontal, 30)
