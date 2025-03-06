@@ -7,7 +7,7 @@
 import SwiftUI
 
 enum AuxDispView: String, CaseIterable, Identifiable {
-    case memoryList, memoryDetail, macroList, valueBrowser
+    case memoryList, memoryDetail, macroList, valueBrowser, valuePlot
     
     var id: String {
         rawValue
@@ -22,6 +22,7 @@ enum AuxDispView: String, CaseIterable, Identifiable {
         .memoryDetail : Theme.lightGreen,
         .macroList : Theme.lightYellow,
         .valueBrowser: Theme.lightRed,
+        .valuePlot: Theme.lightPurple,
     ]
     
     var theme: Theme {
@@ -58,6 +59,11 @@ struct AuxiliaryDisplayView: View {
 
                 ValueBrowserView( model: model )
                     .id( AuxDispView.valueBrowser )
+                    .frame( maxWidth: .infinity, maxHeight: .infinity)
+                    .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+
+                ValuePlotView( model: model )
+                    .id( AuxDispView.valuePlot )
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
             }

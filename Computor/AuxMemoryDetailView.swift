@@ -65,7 +65,7 @@ struct MemoryDetailView: View {
             Spacer()
             
             if model.state.memory.isEmpty {
-                Text("Memory List\n(Press + to store X register)")
+                Text("Memory Detail")
                     .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
             }
             else {

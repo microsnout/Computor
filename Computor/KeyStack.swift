@@ -176,12 +176,6 @@ struct SubPopMenu: View {
             let zOrigin = keyData.zFrame.origin
             let popH = keyData.subPad!.caption == nil ? keyH + keyInset : keyH + keyInset + popCaptionH
             
-//            Canvas { gc, size in
-//                gc.translateBy(x: size.width / 2, y: size.height / 2)
-//                let rectangle = Rectangle().path(in: .zero.insetBy(dx: -5, dy: -5))
-//                gc.fill(rectangle, with: .color(.green))
-//            }
-//
             Rectangle()
                 .frame( width: w + keyInset, height: popH)
                 .foregroundColor( Color(keySpec.keyColor))
