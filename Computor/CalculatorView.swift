@@ -106,7 +106,7 @@ struct CalculatorView: View {
             do {
                 try await model.loadState()
             } catch {
-                fatalError(error.localizedDescription)
+//                fatalError(error.localizedDescription)
             }
         }
         .onChange(of: scenePhase) { oldPhase, phase in

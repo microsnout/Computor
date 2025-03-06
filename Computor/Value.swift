@@ -31,23 +31,76 @@ let valueSize: [ValueType : Int] = [
 
 typealias Comp = Complex<Double>
 
-enum FormatStyle : UInt, Codable {
-    
+// Constant multiplier used to store multiple integers in one 64 bit Int
+fileprivate let M: Int = 1000000
+fileprivate let K: Int = 1000
+fileprivate let H: Int = 100
+
+enum FormatStyle : Int, Codable {
     // These values match raw values with NumberFormater.Style
-    case none = 0
-    case decimal = 1
+    case none       = 0
+    case decimal    = 1
     case scientific = 4
-    
-    // These are custom extension values
-    case angleDMS = 110
 }
 
-struct FormatRec: Codable {
-    var style: FormatStyle = .decimal
-    var digits: Int = 4
-    var minDigits: Int = 0
-    var polarDeg: Bool = false
+enum PolarAngle : Int, Codable {
+    case radians = 0
+    case degrees = 1
+    case dms     = 2
 }
+
+
+struct FormatRec: Codable {
+    var frec: Int
+    
+    init( style: FormatStyle = FormatStyle.decimal, digits: Int = 4, minDig: Int = 0, polarAngle: PolarAngle = .radians ) {
+        self.frec = polarAngle.rawValue + minDig * H + digits * H*H + style.rawValue * H*H*H
+    }
+}
+
+extension FormatRec {
+    
+    func getFormat() -> ( FormatStyle, Int, Int, PolarAngle) {
+        ( style, digits, minDigits, polarAngle )
+    }
+    
+    mutating func setFormat( _ style: FormatStyle, _ digits: Int, _ minDig: Int, _ polarAngle: PolarAngle ) {
+        self.frec = polarAngle.rawValue + minDig * H + digits * H*H + style.rawValue * H*H*H
+    }
+
+    var style: FormatStyle {
+        get { FormatStyle( rawValue: frec / H / H / H % H ) ?? FormatStyle.decimal }
+        set {
+            let ( _, dig, minDig, angle) = getFormat()
+            setFormat(newValue, dig, minDig, angle)
+        }
+    }
+    
+    var digits: Int {
+        get { frec / H / H % H }
+        set {
+            let (style, _, minDig, angle) = getFormat()
+            setFormat(style, newValue, minDig, angle)
+        }
+    }
+
+    var minDigits: Int {
+        get { frec / H % H }
+        set {
+            let (style, dig, _, angle) = getFormat()
+            setFormat(style, dig, newValue, angle)
+        }
+    }
+    
+    var polarAngle: PolarAngle {
+        get { PolarAngle( rawValue: frec % H ) ?? PolarAngle.radians }
+        set {
+            let (style, dig, minDig, _) = getFormat()
+            setFormat(style, dig, minDig, newValue)
+        }
+    }
+}
+
 
 typealias MatrixShape = Int
 
@@ -72,9 +125,9 @@ struct TaggedValue : RichRender & Codable {
     var uid: UnitId { self.tag.uid }
     var tid: TypeId { self.tag.tid }
 
-    var size: Int { mat / 1000 / 1000 }
-    var rows: Int { mat / 1000 % 1000 }
-    var cols: Int { mat % 1000 }
+    var size: Int { mat / M / M }
+    var rows: Int { mat / M % M }
+    var cols: Int { mat % M }
     
     private var storage: [Double] = [0.0]
     
@@ -83,7 +136,7 @@ struct TaggedValue : RichRender & Codable {
         self.vtp = vtp
         self.tag = tag
         self.fmt = format
-        self.mat = 001001001
+        self.mat = 1 + M + M*M      // Size 1, 1 row, 1 col
         
         // Lookup simple value size
         let ss = valueSize[vtp] ?? 1
@@ -116,7 +169,7 @@ extension TaggedValue {
     }
     
     mutating func setShape( _ ss: Int = 1, _ rows: Int = 1, _ cols: Int = 1 ) {
-        self.mat = cols + rows*1000 + ss*1000*1000
+        self.mat = cols + rows*M + ss*M*M
         
         self.storage = [Double]( repeating: 0.0, count: self.capacity )
     }
@@ -311,14 +364,14 @@ extension TaggedValue {
     
     func renderDouble( _ reg: Double ) -> (String, Int) {
         
-        if let nfStyle = NumberFormatter.Style(rawValue: fmt.style.rawValue) {
+        if let nfStyle = NumberFormatter.Style(rawValue: UInt(fmt.style.rawValue) ) {
             var text = String()
 
             // Use number formatter to render register value
             let nf = NumberFormatter()
             nf.numberStyle = nfStyle
-            nf.minimumFractionDigits = fmt.minDigits
-            nf.maximumFractionDigits = fmt.digits
+            nf.minimumFractionDigits = Int(fmt.minDigits)
+            nf.maximumFractionDigits = Int(fmt.digits)
             let str = nf.string(for: reg) ?? ""
             
             // Separate mantissa from exponent
@@ -422,7 +475,7 @@ extension TaggedValue {
     func renderValuePolar( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
         var (r, w) = get2( row, col)
         
-        if fmt.polarDeg {
+        if fmt.polarAngle == .degrees {
             w *= 180.0 / Double.pi
         }
         
@@ -446,7 +499,7 @@ extension TaggedValue {
         text.append( "ç{Units}={,} \u{03b8}:ç{}")
         text.append(wStr)
         
-        if fmt.polarDeg {
+        if fmt.polarAngle == .degrees {
             text.append( "\u{00B0}" )
             unitCount += 1
         }
@@ -480,7 +533,7 @@ extension TaggedValue {
             return renderMatrix()
         }
         
-        if fmt.style == .angleDMS {
+        if fmt.polarAngle == .dms {
             // Degrees Minutes Seconds angle display
             let neg = reg < 0.0 ? -1.0 : 1.0
             let angle = abs(reg) + 0.0000001
@@ -540,7 +593,7 @@ extension TaggedValue {
         data[0].setReal( 3.14159 )
         data[1].setVector2D( 3.0, 4.0 )
         data[3].setComplex( Comp(1.0, -2.0))
-        data[2].setPolar2D( 1.0, Double.pi/6, fmt: FormatRec( polarDeg: true))
+        data[2].setPolar2D( 1.0, Double.pi/6, fmt: FormatRec( polarAngle: .degrees ))
         return data
     }
 }

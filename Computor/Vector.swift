@@ -25,7 +25,7 @@ func installVector( _ model: CalculatorModel ) {
             var s1 = s0
             let (_, w) = s0.Xtv.getPolar2D()
             
-            if s0.Xvtp == .polar && s0.Xfmt.polarDeg {
+            if s0.Xvtp == .polar && s0.Xfmt.polarAngle == .degrees {
                 s1.setRealValue( rad2deg(w), tag: tagDeg, fmt: s0.Xfmt )
             }
             else {
@@ -90,7 +90,7 @@ func installVector( _ model: CalculatorModel ) {
             var fmtRec = s0.Xfmt
             if s0.Yt == tagDeg {
                 // Add polar degree flag if Y is deg
-                fmtRec.polarDeg = true
+                fmtRec.polarAngle = .degrees
             }
             
             // Set unit tag same as X parm
@@ -232,16 +232,16 @@ func installVector( _ model: CalculatorModel ) {
             var s1 = s0
             
             if tagTo == tagDeg {
-                if !s0.Xfmt.polarDeg {
-                    s1.Xfmt.polarDeg = true
-                    return s1
+                if s0.Xfmt.polarAngle == .radians {
+                    s1.Xfmt.polarAngle = .degrees
+                   return s1
                 }
                 return nil
             }
 
             if tagTo == tagRad {
-                if s0.Xfmt.polarDeg {
-                    s1.Xfmt.polarDeg = false
+                if s0.Xfmt.polarAngle == .degrees {
+                    s1.Xfmt.polarAngle = .radians
                     return s1
                 }
                 return nil

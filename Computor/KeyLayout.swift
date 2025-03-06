@@ -355,7 +355,7 @@ func initKeyLayout() {
                         Key(.abs,  "|x|"),
                         Key(.zArg, "ƒ{0.9}Arg(x)"),
                         Key(.zConj,"ƒ{1.2}x\u{0305}"),
-                        Key(.zNorm,"ƒ{0.8}Norm(x)"),
+                        Key(.zNorm,"ƒ{0.7}Norm(x)"),
                        ]
     )
 }
