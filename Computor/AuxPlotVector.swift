@@ -25,6 +25,23 @@ extension CGRect {
     }
 }
 
+private func arrowPath() -> Path {
+    Path { path in
+        path.move(to: CGPoint( x: 2, y: 0.0 ) )
+        path.addLine(to: .init(x: -10.0, y: 5.0))
+        path.addLine(to: .init(x: -10.0, y: -5.0))
+        path.closeSubpath()
+    }
+}
+
+private func arrowTransform( lastPoint: CGPoint, previousPoint: CGPoint ) -> CGAffineTransform {
+    let translation = CGAffineTransform( translationX: lastPoint.x, y: lastPoint.y)
+    let angle = atan2( lastPoint.y-previousPoint.y, lastPoint.x-previousPoint.x )
+    let rotation = CGAffineTransform( rotationAngle: angle)
+    return rotation.concatenating(translation)
+}
+
+
 extension GraphicsContext {
     
     mutating func window( _ winR: CGRect, within canvasR: CGRect, scaleBy s: Double = 1.0 ) -> CGRect {
@@ -34,6 +51,22 @@ extension GraphicsContext {
                                        ty: canvasR.height - (winR.minY - canvasR.minY) )
         
         return CGRect( origin: CGPoint.zero, size: CGSize( width: winR.width, height: winR.height) )
+    }
+    
+    
+    func arrow( from: CGPoint, to: CGPoint, with shading: GraphicsContext.Shading = .color(.black) ) {
+        
+        stroke(
+            Path { path in
+                path.addLines( [from, to] )
+            },
+            with: shading,
+            lineWidth: 3)
+        
+        fill(
+            arrowPath().applying( arrowTransform( lastPoint: to, previousPoint: from ) ),
+            with: shading
+        )
     }
 }
 
@@ -66,6 +99,7 @@ struct PlotVectorView : View {
             return (0, 0, 0, 0)
         }
     }
+
 
     var body: some View {
         
@@ -102,10 +136,10 @@ struct PlotVectorView : View {
             let (extX, extY) = ( winRect.width - tAxis, winRect.height - tAxis )
 
             // Scale factor for x and y within plot
-            var sxy = 0.8
+            var sxy = 0.5
 
             // Sample x,y values
-//            let (x, y) = (10.0, 0.0)
+//            let (x, y) = (3.0, 5.0)
             
             // Width and Height of plot window
             let (wW, hW) = (winRect.width, winRect.height)
@@ -119,29 +153,18 @@ struct PlotVectorView : View {
                 sxy *= hW/y
             }
             
-            var path = Path()
-            
             // X Axis
-            path.move(to: CGPoint(x: 0, y: tAxis))
-            path.addLine(to: CGPoint(x: winRect.maxX, y: tAxis))
-
-            // Y Axis
-            path.move(to: CGPoint( x: tAxis, y: 0 ))
-            path.addLine( to: CGPoint(x: tAxis, y: winRect.maxY ) )
+            context.arrow( from: CGPoint( x: 0, y: tAxis ), to: CGPoint( x: winRect.maxX, y: tAxis) )
             
-            context.stroke(path, with: .color(.black), lineWidth: 3)
+            // Y Axis
+            context.arrow( from: CGPoint( x: tAxis, y: 0 ), to: CGPoint( x: tAxis, y: winRect.maxY ) )
             
             // Vector Line
-            var vector = Path()
-            vector.move(to: CGPoint(x: xO, y: yO))
-            vector.addLine(to: CGPoint(x: xO + x*sxy, y: xO + y*sxy) )
-            context.stroke(vector, with: .color(.blue), lineWidth: 3)
+            context.arrow( from: CGPoint(x: xO, y: yO), to: CGPoint( x: xO + x*sxy, y: xO + y*sxy), with: .color(.blue) )
             
-//            context.stroke(
-//                Path(
-//                    ellipseIn: CGRect(origin: .zero, size: size).insetBy(dx: 20, dy: 20) ),
-//                    with: .color(.green),
-//                    lineWidth: 4)
+            context.fill(
+                Path( ellipseIn: CGRect(origin: CGPoint( x: xO + x*sxy, y: xO + y*sxy), size: CGSize( width: 7, height: 7 ) )),
+                with: .color(.red))
         }
         .padding(10)
     }
