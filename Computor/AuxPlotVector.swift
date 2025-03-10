@@ -49,11 +49,21 @@ extension GraphicsContext {
         var ctx = self
         
         // Establish window as defined with +ve Y axis
-        ctx.transform = CGAffineTransform( a: s, b: 0, c: 0, d: -s,
-                                           tx: winR.minX - canvasR.minX,
-                                           ty: canvasR.height - (winR.minY - canvasR.minY) )
+        ctx.concatenate( CGAffineTransform( a: s, b: 0, c: 0, d: -s,
+                                            tx: winR.minX - canvasR.minX,
+                                            ty: canvasR.height - (winR.minY - canvasR.minY) ) )
         
         block( ctx, CGRect( origin: CGPoint.zero, size: winR.size ) )
+    }
+
+    func withTransform( dx: Double, dy: Double, scaleBy s: Double = 1.0, flip: Bool = false, block: (GraphicsContext) -> Void ) {
+        // Temporary copy of context
+        var ctx = self
+        
+        // Establish window as defined with +ve Y axis
+        ctx.concatenate( CGAffineTransform( a: s, b: 0, c: 0, d: flip ? -s : s, tx: dx, ty: dy ) )
+        
+        block( ctx )
     }
     
     
@@ -69,6 +79,18 @@ extension GraphicsContext {
         fill(
             arrowPath().applying( arrowTransform( lastPoint: to, previousPoint: from ) ),
             with: shading
+        )
+    }
+
+    
+    func line( from: CGPoint, to: CGPoint, with shading: GraphicsContext.Shading = .color(.black), style: StrokeStyle = StrokeStyle() ) {
+        
+        stroke(
+            Path { path in
+                path.addLines( [from, to] )
+            },
+            with: shading,
+            style: style
         )
     }
 }
@@ -102,6 +124,26 @@ struct PlotVectorView : View {
             return (0, 0, 0, 0)
         }
     }
+    
+    
+    private func computeAxis( _ win: CGRect, _ quad: Quadrant, tail t: Double ) -> ( CGPoint, CGPoint, CGPoint, CGPoint, CGPoint ) {
+        
+        func pt( _ x: Double, _ y: Double ) -> CGPoint {
+            CGPoint( x: x, y: y )
+        }
+        
+        let (w, h) = (win.width, win.height)
+        
+        switch quad {
+            case .UR: return ( pt(0,t), pt(w,t), pt(t,0), pt(t,h), pt(t,t) )
+            
+            case .LR: return ( pt(0,h-t), pt(w,h-t), pt(t,0), pt(t,h), pt(t,h-t) )
+
+            case .LL: return ( pt(0,h-t), pt(w,h-t), pt(w-t,0), pt(w-t,h), pt(w-t,h-t) )
+            
+            case .UL: return ( pt(0,t), pt(w,t), pt(w-t,0), pt(w-t,h), pt(w-t,t) )
+        }
+    }
 
 
     var body: some View {
@@ -127,50 +169,76 @@ struct PlotVectorView : View {
             let plotRect = viewRect.insetTo( fraction: 0.8 )
 
             // Tail of axis - extending into unused quadrant
-            let tail = 20.0
+            let tail = 25.0
 
-            // Origin of plot within window
-            let (xO, yO) = ( tail, tail )
-            
             context.withWindowContext( plotRect, within: viewRect ) { ctx, winRect in
                 
                 // Extent of axis not including tail
                 let (extX, extY) = ( winRect.width - tail, winRect.height - tail )
-
-                // Scale factor for x and y within plot
-                var sxy = 0.6
 
                 // Sample x,y values
 //                let (x, y) = (3.0, 5.0)
                 
                 // Width and Height of plot window
                 let (wW, hW) = (winRect.width, winRect.height)
-                
+
+                // Scale factor for x and y within plot
+                var sxy = 0.6
+
                 if hW/wW > abs(y)/abs(x) {
                     // Plot will terminate at X extent
-                    sxy *= wW/x
+                    sxy *= wW/abs(x)
                 }
                 else {
                     // Plot will terminate at Y extent
-                    sxy *= hW/y
+                    sxy *= hW/abs(y)
                 }
                 
+                // Find axis co-ordinates and origin point
+                let (xFrom, xTo, yFrom, yTo, origin) = computeAxis(winRect, Quadrant.fromXY(x,y), tail: tail)
+                
                 // X Axis
-                ctx.arrow( from: CGPoint( x: 0, y: tail ), to: CGPoint( x: winRect.maxX, y: tail) )
+                ctx.arrow( from: xFrom, to: xTo )
                 
                 // Y Axis
-                ctx.arrow( from: CGPoint( x: tail, y: 0 ), to: CGPoint( x: tail, y: winRect.maxY ) )
+                ctx.arrow( from: yFrom, to: yTo )
                 
-                // Vector Line
-                ctx.arrow( from: CGPoint(x: xO, y: yO), to: CGPoint( x: xO + x*sxy, y: xO + y*sxy), with: .color(.blue) )
+                let font = Font.custom("Times New Roman", size: 24)
                 
-                // Red dot
-                ctx.fill(
-                    Path(
-                        ellipseIn: CGRect(
-                            origin: CGPoint( x: xO + x*sxy, y: xO + y*sxy),
-                            size: CGSize( width: 8, height: 8 ) ).offsetBy( dx: -4, dy: -4 ) ),
-                    with: .color(.red))
+                let textRe = context.resolve( Text("Re").font(font).italic().foregroundColor(.blue) )
+                let textIm = context.resolve( Text("Im").font(font).italic().foregroundColor(.blue) )
+
+                let ptRe = CGPoint(x: xTo.x, y: 0)
+                let ptIm = CGPoint(x: 0, y: yTo.y)
+
+                let ptReCanvas = ptRe.applying( ctx.transform)
+                let ptImCanvas = ptIm.applying( ctx.transform)
+
+                context.draw( textRe, at: ptReCanvas)
+                context.draw( textIm, at: ptImCanvas)
+
+                // Shift context to origin
+                ctx.withTransform( dx: origin.x, dy: origin.y ) { ptx in
+                    
+                    // Scaled vector end point
+                    let pt = CGPoint( x: x * sxy, y: y * sxy)
+                    
+                    // Vector Line
+                    ptx.arrow( from: .zero, to: pt, with: .color(.blue) )
+                    
+                    // Dashed lines to Axis from Pt
+                    let ss = StrokeStyle(lineWidth: 2, dash: [5] )
+                    ptx.line( from: CGPoint( x: 0, y: pt.y), to: pt, with: .color(.gray), style: ss )
+                    ptx.line( from: CGPoint( x: pt.x, y: 0), to: pt, with: .color(.gray), style: ss )
+                    
+                    // Red dot
+                    ptx.fill(
+                        Path(
+                            ellipseIn: CGRect(
+                                origin: pt,
+                                size: CGSize( width: 8, height: 8 ) ).offsetBy( dx: -4, dy: -4 ) ),
+                        with: .color(.red))
+                }
             }
         }
         .padding(10)
