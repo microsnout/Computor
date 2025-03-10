@@ -44,13 +44,16 @@ private func arrowTransform( lastPoint: CGPoint, previousPoint: CGPoint ) -> CGA
 
 extension GraphicsContext {
     
-    mutating func window( _ winR: CGRect, within canvasR: CGRect, scaleBy s: Double = 1.0 ) -> CGRect {
+    func withWindowContext( _ winR: CGRect, within canvasR: CGRect, scaleBy s: Double = 1.0, block: (GraphicsContext, CGRect) -> Void ) {
+        // Temporary copy of context
+        var ctx = self
         
-        transform = CGAffineTransform( a: s, b: 0, c: 0, d: -s,
-                                       tx: winR.minX - canvasR.minX,
-                                       ty: canvasR.height - (winR.minY - canvasR.minY) )
+        // Establish window as defined with +ve Y axis
+        ctx.transform = CGAffineTransform( a: s, b: 0, c: 0, d: -s,
+                                           tx: winR.minX - canvasR.minX,
+                                           ty: canvasR.height - (winR.minY - canvasR.minY) )
         
-        return CGRect( origin: CGPoint.zero, size: CGSize( width: winR.width, height: winR.height) )
+        block( ctx, CGRect( origin: CGPoint.zero, size: winR.size ) )
     }
     
     
@@ -124,47 +127,51 @@ struct PlotVectorView : View {
             let plotRect = viewRect.insetTo( fraction: 0.8 )
 
             // Tail of axis - extending into unused quadrant
-            let tAxis = 20.0
+            let tail = 20.0
 
             // Origin of plot within window
-            let (xO, yO) = ( tAxis, tAxis )
+            let (xO, yO) = ( tail, tail )
             
-            // Establish plot window
-            let winRect = context.window( plotRect, within: viewRect )
-            
-            // Extent of axis not including tail
-            let (extX, extY) = ( winRect.width - tAxis, winRect.height - tAxis )
+            context.withWindowContext( plotRect, within: viewRect ) { ctx, winRect in
+                
+                // Extent of axis not including tail
+                let (extX, extY) = ( winRect.width - tail, winRect.height - tail )
 
-            // Scale factor for x and y within plot
-            var sxy = 0.5
+                // Scale factor for x and y within plot
+                var sxy = 0.6
 
-            // Sample x,y values
-//            let (x, y) = (3.0, 5.0)
-            
-            // Width and Height of plot window
-            let (wW, hW) = (winRect.width, winRect.height)
-            
-            if hW/wW > abs(y)/abs(x) {
-                // Plot will terminate at X extent
-                sxy *= wW/x
+                // Sample x,y values
+//                let (x, y) = (3.0, 5.0)
+                
+                // Width and Height of plot window
+                let (wW, hW) = (winRect.width, winRect.height)
+                
+                if hW/wW > abs(y)/abs(x) {
+                    // Plot will terminate at X extent
+                    sxy *= wW/x
+                }
+                else {
+                    // Plot will terminate at Y extent
+                    sxy *= hW/y
+                }
+                
+                // X Axis
+                ctx.arrow( from: CGPoint( x: 0, y: tail ), to: CGPoint( x: winRect.maxX, y: tail) )
+                
+                // Y Axis
+                ctx.arrow( from: CGPoint( x: tail, y: 0 ), to: CGPoint( x: tail, y: winRect.maxY ) )
+                
+                // Vector Line
+                ctx.arrow( from: CGPoint(x: xO, y: yO), to: CGPoint( x: xO + x*sxy, y: xO + y*sxy), with: .color(.blue) )
+                
+                // Red dot
+                ctx.fill(
+                    Path(
+                        ellipseIn: CGRect(
+                            origin: CGPoint( x: xO + x*sxy, y: xO + y*sxy),
+                            size: CGSize( width: 8, height: 8 ) ).offsetBy( dx: -4, dy: -4 ) ),
+                    with: .color(.red))
             }
-            else {
-                // Plot will terminate at Y extent
-                sxy *= hW/y
-            }
-            
-            // X Axis
-            context.arrow( from: CGPoint( x: 0, y: tAxis ), to: CGPoint( x: winRect.maxX, y: tAxis) )
-            
-            // Y Axis
-            context.arrow( from: CGPoint( x: tAxis, y: 0 ), to: CGPoint( x: tAxis, y: winRect.maxY ) )
-            
-            // Vector Line
-            context.arrow( from: CGPoint(x: xO, y: yO), to: CGPoint( x: xO + x*sxy, y: xO + y*sxy), with: .color(.blue) )
-            
-            context.fill(
-                Path( ellipseIn: CGRect(origin: CGPoint( x: xO + x*sxy, y: xO + y*sxy), size: CGSize( width: 7, height: 7 ) )),
-                with: .color(.red))
         }
         .padding(10)
     }
