@@ -485,7 +485,7 @@ extension TaggedValue {
         var unitCount = 0
         var text = String()
         
-        text.append("ç{Units}\u{276c} r:ç{}")
+        text.append("ç{Units}\u{276c} r: ç{}")
         text.append(rStr)
         
         if isSimple && tag != tagUntyped {
@@ -496,7 +496,7 @@ extension TaggedValue {
             }
         }
 
-        text.append( "ç{Units}={,} \u{03b8}:ç{}")
+        text.append( "ç{Units}={,} \u{03b8}: ç{}")
         text.append(wStr)
         
         if fmt.polarAngle == .degrees {
@@ -506,7 +506,7 @@ extension TaggedValue {
         
         text.append("ç{Units}\u{276d}ç{}")
         
-        return (text, rCount + wCount + unitCount + 9)
+        return (text, rCount + wCount + unitCount + 11)
     }
     
     func renderValueSimple( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
