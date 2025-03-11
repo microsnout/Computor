@@ -47,7 +47,7 @@ struct AuxiliaryDisplayView: View {
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
-                MemoryDetailView( model: model )
+                MemoryDetailView( model: model, itemIndex: $model.aux.detailItemIndex )
                     .id( AuxDispView.memoryDetail )
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)

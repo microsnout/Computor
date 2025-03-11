@@ -36,38 +36,41 @@ struct MemoryListView: View {
                     { ( model.state.memory[$0].name,
                         model.state.memory[$0].value.renderRichText()) }
                 
-                List {
-                    ForEach ( Array(strList.enumerated()), id: \.offset ) { index, item in
-                        
-                        // Not using render count for now
-                        let (prefix, (value, _)) = item
-                        
-                        VStack( alignment: .leading, spacing: 0 ) {
-                            let name: String = prefix ?? "-unnamed-"
+                ScrollView {
+                    LazyVStack {
+                        ForEach ( Array(strList.enumerated()), id: \.offset ) { index, item in
                             
-                            let color = prefix != nil ? Color("DisplayText") : Color(.gray)
+                            // Not using render count for now
+                            let (prefix, (value, _)) = item
                             
                             HStack {
-                                // Memory name - tap to edit
-                                Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
-                                    .onTapGesture {
-                                        model.aux.detailItemIndex = index
-                                        model.aux.setActiveView(.memoryDetail)
-                                    }
+                                VStack( alignment: .leading, spacing: 0 ) {
+                                    let name: String = prefix ?? "-unnamed-"
+                                    
+                                    let color = prefix != nil ? Color("DisplayText") : Color(.gray)
+                                    
+                                    // Memory name - tap to edit
+                                    Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
+                                    
+                                    // Memory value display
+                                    TypedRegister( text: value, size: .small ).padding( .horizontal, 20)
+                                    
+                                    Divider()
+                                }
+                                .padding( [.leading ], 20)
+                                .frame( height: 30 )
+
+                                Spacer()
                             }
-                            
-                            // Memory value display
-                            TypedRegister( text: value, size: .small ).padding( .horizontal, 20)
+                            .onTapGesture {
+                                model.aux.detailItemIndex = index
+                                model.aux.setActiveView(.memoryDetail)
+                            }
                         }
-                        .listRowSeparatorTint(.blue)
-                        .frame( height: 30 )
                     }
-                    .listRowSeparatorTint( Color("DisplayText"))
+                    .padding( .horizontal, 0)
+                    .padding( .top, 0)
                 }
-                .listRowSpacing(0)
-                .listStyle( PlainListStyle() )
-                .padding( .horizontal, 0)
-                .padding( .top, 0)
             }
             Spacer()
         }

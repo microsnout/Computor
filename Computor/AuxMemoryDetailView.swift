@@ -26,9 +26,13 @@ let psMemDetail = PadSpec(
 struct MemoryDetailView: View {
     @StateObject var model: CalculatorModel
     
+    @Binding var itemIndex: Int
+    
     @State private var renameSheet = false
     
-    @State private var position: ScrollPosition = .init(idType: Int.self)
+//    @State private var position: ScrollPosition = .init(idType: Int.self)
+    
+    @State private var position: Int? = 0
 
     struct MemoryDetailKeypress : KeyPressHandler {
         var model: CalculatorModel
@@ -84,17 +88,18 @@ struct MemoryDetailView: View {
                                     RichText( "ƒ{1.5}ç{\(color)}\(nameStr)", size: .large )
                                     TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
                                 }
+                                .id( index )
                                 .containerRelativeFrame(.vertical, count: 1, spacing: 0)
                             }
                         }
                         .scrollTargetLayout()
                     }
                     .scrollTargetBehavior(.viewAligned)
-                    .scrollPosition($position)
-                    .onChange(of: position ) {
-                        if let index: Int = position.viewID(type: Int.self) {
-                            model.aux.detailItemIndex = index
-                        }
+                    .scrollPosition( id: $position )
+                    .onChange( of: position ) { oldIndex, newIndex in
+//                        if let index: Int = position.viewID(type: Int.self) {
+                            model.aux.detailItemIndex = newIndex ?? 0
+//                        }
                     }
                 }
             }
@@ -105,6 +110,9 @@ struct MemoryDetailView: View {
         }
         .padding( [.top], 0 )
         .padding( [.bottom], 10 )
+        .onChange( of: itemIndex ) { oldIndex, newIndex in
+            position = newIndex
+        }
         .sheet(isPresented: $renameSheet) {
             ZStack {
                 Color("ListBack").edgesIgnoringSafeArea(.all)
@@ -135,7 +143,7 @@ struct MemoryDetailView_Previews: PreviewProvider {
             
             VStack {
                 VStack {
-                    MemoryDetailView( model: model)
+                    MemoryDetailView( model: model, itemIndex: $model.aux.detailItemIndex )
                         .frame( maxWidth: .infinity, maxHeight: .infinity)
                         .preferredColorScheme(.light)
                 }
