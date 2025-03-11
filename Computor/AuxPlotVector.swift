@@ -81,6 +81,22 @@ extension GraphicsContext {
             with: shading
         )
     }
+        
+        
+    func text( _ str: String, font: Font, color: Color = Color(.black), at pt: CGPoint, in ptCtx: GraphicsContext? = nil  ) {
+        
+        let textImage = resolve( Text(str).font(font).foregroundColor(color) )
+
+        var textPt = pt
+        
+        if let ctx = ptCtx {
+            
+            // Convert location to outer context
+            textPt = textPt.applying( ctx.transform )
+        }
+            
+        draw( textImage, at: textPt )
+    }
 
     
     func line( from: CGPoint, to: CGPoint, with shading: GraphicsContext.Shading = .color(.black), style: StrokeStyle = StrokeStyle() ) {
@@ -148,12 +164,7 @@ struct PlotVectorView : View {
 
     var body: some View {
         
-        var nv = model.state.stack[regX]
-        
-        let (x, y, length, angle) = getSpecs( nv.value )
-        
-        let quad = Quadrant.fromXY(x,y)
-        
+        let nv = model.state.stack[regX]
         
         Canvas(
             opaque: false,
@@ -170,6 +181,8 @@ struct PlotVectorView : View {
 
             // Tail of axis - extending into unused quadrant
             let tail = 25.0
+            
+            let (x, y, length, angle) = getSpecs( nv.value )
 
             context.withWindowContext( plotRect, within: viewRect ) { ctx, winRect in
                 
@@ -178,7 +191,9 @@ struct PlotVectorView : View {
 
                 // Sample x,y values
 //                let (x, y) = (3.0, 5.0)
-                
+
+                let quad = Quadrant.fromXY(x,y)
+
                 // Width and Height of plot window
                 let (wW, hW) = (winRect.width, winRect.height)
 
@@ -203,20 +218,24 @@ struct PlotVectorView : View {
                 // Y Axis
                 ctx.arrow( from: yFrom, to: yTo )
                 
-                let font = Font.custom("Times New Roman", size: 24)
-                
-                let textRe = context.resolve( Text("Re").font(font).italic().foregroundColor(.blue) )
-                let textIm = context.resolve( Text("Im").font(font).italic().foregroundColor(.blue) )
+                // Axis Labels
+                switch nv.value.vtp {
+                    
+                case .vector, .polar, .real:
+                    let font = Font.custom("Times New Roman", size: 24).italic()
+                    context.text( "X", font: font, color: .blue, at: CGPoint(x: xTo.x, y: 0), in: ctx )
+                    context.text( "Y", font: font, color: .blue, at: CGPoint(x: 0, y: yTo.y), in: ctx )
 
-                let ptRe = CGPoint(x: xTo.x, y: 0)
-                let ptIm = CGPoint(x: 0, y: yTo.y)
-
-                let ptReCanvas = ptRe.applying( ctx.transform)
-                let ptImCanvas = ptIm.applying( ctx.transform)
-
-                context.draw( textRe, at: ptReCanvas)
-                context.draw( textIm, at: ptImCanvas)
-
+                case .complex:
+                    // Add Axis labels - draw on canvas context so text isn't upsidedown
+                    let font = Font.custom("Times New Roman", size: 24).italic()
+                    context.text( "Re", font: font, color: .blue, at: CGPoint(x: xTo.x, y: 0), in: ctx )
+                    context.text( "Im", font: font, color: .blue, at: CGPoint(x: 0, y: yTo.y), in: ctx )
+                    
+                default:
+                    break
+                }
+                    
                 // Shift context to origin
                 ctx.withTransform( dx: origin.x, dy: origin.y ) { ptx in
                     
@@ -231,6 +250,41 @@ struct PlotVectorView : View {
                     ptx.line( from: CGPoint( x: 0, y: pt.y), to: pt, with: .color(.gray), style: ss )
                     ptx.line( from: CGPoint( x: pt.x, y: 0), to: pt, with: .color(.gray), style: ss )
                     
+                    // Font for plot label text
+                    let font = Font.custom("Times New Roman", size: 18)
+                    
+                    switch nv.value.vtp {
+                        
+                    case .complex:
+                        context.text("a+bi", font: font, at: CGPoint( x: pt.x, y: pt.y + 20 ), in: ptx )
+
+                    case .polar:
+                        context.text("\u{27e8}r , \u{03b8}\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + 20 ), in: ptx )
+                        
+                        ptx.stroke(
+                            Path { path in
+                                path.addArc(
+                                    center: .zero, radius: length*sxy/2,
+                                    startAngle: Angle.zero, endAngle: Angle(radians: angle), clockwise: false )
+                            },
+                            with: .color(.black),
+                            lineWidth: 1
+                        )
+
+                    case .vector:
+                        context.text("\u{27e8}a , b\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + 20 ), in: ptx )
+                        
+                    default:
+                        context.text("x", font: font, at: CGPoint( x: pt.x, y: pt.y + 20 ), in: ptx )
+                    }
+                    
+                    if nv.value.vtp != .real  {
+                        // Add a and b to axis
+                        let font = Font.custom("Times New Roman", size: 18)
+                        context.text("a", font: font, at: CGPoint( x: pt.x, y: -15 ), in: ptx )
+                        context.text("b", font: font, at: CGPoint( x: -15, y: pt.y ), in: ptx )
+                    }
+
                     // Red dot
                     ptx.fill(
                         Path(
@@ -249,11 +303,10 @@ struct PlotVectorView : View {
 struct PlotVectorView_Previews: PreviewProvider {
     
     static func addSampleMacro( _ model: CalculatorModel ) -> CalculatorModel {
-        var newModel = model
         
         // FIX: MacroKey not working here, keys not defined yet?
-        newModel.state.setComplexValue( Comp(4.0, 3.0) )
-        return newModel
+        model.state.stack[regX].value.setComplex( Comp(4.0, 3.0) )
+        return model
     }
     
     static var previews: some View {
