@@ -193,6 +193,8 @@ struct PlotVectorView : View {
 //                let (x, y) = (3.0, 5.0)
 
                 let quad = Quadrant.fromXY(x,y)
+                
+                let upperQuad = (quad == .UL || quad == .UR)
 
                 // Width and Height of plot window
                 let (wW, hW) = (winRect.width, winRect.height)
@@ -219,22 +221,10 @@ struct PlotVectorView : View {
                 ctx.arrow( from: yFrom, to: yTo )
                 
                 // Axis Labels
-                switch nv.value.vtp {
-                    
-                case .vector, .polar, .real:
-                    let font = Font.custom("Times New Roman", size: 24).italic()
-                    context.text( "X", font: font, color: .blue, at: CGPoint(x: xTo.x, y: 0), in: ctx )
-                    context.text( "Y", font: font, color: .blue, at: CGPoint(x: 0, y: yTo.y), in: ctx )
-
-                case .complex:
-                    // Add Axis labels - draw on canvas context so text isn't upsidedown
-                    let font = Font.custom("Times New Roman", size: 24).italic()
-                    context.text( "Re", font: font, color: .blue, at: CGPoint(x: xTo.x, y: 0), in: ctx )
-                    context.text( "Im", font: font, color: .blue, at: CGPoint(x: 0, y: yTo.y), in: ctx )
-                    
-                default:
-                    break
-                }
+                let font = Font.custom("Times New Roman", size: 24).italic()
+                let ( xAxisStr, yAxisStr ) = nv.value.vtp == .complex ? ("Re", "Im") : ("X", "Y")
+                context.text( xAxisStr, font: font, color: .blue, at: CGPoint(x: xTo.x, y: 0), in: ctx )
+                context.text( yAxisStr, font: font, color: .blue, at: CGPoint(x: 0, y: yTo.y), in: ctx )
                     
                 // Shift context to origin
                 ctx.withTransform( dx: origin.x, dy: origin.y ) { ptx in
@@ -253,36 +243,38 @@ struct PlotVectorView : View {
                     // Font for plot label text
                     let font = Font.custom("Times New Roman", size: 18)
                     
+                    let textAdj = upperQuad ? 15.0 : -15.0
+                    
                     switch nv.value.vtp {
                         
                     case .complex:
-                        context.text("a+bi", font: font, at: CGPoint( x: pt.x, y: pt.y + 20 ), in: ptx )
+                        context.text("a+bi", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
 
                     case .polar:
-                        context.text("\u{27e8}r , \u{03b8}\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + 20 ), in: ptx )
+                        context.text("\u{27e8}r , \u{03b8}\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
                         
                         ptx.stroke(
                             Path { path in
                                 path.addArc(
                                     center: .zero, radius: length*sxy/2,
-                                    startAngle: Angle.zero, endAngle: Angle(radians: angle), clockwise: false )
+                                    startAngle: Angle.zero, endAngle: Angle(radians: angle), clockwise: !upperQuad )
                             },
                             with: .color(.black),
                             lineWidth: 1
                         )
 
                     case .vector:
-                        context.text("\u{27e8}a , b\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + 20 ), in: ptx )
+                        context.text("\u{27e8}a , b\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
                         
                     default:
-                        context.text("x", font: font, at: CGPoint( x: pt.x, y: pt.y + 20 ), in: ptx )
+                        context.text("x", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
                     }
                     
                     if nv.value.vtp != .real  {
                         // Add a and b to axis
                         let font = Font.custom("Times New Roman", size: 18)
-                        context.text("a", font: font, at: CGPoint( x: pt.x, y: -15 ), in: ptx )
-                        context.text("b", font: font, at: CGPoint( x: -15, y: pt.y ), in: ptx )
+                        context.text("a", font: font, at: CGPoint( x: pt.x, y: -textAdj ), in: ptx )
+                        context.text("b", font: font, at: CGPoint( x: -textAdj, y: pt.y ), in: ptx )
                     }
 
                     // Red dot
