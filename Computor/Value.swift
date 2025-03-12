@@ -37,13 +37,9 @@ fileprivate let K: Int = 1000
 fileprivate let H: Int = 100
 
 enum FormatStyle : Int, Codable {
-    // These values match raw values with NumberFormater.Style
-    case none       = 0
-    case decimal    = 1
-    case scientific = 4
-    
-    // Extended values not matching NumberFormater.Style
-    case dms = 10
+    case decimal    = 0
+    case scientific = 1
+    case dms        = 2
 }
 
 enum PolarAngle : Int, Codable {
@@ -367,33 +363,30 @@ extension TaggedValue {
     
     func renderDouble( _ reg: Double ) -> (String, Int) {
         
-        if let nfStyle = NumberFormatter.Style(rawValue: UInt(fmt.style.rawValue) ) {
-            var text = String()
+        var text = String()
 
-            // Use number formatter to render register value
-            let nf = NumberFormatter()
-            nf.numberStyle = nfStyle
-            nf.minimumFractionDigits = Int(fmt.minDigits)
-            nf.maximumFractionDigits = Int(fmt.digits)
-            let str = nf.string(for: reg) ?? ""
-            
-            // Separate mantissa from exponent
-            let strParts = str.split( separator: "E" )
-            
-            text += "={\(strParts[0])}"
-            
-            var count = strParts[0].count
-            
-            if strParts.count == 2 {
-                text += "x10"
-                text += "^{\(strParts[1])}"
-                
-                count += strParts[1].count + 3
-            }
-            return (text, count)
-        }
+        // Use number formatter to render register value
+        let nf = NumberFormatter()
+        nf.numberStyle = fmt.style == .scientific ? NumberFormatter.Style.scientific : NumberFormatter.Style.decimal
+        nf.minimumFractionDigits = Int(fmt.minDigits)
+        nf.maximumFractionDigits = Int(fmt.digits)
         
-        return ("Unknown Fmt", 11)
+        let str = nf.string( for: reg) ?? "<?>"
+        
+        // Separate mantissa from exponent
+        let strParts = str.split( separator: "E" )
+        
+        text += "={\(strParts[0])}"
+        
+        var count = strParts[0].count
+        
+        if strParts.count == 2 {
+            text += "x10"
+            text += "^{\(strParts[1])}"
+            
+            count += strParts[1].count + 3
+        }
+        return (text, count)
     }
     
     func renderValueReal( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
@@ -415,7 +408,7 @@ extension TaggedValue {
                     let minStr = String( format: "%.0f", min )
                     let secStr = String( format: "%.0f", sec )
                     
-                    let str   = String( format: "\(degStr)\u{00B0}\(minStr)\u{2032}\(secStr)\u{2033}" )
+                    let str   = String( format: "={\(degStr)\u{00B0}\(minStr)\u{2032}\(secStr)\u{2033}}" )
                     let count = degStr.count + minStr.count + secStr.count + 3
                     return (str, count)
                 }

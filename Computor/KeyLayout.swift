@@ -188,7 +188,7 @@ func initKeyLayout() {
                        keys: [
                         Key(.sec, "sec"),
                         Key(.asec, "asec"),
-                        Key(.asin, "acos"),
+                        Key(.acos, "acos"),
                         Key(.cosh, "cosh"),
                         Key(.acosh, "acosh"),
                        ]
