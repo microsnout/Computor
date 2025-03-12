@@ -41,6 +41,9 @@ enum FormatStyle : Int, Codable {
     case none       = 0
     case decimal    = 1
     case scientific = 4
+    
+    // Extended values not matching NumberFormater.Style
+    case dms = 10
 }
 
 enum PolarAngle : Int, Codable {
@@ -399,9 +402,28 @@ extension TaggedValue {
         
         if isSimple && tag != tagUntyped {
             if tag == tagDeg {
-                // Use degree symbol
-                text.append("\u{00B0}")
-                valueCount += 1
+                
+                if fmt.style == .dms {
+                    // Degrees Minutes Seconds angle display
+                    let neg = reg < 0.0 ? -1.0 : 1.0
+                    let angle = abs(reg) + 0.0000001
+                    let deg = floor(angle)
+                    let min = floor((angle - deg) * 60.0)
+                    let sec = ((angle - deg)*60.0 - min) * 60.0
+                    
+                    let degStr = String( format: "%.0f", neg*deg )
+                    let minStr = String( format: "%.0f", min )
+                    let secStr = String( format: "%.0f", sec )
+                    
+                    let str   = String( format: "\(degStr)\u{00B0}\(minStr)\u{2032}\(secStr)\u{2033}" )
+                    let count = degStr.count + minStr.count + secStr.count + 3
+                    return (str, count)
+                }
+                else {
+                    // Use degree symbol
+                    text.append("\u{00B0}")
+                    valueCount += 1
+                }
             }
             else if let sym = tag.symbol {
                 // Add unit symbol
@@ -536,25 +558,6 @@ extension TaggedValue {
     func renderRichText() -> (String, Int) {
         if isMatrix {
             return renderMatrix()
-        }
-        
-        if fmt.polarAngle == .dms {
-            // Degrees Minutes Seconds angle display
-            let neg = reg < 0.0 ? -1.0 : 1.0
-            let angle = abs(reg) + 0.0000001
-            let deg = floor(angle)
-            let min = floor((angle - deg) * 60.0)
-            let sec = ((angle - deg)*60.0 - min) * 60.0
-            
-            let degStr = String( format: "%.0f", neg*deg )
-            let minStr = String( format: "%.0f", min )
-            let secStr = String( format: "%.*f", sec )
-            
-            let str   = String( format: "\(degStr)\u{00B0}\(minStr)\u{2032}\(secStr)\u{2033}" )
-            let count = degStr.count + minStr.count + secStr.count + 3
-            return (str, count)
-            
-//            let str = String( format: "%.0f\u{00B0}%.0f\u{2032}%.*f\u{2033}", neg*deg, min, floor(sec) == sec ? 0 : 2, sec  )
         }
         
         return renderValueSimple()

@@ -272,7 +272,7 @@ extension CalculatorModel {
         
         .deg: Convert( sym: "deg", fmt: FormatRec( style: .decimal) ),
         .rad: Convert( sym: "rad", fmt: FormatRec( style: .decimal) ),
-        .dms: Convert( sym: "deg", fmt: FormatRec( polarAngle: .dms)),
+        .dms: Convert( sym: "deg", fmt: FormatRec( style: .dms)),
     ]
 
 }
