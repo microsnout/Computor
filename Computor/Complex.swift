@@ -39,6 +39,16 @@ func installComplex( _ model: CalculatorModel ) {
         }
     ])
     
+    CalculatorModel.defineOpPatterns( .sign, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            var s1 = s0
+            let z = s0.Xtv.getComplex()
+            s1.setComplexValue( Comp(-z.real, -z.imaginary), tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        },
+    ])
+
     
     CalculatorModel.defineOpPatterns( .minus, [
         

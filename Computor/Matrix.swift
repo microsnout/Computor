@@ -42,7 +42,7 @@ extension TaggedValue {
                 count += simpleCount + 1
             }
             else {
-                text.append( "ç{Units}, ç{}" )
+                text.append( "ç{Units}={, }ç{}" )
                 count += simpleCount + 2
             }
         }
@@ -123,7 +123,7 @@ func installMatrix( _ model: CalculatorModel ) {
                 s1.stack[regX].value.setShape( 1, n, 1 )
                 
                 for x in seq {
-                    s1.stack[regX].value.set1( Double(x), x )
+                    s1.stack[regX].value.set1( Double(x), r: x )
                 }
                 s1.stack[regX].value.vtp = .real
                 return s1
@@ -189,6 +189,34 @@ func installMatrix( _ model: CalculatorModel ) {
             
             // Conversion not possible
             return nil
+        },
+    ])
+    
+    // *** Operator Patterns ***
+    
+    // Indexing operator [] uses .matrix keycode for now
+    CalculatorModel.defineOpPatterns( .matrix, [
+        
+        // X must be integer, Y must be matrix, any type
+        OpPattern( [ .X([.real]), .Y([.real, .rational, .complex, .vector, .polar], .matrix) ], where: { s0 in isInt(s0.X) } ) { s0 in
+            
+            let ( _, rows, _ ) = s0.Ytv.getShape()
+            
+            let n = Int(s0.X)
+            
+            guard n >= 1 || n <= rows else {
+                return nil
+            }
+            
+            guard let tv = s0.Ytv.getValue( row: n ) else {
+                return nil
+            }
+            
+            var s1 = s0
+            s1.stackDrop()
+            
+            s1.Xtv = tv
+            return s1
         },
     ])
 }

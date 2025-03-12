@@ -173,6 +173,13 @@ extension TaggedValue {
         self.storage = [Double]( repeating: 0.0, count: self.capacity )
     }
     
+    mutating func setMatrix( _ vtp: ValueType, tag: TypeTag = tagUntyped, fmt: FormatRec = FormatRec(), rows: Int, cols: Int = 1 ) {
+        setShape( valueSize[vtp] ?? 1, rows, cols )
+        self.vtp = vtp
+        self.tag = tag
+        self.fmt = fmt
+    }
+    
     func valueInRange( _ ssV: Int = 1, _ rowV: Int = 1, _ colV: Int = 1 ) -> Bool {
         let (ss, rows, cols) = getShape()
         
@@ -197,24 +204,24 @@ extension TaggedValue {
         return (col-1)*ss*rows + (row-1)*ss
     }
     
-    func get1( _ r: Int = 1, _ c: Int = 1 ) -> Double {
+    func get1( r: Int = 1, c: Int = 1 ) -> Double {
         let index = storageIndex( row: r, col: c)
         return storage[index]
     }
 
-    mutating func set1( _ value: Double, _ r: Int = 1, _ c: Int = 1 ) {
+    mutating func set1( _ value: Double, r: Int = 1, c: Int = 1 ) {
         let index = storageIndex( row: r, col: c)
         storage[index] = value
     }
 
-    func get2( _ r: Int = 1, _ c: Int = 1 ) -> (Double, Double) {
+    func get2( r: Int = 1, c: Int = 1 ) -> (Double, Double) {
         let index = storageIndex( row: r, col: c)
         return (storage[index], storage[index+1])
     }
     
-    mutating func set2( _ v1: Double, _ v2: Double, _ r: Int = 1, _ c: Int = 1 ) {
+    mutating func set2( _ v1: Double, _ v2: Double, r: Int = 1, c: Int = 1 ) {
         let index = storageIndex( row: r, col: c)
-        self.setShape(2)
+//        self.setShape(2)
         storage[index]   = v1
         storage[index+1] = v2
     }
@@ -236,7 +243,7 @@ extension TaggedValue {
     func getComplex( _ r: Int = 1, _ c: Int = 1 ) -> Comp {
         switch vtp {
         case .complex:
-            let (re, im) = get2(r,c)
+            let (re, im) = get2( r: r, c: c)
             return Comp(re, im)
             
         case .real:
@@ -244,7 +251,7 @@ extension TaggedValue {
             return Comp(re, im)
             
         case .rational:
-            let (num, den) = get2(r,c)
+            let (num, den) = get2( r: r, c: c)
             return Comp( num/den, 0.0)
             
         default:
@@ -390,7 +397,7 @@ extension TaggedValue {
     }
     
     func renderValueReal( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        let value = get1( row, col)
+        let value = get1( r: row, c: col)
         var (text, valueCount) = renderDouble(value)
         
         if isSimple && tag != tagUntyped {
@@ -428,7 +435,7 @@ extension TaggedValue {
     }
 
     func renderValueRational( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        let (num, den) = get2( row, col)
+        let (num, den) = get2( r: row, c: col)
         let (numStr, numCount) = renderDouble(num)
         let (denStr, denCount) = renderDouble(den)
         
@@ -441,7 +448,7 @@ extension TaggedValue {
     }
 
     func renderValueComplex( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        let (re, im) = get2( row, col)
+        let (re, im) = get2( r: row, c: col)
         let neg = im < 0.0
         let (reStr, reCount) = renderDouble(re)
         let (imStr, imCount) = renderDouble( neg ? -im : im )
@@ -450,7 +457,7 @@ extension TaggedValue {
         
         var text = String()
         text.append(reStr)
-        text.append( neg ? "ç{Units}={ - }ç{}" : "ç{Units}={ + }ç{}")
+        text.append( neg ? "ç{Units} ={-} ç{}" : "ç{Units} ={+} ç{}")
         text.append(imStr)
         text.append("ç{Units}={i}ç{}")
         
@@ -467,7 +474,7 @@ extension TaggedValue {
     
     
     func renderValueVector( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        let (x, y) = get2( row, col)
+        let (x, y) = get2( r: row, c: col)
         let (xStr, xCount) = renderDouble(x)
         let (yStr, yCount) = renderDouble(y)
         
@@ -493,7 +500,7 @@ extension TaggedValue {
     
     
     func renderValuePolar( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        var (r, w) = get2( row, col)
+        var (r, w) = get2( r: row, c: col)
         
         if fmt.polarAngle == .degrees {
             w *= 180.0 / Double.pi

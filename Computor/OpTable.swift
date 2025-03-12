@@ -53,8 +53,8 @@ extension CalculatorModel {
 
         .pi:    Constant( Double.pi ),
         .e:     Constant( exp(1.0) ),
-        
         .abs:   UnaryOp( { x in abs(x) } ),
+        .sign:  UnaryOp( { x in -x }),
         
         .sqrt:
             CustomOp { s0 in
@@ -249,6 +249,7 @@ extension CalculatorModel {
                     den = -den
                 }
                 s1.stackDrop()
+                s1.setShape(2)
                 s1.set2( num, den )
                 s1.Xvtp = .rational
                 return s1
@@ -265,6 +266,7 @@ extension CalculatorModel {
                 }
                 var s1 = s0
                 s1.stackDrop()
+                s1.setShape(2)
                 s1.set2( s0.X, s0.Y )
                 s1.Xvtp = .complex
                 return s1

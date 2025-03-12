@@ -9,6 +9,23 @@ import Foundation
 
 func installVector( _ model: CalculatorModel ) {
     
+    CalculatorModel.defineOpPatterns( .sign, [
+        
+        OpPattern( [ .X([.vector]) ] ) { s0 in
+            var s1 = s0
+            let (x, y) = s0.Xtv.getVector2D()
+            s1.setVectorValue( -x,-y, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        },
+        
+        OpPattern( [ .X([.polar]) ] ) { s0 in
+            var s1 = s0
+            let (r, w) = s0.Xtv.getPolar2D()
+            s1.setPolarValue( r, w >= Double.pi ? (w - Double.pi) : (w + Double.pi), tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        },
+    ])
+
     CalculatorModel.defineOpPatterns( .abs, [
         
         OpPattern( [ .X([.vector, .polar]) ] ) { s0 in

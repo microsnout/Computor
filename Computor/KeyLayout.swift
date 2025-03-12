@@ -124,7 +124,7 @@ let psFunctionsR = PadSpec(
 let psFunctions2L = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
-        keys: [ Key(.noop),
+        keys: [ Key(.quad, "ƒ{0.9}Quadƒ{}"),
                 Key(.noop),
                 Key(.noop),
             ]
@@ -323,10 +323,12 @@ func initKeyLayout() {
     SubPadSpec.define( .multiValue,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.rationalV, "x / y"),
-                        Key(.vector2D,  "\u{27e8}x , y\u{27e9}"),
                         Key(.polarV,    "\u{27e8}r , \u{03b8}\u{27e9}"),
+                        Key(.vector2D,  "\u{27e8}x , y\u{27e9}"),
                         Key(.complexV,  "x ç{Units}+ç{} yç{Units}iç{}"),
+                        
+                        // Eliminate rational numbers for now
+                        // Key(.rationalV, "x / y"),
                        ]
     )
 

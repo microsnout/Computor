@@ -220,7 +220,7 @@ extension CalcState {
     }
     
     mutating func set2( _ v1: Double, _ v2: Double, row: Int = 1, col: Int = 1 ) {
-        self.stack[regX].value.set2( v1, v2, row, col)
+        self.stack[regX].value.set2( v1, v2, r: row, c: col)
     }
     
     mutating func setShape( _ ss: Int = 1, rows: Int = 1, cols: Int = 1 ) {

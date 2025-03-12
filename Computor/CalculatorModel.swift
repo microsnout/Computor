@@ -192,6 +192,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         installMatrix(self)
         installComplex(self)
         installVector(self)
+        installFunctions(self)
     }
     
     // **** Macro Recording Stuff ***
