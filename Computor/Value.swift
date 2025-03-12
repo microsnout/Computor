@@ -398,9 +398,14 @@ extension TaggedValue {
         var (text, valueCount) = renderDouble(value)
         
         if isSimple && tag != tagUntyped {
-            if let sym = tag.symbol {
+            if tag == tagDeg {
+                // Use degree symbol
+                text.append("\u{00B0}")
+                valueCount += 1
+            }
+            else if let sym = tag.symbol {
+                // Add unit symbol
                 text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
-                
                 valueCount += sym.count + 1
             }
         }

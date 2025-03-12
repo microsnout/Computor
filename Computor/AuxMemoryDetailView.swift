@@ -97,9 +97,7 @@ struct MemoryDetailView: View {
                     .scrollTargetBehavior(.viewAligned)
                     .scrollPosition( id: $position )
                     .onChange( of: position ) { oldIndex, newIndex in
-//                        if let index: Int = position.viewID(type: Int.self) {
-                            model.aux.detailItemIndex = newIndex ?? 0
-//                        }
+                        model.aux.detailItemIndex = newIndex ?? 0
                     }
                 }
             }
