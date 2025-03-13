@@ -232,7 +232,7 @@ extension CalculatorModel {
                 return s1
             },
         
-        .rationalV:
+        .rational:
             // Form rational value from x, y
             CustomOp { (s0: CalcState) -> CalcState? in
                 guard s0.Xtv.isInteger && s0.Ytv.isInteger else {
@@ -255,7 +255,7 @@ extension CalculatorModel {
                 return s1
             },
 
-        .complexV:
+        .complex:
             // Form complex value from x, y
             CustomOp { (s0: CalcState) -> CalcState? in
                 guard s0.Xtv.isReal && s0.Ytv.isReal else {

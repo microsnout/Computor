@@ -256,14 +256,14 @@ func installComplex( _ model: CalculatorModel ) {
     
     // *** TYPE Conversions ***
     
-    CalculatorModel.defineOpPatterns( .complexV, [
+    CalculatorModel.defineOpPatterns( .complex, [
         
         OpPattern( [ .X([.vector])] ) { s0 in
             
             // Vector to Complex
             var s1 = s0
             
-            let (x, y) = s0.Xtv.getVector2D()
+            let (x, y) = s0.Xtv.getVector()
             let z = Comp(x, y)
             
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
@@ -275,7 +275,7 @@ func installComplex( _ model: CalculatorModel ) {
             // Polar to Complex
             var s1 = s0
             
-            let (re, im) = s0.Xtv.getVector2D()
+            let (re, im) = s0.Xtv.getVector()
             let z = Comp(re, im)
             
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )

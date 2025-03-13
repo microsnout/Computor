@@ -41,6 +41,15 @@ func polar2rect( _ r: Double, _ w:  Double ) -> (Double, Double) {
 }
 
 
+func rect2spherical( _ x: Double, _ y: Double, _ z: Double ) -> (Double, Double, Double) {
+    let r = sqrt(x*x + y*y + z*z)
+    return ( r, atan2(y,x), acos(z/r) )
+}
+
+func spherical2rect( _ r: Double, _ w: Double, _ p: Double ) -> (Double, Double, Double) {
+    ( p*sin(p)*cos(w), p*sin(p)*sin(w), p*cos(p) )
+}
+
 func deg2rad( _ d: Double ) -> Double {
     d / 180.0 * Double.pi
 }

@@ -164,14 +164,14 @@ func installMatrix( _ model: CalculatorModel ) {
 
     CalculatorModel.defineUnitConversions([
         
-        ConversionPattern( [ .X( [.real, .vector, .complex, .polar], .matrix) ] ) { s0, tagTo in
+        ConversionPattern( [ .X( [.real, .vector, .complex, .polar, .vector3D, .spherical], .matrix) ] ) { s0, tagTo in
             
             if let seq = unitConvert( from: s0.Xt, to: tagTo ) {
                 var s1 = s0
             
-                if s0.Xvtp == .polar {
+                if s0.Xvtp == .polar || s0.Xvtp == .spherical {
                     s1.Xtv.transformValues() { value, s, r, c in
-                        // Only scale the r value of polar types, not theta
+                        // Only scale the r value of polar types, not theta or phi
                         let newValue = seq.op(value)
                         return s == 1 ? newValue : value
                     }
@@ -198,7 +198,8 @@ func installMatrix( _ model: CalculatorModel ) {
     CalculatorModel.defineOpPatterns( .matrix, [
         
         // X must be integer, Y must be matrix, any type
-        OpPattern( [ .X([.real]), .Y([.real, .rational, .complex, .vector, .polar], .matrix) ], where: { s0 in isInt(s0.X) } ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.real, .rational, .complex, .vector, .polar, .vector3D, .spherical], .matrix) ],
+                   where: { s0 in isInt(s0.X) } ) { s0 in
             
             let ( _, rows, _ ) = s0.Ytv.getShape()
             

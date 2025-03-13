@@ -12,7 +12,7 @@ let logV = Logger(subsystem: "com.microsnout.calculator", category: "value")
 
 
 enum ValueType : Int, Codable, Hashable {
-    case real = 0, rational, complex, vector, polar
+    case real = 0, rational, complex, vector, polar, vector3D, spherical
 }
 
 typealias ValueTypeSet = Set<ValueType>
@@ -26,7 +26,9 @@ let valueSize: [ValueType : Int] = [
     .rational : 2,
     .complex : 2,
     .vector : 2,
-    .polar : 2
+    .polar : 2,
+    .vector3D : 3,
+    .spherical : 3,
 ]
 
 typealias Comp = Complex<Double>
@@ -209,24 +211,35 @@ extension TaggedValue {
         return storage[index]
     }
 
-    mutating func set1( _ value: Double, r: Int = 1, c: Int = 1 ) {
-        let index = storageIndex( row: r, col: c)
-        storage[index] = value
-    }
-
     func get2( r: Int = 1, c: Int = 1 ) -> (Double, Double) {
         let index = storageIndex( row: r, col: c)
         return (storage[index], storage[index+1])
     }
+
+    func get3( r: Int = 1, c: Int = 1 ) -> (Double, Double, Double) {
+        let index = storageIndex( row: r, col: c)
+        return (storage[index], storage[index+1], storage[index+2])
+    }
+
+    mutating func set1( _ value: Double, r: Int = 1, c: Int = 1 ) {
+        let index = storageIndex( row: r, col: c)
+        storage[index] = value
+    }
     
     mutating func set2( _ v1: Double, _ v2: Double, r: Int = 1, c: Int = 1 ) {
         let index = storageIndex( row: r, col: c)
-//        self.setShape(2)
         storage[index]   = v1
         storage[index+1] = v2
     }
+
+    mutating func set3( _ v1: Double, _ v2: Double, _ v3: Double, r: Int = 1, c: Int = 1 ) {
+        let index = storageIndex( row: r, col: c)
+        storage[index]   = v1
+        storage[index+1] = v2
+        storage[index+2] = v3
+    }
     
-    // Get and Set Real, Rational, Complex, Vector
+    // Get and Set Real, Rational, Complex, Vector, polar, vector3D, spherical
     
     func getReal() -> Double { get1() }
     
@@ -270,7 +283,7 @@ extension TaggedValue {
         set2( z.real, z.imaginary)
     }
     
-    func getVector2D() -> (Double, Double) {
+    func getVector() -> (Double, Double) {
         switch vtp {
         case .vector:
             let (x, y) = get2()
@@ -284,8 +297,23 @@ extension TaggedValue {
             return (0.0, 0.0)
         }
     }
+
+    func getVector3D() -> (Double, Double, Double) {
+        switch vtp {
+        case .vector3D:
+            let (x, y, z) = get3()
+            return (x, y, z)
+            
+        case .spherical:
+            let (r, w, p) = get3()
+            return spherical2rect(r,w,p)
+            
+        default:
+            return (0.0, 0.0, 0.0)
+        }
+    }
     
-    mutating func setVector2D( _ x: Double, _ y: Double,
+    mutating func setVector( _ x: Double, _ y: Double,
                                tag: TypeTag = tagUntyped,
                                fmt: FormatRec = CalcState.defaultDecFormat) {
         setShape(2)
@@ -294,8 +322,18 @@ extension TaggedValue {
         self.fmt = fmt
         set2( x,y )
     }
+
+    mutating func setVector3D( _ x: Double, _ y: Double, _ z: Double,
+                                 tag: TypeTag = tagUntyped,
+                                 fmt: FormatRec = CalcState.defaultDecFormat) {
+        setShape(3)
+        self.vtp = .vector3D
+        self.tag = tag
+        self.fmt = fmt
+        set3( x,y,z )
+    }
     
-    func getPolar2D() -> (Double, Double) {
+    func getPolar() -> (Double, Double) {
         switch vtp {
         case .polar:
             let (r, w) = get2()
@@ -310,7 +348,7 @@ extension TaggedValue {
         }
     }
 
-    mutating func setPolar2D( _ r: Double, _ w: Double,
+    mutating func setPolar( _ r: Double, _ w: Double,
                               tag: TypeTag = tagUntyped,
                               fmt: FormatRec = CalcState.defaultDecFormat) {
         setShape(2)
@@ -319,7 +357,32 @@ extension TaggedValue {
         self.fmt = fmt
         set2( r,w )
     }
-    
+
+    func getSpherical() -> (Double, Double, Double) {
+        switch vtp {
+        case .spherical:
+            let (r, w, p) = get3()
+            return (r, w, p)
+            
+        case .vector3D:
+            let (x, y, z) = get3()
+            return rect2spherical(x,y,z)
+            
+        default:
+            return (0.0, 0.0, 0.0)
+        }
+    }
+
+    mutating func setSpherical( _ r: Double, _ w: Double, _ p: Double,
+                                tag: TypeTag = tagUntyped,
+                                fmt: FormatRec = CalcState.defaultDecFormat) {
+        setShape(3)
+        self.vtp = .spherical
+        self.tag = tag
+        self.fmt = fmt
+        set3( r,w,p )
+    }
+
     // Get and Set Tagged values from this tagged value - from matric to scalar
     
     func getValue( row: Int = 1, col: Int = 1 ) -> TaggedValue? {
@@ -500,6 +563,10 @@ extension TaggedValue {
     
     
     func renderValuePolar( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
+        ///
+        /// RenderValuePolar
+        ///     - Handles .polar
+        ///
         var (r, w) = get2( r: row, c: col)
         
         if fmt.polarAngle == .degrees {
@@ -512,8 +579,7 @@ extension TaggedValue {
         var unitCount = 0
         var text = String()
         
-        text.append("ç{Units}\u{276c} r: ç{}")
-        text.append(rStr)
+        text.append("ç{Units}\u{276c} r: ç{}" + rStr )
         
         if isSimple && tag != tagUntyped {
             // Add unit string
@@ -523,8 +589,7 @@ extension TaggedValue {
             }
         }
 
-        text.append( "ç{Units}={,} \u{03b8}: ç{}")
-        text.append(wStr)
+        text.append( "ç{Units}={,} \u{03b8}: ç{}" + wStr )
         
         if fmt.polarAngle == .degrees {
             text.append( "\u{00B0}" )
@@ -535,6 +600,82 @@ extension TaggedValue {
         
         return (text, rCount + wCount + unitCount + 11)
     }
+    
+    
+    func renderValueVector3D( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
+        let (x, y, z) = get3( r: row, c: col)
+        let (xStr, xCount) = renderDouble(x)
+        let (yStr, yCount) = renderDouble(y)
+        let (zStr, zCount) = renderDouble(z)
+
+        var unitCount = 0
+        
+        var text = String()
+        text.append("ç{Units}\u{276c}ç{}" + xStr)
+        text.append( "ç{Units}={,} ç{}" + yStr)
+        text.append( "ç{Units}={,} ç{}" + zStr)
+        text.append("ç{Units}\u{276d}ç{}")
+        
+        if isSimple && tag != tagUntyped {
+            // Add unit string
+            if let sym = tag.symbol {
+                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                unitCount += sym.count + 1
+            }
+        }
+        
+        return (text, xCount + yCount + zCount + 6 + unitCount)
+    }
+
+    
+    func renderValueSpherical( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
+        ///
+        /// RenderValuePolar
+        ///     - Handles spherical
+        ///
+        var (r, theta, phi) = get3( r: row, c: col)
+        
+        if fmt.polarAngle == .degrees {
+            theta *= 180.0 / Double.pi
+            phi   *= 180.0 / Double.pi
+        }
+        
+        let (rStr, rCount)         = renderDouble(r)
+        let (thetaStr, thetaCount) = renderDouble(theta)
+        let (phiStr, phiCount)     = renderDouble(phi)
+
+        var unitCount = 0
+        var text = String()
+        
+        text.append("ç{Units}\u{276c} r: ç{}" + rStr)
+        
+        if isSimple && tag != tagUntyped {
+            // Add unit string
+            if let sym = tag.symbol {
+                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                unitCount += sym.count + 1
+            }
+        }
+
+        text.append( "ç{Units}={,} \u{03b8}: ç{}" + thetaStr )
+        
+        if fmt.polarAngle == .degrees {
+            text.append( "\u{00B0}" )
+            unitCount += 1
+        }
+
+        text.append( "ç{Units}={,} \u{03c6}: ç{}" + phiStr )
+        
+        if fmt.polarAngle == .degrees {
+            text.append( "\u{00B0}" )
+            unitCount += 1
+        }
+        
+        text.append("ç{Units}\u{276d}ç{}")
+        
+        return (text, rCount + thetaCount + phiCount + unitCount + 16)
+    }
+    
     
     func renderValueSimple( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
         switch vtp {
@@ -552,6 +693,12 @@ extension TaggedValue {
 
         case .polar:
             return renderValuePolar(row, col)
+
+        case .vector3D:
+            return renderValueVector3D(row, col)
+
+        case .spherical:
+            return renderValueSpherical(row, col)
         }
     }
 
@@ -599,9 +746,9 @@ extension TaggedValue {
         var data = [TaggedValue]( repeating: TaggedValue(), count: 4)
         
         data[0].setReal( 3.14159 )
-        data[1].setVector2D( 3.0, 4.0 )
+        data[1].setVector( 3.0, 4.0 )
         data[3].setComplex( Comp(1.0, -2.0))
-        data[2].setPolar2D( 1.0, Double.pi/6, fmt: FormatRec( polarAngle: .degrees ))
+        data[2].setPolar( 1.0, Double.pi/6, fmt: FormatRec( polarAngle: .degrees ))
         return data
     }
 }

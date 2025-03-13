@@ -73,6 +73,16 @@ extension CalcState {
         stack[index].value.fmt = fmt
     }
 
+    mutating func setVector3DValue( reg index: Int = regX, _ x: Double, _ y: Double, _ z: Double,
+                                    tag: TypeTag = tagUntyped,
+                                    fmt: FormatRec = CalcState.defaultDecFormat ) {
+        stack[index].value.setShape(3)
+        stack[index].value.vtp = .vector3D
+        stack[index].value.set3(x,y,z)
+        stack[index].value.tag = tag
+        stack[index].value.fmt = fmt
+    }
+
     mutating func setPolarValue( reg index: Int = regX, _ r: Double, _ w: Double,
                                  tag: TypeTag = tagUntyped,
                                  fmt: FormatRec = CalcState.defaultDecFormat )
@@ -91,6 +101,17 @@ extension CalcState {
         stack[index].value.setShape(2)
         stack[index].value.vtp = .complex
         stack[index].value.set2( z.real, z.imaginary )
+        stack[index].value.tag = tag
+        stack[index].value.fmt = fmt
+    }
+
+    mutating func setSphericalValue( reg index: Int = regX, _ r: Double, _ w: Double, _ p: Double,
+                                     tag: TypeTag = tagUntyped,
+                                     fmt: FormatRec = CalcState.defaultDecFormat )
+    {
+        stack[index].value.setShape(3)
+        stack[index].value.vtp = .spherical
+        stack[index].value.set3(r,w,p)
         stack[index].value.tag = tag
         stack[index].value.fmt = fmt
     }

@@ -323,10 +323,12 @@ func initKeyLayout() {
     SubPadSpec.define( .multiValue,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.polarV,    "\u{27e8}r , \u{03b8}\u{27e9}"),
-                        Key(.vector2D,  "\u{27e8}x , y\u{27e9}"),
-                        Key(.complexV,  "x ç{Units}+ç{} yç{Units}iç{}"),
-                        
+                        Key(.spherical,  "\u{27e8}r, ƒ{0.9}\u{03b8}ƒ{}, ƒ{0.9}\u{03c6}ƒ{}\u{27e9}"),
+                        Key(.polar,      "\u{27e8}r, ƒ{0.8}\u{03b8}ƒ{}\u{27e9}"),
+                        Key(.complex,    "x ç{Units}+ç{} yç{Units}iç{}"),
+                        Key(.vector,     "\u{27e8}x, y\u{27e9}"),
+                        Key(.vector3D,   "\u{27e8}x, y, z\u{27e9}"),
+
                         // Eliminate rational numbers for now
                         // Key(.rationalV, "x / y"),
                        ]

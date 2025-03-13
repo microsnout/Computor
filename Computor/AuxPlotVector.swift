@@ -127,7 +127,7 @@ struct PlotVectorView : View {
             return (z.real, z.imaginary, z.length, z.phase)
             
         case .vector, .polar:
-            let (x, y) = tv.getVector2D()
+            let (x, y) = tv.getVector()
             let (r, a) = rect2polar(x, y)
             return (x, y, r, a)
             
@@ -187,7 +187,7 @@ struct PlotVectorView : View {
             context.withWindowContext( plotRect, within: viewRect ) { ctx, winRect in
                 
                 // Extent of axis not including tail
-                let (extX, extY) = ( winRect.width - tail, winRect.height - tail )
+                // let (extX, extY) = ( winRect.width - tail, winRect.height - tail )
 
                 // Sample x,y values
 //                let (x, y) = (3.0, 5.0)
