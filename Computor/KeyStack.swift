@@ -41,11 +41,11 @@ protocol KeyPressHandler {
 }
 
 struct KeySpec {
-    var width: Double
-    var height: Double
-    var keyColor: String = KeySpec.defKeyColor
+    var width: Double     = 42
+    var height: Double    = 25
+    var keyColor: String  = KeySpec.defKeyColor
     var textColor: String = KeySpec.defTextColor
-    var radius: Double = KeySpec.defRadius
+    var radius: Double    = KeySpec.defRadius
     
     static let defRadius    = 10.0
     static let defKeyColor  = "KeyColor"
@@ -58,16 +58,18 @@ struct Key: Identifiable {
     var size: Int           // Either 1 or 2, single width keys or double width
     var text: String?
     var image: ImageResource?
+    var caption: String?
     
     var id: Int { return self.kc.rawValue }
     
     static var keyList: [KeyCode : Key] = [:]
 
-    init( _ kc: KeyCode, _ label: String? = nil, size: Int = 1, image: ImageResource? = nil ) {
+    init( _ kc: KeyCode, _ label: String? = nil, size: Int = 1, image: ImageResource? = nil, caption: String? = nil ) {
         self.kc = kc
         self.text = label
         self.size = size
         self.image = image
+        self.caption = caption
         
         // Maintain dictionary of all defined keys
         Key.keyList[self.kc] = self
@@ -75,10 +77,22 @@ struct Key: Identifiable {
 }
 
 struct SubPadSpec {
-    var kc: KeyCode
-    var keySpec: KeySpec
-    var keys: [Key]
-    var caption: String?
+    var kc: KeyCode      = .noop
+    var keySpec: KeySpec = KeySpec()
+    var keys: [Key]      = []
+    var caption: String? = nil
+    
+    func getCaption( keyIndex: Int ) -> String? {
+        guard keyIndex >= 0 && keyIndex < keys.count else {
+            return caption
+        }
+        
+        return keys[keyIndex].caption ?? self.caption
+    }
+}
+
+
+extension SubPadSpec {
 
     static var specList: [KeyCode : SubPadSpec] = [:]
     
@@ -123,7 +137,7 @@ class KeyData : ObservableObject {
     //    Key struct of pressed key
     //
     var zFrame: CGRect      = CGRect.zero
-    var subPad: SubPadSpec? = nil
+    var subPad: SubPadSpec  = SubPadSpec()
     var keyOrigin: CGPoint  = CGPoint.zero
     var popFrame: CGRect    = CGRect.zero
     var pressedKey: Key?    = nil
@@ -159,22 +173,26 @@ struct ModalBlock: View {
 struct SubPopMenu: View {
     @AppStorage(.settingsSerifFontKey)
     private var serifFont = false
+    
+    @AppStorage(.settingsKeyCaptions)
+    private var keyCaptions = true
 
     @EnvironmentObject var keyData: KeyData
     
     var body: some View {
         if keyData.keyDown {
-            let keySpec = keyData.subPad!.keySpec
-            let n = keyData.subPad!.keys.count
+            let keySpec = keyData.subPad.keySpec
+            let n = keyData.subPad.keys.count
             let keyW = keySpec.width
             let keyH = keySpec.height
             let nkeys = 0..<n
-            let subkeys = nkeys.map { keyData.subPad!.keys[$0] }
+            let subkeys = nkeys.map { keyData.subPad.keys[$0] }
             let w = keyData.popFrame.width
             let keyRect = CGRect( origin: CGPoint.zero, size: CGSize( width: keyW, height: keyH)).insetBy(dx: keyInset/2, dy: keyInset/2)
             let keySet  = nkeys.map { keyRect.offsetBy( dx: keySpec.width*Double($0), dy: 0.0) }
             let zOrigin = keyData.zFrame.origin
-            let popH = keyData.subPad!.caption == nil ? keyH + keyInset : keyH + keyInset + popCaptionH
+            let popCaptionH = keyCaptions ? 13.0 : 0.0
+            let popH = keyData.subPad.caption == nil ? keyH + keyInset : keyH + keyInset + popCaptionH
             
             Rectangle()
                 .frame( width: w + keyInset, height: popH)
@@ -190,16 +208,18 @@ struct SubPopMenu: View {
                         let hframe = geo.frame(in: CoordinateSpace.global)
                         
                         VStack(spacing: 0) {
-                            if let caption = keyData.subPad!.caption {
-                                HStack {
-                                    Spacer()
-                                    Text(caption)
-                                        .bold()
-                                        .font(.system(size: captionFont))
-                                        .foregroundColor( Color(keySpec.textColor))
-                                        .frame( maxWidth: .infinity, alignment: .center)
-                                        .offset( x: 0, y: 4 )
-                                    Spacer()
+                            if keyCaptions {
+                                if let caption = keyData.subPad.getCaption( keyIndex: keyData.selSubIndex ) {
+                                    HStack {
+                                        Spacer()
+                                        RichText(
+                                            caption,
+                                            size: .small,
+                                            weight: .bold,
+                                            design: serifFont ? .serif : .default,
+                                            defaultColor: keySpec.textColor ).offset( x: 0, y: 4 )
+                                        Spacer()
+                                    }
                                 }
                             }
                             HStack( spacing: keyInset ) {
@@ -250,6 +270,9 @@ struct KeyView: View {
 
     @EnvironmentObject var keyData: KeyData
     
+    @AppStorage(.settingsKeyCaptions)
+    private var keyCaptions = true
+
     // For long press gesture - finger is down
     @GestureState private var isPressing = false
     
@@ -261,9 +284,7 @@ struct KeyView: View {
     }
     
     private func computeSubpadGeometry() {
-        guard let subPad = keyData.subPad else {
-            fatalError()
-        }
+        let subPad = keyData.subPad
         let n = subPad.keys.count
         let keyW = subPad.keySpec.width
         let keyH = subPad.keySpec.height
@@ -290,7 +311,7 @@ struct KeyView: View {
         let xPop = xSet3[0]
         
         // Popup height is augmented if the pop spec includes a caption
-        let popH = padSpec.caption == nil ? keyH : keyH*2 + popCaptionH
+        let popH = padSpec.caption == nil || !keyCaptions ? keyH : keyH*2 + popCaptionH
         
         // Write popup location and size to state object
         keyData.popFrame = CGRect( x: xPop + zOrigin.x,
@@ -300,7 +321,10 @@ struct KeyView: View {
     
     private func trackDragPt() {
         // Tracking finger movements with sub menu popup open
-        if let subPad = keyData.subPad {
+        if keyData.subPad.kc != .noop {
+            
+            let subPad = keyData.subPad
+            
             if hitRect(keyData.popFrame).contains(keyData.dragPt) {
                 let x = Int( (keyData.dragPt.x - keyData.popFrame.minX) / padSpec.keySpec.width )
                 
@@ -339,6 +363,7 @@ struct KeyView: View {
                 keyData.pressedKey = nil
                 keyData.selSubkey = nil
                 keyData.keyDown = false
+                keyData.subPad = SubPadSpec()
             }
     }
     

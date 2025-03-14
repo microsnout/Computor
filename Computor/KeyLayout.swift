@@ -269,10 +269,10 @@ func initKeyLayout() {
     SubPadSpec.define( .clX,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.clX,  "X"),
-                        Key(.clY,  "Y"),
-                        Key(.clZ,  "Z"),
-                        Key(.clReg,"Reg"),
+                        Key(.clX,  "X",   caption: "Clear X"),
+                        Key(.clY,  "Y",   caption: "Clear Y"),
+                        Key(.clZ,  "Z",   caption: "Clear Z"),
+                        Key(.clReg,"Reg", caption: "Clear Registers"),
                        ],
                        caption: "Clear"
     )
@@ -280,9 +280,9 @@ func initKeyLayout() {
     SubPadSpec.define( .deg,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.dms, "dms"),
+                        Key(.dms,  "dms"),
                         Key(.rad,  "rad"),
-                        Key(.deg,"deg"),
+                        Key(.deg,  "deg"),
                        ]
     )
 
@@ -323,15 +323,16 @@ func initKeyLayout() {
     SubPadSpec.define( .multiValue,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.spherical,  "ƒ{0.9}\u{27e8}r, \u{03b8}, \u{03c6}\u{27e9}ƒ{}"),
-                        Key(.polar,      "\u{27e8}r, ƒ{0.8}\u{03b8}ƒ{}\u{27e9}"),
-                        Key(.complex,    "x ç{Units}+ç{} yç{Units}iç{}"),
-                        Key(.vector,     "\u{27e8}x, y\u{27e9}"),
-                        Key(.vector3D,   "ƒ{0.9}\u{27e8}x, y, z\u{27e9}ƒ{}"),
+                        Key(.spherical,  "ƒ{0.9}\u{27e8}r, \u{03b8}, \u{03c6}\u{27e9}ƒ{}", caption: "Spherical"),
+                        Key(.polar,      "\u{27e8}r, ƒ{0.8}\u{03b8}ƒ{}\u{27e9}", caption: "Polar"),
+                        Key(.complex,    "x ç{Units}+ç{} yç{Units}iç{}", caption: "Complex"),
+                        Key(.vector,     "\u{27e8}x, y\u{27e9}", caption: "2D Vector"),
+                        Key(.vector3D,   "ƒ{0.9}\u{27e8}x, y, z\u{27e9}ƒ{}", caption: "3D Vector"),
 
                         // Eliminate rational numbers for now
                         // Key(.rationalV, "x / y"),
-                       ]
+                       ],
+                       caption: "Vector"
     )
 
     SubPadSpec.define( .matrix,
@@ -341,7 +342,8 @@ func initKeyLayout() {
                         Key(.range,  "ƒ{0.8}Range"),
                         Key(.map,    "ƒ{0.8}Map"),
                         Key(.reduce, "ƒ{0.8}Reduce"),
-                       ]
+                       ],
+                       caption: "Matrix Operations"
     )
 
     SubPadSpec.define( .x2,

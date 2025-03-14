@@ -14,6 +14,7 @@ extension String {
     static var settingsPriDispTextSize : String { "settings.priDispTextSize" }
     static var settingsAuxDispTextSize : String { "settings.auxDispTextSize" }
     static var settingsSoftkeyUnits : String { "settings.softkeyUnits" }
+    static var settingsKeyCaptions : String { "settings.keyCaptions" }
 }
 
 enum SoftkeyUnits: Int, Hashable {
@@ -40,6 +41,9 @@ struct SettingsView: View {
     @AppStorage(.settingsSoftkeyUnits)
     private var softkeyUnits = SoftkeyUnits.mixed
 
+    @AppStorage(.settingsKeyCaptions)
+    private var keyCaptions = true
+    
     var body: some View {
         NavigationView {
             List {
@@ -75,6 +79,8 @@ struct SettingsView: View {
                 
                 Section( header: Text("Keyboard").foregroundColor(Color("DisplayText")) ) {
 
+                    Toggle("Key help captions", isOn: $keyCaptions)
+                    
                     Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
                         Text("Default").tag(SoftkeyUnits.mixed)
                         Text("Metric").tag(SoftkeyUnits.metric)
