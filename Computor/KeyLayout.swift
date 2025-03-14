@@ -124,7 +124,7 @@ let psFunctionsR = PadSpec(
 let psFunctions2L = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
-        keys: [ Key(.quad, "ƒ{0.9}Quadƒ{}"),
+        keys: [ Key(.quad, "ƒ{0.8}Quadƒ{}"),
                 Key(.noop),
                 Key(.noop),
             ]
@@ -323,11 +323,11 @@ func initKeyLayout() {
     SubPadSpec.define( .multiValue,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.spherical,  "\u{27e8}r, ƒ{0.9}\u{03b8}ƒ{}, ƒ{0.9}\u{03c6}ƒ{}\u{27e9}"),
+                        Key(.spherical,  "ƒ{0.9}\u{27e8}r, \u{03b8}, \u{03c6}\u{27e9}ƒ{}"),
                         Key(.polar,      "\u{27e8}r, ƒ{0.8}\u{03b8}ƒ{}\u{27e9}"),
                         Key(.complex,    "x ç{Units}+ç{} yç{Units}iç{}"),
                         Key(.vector,     "\u{27e8}x, y\u{27e9}"),
-                        Key(.vector3D,   "\u{27e8}x, y, z\u{27e9}"),
+                        Key(.vector3D,   "ƒ{0.9}\u{27e8}x, y, z\u{27e9}ƒ{}"),
 
                         // Eliminate rational numbers for now
                         // Key(.rationalV, "x / y"),
@@ -360,6 +360,14 @@ func initKeyLayout() {
                         Key(.zArg, "ƒ{0.9}Arg(x)"),
                         Key(.zConj,"ƒ{1.2}x\u{0305}"),
                         Key(.zNorm,"ƒ{0.7}Norm(x)"),
+                       ]
+    )
+
+    SubPadSpec.define( .times,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.dotProduct,   "X\u{0305} \u{22c5} Y\u{0305}"),
+                        Key(.crossProduct, "X\u{0305} ƒ{1.5}\u{2a2f}ƒ{} Y\u{0305}"),
                        ]
     )
 }

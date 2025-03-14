@@ -41,7 +41,7 @@ enum KeyCode: Int, Codable {
     case multiValue = 180, rational, vector, polar, complex, vector3D, spherical
     
     // Matrix operations
-    case matrix = 190, range, seq, map, reduce
+    case matrix = 190, range, seq, map, reduce, dotProduct, crossProduct
     
     case unitStart = 200
     

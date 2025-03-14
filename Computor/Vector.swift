@@ -176,6 +176,7 @@ func installVector( _ model: CalculatorModel ) {
             // Create 2D vector value
             var s1 = s0
             s1.stackDrop()
+            s1.stackDrop()
             let x: Double = s0.X
             let y: Double = s0.Y
             let z: Double = s0.Z
@@ -207,7 +208,8 @@ func installVector( _ model: CalculatorModel ) {
            // Create 2D vector value
            var s1 = s0
            s1.stackDrop()
-                       
+           s1.stackDrop()
+
            let r: Double = s0.X
            var w: Double = s0.Y
            var p: Double = s0.Z
@@ -458,6 +460,50 @@ func installVector( _ model: CalculatorModel ) {
         },
     ])
     
+
+    CalculatorModel.defineOpPatterns( .dotProduct, [
+        
+        /// Vector  dot product
+        
+        OpPattern( [ .X([.vector, .polar]), .Y([.vector, .polar])] ) { s0 in
+            
+            // 2D vector dot product
+            if let (tag, ratio) = typeProduct( s0.Yt, s0.Xt) {
+                var s1 = s0
+                s1.stackDrop()
+                
+                let (x1, y1) = s0.Xtv.getVector()
+                let (x2, y2) = s0.Ytv.getVector()
+                
+                s1.setRealValue( x2 * x1*ratio + y2 * y1*ratio, tag: tag, fmt: s0.Yfmt )
+                return s1
+            }
+            
+            // Incompatible units
+            return nil
+        },
+        
+        OpPattern( [ .X([.vector3D, .spherical]), .Y([.vector3D, .spherical])] ) { s0 in
+            
+            // 2D vector dot product
+            if let (tag, ratio) = typeProduct( s0.Yt, s0.Xt) {
+                var s1 = s0
+                s1.stackDrop()
+                
+                let (x1, y1, z1) = s0.Xtv.getVector3D()
+                let (x2, y2, z2) = s0.Ytv.getVector3D()
+                
+                s1.setRealValue( x2 * x1*ratio + y2 * y1*ratio + z2 * z1*ratio,
+                                 tag: tag, fmt: s0.Yfmt )
+                return s1
+            }
+            
+            // Incompatible units
+            return nil
+        },
+        
+    ])
+
     
     // *** UNIT Conversions ***
     
