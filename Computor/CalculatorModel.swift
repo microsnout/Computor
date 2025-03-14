@@ -83,6 +83,8 @@ struct StatusState {
     
     var error = false
     
+    var leftText: String { statusLeft ?? "" }
+    
     var midText: String {
         if error {
             return "ç{StatusRedText}Errorç{}"
@@ -90,6 +92,8 @@ struct StatusState {
         
         return statusMid ?? ""
     }
+    
+    var rightText: String { statusRight ?? "" }
 
 }
 
@@ -166,10 +170,18 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func pauseExecution() {
         execPauseCount += 1
+        
+        // Show status of open macro - could add one brace per level
+        status.statusLeft = "ç{Units}={ {..}"
     }
     
     func resumeExecution() -> Int {
         execPauseCount -= 1
+        
+        if execPauseCount == 0 {
+            // All openBrace nested macros are closed
+            status.statusLeft = nil
+        }
         return execPauseCount
     }
 
@@ -197,20 +209,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // **** Macro Recording Stuff ***
     
-    func setMacroFn( _ kc: KeyCode, _ list: MacroOpSeq ) {
+    func saveMacroFunction( _ kc: KeyCode, _ list: MacroOpSeq ) {
         state.fnList[kc] = FnRec( fnKey: kc, macro: list)
     }
     
-    func clearMacroFn( _ kc: KeyCode) {
+    func clearMacroFunction( _ kc: KeyCode) {
         state.fnList[kc] = nil
     }
     
-    func getMacroFn( _ kc: KeyCode ) -> MacroOpSeq? {
-        if let fn = state.fnList[kc] {
-            return fn.macro
-        }
-        
-        return nil
+    func getMacroFunction( _ kc: KeyCode ) -> MacroOpSeq? {
+        state.fnList[kc]?.macro
     }
     
     // *******
@@ -285,7 +293,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         undoStack.push(state)
         acceptTextEntry()
         state.memory.append( NamedValue( value: state.Xtv) )
-        aux.setActiveView(.memoryList)
+        aux.activeView = .memoryList
     }
     
     func delMemoryItems( set: IndexSet) {
@@ -345,33 +353,37 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     func macroKeypress( _ event: KeyEvent ) {
-        if let kc = event.kcTop {
+        if let fnKey = event.kcTop {
+            
+            // fnKey is Fn macro key pressed
+            // event.kc is the sub function under this key selected
             
             switch event.kc {
+                
             case .clrFn:
                 // Clear Function Key
-                clearMacroFn(kc)
-                aux.stopRecFn(kc)
+                clearMacroFunction(fnKey)
+                aux.stopRecFn(fnKey)
                 
             case .recFn:
                 // Start Recording Function Key
                 // Accept data entry before starting recording to avoid recording the entry
                 acceptTextEntry()
-                aux.startRecFn(kc)
+                aux.startRecFn(fnKey)
                 
             case .stopFn:
                 // Stop Function Key recording
                 if aux.isRecording && !aux.list.opSeq.isEmpty {
-                    setMacroFn(kc, aux.list)
+                    saveMacroFunction(fnKey, aux.list)
                 }
-                aux.stopRecFn(kc)
+                aux.stopRecFn(fnKey)
                 
             case .showFn:
                 // Display Function Key steps in Aux view
-                if let fn = state.fnList[kc] {
+                if let fn = state.fnList[fnKey] {
                     aux.list = fn.macro
                     aux.macroKey = fn.fnKey
-                    aux.setActiveView(.macroList)
+                    aux.activeView = .macroList
                 }
 
             default:
@@ -379,11 +391,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             }
         }
         else {
+            // Fn key was pressed, not a submenu key
+            
             switch event.kc {
+                
             case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
                 if aux.isRecording && !aux.list.opSeq.isEmpty {
                     // Stop recording pressed key
-                    setMacroFn(event.kc, aux.list)
+                    saveMacroFunction( event.kc, aux.list )
                 }
                 aux.stopRecFn(event.kc)
                 
@@ -396,7 +411,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                         aux.recordKeyFn(.openBrace)
                     }
                     else {
-                        // Start recording but don't record the open {
+                        // Start recording but don't record the open brace
                         aux.startRecFn(event.kc)
                     }
                     // Increment the pause count so we resume at final }
@@ -424,6 +439,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             // Macro recording control key or the Fn key currently recording
             macroKeypress(event)
             return KeyPressResult.macroOp
+        }
+        
+        if KeyCode.fnSet.contains(keyCode) && getMacroFunction(keyCode) == nil {
+            // Undefined Fn keys are no op but must be caught here to avoid recording them
+            return KeyPressResult.null
         }
         
         if entry.entryMode {
@@ -555,7 +575,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.noLift = true
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
-            if let macro = getMacroFn(keyCode) {
+            if let macro = getMacroFunction(keyCode) {
                 // Macro playback - save inital state just in case
                 undoStack.push(state)
                 

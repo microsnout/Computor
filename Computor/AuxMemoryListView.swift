@@ -64,7 +64,7 @@ struct MemoryListView: View {
                             }
                             .onTapGesture {
                                 model.aux.detailItemIndex = index
-                                model.aux.setActiveView(.memoryDetail)
+                                model.aux.activeView = .memoryDetail
                             }
                         }
                     }

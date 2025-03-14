@@ -68,13 +68,11 @@ struct ConversionOp: StateOperator {
         
         var s1 = s0
         
-        if let newTV = block( s0.Xtv ) {
-            s1.Xtv = newTV
-            return s1
-        }
-        else {
+        guard let newTV = block( s0.Xtv ) else {
             return nil
         }
+        s1.Xtv = newTV
+        return s1
     }
 }
 

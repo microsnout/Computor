@@ -36,6 +36,30 @@ struct TypedRegister: View {
 }
 
 
+struct StatusView: View {
+    @StateObject var model: CalculatorModel
+
+    var body: some View {
+        
+        let leftText = model.status.leftText
+        
+        let midText = model.status.midText
+        
+        let rightText = model.isKeyRecording() ? "ç{StatusRedText}RECç{}" : model.status.rightText
+        
+        HStack {
+            RichText(leftText, size: .small, weight: .bold)
+            Spacer()
+            RichText( midText, size: .small, weight: .bold)
+            Spacer()
+            RichText( rightText, size: .small, weight: .bold )
+        }
+        .frame( height: 8 )
+        .padding(0)
+    }
+}
+
+
 struct DisplayView: View {
     @StateObject var model: CalculatorModel
     
@@ -47,10 +71,6 @@ struct DisplayView: View {
     var body: some View {
         let _ = Self._printChanges()
         
-        let midText = model.status.midText
-        
-        let rightText = model.isKeyRecording() ? "ç{StatusRedText}RECç{}" : ""
-        
         let rowHeight = rowHeightTable[priDispTextSize] ?? 35.0
 
         ZStack(alignment: .leading) {
@@ -59,13 +79,7 @@ struct DisplayView: View {
             
             VStack( alignment: .leading, spacing: 4) {
                 // Status line above register displays
-                HStack {
-                    RichText("", size: .small)
-                    Spacer()
-                    RichText( midText, size: .small, weight: .bold)
-                    Spacer()
-                    RichText( rightText, size: .small )
-                }.frame( height: 8 ).padding(0)
+                StatusView( model: model )
                 
                 ForEach (0 ..< model.rowCount, id: \.self) { index in
                     TypedRegister( text: model.renderRow(index: index), size: priDispTextSize )

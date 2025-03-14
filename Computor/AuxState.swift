@@ -6,25 +6,31 @@
 //
 import SwiftUI
 
+/// State variables associated with the auxiliary display
 
 struct AuxState {
+    // Active view of the Auxiliary display
     var activeView = AuxDispView.memoryList
     
-    mutating func setActiveView( _ av: AuxDispView ) {
-        activeView = av
-    }
-    
-    // Memory Detail Item state
+    // Memory Detail Item - current focused memory item in detail view
     var detailItemIndex: Int = 0
     
-    // Macro List state
+    // MacroListView state
     var macroKey: KeyCode = .noop
     var list = MacroOpSeq()
     
+    // Fn key currrently recording
     var kcRecording: KeyCode? = nil
-    var isRecording: Bool { kcRecording != nil }
     
+    // Pause recording when value greater than 0
     var pauseCount: Int = 0
+    
+}
+
+
+extension AuxState {
+    
+    var isRecording: Bool { kcRecording != nil }
     
     mutating func pauseRecording() {
         pauseCount += 1
@@ -45,7 +51,7 @@ struct AuxState {
             list.clear()
             
             kcRecording = kc
-            setActiveView(.macroList)
+            activeView = .macroList
             
             // Disable all Fn keys except the one recording
             for key in KeyCode.fnSet {
@@ -96,13 +102,15 @@ struct AuxState {
     }
     
     mutating func stopRecFn( _ kc: KeyCode ) {
-        if kc == kcRecording {
-            // Change macro display to show the new macro
-            macroKey = kcRecording ?? .noop
-            kcRecording = nil
+        if let kcRec = kcRecording {
             
-            macroKey = .noop
-            setActiveView(.memoryList)
+            assert( kc == kcRec )
+            
+            // Stop recording and Change macro display to display the new macro
+            kcRecording = nil
+            macroKey = kcRec
+            
+            // Re-enable all recording keys
             SubPadSpec.disableList.removeAll()
         }
     }

@@ -47,7 +47,7 @@ func rect2spherical( _ x: Double, _ y: Double, _ z: Double ) -> (Double, Double,
 }
 
 func spherical2rect( _ r: Double, _ w: Double, _ p: Double ) -> (Double, Double, Double) {
-    ( p*sin(p)*cos(w), p*sin(p)*sin(w), p*cos(p) )
+    ( r*sin(p)*cos(w), r*sin(p)*sin(w), r*cos(p) )
 }
 
 func deg2rad( _ d: Double ) -> Double {
