@@ -24,7 +24,7 @@ struct CalculatorView: View {
         
         Group {
             if orientation.isLandscape {
-                Text("Landscape")
+                LandscapeView( model: model )
             }
             else {
                 ZStack {
@@ -114,23 +114,23 @@ struct CalculatorView: View {
                     }
                     .ignoresSafeArea(.keyboard)
                 }
-                .task {
+            }
+        }
+        .task {
+            do {
+                try await model.loadState()
+            } catch {
+                //                fatalError(error.localizedDescription)
+            }
+        }
+        .onChange(of: scenePhase) { oldPhase, phase in
+            if phase == .inactive {
+                Task {
                     do {
-                        try await model.loadState()
-                    } catch {
-                        //                fatalError(error.localizedDescription)
+                        try await model.saveState()
                     }
-                }
-                .onChange(of: scenePhase) { oldPhase, phase in
-                    if phase == .inactive {
-                        Task {
-                            do {
-                                try await model.saveState()
-                            }
-                            catch {
-                                fatalError(error.localizedDescription)
-                            }
-                        }
+                    catch {
+                        fatalError(error.localizedDescription)
                     }
                 }
             }
