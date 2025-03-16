@@ -652,6 +652,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                             return KeyPressResult.stateChange
                         }
                         
+                        if modalFunction != nil {
+                            // Modal function started with no state change, not an error
+                            return KeyPressResult.modalFunction
+                        }
+                        
                         // Fall through to error indication
                     }
                 }

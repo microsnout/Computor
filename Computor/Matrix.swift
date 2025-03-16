@@ -62,103 +62,103 @@ extension TaggedValue {
 
 func installMatrix( _ model: CalculatorModel ) {
     
-    CalculatorModel.defineOpCodes( [
-        .seq:
-            CustomOp { (s0: CalcState) -> CalcState? in
-                guard s0.Xtv.isInteger && s0.Ytv.isSimple && s0.Ztv.isSimple else {
-                    return nil
-                }
-                // Copy parameters n and inc from s0
-                let n = Int(floor(s0.X))
-                let seq = 1 ... n
-                let inc = s0.Ytv
-
-                // Copy intial value from s0 and create result array of size n
-                var result = s0.Ztv
-                let ss = result.size
-                result.setShape( ss, n, 1 )
-                
-                // Remove N and increment value from stack
-                model.state.stackDrop()
-                model.state.stackDrop()
-                
-                model.undoStack.pause()
-                model.aux.pauseRecording()
-                
-                for r in seq {
-                    // Copy current result value to result array
-                    result.setValue(model.state.Xtv, row: r)
-                    
-                    // Increment X value by inc
-                    model.enterValue(inc)
-                    
-                    if model.keyPress( KeyEvent( kc: .plus)) != .stateChange {
-                        // Addition error
-                        model.aux.resumeRecording()
-                        model.undoStack.resume()
-                        return nil
-                    }
-                    
-                }
-                model.aux.resumeRecording()
-                model.undoStack.resume()
-
-                // Copy state, remove parameters and put result in X
-                var s1 = s0
-                s1.stackDrop()
-                s1.stackDrop()
-                s1.stack[regX].value = result
-                return s1
-            },
+    let allTypes: Set<ValueType> = [.real, .rational, .complex, .vector, .vector3D, .polar, .spherical]
+    
+    CalculatorModel.defineOpPatterns( .seq, [
         
-        .range:
-            CustomOp { (s0: CalcState) -> CalcState? in
-                guard s0.Xtv.isInteger else {
+        OpPattern( [ .X([.real]), .Y(allTypes), .Z(allTypes) ], where: { s0 in isInt(s0.X) } ) { s0 in
+                       
+            // Copy parameters n and inc from s0
+            let n = Int(floor(s0.X))
+            let seq = 1 ... n
+            let inc = s0.Ytv
+            
+            // Copy intial value from s0 and create result array of size n
+            var result = s0.Ztv
+            let ss = result.size
+            result.setShape( ss, n, 1 )
+            
+            // Remove N and increment value from stack
+            model.state.stackDrop()
+            model.state.stackDrop()
+            
+            model.undoStack.pause()
+            model.aux.pauseRecording()
+            
+            for r in seq {
+                // Copy current result value to result array
+                result.setValue(model.state.Xtv, row: r)
+                
+                // Increment X value by inc
+                model.enterValue(inc)
+                
+                if model.keyPress( KeyEvent( kc: .plus)) != .stateChange {
+                    // Addition error
+                    model.aux.resumeRecording()
+                    model.undoStack.resume()
                     return nil
                 }
-                var s1 = s0
-                let n = Int(floor(s0.X))
-                let seq = 1 ... n
                 
-                s1.stack[regX].value.setShape( 1, n, 1 )
-                
-                for x in seq {
-                    s1.stack[regX].value.set1( Double(x), r: x )
-                }
-                s1.stack[regX].value.vtp = .real
-                return s1
-            },
+            }
+            model.aux.resumeRecording()
+            model.undoStack.resume()
+            
+            // Copy state, remove parameters and put result in X
+            var s1 = s0
+            s1.stackDrop()
+            s1.stackDrop()
+            s1.stack[regX].value = result
+            return s1
+       }
+   ])
+                       
+    
+    CalculatorModel.defineOpPatterns( .range, [
         
-        .map:
-            CustomOp { (s0: CalcState) -> CalcState? in
-                guard s0.Xtv.isMatrix && s0.Xtv.cols == 1 else {
-                    // Require a single column vector of any type
-                    return nil
-                }
-                
-                // Create a Reduce function obj capturing the value list and mode reference
-                let mapFn = MapFunction( valueList: s0.Xtv, model: model)
-                model.setModalFunction(mapFn)
-                
-                // No new state
-                return nil
-            },
-
-        .reduce:
-            CustomOp { (s0: CalcState) -> CalcState? in
-                guard s0.Xtv.isMatrix && s0.Xtv.cols == 1 && s0.Ytv.isSimple else {
-                    // Require a single column vector of any type and a simple/scalar constant
-                    return nil
-                }
-                
-                // Create a Reduce function obj capturing the value list and mode reference
-                let reduceFn = ReduceFunction( valueList: s0.Xtv, model: model)
-                model.setModalFunction(reduceFn)
-                
-                // No new state
-                return nil
-            },
+        OpPattern( [ .X([.real]) ], where: { s0 in isInt(s0.X) } ) { s0 in
+            
+            var s1 = s0
+            let n = Int(floor(s0.X))
+            let seq = 1 ... n
+            
+            s1.stack[regX].value.setShape( 1, n, 1 )
+            
+            for x in seq {
+                s1.stack[regX].value.set1( Double(x), r: x )
+            }
+            s1.stack[regX].value.vtp = .real
+            return s1
+        }
     ])
+    
+    
+    CalculatorModel.defineOpPatterns( .map, [
+        
+        OpPattern( [ .X(allTypes, .matrix) ], where: { s0 in s0.Xtv.cols == 1 } ) { s0 in
+            
+            // Create a Reduce function obj capturing the value list and mode reference
+            let mapFn = MapFunction( valueList: s0.Xtv, model: model)
+            model.setModalFunction(mapFn)
+            
+            // No new state
+            return nil
+        }
+    ])
+            
+    
+    CalculatorModel.defineOpPatterns( .reduce, [
+        
+        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .simple) ], where: { s0 in s0.Xtv.cols == 1 } ) { s0 in
+            
+            // Create a Reduce function obj capturing the value list and mode reference
+            let reduceFn = ReduceFunction( valueList: s0.Xtv, model: model)
+            model.setModalFunction(reduceFn)
+            
+            // No new state
+            return nil
+        }
+    ])
+
 
     // *** UNIT Conversions ***
 
