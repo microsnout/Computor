@@ -205,7 +205,7 @@ func installMatrix( _ model: CalculatorModel ) {
             
             let n = Int(s0.X)
             
-            guard n >= 1 || n <= rows else {
+            guard n >= 1 && n <= rows else {
                 return nil
             }
             
@@ -233,7 +233,7 @@ class MapFunction : ModalFunction {
         self.model = model
     }
     
-    override var statusString: String? { "ç{Units}Map f(x)" }
+    override var statusString: String? { "ç{Units}Map ƒ()" }
     
     override func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
         
@@ -302,7 +302,7 @@ class ReduceFunction : ModalFunction {
         self.model = model
     }
     
-    override var statusString: String? { "ƒ{0.9}ç{Units}Reduce x:[] y:r_{0}" }
+    override var statusString: String? { "ƒ{0.9}ç{Units}Reduce ƒ(,)" }
     
     override func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
         

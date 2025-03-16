@@ -15,12 +15,19 @@ struct DotIndicatorView: View {
         
         HStack( spacing: 10 ) {
             ForEach( AuxDispView.allCases ) { viewCode in
-                let color = viewCode == currentView ? viewCode.theme.mainColor : Color("Background")
                 
-                Circle()
-                    .fill( color )
-                    .stroke(.gray, lineWidth: 1)
-                    .frame(width: 8, height: 8)
+                if viewCode == currentView {
+                    Circle()
+                        .fill( viewCode.theme.mediumColor )
+                        .frame(width: 7, height: 7)
+                }
+                else {
+                    
+                    Circle()
+                        .fill( Color("Background") )
+                        .stroke( Color("Frame"), lineWidth: 1)
+                        .frame(width: 7, height: 7)
+                }
             }
         }
     }

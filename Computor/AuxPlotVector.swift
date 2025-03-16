@@ -166,128 +166,134 @@ struct PlotVectorView : View {
         
         let nv = model.state.stack[regX]
         
-        Canvas(
-            opaque: false,
-            colorMode: .linear,
-            rendersAsynchronously: false
+        VStack {
+            AuxHeaderView( theme: Theme.lightPurple ) {
+                RichText( "Plot", size: .small )
+            }
             
-        ) { context, size in
-            
-            // Entire viewport of the Canvas
-            let viewRect = CGRect( origin: CGPoint.zero, size: size )
-            
-            // Confine our plot to this area
-            let plotRect = viewRect.insetTo( fraction: 0.8 )
-
-            // Tail of axis - extending into unused quadrant
-            let tail = 25.0
-            
-            let (x, y, length, angle) = getSpecs( nv.value )
-
-            context.withWindowContext( plotRect, within: viewRect ) { ctx, winRect in
+            Canvas(
+                opaque: false,
+                colorMode: .linear,
+                rendersAsynchronously: false
                 
-                // Extent of axis not including tail
-                // let (extX, extY) = ( winRect.width - tail, winRect.height - tail )
-
-                // Sample x,y values
-//                let (x, y) = (3.0, 5.0)
-
-                let quad = Quadrant.fromXY(x,y)
+            ) { context, size in
                 
-                let upperQuad = (quad == .UL || quad == .UR)
-
-                // Width and Height of plot window
-                let (wW, hW) = (winRect.width, winRect.height)
-
-                // Scale factor for x and y within plot
-                var sxy = 0.6
-
-                if hW/wW > abs(y)/abs(x) {
-                    // Plot will terminate at X extent
-                    sxy *= wW/abs(x)
-                }
-                else {
-                    // Plot will terminate at Y extent
-                    sxy *= hW/abs(y)
-                }
+                // Entire viewport of the Canvas
+                let viewRect = CGRect( origin: CGPoint.zero, size: size )
                 
-                // Find axis co-ordinates and origin point
-                let (xFrom, xTo, yFrom, yTo, origin) = computeAxis(winRect, Quadrant.fromXY(x,y), tail: tail)
+                // Confine our plot to this area
+                let plotRect = viewRect.insetTo( fraction: 0.8 )
                 
-                // X Axis
-                ctx.arrow( from: xFrom, to: xTo )
+                // Tail of axis - extending into unused quadrant
+                let tail = 25.0
                 
-                // Y Axis
-                ctx.arrow( from: yFrom, to: yTo )
+                let (x, y, length, angle) = getSpecs( nv.value )
                 
-                // Axis Labels
-                let font = Font.custom("Times New Roman", size: 24).italic()
-                let ( xAxisStr, yAxisStr ) = nv.value.vtp == .complex ? ("Re", "Im") : ("X", "Y")
-                context.text( xAxisStr, font: font, color: .blue, at: CGPoint(x: xTo.x, y: 0), in: ctx )
-                context.text( yAxisStr, font: font, color: .blue, at: CGPoint(x: 0, y: yTo.y), in: ctx )
+                context.withWindowContext( plotRect, within: viewRect ) { ctx, winRect in
                     
-                // Shift context to origin
-                ctx.withTransform( dx: origin.x, dy: origin.y ) { ptx in
+                    // Extent of axis not including tail
+                    // let (extX, extY) = ( winRect.width - tail, winRect.height - tail )
                     
-                    // Scaled vector end point
-                    let pt = CGPoint( x: x * sxy, y: y * sxy)
+                    // Sample x,y values
+                    //                let (x, y) = (3.0, 5.0)
                     
-                    // Vector Line
-                    ptx.arrow( from: .zero, to: pt, with: .color(.blue) )
+                    let quad = Quadrant.fromXY(x,y)
                     
-                    // Dashed lines to Axis from Pt
-                    let ss = StrokeStyle(lineWidth: 2, dash: [5] )
-                    ptx.line( from: CGPoint( x: 0, y: pt.y), to: pt, with: .color(.gray), style: ss )
-                    ptx.line( from: CGPoint( x: pt.x, y: 0), to: pt, with: .color(.gray), style: ss )
+                    let upperQuad = (quad == .UL || quad == .UR)
                     
-                    // Font for plot label text
-                    let font = Font.custom("Times New Roman", size: 18)
+                    // Width and Height of plot window
+                    let (wW, hW) = (winRect.width, winRect.height)
                     
-                    let textAdj = upperQuad ? 15.0 : -15.0
+                    // Scale factor for x and y within plot
+                    var sxy = 0.6
                     
-                    switch nv.value.vtp {
-                        
-                    case .complex:
-                        context.text("a+bi", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
-
-                    case .polar:
-                        context.text("\u{27e8}r , \u{03b8}\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
-                        
-                        ptx.stroke(
-                            Path { path in
-                                path.addArc(
-                                    center: .zero, radius: length*sxy/2,
-                                    startAngle: Angle.zero, endAngle: Angle(radians: angle), clockwise: !upperQuad )
-                            },
-                            with: .color(.black),
-                            lineWidth: 1
-                        )
-
-                    case .vector:
-                        context.text("\u{27e8}a , b\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
-                        
-                    default:
-                        context.text("x", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
+                    if hW/wW > abs(y)/abs(x) {
+                        // Plot will terminate at X extent
+                        sxy *= wW/abs(x)
+                    }
+                    else {
+                        // Plot will terminate at Y extent
+                        sxy *= hW/abs(y)
                     }
                     
-                    if nv.value.vtp != .real  {
-                        // Add a and b to axis
+                    // Find axis co-ordinates and origin point
+                    let (xFrom, xTo, yFrom, yTo, origin) = computeAxis(winRect, Quadrant.fromXY(x,y), tail: tail)
+                    
+                    // X Axis
+                    ctx.arrow( from: xFrom, to: xTo )
+                    
+                    // Y Axis
+                    ctx.arrow( from: yFrom, to: yTo )
+                    
+                    // Axis Labels
+                    let font = Font.custom("Times New Roman", size: 24).italic()
+                    let ( xAxisStr, yAxisStr ) = nv.value.vtp == .complex ? ("Re", "Im") : ("X", "Y")
+                    context.text( xAxisStr, font: font, color: .blue, at: CGPoint(x: xTo.x, y: 0), in: ctx )
+                    context.text( yAxisStr, font: font, color: .blue, at: CGPoint(x: 0, y: yTo.y), in: ctx )
+                    
+                    // Shift context to origin
+                    ctx.withTransform( dx: origin.x, dy: origin.y ) { ptx in
+                        
+                        // Scaled vector end point
+                        let pt = CGPoint( x: x * sxy, y: y * sxy)
+                        
+                        // Vector Line
+                        ptx.arrow( from: .zero, to: pt, with: .color(.blue) )
+                        
+                        // Dashed lines to Axis from Pt
+                        let ss = StrokeStyle(lineWidth: 2, dash: [5] )
+                        ptx.line( from: CGPoint( x: 0, y: pt.y), to: pt, with: .color(.gray), style: ss )
+                        ptx.line( from: CGPoint( x: pt.x, y: 0), to: pt, with: .color(.gray), style: ss )
+                        
+                        // Font for plot label text
                         let font = Font.custom("Times New Roman", size: 18)
-                        context.text("a", font: font, at: CGPoint( x: pt.x, y: -textAdj ), in: ptx )
-                        context.text("b", font: font, at: CGPoint( x: -textAdj, y: pt.y ), in: ptx )
+                        
+                        let textAdj = upperQuad ? 15.0 : -15.0
+                        
+                        switch nv.value.vtp {
+                            
+                        case .complex:
+                            context.text("a+bi", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
+                            
+                        case .polar:
+                            context.text("\u{27e8}r , \u{03b8}\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
+                            
+                            ptx.stroke(
+                                Path { path in
+                                    path.addArc(
+                                        center: .zero, radius: length*sxy/2,
+                                        startAngle: Angle.zero, endAngle: Angle(radians: angle), clockwise: !upperQuad )
+                                },
+                                with: .color(.black),
+                                lineWidth: 1
+                            )
+                            
+                        case .vector:
+                            context.text("\u{27e8}a , b\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
+                            
+                        default:
+                            context.text("x", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
+                        }
+                        
+                        if nv.value.vtp != .real  {
+                            // Add a and b to axis
+                            let font = Font.custom("Times New Roman", size: 18)
+                            context.text("a", font: font, at: CGPoint( x: pt.x, y: -textAdj ), in: ptx )
+                            context.text("b", font: font, at: CGPoint( x: -textAdj, y: pt.y ), in: ptx )
+                        }
+                        
+                        // Red dot
+                        ptx.fill(
+                            Path(
+                                ellipseIn: CGRect(
+                                    origin: pt,
+                                    size: CGSize( width: 8, height: 8 ) ).offsetBy( dx: -4, dy: -4 ) ),
+                            with: .color(.red))
                     }
-
-                    // Red dot
-                    ptx.fill(
-                        Path(
-                            ellipseIn: CGRect(
-                                origin: pt,
-                                size: CGSize( width: 8, height: 8 ) ).offsetBy( dx: -4, dy: -4 ) ),
-                        with: .color(.red))
                 }
             }
+            .padding(10)
         }
-        .padding(10)
     }
 }
 

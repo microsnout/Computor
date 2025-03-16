@@ -51,7 +51,7 @@ struct MemoryListView: View {
                                     
                                     // Memory name - tap to edit
                                     Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
-                                    
+
                                     // Memory value display
                                     TypedRegister( text: value, size: .small ).padding( .horizontal, 20)
                                     

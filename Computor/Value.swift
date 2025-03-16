@@ -285,7 +285,7 @@ extension TaggedValue {
     
     func getVector() -> (Double, Double) {
         switch vtp {
-        case .vector:
+        case .vector, .complex:
             let (x, y) = get2()
             return (x, y)
             

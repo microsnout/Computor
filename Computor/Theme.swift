@@ -7,39 +7,41 @@
 import SwiftUI
 
 enum Theme: String, CaseIterable, Identifiable, Codable {
-    case bubblegum
-    case buttercup
-    case indigo
-    case lavender
-    case magenta
-    case navy
-    case orange
-    case oxblood
-    case periwinkle
-    case poppy
-    case purple
-    case seafoam
-    case sky
-    case tan
-    case teal
-    case yellow
-    
     case lightRed, lightGreen, lightBlue, lightYellow, lightGrey, lightPurple
     
+    case mediumRed, mediumGreen, mediumBlue, mediumYellow, mediumGrey, mediumPurple
+
     var accentColor: Color {
         switch self {
-        case .bubblegum, .buttercup, .lavender, .orange, .periwinkle, .poppy, .seafoam, .sky, .tan, .teal, .yellow: return .black
-        case .indigo, .magenta, .navy, .oxblood, .purple: return .white
             
         case .lightRed, .lightGreen, .lightBlue, .lightYellow, .lightPurple, .lightGrey: return .black
+            
+        case .mediumRed, .mediumGreen, .mediumBlue, .mediumYellow, .mediumPurple, .mediumGrey: return .black
         }
     }
+    
     var mainColor: Color {
         Color(rawValue)
     }
+    
+    var mediumColor: Color {
+        switch self {
+        case .lightRed:    return .mediumRed
+        case .lightBlue:   return .mediumBlue
+        case .lightGreen:  return .mediumGreen
+        case .lightGrey:   return .mediumGrey
+        case .lightPurple: return .mediumPurple
+        case .lightYellow: return .mediumYellow
+            
+        default:
+            return mainColor
+        }
+    }
+    
     var name: String {
         rawValue.capitalized
     }
+    
     var id: String {
         name
     }

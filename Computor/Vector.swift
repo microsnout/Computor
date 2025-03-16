@@ -505,6 +505,74 @@ func installVector( _ model: CalculatorModel ) {
     ])
 
     
+    // Indexing operator [] uses .matrix keycode for now
+    CalculatorModel.defineOpPatterns( .matrix, [
+        
+        OpPattern( [ .X([.real]), .Y([.vector, .complex]) ],
+                   where: { s0 in isInt(s0.X) } ) { s0 in
+                       
+                       let n = Int(s0.X)
+                       
+                       guard n >= 1 && n <= 2 else {
+                           return nil
+                       }
+                       
+                       let (x, y) = s0.Ytv.getVector()
+                       
+                       var s1 = s0
+                       s1.stackDrop()
+                       
+                       s1.setRealValue( n == 1 ? x : y, tag: s0.Yt, fmt: s0.Yfmt )
+                       return s1
+                   },
+
+        OpPattern( [ .X([.real]), .Y([.polar]) ],
+                   where: { s0 in isInt(s0.X) } ) { s0 in
+                       
+                       let n = Int(s0.X)
+                       
+                       guard n >= 1 && n <= 2 else {
+                           return nil
+                       }
+                       
+                       let (r, w) = s0.Ytv.getPolar()
+                       
+                       var s1 = s0
+                       s1.stackDrop()
+                       
+                       if n == 1 {
+                           s1.setRealValue( r, tag: s0.Yt, fmt: s0.Yfmt )
+                       }
+                       else if s0.Yfmt.polarAngle == .degrees {
+                           s1.setRealValue( w * 180/Double.pi, tag: tagDeg, fmt: s0.Yfmt )
+                       }
+                       else {
+                           s1.setRealValue( w, tag: tagRad, fmt: s0.Yfmt )
+                       }
+                       return s1
+                   },
+        
+        // TODO: Add index op for spherical
+
+        OpPattern( [ .X([.real]), .Y([.vector3D]) ],
+                   where: { s0 in isInt(s0.X) } ) { s0 in
+                       
+                       let n = Int(s0.X)
+                       
+                       guard n >= 1 && n <= 3 else {
+                           return nil
+                       }
+                       
+                       let (x, y, z) = s0.Ytv.getVector3D()
+                       
+                       var s1 = s0
+                       s1.stackDrop()
+                       
+                       s1.setRealValue( n == 1 ? x : (n == 2 ? y : z), tag: s0.Yt, fmt: s0.Yfmt )
+                       return s1
+                   },
+    ])
+
     // *** UNIT Conversions ***
     
     CalculatorModel.defineUnitConversions([
