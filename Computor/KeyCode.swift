@@ -52,7 +52,7 @@ enum KeyCode: Int, Codable {
     case second = 210, min, hr, day, yr, ms, us
     
     // Angles
-    case deg = 220, rad, dms
+    case deg = 220, rad, dms, dm, minA
     
     // Mass
     case kg = 230, mg, gram, tonne, lb, oz, ton, stone

@@ -479,8 +479,10 @@ class TypeDef {
         defineType( .length, .yd,   "yd",   1000/(36*25.4))
         defineType( .length, .mi,   "mi",   1000/(5280*12*25.4))
 
+        // Angular units
         defineType( .angle,  .rad,  "rad",  1)
         defineType( .angle,  .deg,  "deg",  180/Double.pi)
+        defineType( .angle,  .minA, "minA", 180/Double.pi * 60.0)
 
         defineType( .time,  .second,   "sec",  1.0)
         defineType( .time,  .min,   "min",  1.0/60)
@@ -883,3 +885,4 @@ func lookupTypeTag( _ tc: TypeCode ) -> TypeTag? {
 let tagUntyped = TypeTag(.untyped)
 let tagRad     = TypeDef.tagOf("rad")
 let tagDeg     = TypeDef.tagOf("deg")
+let tagMinA    = TypeDef.tagOf("minA")

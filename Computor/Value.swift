@@ -41,13 +41,22 @@ fileprivate let H: Int = 100
 enum FormatStyle : Int, Codable {
     case decimal    = 0
     case scientific = 1
+    
+    // Deg Min Sec and Deg Min
+    // Only affect display when tag == tagDeg
     case dms        = 2
+    case dm         = 3
 }
 
 enum PolarAngle : Int, Codable {
+    // Tag of polar and spherical types indicate the type of the radius component
+    // Angles are always stored in radians
+    // Polar angle value controls formating of the angles on rendering
+    //
     case radians = 0
     case degrees = 1
-    case dms     = 2
+    case minutes = 2
+    case dms     = 3
 }
 
 
@@ -466,7 +475,10 @@ extension TaggedValue {
         if isSimple && tag != tagUntyped {
             if tag == tagDeg {
                 
+                // Display angle in eithre degrees or degrees minutes seconds - dms
+                
                 if fmt.style == .dms {
+                    
                     // Degrees Minutes Seconds angle display
                     let neg = reg < 0.0 ? -1.0 : 1.0
                     let angle = abs(reg) + 0.0000001
@@ -482,11 +494,29 @@ extension TaggedValue {
                     let count = degStr.count + minStr.count + secStr.count + 3
                     return (str, count)
                 }
+                else if fmt.style == .dm {
+                    
+                    // Degrees Minutes angle display
+                    let neg = reg < 0.0 ? -1.0 : 1.0
+                    let angle = abs(reg)
+                    let deg = floor(angle)
+                    let min = (angle - deg) * 60.0
+                    let degStr = String( format: "%.0f", neg*deg )
+                    let (minStr, minCount) = renderDouble(min)
+                    let str   = String( format: "={\(degStr)\u{00B0}}\(minStr)={\u{2032}}" )
+                    let count = degStr.count + minCount + 2
+                    return (str, count)
+                }
                 else {
                     // Use degree symbol
                     text.append("\u{00B0}")
                     valueCount += 1
                 }
+            }
+            else if tag == tagMinA {
+                // Display angle in minutes
+                text.append("\u{2032}")
+                valueCount += 1
             }
             else if let sym = tag.symbol {
                 // Add unit symbol

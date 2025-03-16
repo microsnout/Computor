@@ -280,9 +280,10 @@ func initKeyLayout() {
     SubPadSpec.define( .deg,
                        keySpec: ksSubpad,
                        keys: [
+                        Key(.dm,   "dm"),
                         Key(.dms,  "dms"),
                         Key(.rad,  "rad"),
-                        Key(.deg,  "deg"),
+                        Key(.minA, "min"),
                        ]
     )
 
