@@ -609,7 +609,7 @@ extension TaggedValue {
         var unitCount = 0
         var text = String()
         
-        text.append("ç{Units}\u{276c} r: ç{}" + rStr )
+        text.append("ç{Units}\u{276c} \u{03c1}: ç{}" + rStr )
         
         if isSimple && tag != tagUntyped {
             // Add unit string
@@ -677,7 +677,7 @@ extension TaggedValue {
         var unitCount = 0
         var text = String()
         
-        text.append("ç{Units}\u{276c} r: ç{}" + rStr)
+        text.append("ç{Units}\u{276c} \u{03c1}: ç{}" + rStr)
         
         if isSimple && tag != tagUntyped {
             // Add unit string

@@ -324,8 +324,8 @@ func initKeyLayout() {
     SubPadSpec.define( .multiValue,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.spherical,  "ƒ{0.9}\u{27e8}r, \u{03b8}, \u{03c6}\u{27e9}ƒ{}", caption: "Spherical"),
-                        Key(.polar,      "\u{27e8}r, ƒ{0.8}\u{03b8}ƒ{}\u{27e9}", caption: "Polar"),
+                        Key(.spherical,  "ƒ{0.9}\u{27e8}\u{03c1}, \u{03b8}, \u{03c6}\u{27e9}ƒ{}", caption: "Spherical"),
+                        Key(.polar,      "\u{27e8}\u{03c1}, ƒ{0.8}\u{03b8}ƒ{}\u{27e9}", caption: "Polar"),
                         Key(.complex,    "x ç{Units}+ç{} yç{Units}iç{}", caption: "Complex"),
                         Key(.vector,     "\u{27e8}x, y\u{27e9}", caption: "2D Vector"),
                         Key(.vector3D,   "ƒ{0.9}\u{27e8}x, y, z\u{27e9}ƒ{}", caption: "3D Vector"),
