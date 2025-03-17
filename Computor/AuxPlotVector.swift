@@ -256,7 +256,7 @@ struct PlotVectorView : View {
                             context.text("a+bi", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
                             
                         case .polar:
-                            context.text("\u{27e8}r , \u{03b8}\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
+                            context.text("\u{27e8}\u{03c1} , \u{03b8}\u{27e9}", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
                             
                             ptx.stroke(
                                 Path { path in

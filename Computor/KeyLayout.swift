@@ -125,8 +125,8 @@ let psFunctions2L = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
         keys: [ Key(.quad, "ƒ{0.8}Quadƒ{}"),
-                Key(.noop),
-                Key(.noop),
+                Key(.sto,  "ƒ{0.9}Sto"),
+                Key(.rcl,  "ƒ{0.9}Rcl"),
             ]
     )
 
