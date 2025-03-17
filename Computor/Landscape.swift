@@ -17,7 +17,7 @@ struct LandscapeView : View {
                 .fill(Color("Background"))
                 .edgesIgnoringSafeArea( .all )
             
-            KeyStack {
+            KeyStack( keyPressHandler: model ) {
                 
                 VStack( spacing: 0 ) {
                     AuxiliaryDisplayView( model: model, auxView: $model.aux.activeView )

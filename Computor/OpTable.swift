@@ -52,7 +52,7 @@ extension CalculatorModel {
         .eExp: UnaryOp( parm: tagUntyped, result: tagUntyped, { x in exp(x) } ),
 
         .pi:    Constant( Double.pi ),
-        .e:     Constant( exp(1.0) ),
+        .exp:     Constant( exp(1.0) ),
         .abs:   UnaryOp( { x in abs(x) } ),
         .sign:  UnaryOp( { x in -x }),
         

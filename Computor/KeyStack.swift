@@ -16,7 +16,7 @@ struct KeyEvent {
     var kc: KeyCode
     
     // Top level key pressed when kc is from popup menu
-    var kcTop: KeyCode?
+    var kcAux: KeyCode?
 }
 
 enum KeyPressResult: Int {
@@ -99,7 +99,7 @@ extension SubPadSpec {
     
     // Disable the subpad popup if the keycode is in this set
     static var disableList: Set<KeyCode> = []
-    
+
     static func getSpec( _ kc: KeyCode ) -> SubPadSpec? {
         if SubPadSpec.disableList.contains(kc) {
             // This subpad currently disabled
@@ -125,11 +125,36 @@ extension SubPadSpec {
 }
 
 struct PadSpec {
-    var keySpec: KeySpec
-    var cols: Int
-    var keys: [Key]
+    var keySpec: KeySpec = KeySpec()
+    var cols: Int        = 1
+    var keys: [Key]      = []
     var fontSize: Double = 18.0
-    var caption: String?
+    var caption: String? = nil
+}
+
+
+extension PadSpec {
+    
+    // Dictionary of modal subpad specs associated with keycodes
+    static var modalSpecList: [KeyCode : PadSpec] = [:]
+    
+    static func defineModal( _ kc: KeyCode, _ ps: PadSpec ) {
+        // Add a modal subpad to the keycode kc
+        PadSpec.modalSpecList[kc] = ps
+    }
+    
+    static func getModalPadSpec( _ kc: KeyCode ) -> PadSpec? {
+        PadSpec.modalSpecList[kc]
+    }
+    
+    static func copySpec( from: KeyCode, list: [KeyCode]) {
+        if let spec = PadSpec.modalSpecList[from] {
+            // Copy the subpad from one key to many, used for Fn keys
+            for kc in list {
+                PadSpec.modalSpecList[kc] = spec
+            }
+        }
+    }
 }
 
 
@@ -148,9 +173,11 @@ class KeyData : ObservableObject {
     var pressedKey: Key?    = nil
     var selSubkey: Key?     = nil
     var selSubIndex: Int    = -1
+    var modalPad: PadSpec   = PadSpec()
 
     @Published var dragPt   = CGPoint.zero
     @Published var keyDown  = false
+    @Published var modalUp  = false
 }
 
 
@@ -166,7 +193,7 @@ struct ModalBlock: View {
     @EnvironmentObject var keyData: KeyData
 
     var body: some View {
-        if keyData.keyDown {
+        if keyData.keyDown || keyData.modalUp {
             // Transparent rectangle to block all key interactions below the popup - opacity 0 passes key presses through
             Rectangle()
                 .opacity(0.0001)
@@ -258,6 +285,37 @@ struct SubPopMenu: View {
                     }
                 }
                 .position(x: keyData.popFrame.minX - zOrigin.x + w/2, y: keyData.keyOrigin.y - zOrigin.y - keyData.popFrame.height/2 - keySpec.radius )
+        }
+    }
+}
+
+
+struct SubPopModal: View {
+    let keyPressHandler: KeyPressHandler
+
+    @AppStorage(.settingsSerifFontKey)
+    private var serifFont = false
+    
+    @AppStorage(.settingsKeyCaptions)
+    private var keyCaptions = true
+    
+    @EnvironmentObject var keyData: KeyData
+    
+    var body: some View {
+        if keyData.modalUp {
+            
+            VStack {
+                Text( keyData.modalPad.caption ?? "Modal Pad" )
+                    .padding( [.top] )
+                
+                KeypadView( padSpec: keyData.modalPad, keyPressHandler: keyPressHandler )
+                    .padding( [.leading, .trailing, .bottom] )
+            }
+            .background( Color("Background") )
+            .overlay(
+                RoundedRectangle( cornerRadius: 6 )
+                    .stroke( Color("Frame"), lineWidth: 4))
+            .shadow( radius: 20 )
         }
     }
 }
@@ -361,7 +419,7 @@ struct KeyView: View {
                 if let key = keyData.selSubkey
                 {
                     // Subpop menu key event
-                    _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc, kcTop: keyData.pressedKey?.kc))
+                    _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc, kcAux: keyData.pressedKey?.kc))
                 }
                 
                 keyData.dragPt = CGPoint.zero
@@ -438,7 +496,33 @@ struct KeyView: View {
                         TapGesture().onEnded {
                             // Keypress event occured, send event
                             hapticFeedback.impactOccurred()
-                            _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc))
+                            
+                            if keyData.modalUp {
+                                let modalKey = keyData.pressedKey?.kc
+                                
+                                let event = KeyEvent( kc: modalKey ?? .noop, kcAux: key.kc )
+                                
+                                // Close modal popup
+                                keyData.pressedKey = nil
+                                keyData.modalPad = PadSpec()
+                                keyData.modalUp = false
+
+                                // Generate key press event
+                                _ = keyPressHandler.keyPress( event )
+                            }
+                            else if let modalPad = PadSpec.getModalPadSpec( key.kc ) {
+                                
+                                // Pop up modal key pad
+                                keyData.pressedKey = key
+                                keyData.modalPad = modalPad
+                                keyData.modalUp = true
+                                
+                                // Do not generate a key event until a selection is made on the modal pad
+                            }
+                            else {
+                                // Generate key press event
+                                _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc))
+                            }
                         })
                     .if( text != nil && !keyPressHandler.isKeyRecording(key.kc) ) { view in
                         // Add rich text label to key
@@ -549,6 +633,9 @@ struct KeypadView: View {
 
 
 struct KeyStack<Content: View>: View {
+    
+    let keyPressHandler: KeyPressHandler
+    
     @StateObject var keyData = KeyData()
     
     @ViewBuilder let content: Content
@@ -560,6 +647,8 @@ struct KeyStack<Content: View>: View {
             ModalBlock()
             
             SubPopMenu()
+            
+            SubPopModal( keyPressHandler: keyPressHandler )
         }
         .onGeometryChange( for: CGRect.self, of: {proxy in proxy.frame(in: .global)} ) { newValue in
             keyData.zFrame = newValue

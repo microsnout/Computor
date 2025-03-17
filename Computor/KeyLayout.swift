@@ -25,6 +25,9 @@ let ksSubpad = KeySpec( width: 42, height: 30,
 let ksUnits = KeySpec( width: 60, height: 25,
                        keyColor: "KeyColor", textColor: "KeyText")
 
+let ksModalPop = KeySpec( width: 30, height: 30,
+                          keyColor: "KeyColor", textColor: "KeyText")
+
 let psUnits = PadSpec (
     keySpec: ksUnits,
     cols: 5,
@@ -251,7 +254,7 @@ func initKeyLayout() {
                        keys: [
                         Key(.mm, "mm"),
                         Key(.cm, "cm"),
-                        Key(.m,  "m"),
+                        Key(.metre,  "m"),
                         Key(.km, "km"),
                        ]
     )
@@ -373,6 +376,26 @@ func initKeyLayout() {
                         Key(.crossProduct, "X\u{0305} ƒ{1.5}\u{2a2f}ƒ{} Y\u{0305}"),
                        ]
     )
+    
+    // Modal subpad definitions
+    // Used to popup keypad for Sto, Rcl
+
+    PadSpec.defineModal( .sto,
+        PadSpec(
+            keySpec: ksModalPop,
+            cols: 6,
+            keys: [
+                Key(.a, "a"), Key(.b, "b"), Key(.c, "c"), Key(.d, "d"), Key(.e, "e"), Key(.f, "f"),
+                Key(.g, "g"), Key(.h, "h"), Key(.i, "i"), Key(.j, "j"), Key(.k, "k"), Key(.l, "l"),
+                Key(.m, "m"), Key(.n, "n"), Key(.o, "o"), Key(.p, "p"), Key(.q, "q"), Key(.r, "r"),
+                Key(.s, "s"), Key(.t, "t"), Key(.u, "u"), Key(.v, "v"), Key(.w, "w"), Key(.x, "x"),
+                Key(.y, "y"), Key(.z, "z"),
+            ],
+            caption: "Memory"
+        )
+    )
+    
+    PadSpec.copySpec( from: .sto, list: [.rcl])
 }
 
 // ******************

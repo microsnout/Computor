@@ -469,7 +469,7 @@ class TypeDef {
         UnitDef.defineUnit( .acceleration, "length/time^2" )
         UnitDef.defineUnit( .pressure, "weight/length^2" )
         
-        defineType( .length, .m,  "m",    1)
+        defineType( .length, .metre,  "m",    1)
         defineType( .length, .mm, "mm",   1000)
         defineType( .length, .cm, "cm",   100)
         defineType( .length, .km, "km",   0.001)

@@ -32,7 +32,7 @@ struct CalculatorView: View {
                         .fill(Color("Background"))
                         .edgesIgnoringSafeArea( .all )
                     
-                    KeyStack() {
+                    KeyStack( keyPressHandler: model ) {
                         NavigationStack {
                             VStack( spacing: 5 ) {
                                 VStack( spacing: 0 ) {

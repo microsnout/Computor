@@ -353,7 +353,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     func macroKeypress( _ event: KeyEvent ) {
-        if let fnKey = event.kcTop {
+        if let fnKey = event.kcAux {
             
             // fnKey is Fn macro key pressed
             // event.kc is the sub function under this key selected

@@ -21,7 +21,7 @@ enum KeyCode: Int, Codable {
     
     case log = 80, ln, log2, logY
     
-    case tenExp = 90, eExp, e, pi, quad
+    case tenExp = 90, eExp, exp, quad
     
     // Complex operations
     case zRe = 100, zIm, zArg, zConj, zNorm
@@ -46,7 +46,7 @@ enum KeyCode: Int, Codable {
     case unitStart = 200
     
     // Length
-    case km = 201, mm, cm, m, inch, ft, yd, mi
+    case km = 201, mm, cm, metre, inch, ft, yd, mi
     
     // Time
     case second = 210, min, hr, day, yr, ms, us
@@ -64,6 +64,10 @@ enum KeyCode: Int, Codable {
     case degC = 250, degF
     
     case unitEnd = 299
+    
+    case letter = 300, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
+    
+    case greek  = 350, alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu, nu, xi, omicron, pi, rho, sigma, tau, upsilon, phi, chi, psi, omega
     
     var isUnit: Bool { return self.rawValue > KeyCode.unitStart.rawValue && self.rawValue < KeyCode.unitEnd.rawValue }
     
