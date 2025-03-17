@@ -94,24 +94,29 @@ struct SubPadSpec {
 
 extension SubPadSpec {
 
+    // Dictionary of subpad specs associated with keycodes
     static var specList: [KeyCode : SubPadSpec] = [:]
     
+    // Disable the subpad popup if the keycode is in this set
     static var disableList: Set<KeyCode> = []
     
     static func getSpec( _ kc: KeyCode ) -> SubPadSpec? {
         if SubPadSpec.disableList.contains(kc) {
+            // This subpad currently disabled
             return nil
         }
         return SubPadSpec.specList[kc]
     }
     
     static func define( _ kc: KeyCode, keySpec: KeySpec, keys: [Key], caption: String? = nil ) {
+        // Add a subpad to the keycode kc
         SubPadSpec.specList[kc] =
             SubPadSpec( kc: kc, keySpec: keySpec, keys: keys, caption: caption)
     }
     
     static func copySpec( from: KeyCode, list: [KeyCode]) {
         if let spec = SubPadSpec.specList[from] {
+            // Copy the subpad from one key to many, used for Fn keys
             for kc in list {
                 SubPadSpec.specList[kc] = spec
             }
