@@ -82,7 +82,7 @@ func installMatrix( _ model: CalculatorModel ) {
             model.state.stackDrop()
             model.state.stackDrop()
             
-            model.undoStack.pause()
+            model.pauseStack()
             model.aux.pauseRecording()
             
             for r in seq {
@@ -95,13 +95,13 @@ func installMatrix( _ model: CalculatorModel ) {
                 if model.keyPress( KeyEvent( kc: .plus)) != .stateChange {
                     // Addition error
                     model.aux.resumeRecording()
-                    model.undoStack.resume()
+                    model.resumeStack()
                     return nil
                 }
                 
             }
             model.aux.resumeRecording()
-            model.undoStack.resume()
+            model.resumeStack()
             
             // Copy state, remove parameters and put result in X
             var s1 = s0
@@ -244,7 +244,7 @@ class MapFunction : ModalFunction {
         // Remove parameter value from stack
         model.state.stackDrop()
 
-        model.undoStack.pause()
+        model.pauseStack()
         model.aux.pauseRecording()
         
         for r in 1 ... seqRows {
@@ -275,13 +275,13 @@ class MapFunction : ModalFunction {
                 }
                 else {
                     model.aux.resumeRecording()
-                    model.undoStack.resume()
+                    model.resumeStack()
                     return KeyPressResult.stateError
                 }
             }
         }
         model.aux.resumeRecording()
-        model.undoStack.resume()
+        model.resumeStack()
 
 
         // Push final result list
@@ -312,7 +312,7 @@ class ReduceFunction : ModalFunction {
         // Remove value list parameter from stack, but not initial result
         model.state.stackDrop()
 
-        model.undoStack.pause()
+        model.pauseStack()
         model.aux.pauseRecording()
         
         for r in 1 ... seqRows {
@@ -323,13 +323,13 @@ class ReduceFunction : ModalFunction {
 
                 if executeFn( event, model: model) != .stateChange {
                     model.aux.resumeRecording()
-                    model.undoStack.resume()
+                    model.resumeStack()
                     return KeyPressResult.stateError
                 }
             }
         }
         model.aux.resumeRecording()
-        model.undoStack.resume()
+        model.resumeStack()
 
         // Final result is already on stack X
         return KeyPressResult.stateChange

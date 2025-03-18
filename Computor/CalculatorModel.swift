@@ -15,32 +15,17 @@ let logM = Logger(subsystem: "com.microsnout.calculator", category: "model")
 struct UndoStack {
     private let maxItems = 12
     private var storage = [CalcState]()
-    private var pauseCount: Int = 0
     
     mutating func push(_ state: CalcState ) {
-        if pauseCount == 0 {
-            storage.append(state)
-            
-            if storage.count > maxItems {
-                storage.removeFirst()
-            }
+        storage.append(state)
+        
+        if storage.count > maxItems {
+            storage.removeFirst()
         }
     }
     
     mutating func pop() -> CalcState? {
-        if pauseCount == 0 {
             return storage.popLast()
-        }
-        
-        return nil
-    }
-    
-    mutating func pause() {
-        pauseCount += 1
-    }
-
-    mutating func resume() {
-        pauseCount -= 1
     }
 }
 
@@ -149,7 +134,34 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     // *** Store End ***
 
-    var undoStack = UndoStack()
+    private var undoStack = UndoStack()
+    private var stackPauseCount: Int = 0
+
+    func pushState() {
+        if stackPauseCount == 0 {
+            undoStack.push( state )
+        }
+    }
+    
+    func popState() {
+        if stackPauseCount == 0 {
+            if let popState = undoStack.pop() {
+                state = popState
+            }
+        }
+    }
+    
+    func pauseStack() {
+        stackPauseCount += 1
+    }
+    
+    func resumeStack() {
+        stackPauseCount -= 1
+        
+        if stackPauseCount < 0 {
+            stackPauseCount = 0
+        }
+    }
     
     private var modalFunction : ModalFunction? = nil
     
@@ -258,7 +270,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     func memoryOp( key: KeyCode, index: Int ) {
-        undoStack.push(state)
+        pushState()
         acceptTextEntry()
 
         // Leading edge swipe operations
@@ -290,20 +302,20 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     func addMemoryItem() {
-        undoStack.push(state)
+        pushState()
         acceptTextEntry()
         state.memory.append( NamedValue( value: state.Xtv) )
         aux.activeView = .memoryList
     }
     
     func delMemoryItems( set: IndexSet) {
-        undoStack.push(state)
+        pushState()
         entry.clearEntry()
         state.memory.remove( atOffsets: set )
     }
     
     func renameMemoryItem( index: Int, newName: String ) {
-        undoStack.push(state)
+        pushState()
         entry.clearEntry()
         state.memory[index].name = newName
     }
@@ -455,9 +467,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     // Exited entry mode
                     // We backspace/undo out of entry mode - need to pop stack
                     // to restore state before entry mode
-                    if let lastState = undoStack.pop() {
-                        state = lastState
-                    }
+                    popState()
                     return KeyPressResult.stateUndo
                 }
                 
@@ -473,7 +483,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         if CalculatorModel.entryStartKeys.contains(keyCode) {
             
             // Start data entry with a digit or a dot
-            undoStack.push(state)
+            pushState()
             state.stackLift()
             
             if keyCode == .dot {
@@ -489,7 +499,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         if modalActive && execPauseCount > 0 {
             if keyCode == .closeBrace {
                 if resumeExecution() > 0 {
-                    if keyCode != .back && keyCode != .closeBrace {
+                    if keyCode != .back {
                         // Record all keys except back/undo and data entry keys
                         aux.recordKeyFn(keyCode)
                     }
@@ -500,7 +510,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // Drop through to close modal fn
             }
             else {
-                if keyCode != .back && keyCode != .closeBrace {
+                if keyCode != .back {
                     // Record all keys except back/undo and data entry keys
                     aux.recordKeyFn(keyCode)
                 }
@@ -527,26 +537,24 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // We have a macro function {}
                 modalFn.macroFn = aux.list
                 aux.stopRecFn(.openBrace)
-                undoStack.push(state)
+                pushState()
                 return modalFn.keyPress( KeyEvent( kc: .macro), model: self)
             }
             
             // Function assigned to a key
-            undoStack.push(state)
+            pushState()
             return modalFn.keyPress(event, model: self)
         }
         
         switch keyCode {
         case .back:
             // Undo last operation by restoring previous state
-            if let lastState = undoStack.pop() {
-                state = lastState
-                return KeyPressResult.stateUndo
-            }
+            popState()
+            return KeyPressResult.stateUndo
             
         case .enter:
             // Push stack up, x becomes entry value
-            undoStack.push(state)
+            pushState()
             state.stackLift()
             state.noLift = true
             
@@ -561,48 +569,44 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.Xfmt = fmt
             
         case .fix:
-            undoStack.push(state)
+            pushState()
             state.Xfmt.style = .decimal
             
         case .sci:
-            undoStack.push(state)
+            pushState()
             state.Xfmt.style = .scientific
             
         case .clX:
             // Clear X register
-            undoStack.push(state)
+            pushState()
             state.Xtv = untypedZero
             state.noLift = true
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
             if let macro = getMacroFunction(keyCode) {
                 // Macro playback - save inital state just in case
-                undoStack.push(state)
+                pushState()
                 
                 // Don't maintain undo stack during playback ops
-                undoStack.pause()
+                pauseStack()
                 aux.pauseRecording()
                 for op in macro.opSeq {
                     if op.execute(self) == KeyPressResult.stateError {
                         aux.resumeRecording()
-                        undoStack.resume()
-                        
-                        // Rewind state to start of macro playback
-                        if let lastState = undoStack.pop() {
-                            state = lastState
-                        }
+                        resumeStack()
+                        popState()
                         return KeyPressResult.stateError
                     }
                 }
                 aux.resumeRecording()
-                undoStack.resume()
+                resumeStack()
             }
 
         default:
             
             if let op = CalculatorModel.opTable[keyCode] {
                 // Transition to new calculator state based on operation
-                undoStack.push(state)
+                pushState()
                 
                 if let newState = op.transition( state ) {
                     // Operation has produced a new state
@@ -626,9 +630,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
                 else {
                     // Failed to produce a new state
-                    if let lastState = undoStack.pop() {
-                        state = lastState
-                    }
+                    popState()
 
                     if modalFunction != nil {
                         // Modal function started with no state change, not an error
@@ -642,7 +644,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 for pattern in patternList {
                     if state.patternMatch(pattern.regPattern) {
                         // Transition to new calculator state based on operation
-                        undoStack.push(state)
+                        pushState()
                         
                         if let newState = pattern.transition(state) {
                             state = newState
@@ -666,11 +668,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // Attempt conversion of X reg to unit type keyCode
                 if let tag = TypeDef.kcDict[keyCode]
                 {
-                    undoStack.push(state)
+                    pushState()
                     
                     for pattern in CalculatorModel.conversionTable {
                         if state.patternMatch(pattern.regPattern) {
-                            undoStack.push(state)
+                            pushState()
 
                             if let newState = pattern.convert(state, to: tag) {
                                 state = newState
@@ -691,9 +693,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     }
                     else {
                         // else no-op as there was no new state
-                        if let lastState = undoStack.pop() {
-                            state = lastState
-                        }
+                        popState()
                     }
                 }
             }
