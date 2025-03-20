@@ -68,6 +68,10 @@ class EventContext {
         }
     }
     
+    func onActivate() {
+        // Override if needed
+    }
+    
     func event( _ keyEvent: KeyEvent ) -> KeyPressResult {
         // Override to define context logic
         return KeyPressResult.null
@@ -348,7 +352,6 @@ class ModalContext : EventContext {
                 macroFn = model.aux.list
             }
             model.restoreContext()
-            model.status.statusMid = nil
             model.pushState()
             let result =  keyPress( event )
             if result == .stateError {
@@ -359,7 +362,13 @@ class ModalContext : EventContext {
     }
     
     override func onModelSet() {
+        // Display status string while in modal state
         model?.status.statusMid = statusString
+    }
+    
+    deinit {
+        // Remove status string
+        model?.status.statusMid = nil
     }
 }
 
@@ -399,7 +408,30 @@ class BlockRecord : EventContext {
             model.aux.recordKeyFn(event.kc)
             return KeyPressResult.recordOnly
             
+        case .back:
+            if model.aux.list.opSeq.isEmpty {
+                
+                // Cancel both BlockRecord context and the ModalContext that spawned it
+                model.aux.stopRecFn(.openBrace)
+                model.restoreContext()
+                model.restoreContext()
+                return KeyPressResult.stateUndo
+            }
+            else {
+                // Remove last key event from recording
+                model.aux.recordKeyFn(event.kc)
+                return KeyPressResult.recordOnly
+            }
+            
         default:
+            if CalculatorModel.entryStartKeys.contains(event.kc) {
+                
+                // Start data entry with a digit or a dot
+                model.startEntryState( event.kc )
+                model.changeContext( EntryRecordingContext() )
+                return KeyPressResult.dataEntry
+            }
+            
             // Record the key event
             model.aux.recordKeyFn(event.kc)
             return KeyPressResult.recordOnly
@@ -429,8 +461,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         ctx.model = self
         ctx.previousContext = self.eventContext
         eventContext = ctx
+        eventContext?.onActivate()
         
-        // print( "change to: " + String(  describing: ctx.self ) + "\n")
+        print( "change to: " + String(  describing: ctx.self ) + "\n")
     }
     
     func restoreContext() {
@@ -439,7 +472,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         if let oldContext = eventContext?.previousContext {
             eventContext = oldContext
             
-            // print( "restore: " + String(  describing: oldContext.self ) + "\n")
+            print( "restore: " + String(  describing: oldContext.self ) + "\n")
         }
     }
     
