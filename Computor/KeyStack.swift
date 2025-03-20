@@ -21,6 +21,7 @@ struct KeyEvent {
 
 enum KeyPressResult: Int {
     case null = 0,
+         noOp,              // No operation, no error. Ignore
          dataEntry,         // Data enty keys like digits, EE
          cancelEntry,       // An undo/back that canceled data entry
          macroOp,           // A macro control op key like rec, stop, clear
@@ -601,7 +602,7 @@ struct KeypadView: View {
     }
 
     var body: some View {
-        let _ = Self._printChanges()
+        // let _ = Self._printChanges()
         
         let keyMatrix = partitionKeylist(keys: padSpec.keys, rowMax: padSpec.cols)
         

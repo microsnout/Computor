@@ -69,7 +69,7 @@ struct DisplayView: View {
     let rowHeightTable: [TextSize : Double] = [.small : 29, .normal : 32, .large : 35]
     
     var body: some View {
-        let _ = Self._printChanges()
+        // let _ = Self._printChanges()
         
         let rowHeight = rowHeightTable[priDispTextSize] ?? 35.0
 

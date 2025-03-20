@@ -82,7 +82,7 @@ func installMatrix( _ model: CalculatorModel ) {
             model.state.stackDrop()
             model.state.stackDrop()
             
-            model.pauseStack()
+            model.pauseUndoStack()
             model.aux.pauseRecording()
             
             for r in seq {
@@ -95,13 +95,13 @@ func installMatrix( _ model: CalculatorModel ) {
                 if model.keyPress( KeyEvent( kc: .plus)) != .stateChange {
                     // Addition error
                     model.aux.resumeRecording()
-                    model.resumeStack()
+                    model.resumeUndoStack()
                     return nil
                 }
                 
             }
             model.aux.resumeRecording()
-            model.resumeStack()
+            model.resumeUndoStack()
             
             // Copy state, remove parameters and put result in X
             var s1 = s0
@@ -137,11 +137,12 @@ func installMatrix( _ model: CalculatorModel ) {
         OpPattern( [ .X(allTypes, .matrix) ], where: { s0 in s0.Xtv.cols == 1 } ) { s0 in
             
             // Create a Reduce function obj capturing the value list and mode reference
-            let mapFn = MapFunction( valueList: s0.Xtv, model: model)
-            model.setModalFunction(mapFn)
+            let mapFn = MapFunction( valueList: s0.Xtv )
             
-            // No new state
-            return nil
+            model.changeContext( mapFn )
+            
+            // No new state - but don't return nil or it will flag an error
+            return s0
         }
     ])
             
@@ -151,11 +152,12 @@ func installMatrix( _ model: CalculatorModel ) {
         OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .simple) ], where: { s0 in s0.Xtv.cols == 1 } ) { s0 in
             
             // Create a Reduce function obj capturing the value list and mode reference
-            let reduceFn = ReduceFunction( valueList: s0.Xtv, model: model)
-            model.setModalFunction(reduceFn)
+            let reduceFn = ReduceFunction( valueList: s0.Xtv )
             
-            // No new state
-            return nil
+            model.changeContext( reduceFn )
+            
+            // No new state - but don't return nil or it will flag an error
+            return s0
         }
     ])
 
@@ -223,19 +225,19 @@ func installMatrix( _ model: CalculatorModel ) {
 }
 
 
-class MapFunction : ModalFunction {
+class MapFunction : ModalContext {
     
     let valueList:  TaggedValue
-    let model:      CalculatorModel
     
-    init(valueList: TaggedValue, model: CalculatorModel) {
+    init( valueList: TaggedValue ) {
         self.valueList = valueList
-        self.model = model
     }
     
     override var statusString: String? { "ç{Units}Map ƒ()" }
     
-    override func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
+    override func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
         
         // Start with empty output list
         let seqRows    = valueList.rows
@@ -244,7 +246,7 @@ class MapFunction : ModalFunction {
         // Remove parameter value from stack
         model.state.stackDrop()
 
-        model.pauseStack()
+        model.pauseUndoStack()
         model.aux.pauseRecording()
         
         for r in 1 ... seqRows {
@@ -253,7 +255,7 @@ class MapFunction : ModalFunction {
                 
                 model.enterValue( value )
                 
-                if executeFn( event, model: model) == .stateChange {
+                if executeFn( event ) == .stateChange {
                     
                     if r == 1 {
                         // Grab the first result to define the type tag and format for result
@@ -275,13 +277,13 @@ class MapFunction : ModalFunction {
                 }
                 else {
                     model.aux.resumeRecording()
-                    model.resumeStack()
+                    model.resumeUndoStack()
                     return KeyPressResult.stateError
                 }
             }
         }
         model.aux.resumeRecording()
-        model.resumeStack()
+        model.resumeUndoStack()
 
 
         // Push final result list
@@ -291,20 +293,19 @@ class MapFunction : ModalFunction {
 }
 
 
-class ReduceFunction : ModalFunction {
+class ReduceFunction : ModalContext {
     
     let valueList:     TaggedValue
     
-    let model: CalculatorModel
-    
-    init(valueList: TaggedValue, model: CalculatorModel) {
+    init(valueList: TaggedValue ) {
         self.valueList = valueList
-        self.model = model
     }
     
     override var statusString: String? { "ƒ{0.9}ç{Units}Reduce ƒ(,)" }
     
-    override func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
+    override func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
         
         // Start with empty output list
         let seqRows    = valueList.rows
@@ -312,7 +313,7 @@ class ReduceFunction : ModalFunction {
         // Remove value list parameter from stack, but not initial result
         model.state.stackDrop()
 
-        model.pauseStack()
+        model.pauseUndoStack()
         model.aux.pauseRecording()
         
         for r in 1 ... seqRows {
@@ -321,15 +322,15 @@ class ReduceFunction : ModalFunction {
                 
                 model.enterValue( value )
 
-                if executeFn( event, model: model) != .stateChange {
+                if executeFn( event ) != .stateChange {
                     model.aux.resumeRecording()
-                    model.resumeStack()
+                    model.resumeUndoStack()
                     return KeyPressResult.stateError
                 }
             }
         }
         model.aux.resumeRecording()
-        model.resumeStack()
+        model.resumeUndoStack()
 
         // Final result is already on stack X
         return KeyPressResult.stateChange

@@ -1,10 +1,9 @@
 //
 //  CalculatorModel.swift
-//  MoneyCalc
+//  Computor
 //
-//  Created by Barry Hall on 2021-10-28.
+//  Created by Barry Hall on 2025-03-18.
 //
-
 import SwiftUI
 import Numerics
 import OSLog
@@ -25,38 +24,7 @@ struct UndoStack {
     }
     
     mutating func pop() -> CalcState? {
-            return storage.popLast()
-    }
-}
-
-
-class ModalFunction {
-    
-    // String to display while modal function is active
-    var statusString: String? { nil }
-    
-    var macroFn: MacroOpSeq = MacroOpSeq()
-
-    // Key event handler for modal function
-    func keyPress(_ event: KeyEvent, model: CalculatorModel) -> KeyPressResult {
-        KeyPressResult.null
-    }
-    
-    func runMacro( model: CalculatorModel ) -> KeyPressResult {
-        for op in macroFn.opSeq {
-            if op.execute( model ) == KeyPressResult.stateError {
-                return KeyPressResult.stateError
-            }
-        }
-        return KeyPressResult.stateChange
-    }
-    
-    func executeFn( _ event: KeyEvent, model: CalculatorModel ) -> KeyPressResult {
-        if event.kc == .macro {
-            return runMacro(model: model)
-        }
-        
-        return model.keyPress(event)
+        return storage.popLast()
     }
 }
 
@@ -79,13 +47,371 @@ struct StatusState {
     }
     
     var rightText: String { statusRight ?? "" }
-
+    
 }
 
 
 protocol StateOperator {
     func transition(_ s0: CalcState ) -> CalcState?
 }
+
+
+///
+///  Event Context
+///
+class EventContext {
+    var previousContext: EventContext? = nil
+    
+    weak var model: CalculatorModel? = nil {
+        didSet {
+            onModelSet()
+        }
+    }
+    
+    func event( _ keyEvent: KeyEvent ) -> KeyPressResult {
+        // Override to define context logic
+        return KeyPressResult.null
+    }
+    
+    func onModelSet() {
+        // Override if needed
+    }
+}
+
+
+///
+/// Normal event context
+///     Not recording, Not playing back macros, Not in data entry mode
+///
+class NormalContext : EventContext {
+    
+    override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        switch event.kc {
+            
+        case .clrFn:
+            if let kcFn = event.kcAux {
+                model.clearMacroFunction(kcFn)
+                model.aux.stopRecFn(kcFn)
+            }
+            return KeyPressResult.macroOp
+            
+        case .showFn:
+            if let kcFn = event.kcAux {
+                if let fn = model.state.fnList[kcFn] {
+                    model.aux.list = fn.macro
+                    model.aux.macroKey = fn.fnKey
+                    model.aux.activeView = .macroList
+                }
+            }
+            return KeyPressResult.macroOp
+            
+        case .stopFn, .openBrace, .closeBrace:
+            return KeyPressResult.noOp
+            
+        case .recFn:
+            if let kcFn = event.kcAux {
+                model.acceptTextEntry()
+                model.aux.startRecFn(kcFn)
+            }
+            model.changeContext( RecordingContext() )
+            return KeyPressResult.macroOp
+            
+        default:
+            
+            if CalculatorModel.entryStartKeys.contains(event.kc) {
+                
+                // Start data entry mode
+                model.startEntryState( event.kc )
+                model.changeContext( EntryContext() )
+                return KeyPressResult.dataEntry
+            }
+            
+            return model.execute( event )
+        }
+    }
+}
+
+
+///
+/// Entry event context
+///
+class EntryContext : EventContext {
+    
+    override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        if !CalculatorModel.entryKeys.contains(event.kc) {
+            // Any key other than valid Entry mode keys cause en exit from the mode
+            // with acceptance of the entered value,
+            model.acceptTextEntry()
+            
+            // followed by regular processing of key
+            model.restoreContext()
+            return model.execute( event )
+        }
+        
+        // Process data entry key event
+        let keyRes = model.entry.entryModeKeypress(event.kc)
+        
+        if keyRes == .cancelEntry {
+            // Exited entry mode
+            // We backspace/undo out of entry mode - need to pop stack
+            // to restore state before entry mode
+            model.popState()
+            model.restoreContext()
+            return KeyPressResult.stateUndo
+        }
+        
+        // Stay in entry mode
+        return KeyPressResult.dataEntry
+    }
+}
+
+
+///
+/// Recording data entry context
+///
+class EntryRecordingContext : EventContext {
+    
+    override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        if !CalculatorModel.entryKeys.contains(event.kc) {
+            
+            // Any key other than valid Entry mode keys cause en exit from the mode
+            // with acceptance of the entered value,
+            model.acceptTextEntry()
+            model.aux.recordValueFn( model.state.Xtv )
+            model.aux.recordKeyFn( event.kc )
+            
+            // followed by regular processing of key
+            model.restoreContext()
+            return model.execute( event )
+        }
+        
+        // Process data entry key event
+        let keyRes = model.entry.entryModeKeypress(event.kc)
+        
+        if keyRes == .cancelEntry {
+            // Exited entry mode
+            // We backspace/undo out of entry mode - need to pop stack
+            // to restore state before entry mode
+            model.popState()
+            model.restoreContext()
+            return KeyPressResult.stateUndo
+        }
+        
+        // Stay in entry mode
+        return KeyPressResult.dataEntry
+    }
+}
+
+
+///
+/// Recording Context
+///
+class RecordingContext : EventContext {
+    
+    override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        switch event.kc {
+            
+        case .clrFn:
+            if let kcFn = event.kcAux {
+                model.clearMacroFunction(kcFn)
+                model.aux.stopRecFn(kcFn)
+            }
+            model.restoreContext()
+            return KeyPressResult.cancelEntry
+            
+        case .showFn, .recFn:
+            return KeyPressResult.noOp
+            
+        case .stopFn:
+            if let kcFn = event.kcAux {
+                if !model.aux.list.opSeq.isEmpty {
+                    model.saveMacroFunction(kcFn, model.aux.list)
+                }
+                model.aux.stopRecFn(kcFn)
+            }
+            model.restoreContext()
+            return KeyPressResult.macroOp
+            
+        case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
+            if model.state.fnList[event.kc] == nil {
+                // No op any undefined keys
+                return KeyPressResult.noOp
+            }
+            model.aux.recordKeyFn( event.kc )
+            return model.execute( event )
+            
+        default:
+            
+            if CalculatorModel.entryStartKeys.contains(event.kc) {
+                
+                // Start data entry with a digit or a dot
+                model.startEntryState( event.kc )
+                model.changeContext( EntryRecordingContext() )
+                return KeyPressResult.dataEntry
+            }
+            
+            // Record key and exexute it
+            model.aux.recordKeyFn( event.kc )
+            return model.execute( event )
+        }
+    }
+}
+
+
+///
+/// Playback Context
+///
+class PlaybackContext : EventContext {
+    
+    override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        switch event.kc {
+            
+        case .clrFn, .stopFn, .recFn, .showFn:
+            return KeyPressResult.noOp
+            
+        default:
+            return model.execute( event )
+        }
+    }
+}
+
+
+///
+/// Modal Context
+///     For modal functions like map and reduce, to wait for a function parameter, either single key or { }
+///
+class ModalContext : EventContext {
+    
+    // String to display while modal function is active
+    var statusString: String? { nil }
+    
+    var macroFn: MacroOpSeq = MacroOpSeq()
+    
+    // Key event handler for modal function
+    func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+        return KeyPressResult.null
+    }
+    
+    func runMacro( model: CalculatorModel ) -> KeyPressResult {
+        for op in macroFn.opSeq {
+            if op.execute( model ) == KeyPressResult.stateError {
+                return KeyPressResult.stateError
+            }
+        }
+        return KeyPressResult.stateChange
+    }
+    
+    func executeFn( _ event: KeyEvent ) -> KeyPressResult {
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        switch event.kc {
+            
+        case .macro:
+            return runMacro(model: model)
+            
+        default:
+            return model.keyPress(event)
+        }
+    }
+    
+    override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        switch event.kc {
+            
+        case .openBrace:
+            // Start recording, don't record the open brace at top level
+            model.aux.startRecFn(event.kc)
+            model.changeContext( BlockRecord() )
+            return KeyPressResult.recordOnly
+            
+        default:
+            // Modal terminates, restore previous context, clear status display
+            if event.kc == .macro {
+                // Copy macro from aux
+                macroFn = model.aux.list
+            }
+            model.restoreContext()
+            model.status.statusMid = nil
+            model.pushState()
+            let result =  keyPress( event )
+            if result == .stateError {
+                model.popState()
+            }
+            return result
+        }
+    }
+    
+    override func onModelSet() {
+        model?.status.statusMid = statusString
+    }
+}
+
+
+///
+/// Block Recording context
+///     For recording without execution of { block }
+///
+class BlockRecord : EventContext {
+    
+    var openCount = 1
+    
+    override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        switch event.kc {
+            
+        case .clrFn, .stopFn, .recFn, .showFn:
+            return KeyPressResult.noOp
+            
+        case .openBrace:
+            openCount += 1
+            
+            model.aux.recordKeyFn(event.kc)
+            return KeyPressResult.recordOnly
+
+        case .closeBrace:
+            openCount -= 1
+            
+            if openCount == 0 {
+                // Stop recording, restore the modal context and pass the .macro event
+                model.aux.stopRecFn(.openBrace)
+                model.restoreContext()
+                return model.keyPress( KeyEvent( kc: .macro ))
+            }
+            model.aux.recordKeyFn(event.kc)
+            return KeyPressResult.recordOnly
+            
+        default:
+            // Record the key event
+            model.aux.recordKeyFn(event.kc)
+            return KeyPressResult.recordOnly
+        }
+    }
+}
+
+
+
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
 
 class CalculatorModel: ObservableObject, KeyPressHandler {
     
@@ -94,6 +420,35 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var entry  = EntryState()
     @Published var aux    = AuxState()
     @Published var status = StatusState()
+    
+    var eventContext: EventContext?
+    
+    func changeContext( _ ctx: EventContext ) {
+        
+        // Make this context active, linking to previous ones
+        ctx.model = self
+        ctx.previousContext = self.eventContext
+        eventContext = ctx
+        
+        // print( "change to: " + String(  describing: ctx.self ) + "\n")
+    }
+    
+    func restoreContext() {
+        
+        // Restore previous context
+        if let oldContext = eventContext?.previousContext {
+            eventContext = oldContext
+            
+            // print( "restore: " + String(  describing: oldContext.self ) + "\n")
+        }
+    }
+    
+    func startEntryState( _ kc: KeyCode ) {
+        // Start data entry with a digit or a dot
+        pushState()
+        state.stackLift()
+        entry.startTextEntry( kc )
+    }
     
     // *** Store ***
     private static func fileURL() throws -> URL {
@@ -121,7 +476,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             // Update the @Published property here
             self.state = state
         }
-
+        
     }
     
     func saveState() async throws {
@@ -133,10 +488,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         _ = try await task.value
     }
     // *** Store End ***
-
+    
     private var undoStack = UndoStack()
     private var stackPauseCount: Int = 0
-
+    
     func pushState() {
         if stackPauseCount == 0 {
             undoStack.push( state )
@@ -151,31 +506,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
     }
     
-    func pauseStack() {
+    func pauseUndoStack() {
         stackPauseCount += 1
     }
     
-    func resumeStack() {
+    func resumeUndoStack() {
         stackPauseCount -= 1
         
         if stackPauseCount < 0 {
             stackPauseCount = 0
         }
-    }
-    
-    private var modalFunction : ModalFunction? = nil
-    
-    var modalActive: Bool { modalFunction != nil }
-    
-    func setModalFunction( _ fn: ModalFunction ) {
-        // Set fn as handler to receive next event, display status indicator
-        modalFunction = fn
-        status.statusMid = fn.statusString
-    }
-    
-    func clearModalFunction() {
-        modalFunction = nil
-        status.statusMid = nil
     }
     
     private var execPauseCount: Int = 0
@@ -196,7 +536,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         return execPauseCount
     }
-
+    
     // Display window into register stack
     @AppStorage(.settingsDisplayRows)
     private var displayRows = 3
@@ -208,11 +548,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         self.entry  = EntryState()
         self.aux    = AuxState()
         self.status = StatusState()
-        
         self.undoStack   = UndoStack()
-        self.modalFunction = nil
         self.displayRows = 3
         
+        changeContext( NormalContext() )
+
         installMatrix(self)
         installComplex(self)
         installVector(self)
@@ -234,7 +574,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     // *******
-
+    
     private func bufferIndex(_ stackIndex: Int ) -> Int {
         // Convert a bottom up index into the stack array to a top down index into the displayed registers
         return displayRows - stackIndex - 1
@@ -242,7 +582,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func renderRow( index: Int ) -> String {
         let stkIndex = bufferIndex(index)
-
+        
         // Are we are in data entry mode and looking for the X reg
         if entry.entryMode && stkIndex == regX {
             let nv = state.stack[stkIndex]
@@ -272,7 +612,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     func memoryOp( key: KeyCode, index: Int ) {
         pushState()
         acceptTextEntry()
-
+        
         // Leading edge swipe operations
         switch key {
         case .rcl:
@@ -289,13 +629,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 state.memory[index].value.reg += state.X
             }
             break
-
+            
         case .mMinus:
             if state.Xt == state.memory[index].value.tag {
                 state.memory[index].value.reg -= state.X
             }
             break
-
+            
         default:
             break
         }
@@ -321,7 +661,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     static var patternTable: [KeyCode : [OpPattern]] = [:]
-
+    
     static func defineOpPatterns( _ kc: KeyCode, _ patterns: [OpPattern]) {
         if var pList = CalculatorModel.patternTable[kc] {
             pList.append( contentsOf: patterns )
@@ -331,9 +671,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             CalculatorModel.patternTable[kc] = patterns
         }
     }
-
+    
     static var conversionTable: [ConversionPattern] = []
-
+    
     static func defineUnitConversions( _ patterns: [ConversionPattern]) {
         CalculatorModel.conversionTable.append( contentsOf: patterns )
     }
@@ -349,7 +689,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             // Store tagged value in X reg
             // Record data entry if recording
             // and clear data entry state
-            aux.recordValueFn(tv)
             entry.clearEntry()
             
             if execPauseCount > 0 {
@@ -364,187 +703,20 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
-    func macroKeypress( _ event: KeyEvent ) {
-        if let fnKey = event.kcAux {
-            
-            // fnKey is Fn macro key pressed
-            // event.kc is the sub function under this key selected
-            
-            switch event.kc {
-                
-            case .clrFn:
-                // Clear Function Key
-                clearMacroFunction(fnKey)
-                aux.stopRecFn(fnKey)
-                
-            case .recFn:
-                // Start Recording Function Key
-                // Accept data entry before starting recording to avoid recording the entry
-                acceptTextEntry()
-                aux.startRecFn(fnKey)
-                
-            case .stopFn:
-                // Stop Function Key recording
-                if aux.isRecording && !aux.list.opSeq.isEmpty {
-                    saveMacroFunction(fnKey, aux.list)
-                }
-                aux.stopRecFn(fnKey)
-                
-            case .showFn:
-                // Display Function Key steps in Aux view
-                if let fn = state.fnList[fnKey] {
-                    aux.list = fn.macro
-                    aux.macroKey = fn.fnKey
-                    aux.activeView = .macroList
-                }
-
-            default:
-                break
-            }
-        }
-        else {
-            // Fn key was pressed, not a submenu key
-            
-            switch event.kc {
-                
-            case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
-                if aux.isRecording && !aux.list.opSeq.isEmpty {
-                    // Stop recording pressed key
-                    saveMacroFunction( event.kc, aux.list )
-                }
-                aux.stopRecFn(event.kc)
-                
-            case .openBrace:
-                acceptTextEntry()
-                if modalActive {
-                    if aux.isRecording {
-                        // If we are already recording, this is a nested {fn} so
-                        // we record the open { for future playback
-                        aux.recordKeyFn(.openBrace)
-                    }
-                    else {
-                        // Start recording but don't record the open brace
-                        aux.startRecFn(event.kc)
-                    }
-                    // Increment the pause count so we resume at final }
-                    pauseExecution()
-                }
-
-            default:
-                break
-            }
-        }
-    }
-    
-    
     // Set of keys that cause data entry mode to begin, digits and dot
-    private static let entryStartKeys = KeyCode.digitSet.union( Set<KeyCode>([.dot]) )
-
-    // Set of keys valid in data entry mode, all of above plus sign, back and enter exp
-    private static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.sign, .back, .eex]) )
-
+    static let entryStartKeys = KeyCode.digitSet.union( Set<KeyCode>([.dot]) )
     
-    func keyPress(_ event: KeyEvent) -> KeyPressResult {
+    // Set of keys valid in data entry mode, all of above plus sign, back and enter exp
+    static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.sign, .back, .eex]) )
+    
+    // **********************************************************************
+    // **********************************************************************
+    // **********************************************************************
+    
+    
+    func execute( _ event: KeyEvent ) -> KeyPressResult {
+        
         let keyCode = event.kc
-        
-        if KeyCode.macroOpSet.contains(keyCode) || isKeyRecording(event.kc) {
-            // Macro recording control key or the Fn key currently recording
-            macroKeypress(event)
-            return KeyPressResult.macroOp
-        }
-        
-        if KeyCode.fnSet.contains(keyCode) && getMacroFunction(keyCode) == nil {
-            // Undefined Fn keys are no op but must be caught here to avoid recording them
-            return KeyPressResult.null
-        }
-        
-        if entry.entryMode {
-            if CalculatorModel.entryKeys.contains(keyCode) {
-                // Process data entry key event
-                let keyRes = entry.entryModeKeypress(keyCode)
-                
-                if keyRes == .cancelEntry {
-                    // Exited entry mode
-                    // We backspace/undo out of entry mode - need to pop stack
-                    // to restore state before entry mode
-                    popState()
-                    return KeyPressResult.stateUndo
-                }
-                
-                // Stay in entry mode
-                return KeyPressResult.dataEntry
-            }
-            
-            // Any key other than valid Entry mode keys cause en exit from the mode
-            // with acceptance of the entered value, followed by regular processing of key
-            acceptTextEntry()
-        }
-        
-        if CalculatorModel.entryStartKeys.contains(keyCode) {
-            
-            // Start data entry with a digit or a dot
-            pushState()
-            state.stackLift()
-            
-            if keyCode == .dot {
-                entry.startTextEntry( "0." )
-            }
-            else {
-                // Start with single digit
-                entry.startTextEntry( String(keyCode.rawValue) )
-            }
-            return KeyPressResult.dataEntry
-        }
-        
-        if modalActive && execPauseCount > 0 {
-            if keyCode == .closeBrace {
-                if resumeExecution() > 0 {
-                    if keyCode != .back {
-                        // Record all keys except back/undo and data entry keys
-                        aux.recordKeyFn(keyCode)
-                    }
-                    return KeyPressResult.recordOnly
-                }
-                
-                // Top level } seen
-                // Drop through to close modal fn
-            }
-            else {
-                if keyCode != .back {
-                    // Record all keys except back/undo and data entry keys
-                    aux.recordKeyFn(keyCode)
-                }
-                // Do not continue to execute keypress
-                return KeyPressResult.recordOnly
-            }
-        }
-
-        if keyCode != .back && keyCode != .closeBrace {
-            // Record all keys except back/undo and data entry keys
-            aux.recordKeyFn(keyCode)
-        }
-
-        if let modalFn = self.modalFunction {
-            // Pass key event to sub function processor like reduce matrix
-            clearModalFunction()
-            
-            if keyCode == .back {
-                // Cancel modal function execution
-                return KeyPressResult.stateUndo
-            }
-            
-            if keyCode == .closeBrace {
-                // We have a macro function {}
-                modalFn.macroFn = aux.list
-                aux.stopRecFn(.openBrace)
-                pushState()
-                return modalFn.keyPress( KeyEvent( kc: .macro), model: self)
-            }
-            
-            // Function assigned to a key
-            pushState()
-            return modalFn.keyPress(event, model: self)
-        }
         
         switch keyCode {
         case .back:
@@ -587,21 +759,22 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // Macro playback - save inital state just in case
                 pushState()
                 
+                changeContext( PlaybackContext() )
+                
                 // Don't maintain undo stack during playback ops
-                pauseStack()
-                aux.pauseRecording()
+                pauseUndoStack()
                 for op in macro.opSeq {
                     if op.execute(self) == KeyPressResult.stateError {
-                        aux.resumeRecording()
-                        resumeStack()
+                        resumeUndoStack()
+                        restoreContext()
                         popState()
                         return KeyPressResult.stateError
                     }
                 }
-                aux.resumeRecording()
-                resumeStack()
+                resumeUndoStack()
+                restoreContext()
             }
-
+            
         default:
             
             if let op = CalculatorModel.opTable[keyCode] {
@@ -631,12 +804,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 else {
                     // Failed to produce a new state
                     popState()
-
-                    if modalFunction != nil {
-                        // Modal function started with no state change, not an error
-                        return KeyPressResult.modalFunction
-                    }
-
                 }
             }
             
@@ -654,16 +821,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                             return KeyPressResult.stateChange
                         }
                         
-                        if modalFunction != nil {
-                            // Modal function started with no state change, not an error
-                            return KeyPressResult.modalFunction
-                        }
-                        
                         // Fall through to error indication
                     }
                 }
             }
-
+            
             if keyCode.isUnit {
                 // Attempt conversion of X reg to unit type keyCode
                 if let tag = TypeDef.kcDict[keyCode]
@@ -673,7 +835,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     for pattern in CalculatorModel.conversionTable {
                         if state.patternMatch(pattern.regPattern) {
                             pushState()
-
+                            
                             if let newState = pattern.convert(state, to: tag) {
                                 state = newState
                                 state.noLift = false
@@ -714,6 +876,15 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
+    func keyPress(_ keyEvent: KeyEvent) -> KeyPressResult {
+        
+        return eventContext?.event( keyEvent ) ?? KeyPressResult.null
+    }
+    
+    // **********************************************************************
+    // **********************************************************************
+    // **********************************************************************
+    
     func getKeyText( _ kc: KeyCode ) -> String? {
         
         if KeyCode.fnSet.contains(kc) {
@@ -728,13 +899,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // Fn key has no caption text - make caption from key code
                 return "Fn\(kc.rawValue % 10)"
             }
-
+            
         }
         
         // Not a Fn key
         return nil
     }
-
+    
     
     func isKeyRecording( _ kc: KeyCode = .null ) -> Bool {
         if kc == .null {
@@ -743,9 +914,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return aux.kcRecording == kc
     }
     
+    
     func enterValue(_ tv: TaggedValue) {
+        // For macros, bypass data entry mode and enter a value directly
         state.stackLift()
         state.Xtv = tv
         state.noLift = false
     }
 }
+

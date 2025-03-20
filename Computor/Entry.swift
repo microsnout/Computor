@@ -83,18 +83,14 @@ struct EntryState {
         digitCount = 0
         entryText.removeAll(keepingCapacity: true)
         exponentText.removeAll(keepingCapacity: true)
-        
-        logE.debug( "ClearEntry" )
     }
 
-    mutating func startTextEntry(_ str: String ) {
+    mutating func startTextEntry( _ kc: KeyCode ) {
         clearEntry()
         entryMode = true
-        entryText = str
+        entryText = (kc == .dot) ? "0." : String( kc.rawValue )
         digitCount = 1
         decimalSeen = entryText.contains(".")
-        
-        logE.debug("StartTextEntry: \(str)")
     }
     
     mutating func startExpEntry() {

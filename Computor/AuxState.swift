@@ -69,13 +69,59 @@ extension AuxState {
         
         if isRecording
         {
-            // Fold unit keys into value on stack if possible
+            if kc == .enter {
+                if let last = list.opSeq.last,
+                   let value = last as? MacroValue
+                {
+                    if value.tv.tag == tagUntyped {
+                        
+                        // An enter is not needed in recording if preceeded by an untyped value
+                        return
+                    }
+                }
+            }
+            
+            if kc == .back {
+                
+                // Backspace, need to remove last op or possibly undo a unit tag
+                if let last = list.opSeq.last {
+                    
+                    if let value = last as? MacroValue
+                    {
+                        // Last op is a value op
+                        if value.tv.tag == tagUntyped {
+                            
+                            // No unit tag, just remove the value
+                            list.opSeq.removeLast()
+                        }
+                        else {
+                            // A tagged value, remove the tag
+                            list.opSeq.removeLast()
+                            var tv = value.tv
+                            tv.tag = tagUntyped
+                            list.opSeq.append( MacroValue( tv: tv))
+                        }
+                    }
+                    else {
+                        // Last op id just a key op
+                        list.opSeq.removeLast()
+                    }
+                }
+                
+                // Return here to never record a backspace op
+                return
+            }
+            
+            // Fold unit keys into last value recorded if possible
             if kc.isUnit {
                 if let last = list.opSeq.last,
                    let value = last as? MacroValue
                 {
                     if value.tv.tag == tagUntyped {
+                        
+                        // Last macro op is an untyped value
                         if let tag = TypeDef.kcDict[kc] {
+                            
                             var tv = value.tv
                             list.opSeq.removeLast()
                             tv.tag = tag
@@ -83,13 +129,16 @@ extension AuxState {
                             return
                         }
                     }
+                    
+                    // Fall through to record conversion of last value
                 }
+                
+                // Fall through to record a unit conversion of whatever is on stack
             }
             
+            // Just record the key
             list.opSeq.append( MacroKey( kc: kc) )
-            
             let ix = list.opSeq.indices
-            
             logM.debug("recordKey: \(ix)")
         }
     }
