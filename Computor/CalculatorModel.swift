@@ -122,19 +122,7 @@ class NormalContext : EventContext {
             return KeyPressResult.noOp
             
         case .recFn:
-            if let kcFn = event.kcAux {
-                model.aux.startRecFn(kcFn)
-                
-                model.pushContext( RecordingContext(), lastEvent: event ) { event in
-                    
-                    if let kcFn = event.kcAux {
-                        if !model.aux.list.opSeq.isEmpty {
-                            model.saveMacroFunction(kcFn, model.aux.list)
-                        }
-                        model.aux.stopRecFn(kcFn)
-                    }
-                }
-            }
+            model.pushContext( RecordingContext(), lastEvent: event )
             return KeyPressResult.macroOp
             
         default:
@@ -204,6 +192,21 @@ class EntryContext : EventContext {
 ///
 class RecordingContext : EventContext {
     
+    var kcFn = KeyCode.null
+    
+    override func onActivate(lastEvent: KeyEvent) {
+        
+        guard let model = self.model else { return }
+        
+        if let kcFn = lastEvent.kcAux {
+            
+            // Start recording the indicated Fn key
+            self.kcFn = kcFn
+            model.aux.startRecFn(kcFn)
+        }
+    }
+    
+    
     override func event( _ event: KeyEvent ) -> KeyPressResult {
         
         guard let model = self.model else { return KeyPressResult.null }
@@ -213,10 +216,8 @@ class RecordingContext : EventContext {
         switch event.kc {
             
         case .clrFn:
-            if let kcFn = event.kcAux {
-                model.clearMacroFunction(kcFn)
-                model.aux.stopRecFn(kcFn)
-            }
+            model.clearMacroFunction(kcFn)
+            model.aux.stopRecFn(kcFn)
             model.popContext( event )
             return KeyPressResult.cancelEntry
             
@@ -224,6 +225,10 @@ class RecordingContext : EventContext {
             return KeyPressResult.noOp
             
         case .stopFn:
+            if !model.aux.list.opSeq.isEmpty {
+                model.saveMacroFunction(kcFn, model.aux.list)
+            }
+            model.aux.stopRecFn(kcFn)
             model.popContext( event )
             return KeyPressResult.macroOp
             
@@ -234,6 +239,20 @@ class RecordingContext : EventContext {
             }
             model.aux.recordKeyFn( event.kc )
             return model.execute( event )
+            
+        case .back:
+            if model.aux.list.opSeq.isEmpty {
+                
+                // Cancel the recording
+                model.aux.stopRecFn(kcFn)
+                model.popContext( event )
+                return KeyPressResult.cancelEntry
+            }
+            else {
+                // Record key and execute it
+                model.aux.recordKeyFn( event.kc )
+                return model.execute( event )
+            }
             
         default:
             
