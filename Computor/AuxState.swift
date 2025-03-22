@@ -139,7 +139,8 @@ extension AuxState {
             // Just record the key
             list.opSeq.append( MacroKey( kc: kc) )
             let ix = list.opSeq.indices
-            logM.debug("recordKey: \(ix)")
+            
+            // logM.debug("recordKey: \(ix)")
         }
     }
     
@@ -153,7 +154,7 @@ extension AuxState {
     mutating func stopRecFn( _ kc: KeyCode ) {
         if let kcRec = kcRecording {
             
-            assert( kc == kcRec )
+//            assert( kc == kcRec )
             
             // Stop recording and Change macro display to display the new macro
             kcRecording = nil

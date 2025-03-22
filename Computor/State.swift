@@ -261,7 +261,8 @@ extension CalcState {
             return
         }
         
-        logM.debug("stackLift: LIFT")
+        // logM.debug("stackLift: LIFT")
+        
         for rx in stride( from: stackSize-1, to: regX, by: -1 ) {
             self.stack[rx].value = self.stack[rx-1].value
         }

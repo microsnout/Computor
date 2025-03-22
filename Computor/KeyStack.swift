@@ -30,7 +30,8 @@ enum KeyPressResult: Int {
          stateError,        // An error display Error status
          modalFunction,     // Start modal function, no new state yet
          modalFnNewState,    // Start modal function with new state
-         recordOnly
+         recordOnly,
+         resendEvent        // Re-dispacth this event because the eventContext has changed
 }
 
 protocol KeyPressHandler {

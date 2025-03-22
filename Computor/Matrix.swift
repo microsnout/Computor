@@ -139,7 +139,7 @@ func installMatrix( _ model: CalculatorModel ) {
             // Create a Reduce function obj capturing the value list and mode reference
             let mapFn = MapFunction( valueList: s0.Xtv )
             
-            model.changeContext( mapFn )
+            model.pushContext( mapFn, lastEvent: KeyEvent( kc: .map) )
             
             // No new state - but don't return nil or it will flag an error
             return s0
@@ -154,7 +154,7 @@ func installMatrix( _ model: CalculatorModel ) {
             // Create a Reduce function obj capturing the value list and mode reference
             let reduceFn = ReduceFunction( valueList: s0.Xtv )
             
-            model.changeContext( reduceFn )
+            model.pushContext( reduceFn, lastEvent: KeyEvent( kc: .reduce) )
             
             // No new state - but don't return nil or it will flag an error
             return s0
@@ -235,9 +235,11 @@ class MapFunction : ModalContext {
     
     override var statusString: String? { "ç{Units}Map ƒ()" }
     
-    override func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+    override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
         
         guard let model = self.model else { return KeyPressResult.null }
+        
+        print( "MapFunction keypress: \(event.kc)")
         
         // Start with empty output list
         let seqRows    = valueList.rows
@@ -303,7 +305,7 @@ class ReduceFunction : ModalContext {
     
     override var statusString: String? { "ƒ{0.9}ç{Units}Reduce ƒ(,)" }
     
-    override func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+    override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
         
         guard let model = self.model else { return KeyPressResult.null }
         
