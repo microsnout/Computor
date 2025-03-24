@@ -270,10 +270,11 @@ class RecordingContext : EventContext {
                 model.aux.recordKeyFn( event.kc )
                 
                 if let ctx = model.getRollback(to: model.aux.list.opSeq.count) {
+                    // Rollback, put modal function context and block record back
                     model.rollback(ctx)
                 }
                 
-                // Record key and execute it
+                // Execute the .back command to undo the state
                 return model.execute( event )
             }
             
@@ -403,14 +404,20 @@ class ModalContext : EventContext {
 
                 model.pushContext( BlockRecord(), lastEvent: event ) { endEvent in
                     
-                    // Before recording closing brace, extract the macro
-                    self.macroFn = MacroOpSeq( [any MacroOp](model.aux.list.opSeq[from...]) )
-                    
-                    // Now record the closing brace of the block
-                    model.aux.recordKeyFn( endEvent.kc )
-                    
-                    // Queue a .macro event to execute it
-                    model.queueEvent( KeyEvent( kc: .macro ) )
+                    if endEvent.kc == .back {
+                        // We have backspaced the open brace, cancelling the block
+                        // Stay in this context and wait for another function
+                    }
+                    else {
+                        // Before recording closing brace, extract the macro
+                        self.macroFn = MacroOpSeq( [any MacroOp](model.aux.list.opSeq[from...]) )
+                        
+                        // Now record the closing brace of the block
+                        model.aux.recordKeyFn( endEvent.kc )
+                        
+                        // Queue a .macro event to execute it
+                        model.queueEvent( KeyEvent( kc: .macro ) )
+                    }
                 }
                 return KeyPressResult.recordOnly
             } else {
@@ -485,6 +492,7 @@ class BlockRecord : EventContext {
     
     var openCount   = 0
     var fnRecording = false
+    var macroIndex  = 0
     
     override func onActivate(lastEvent: KeyEvent) {
         guard let model = self.model else {
@@ -502,6 +510,9 @@ class BlockRecord : EventContext {
             fnRecording = false
             model.aux.startRecFn( lastEvent.kc )
         }
+        
+        // Save the starting macro index
+        macroIndex = model.aux.markMacroIndex()
     }
     
     override func event( _ event: KeyEvent ) -> KeyPressResult {
@@ -526,6 +537,7 @@ class BlockRecord : EventContext {
                 // Restore the modal context and pass the .macro event
                 model.saveRollback( to: model.aux.list.opSeq.count )
                 
+                // Pop back to the modal function state
                 model.popContext( event )
                 return KeyPressResult.recordOnly
                 
@@ -560,7 +572,14 @@ class BlockRecord : EventContext {
             }
             else {
                 // Remove last key event from recording
-                model.aux.recordKeyFn(event.kc)
+                model.aux.recordKeyFn( .back )
+                
+                if macroIndex == model.aux.markMacroIndex() {
+                    
+                    // We have deleted the opening brace, return to modal function context
+                    model.popContext( event )
+                }
+                
                 return KeyPressResult.recordOnly
             }
             
@@ -648,7 +667,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         eventContext = ctx
         eventContext?.onActivate( lastEvent: lastEvent )
         
-        print( "change to: " + String(  describing: ctx.self ) + "\n")
+        logM.debug( "Push context: \(String( describing: ctx.self ))")
     }
     
     func popContext( _ event: KeyEvent = KeyEvent( kc: .null ), runCCC: Bool = true ) {
@@ -664,12 +683,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 eventContext?.ccc?( event )
             }
             
-            print( "restore: " + String(  describing: oldContext.self ) + "\n")
+            logM.debug( "Restore context: \(String( describing: oldContext.self ))")
         }
     }
     
     func saveRollback( to macroIndex: Int ) {
         EventContext.rollbackPoints[macroIndex] = eventContext
+        
+        logM.debug( "Save rollback to index: \(macroIndex)")
     }
     
     func clearRollbacks() {
@@ -678,6 +699,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func rollback( _ ctx: EventContext ) {
         eventContext = ctx
+        
+        logM.debug( "Rollback context to: \(String( describing: ctx.self ))")
     }
     
     func getRollback( to macroIndex: Int ) -> EventContext? {

@@ -5,6 +5,10 @@
 //  Created by Barry Hall on 2025-01-07.
 //
 import SwiftUI
+import OSLog
+
+let logAux = Logger(subsystem: "com.microsnout.calculator", category: "aux")
+
 
 /// State variables associated with the auxiliary display
 
@@ -16,7 +20,7 @@ struct AuxState {
     var detailItemIndex: Int = 0
     
     // MacroListView state
-    var macroKey: KeyCode = .noop
+    var macroKey: KeyCode = .null
     var list = MacroOpSeq()
     
     // Fn key currrently recording
@@ -24,13 +28,23 @@ struct AuxState {
     
     // Pause recording when value greater than 0
     var pauseCount: Int = 0
-    
 }
 
 
 extension AuxState {
     
     var isRecording: Bool { kcRecording != nil }
+    
+    func getDebugText() -> String {
+        var txt = "AuxState("
+        txt += String( describing: activeView )
+        txt += ") Detail:\(detailItemIndex) MacroKey:"
+        txt += String( describing: macroKey )
+        txt += " OpSeq:\(list.getDebugText()) Rec:"
+        txt += String( describing: kcRecording ?? KeyCode.null )
+        txt += " Pause:\(pauseCount)"
+        return txt
+    }
     
     mutating func pauseRecording() {
         pauseCount += 1
@@ -53,7 +67,7 @@ extension AuxState {
             // Auxiliary display mode to macro list
             
             // Clear display of existing macro if any
-            macroKey = .noop
+            macroKey = .null
             list.clear()
             
             kcRecording = kc
@@ -65,97 +79,111 @@ extension AuxState {
                     SubPadSpec.disableList.insert(key)
                 }
             }
+            
+            // Log debug output
+            let auxTxt = getDebugText()
+            logAux.debug( "startRecFn: \(auxTxt)" )
+        }
+        else {
+            // Trying to start recording for an invalid key or we are already recording
+            assert(false)
         }
     }
     
     mutating func recordKeyFn( _ kc: KeyCode ) {
         if pauseCount > 0 {
+            logAux.debug( "recordKeyFn: Paused" )
             return
         }
         
-        if isRecording
+        if !isRecording
         {
-            if kc == .enter {
-                if let last = list.opSeq.last,
-                   let value = last as? MacroValue
-                {
-                    if value.tv.tag == tagUntyped {
-                        
-                        // An enter is not needed in recording if preceeded by an untyped value
-                        return
-                    }
+            logAux.debug( "recordKeyFn: Not Recording" )
+            return
+        }
+        
+        switch kc {
+            
+        case .enter:
+            if let last = list.opSeq.last,
+               let value = last as? MacroValue
+            {
+                if value.tv.tag == tagUntyped {
+                    
+                    // An enter is not needed in recording if preceeded by an untyped value
+                    break
                 }
             }
-            
-            if kc == .back {
+            // Otherwise record the key
+            list.opSeq.append( MacroKey( kc: kc) )
+
+        case .back:
+            // Backspace, need to remove last op or possibly undo a unit tag
+            if let last = list.opSeq.last {
                 
-                // Backspace, need to remove last op or possibly undo a unit tag
-                if let last = list.opSeq.last {
-                    
-                    if let value = last as? MacroValue
-                    {
-                        // Last op is a value op
-                        if value.tv.tag == tagUntyped {
-                            
-                            // No unit tag, just remove the value
-                            list.opSeq.removeLast()
-                        }
-                        else {
-                            // A tagged value, remove the tag
-                            list.opSeq.removeLast()
-                            var tv = value.tv
-                            tv.tag = tagUntyped
-                            list.opSeq.append( MacroValue( tv: tv))
-                        }
-                    }
-                    else {
-                        // Last op id just a key op
+                if let value = last as? MacroValue
+                {
+                    // Last op is a value op
+                    if value.tv.tag == tagUntyped {
+                        
+                        // No unit tag, just remove the value
                         list.opSeq.removeLast()
                     }
-                }
-                
-                // Return here to never record a backspace op
-                return
-            }
-            
-            // Fold unit keys into last value recorded if possible
-            if kc.isUnit {
-                if let last = list.opSeq.last,
-                   let value = last as? MacroValue
-                {
-                    if value.tv.tag == tagUntyped {
-                        
-                        // Last macro op is an untyped value
-                        if let tag = TypeDef.kcDict[kc] {
-                            
-                            var tv = value.tv
-                            list.opSeq.removeLast()
-                            tv.tag = tag
-                            list.opSeq.append( MacroValue( tv: tv))
-                            return
-                        }
+                    else {
+                        // A tagged value, remove the tag
+                        list.opSeq.removeLast()
+                        var tv = value.tv
+                        tv.tag = tagUntyped
+                        list.opSeq.append( MacroValue( tv: tv))
                     }
-                    
-                    // Fall through to record conversion of last value
                 }
-                
-                // Fall through to record a unit conversion of whatever is on stack
+                else {
+                    // Last op id just a key op
+                    list.opSeq.removeLast()
+                }
             }
             
+        case let kc where kc.isUnit:
+            if let last = list.opSeq.last,
+               let value = last as? MacroValue
+            {
+                if value.tv.tag == tagUntyped {
+                    
+                    // Last macro op is an untyped value
+                    if let tag = TypeDef.kcDict[kc] {
+                        
+                        var tv = value.tv
+                        list.opSeq.removeLast()
+                        tv.tag = tag
+                        list.opSeq.append( MacroValue( tv: tv))
+                        break
+                    }
+                }
+            }
+            fallthrough
+            
+        default:
             // Just record the key
             list.opSeq.append( MacroKey( kc: kc) )
-            let ix = list.opSeq.indices
-            
-            // logM.debug("recordKey: \(ix)")
         }
+        
+        // Log debug output
+        let auxTxt = getDebugText()
+        logAux.debug( "recordKeyFn: \(auxTxt)" )
     }
+    
     
     mutating func recordValueFn( _ tv: TaggedValue ) {
         if isRecording
         {
             list.opSeq.append( MacroValue( tv: tv) )
+            
+            // Log debug output
+            let auxTxt = getDebugText()
+            logAux.debug( "recordValueFn: \(auxTxt)" )
         }
     }
+    
     
     mutating func stopRecFn( _ kc: KeyCode ) {
         if let kcRec = kcRecording {
@@ -168,6 +196,10 @@ extension AuxState {
             
             // Re-enable all recording keys
             SubPadSpec.disableList.removeAll()
+            
+            // Log debug output
+            let auxTxt = getDebugText()
+            logAux.debug( "stopRecFn: \(auxTxt)" )
         }
     }
 }

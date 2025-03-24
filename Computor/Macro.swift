@@ -15,6 +15,8 @@ protocol MacroOp {
     func execute( _ model: CalculatorModel ) -> KeyPressResult
 
     func getRichText( _ model: CalculatorModel ) -> String
+    
+    func getPlainText() -> String
 }
 
 
@@ -34,6 +36,10 @@ struct MacroKey: CodableMacroOp {
         }
         return "??"
     }
+    
+    func getPlainText() -> String {
+        return String( describing: kc )
+    }
 }
 
 struct MacroValue: CodableMacroOp {
@@ -47,6 +53,10 @@ struct MacroValue: CodableMacroOp {
     func getRichText( _ model: CalculatorModel ) -> String {
         let (str, _) = tv.renderRichText()
         return str
+    }
+    
+    func getPlainText() -> String {
+        return String( tv.reg )
     }
 }
 
@@ -79,6 +89,24 @@ struct MacroOpSeq: Codable {
         }
     }
     
+    func getDebugText() -> String {
+        if opSeq.isEmpty {
+            return "[]"
+        }
+        
+        var str = "["
+        let end = opSeq.last
+        
+        for s in opSeq.dropLast() {
+            str += s.getPlainText()
+            str += ", "
+        }
+        
+        str += end?.getPlainText() ?? ""
+        str += "]"
+        return str
+    }
+
     init( from decoder: Decoder) throws {
         
         let c = try decoder.container( keyedBy: CodingKeys.self)
