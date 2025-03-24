@@ -24,6 +24,7 @@ enum KeyPressResult: Int {
          noOp,              // No operation, no error. Ignore
          dataEntry,         // Data enty keys like digits, EE
          cancelEntry,       // An undo/back that canceled data entry
+         cancelRecording,   // Cancel a Fn key recording
          macroOp,           // A macro control op key like rec, stop, clear
          stateChange,       // The key has produced a successful state change
          stateUndo,         // An undo op, return to previous state

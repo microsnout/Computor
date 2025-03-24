@@ -78,6 +78,10 @@ class EventContext {
         // Override if needed
     }
     
+    func onDeactivate( lastEvent: KeyEvent ) {
+        // Override if needed
+    }
+    
     func event( _ keyEvent: KeyEvent ) -> KeyPressResult {
         // Override to define context logic
         return KeyPressResult.null
@@ -86,6 +90,10 @@ class EventContext {
     func onModelSet() {
         // Override if needed
     }
+    
+    
+    static var rollbackPoints: [Int : EventContext] = [:]
+    
 }
 
 
@@ -129,11 +137,22 @@ class NormalContext : EventContext {
             
             if CalculatorModel.entryStartKeys.contains(event.kc) {
                 
-                // Start data entry mode
-                model.pushContext( EntryContext(), lastEvent: event ) { _ in
+                // Start data entry mode, save current state and lift stack to make room for new data
+                model.pushState()
+                model.state.stackLift()
+                
+                model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
                     
-                    // On restore, lift stack and copy entered data to X reg
-                    model.acceptTextEntry()
+                    if exitEvent.kc ==  .back {
+                        
+                        // Data entry was cancelled by back/undo key
+                        model.popState()
+                    }
+                    else {
+                        
+                        // Successful data entry, copy to X reg
+                        model.acceptTextEntry()
+                    }
                 }
                 
                 return KeyPressResult.dataEntry
@@ -153,7 +172,7 @@ class EntryContext : EventContext {
     
     override func onActivate( lastEvent: KeyEvent ) {
         // Start data entry with a digit or a dot determined by the key that got us here
-        model?.startEntryState( lastEvent.kc )
+        model?.entry.startTextEntry( lastEvent.kc )
     }
     
     override func event( _ event: KeyEvent ) -> KeyPressResult {
@@ -162,7 +181,7 @@ class EntryContext : EventContext {
         
         if !CalculatorModel.entryKeys.contains(event.kc) {
             
-            // followed by regular processing of key
+            // Return to invoking context, either Normal or Recording
             model.popContext( event )
             
             // Let the newly restored context handle this event
@@ -174,9 +193,7 @@ class EntryContext : EventContext {
         
         if keyRes == .cancelEntry {
             // Exited entry mode
-            // We backspace/undo out of entry mode - need to pop stack
-            // to restore state before entry mode
-            model.popState()
+            // We backspace/undo out of entry mode
             model.popContext( event )
             return KeyPressResult.stateUndo
         }
@@ -219,9 +236,9 @@ class RecordingContext : EventContext {
             model.clearMacroFunction(kcFn)
             model.aux.stopRecFn(kcFn)
             model.popContext( event )
-            return KeyPressResult.cancelEntry
+            return KeyPressResult.cancelRecording
             
-        case .showFn, .recFn:
+        case .showFn, .recFn, .openBrace, .closeBrace:
             return KeyPressResult.noOp
             
         case .stopFn:
@@ -246,11 +263,17 @@ class RecordingContext : EventContext {
                 // Cancel the recording
                 model.aux.stopRecFn(kcFn)
                 model.popContext( event )
-                return KeyPressResult.cancelEntry
+                return KeyPressResult.cancelRecording
             }
             else {
-                // Record key and execute it
+                // First remove last key
                 model.aux.recordKeyFn( event.kc )
+                
+                if let ctx = model.getRollback(to: model.aux.list.opSeq.count) {
+                    model.rollback(ctx)
+                }
+                
+                // Record key and execute it
                 return model.execute( event )
             }
             
@@ -258,18 +281,34 @@ class RecordingContext : EventContext {
             
             if CalculatorModel.entryStartKeys.contains(event.kc) {
                 
-                model.pushContext( EntryContext(), lastEvent: event ) { _ in
-                    // On restore context
-                    // Record the value and key when returning to a recording context
-                    model.acceptTextEntry()
-                    model.aux.recordValueFn( model.state.Xtv )
+                // Start data entry mode, save current state and lift stack to make room for new data
+                model.pushState()
+                model.state.stackLift()
+                
+                model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
+                    
+                    if exitEvent.kc ==  .back {
+                        
+                        // Data entry was cancelled by back/undo key
+                        model.popState()
+                    }
+                    else {
+                        // Successful data entry, copy to X reg
+                        model.acceptTextEntry()
+                        
+                        // Record the value and key when returning to a recording context
+                        model.aux.recordValueFn( model.state.Xtv )
+                    }
                 }
                 return KeyPressResult.dataEntry
             }
             
             // Record key and execute it
-            model.aux.recordKeyFn( event.kc )
-            return model.execute( event )
+            let result = model.execute( event )
+            if result != .stateError {
+                model.aux.recordKeyFn( event.kc )
+            }
+            return result
         }
     }
 }
@@ -360,10 +399,18 @@ class ModalContext : EventContext {
                 // Record the open brace of the block
                 model.aux.recordKeyFn(event.kc)
                 
-                model.pushContext( BlockRecord(), lastEvent: event ) { _ in
+                let from = model.aux.markMacroIndex()
+
+                model.pushContext( BlockRecord(), lastEvent: event ) { endEvent in
+                    
+                    // Before recording closing brace, extract the macro
+                    self.macroFn = MacroOpSeq( [any MacroOp](model.aux.list.opSeq[from...]) )
                     
                     // Now record the closing brace of the block
-                    model.aux.recordKeyFn(event.kc)
+                    model.aux.recordKeyFn( endEvent.kc )
+                    
+                    // Queue a .macro event to execute it
+                    model.queueEvent( KeyEvent( kc: .macro ) )
                 }
                 return KeyPressResult.recordOnly
             } else {
@@ -383,25 +430,34 @@ class ModalContext : EventContext {
             }
             
         case .macro:
+            // Restore either the Normal or Recording context before executing the function
             model.popContext( event )
             
+            // Save the calc state in case modalExecute returns error
             model.pushState()
             
+            // ModalExecute runs with Undo stack paused
             let result =  modalExecute( event )
+            
             if result == .stateError {
                 model.popState()
             }
             return result
 
         default:
+            // Restore either the Normal or Recording context before executing the function
             model.popContext( event )
             
             if model.eventContext is RecordingContext {
                 model.aux.recordKeyFn( event.kc )
             }
             
+            // Save the calc state in case modalExecute returns error
             model.pushState()
+            
+            // ModalExecute runs with Undo stack paused
             let result =  modalExecute( event )
+            
             if result == .stateError {
                 model.popState()
             }
@@ -414,7 +470,7 @@ class ModalContext : EventContext {
         model?.status.statusMid = statusString
     }
     
-    deinit {
+    override func onDeactivate( lastEvent: KeyEvent ) {
         // Remove status string
         model?.status.statusMid = nil
     }
@@ -427,7 +483,7 @@ class ModalContext : EventContext {
 ///
 class BlockRecord : EventContext {
     
-    var openCount = 1
+    var openCount   = 0
     var fnRecording = false
     
     override func onActivate(lastEvent: KeyEvent) {
@@ -465,11 +521,11 @@ class BlockRecord : EventContext {
             return KeyPressResult.recordOnly
 
         case .closeBrace:
-            openCount -= 1
             
             if openCount == 0 {
-                // Stop recording, restore the modal context and pass the .macro event
-                // Don't stop recording if we were recording on entry
+                // Restore the modal context and pass the .macro event
+                model.saveRollback( to: model.aux.list.opSeq.count )
+                
                 model.popContext( event )
                 return KeyPressResult.recordOnly
                 
@@ -487,6 +543,8 @@ class BlockRecord : EventContext {
 //                }
             }
             
+            openCount -= 1
+
             // Record the close brace and continue
             model.aux.recordKeyFn(event.kc)
             return KeyPressResult.recordOnly
@@ -496,8 +554,8 @@ class BlockRecord : EventContext {
                 
                 // Cancel both BlockRecord context and the ModalContext that spawned it
                 model.aux.stopRecFn(.openBrace)
-                model.popContext( event )
-                model.popContext( event )
+                model.popContext( event, runCCC: false )
+                model.popContext( event, runCCC: false )
                 return KeyPressResult.stateUndo
             }
             else {
@@ -509,11 +567,14 @@ class BlockRecord : EventContext {
         default:
             if CalculatorModel.entryStartKeys.contains(event.kc) {
                 
-                model.pushContext( EntryContext(), lastEvent: event ) { _ in
+                model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
                     
-                    // Grab the entered data value and record it
-                    let tv = model.grabTextEntry()
-                    model.aux.recordValueFn( tv )
+                    if exitEvent.kc != .back {
+                        
+                        // Grab the entered data value and record it
+                        let tv = model.grabTextEntry()
+                        model.aux.recordValueFn( tv )
+                    }
                 }
                 return KeyPressResult.dataEntry
             }
@@ -590,70 +651,72 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         print( "change to: " + String(  describing: ctx.self ) + "\n")
     }
     
-    func popContext( _ event: KeyEvent = KeyEvent( kc: .null ) ) {
+    func popContext( _ event: KeyEvent = KeyEvent( kc: .null ), runCCC: Bool = true ) {
         
         // Restore previous context
         if let oldContext = eventContext?.previousContext {
+            
+            eventContext?.onDeactivate( lastEvent: event )
             eventContext = oldContext
             
             // Run the continuation closure if there is one
-            eventContext?.ccc?( event )
+            if runCCC {
+                eventContext?.ccc?( event )
+            }
             
             print( "restore: " + String(  describing: oldContext.self ) + "\n")
         }
     }
     
+    func saveRollback( to macroIndex: Int ) {
+        EventContext.rollbackPoints[macroIndex] = eventContext
+    }
+    
+    func clearRollbacks() {
+        EventContext.rollbackPoints = [:]
+    }
+    
+    func rollback( _ ctx: EventContext ) {
+        eventContext = ctx
+    }
+    
+    func getRollback( to macroIndex: Int ) -> EventContext? {
+        if let ctx = EventContext.rollbackPoints[macroIndex] {
+            EventContext.rollbackPoints[macroIndex] = nil
+            return ctx
+        }
+        return nil
+    }
+    
 
     // *** Entry State control ***
     
-    func startEntryState( _ kc: KeyCode ) {
-        // Start data entry with a digit or a dot
-        
-        if let prevCtx = eventContext?.previousContext {
-            if prevCtx is BlockRecord {
-                // Just start text entry, leave the stack alone
-                entry.startTextEntry( kc )
-                return
-            }
-        }
-        
-        // Normal entry, we prepare the stack for the new data
-        pushState()
-        state.stackLift()
-        entry.startTextEntry( kc )
-    }
-    
-    
     func acceptTextEntry() {
-        if let tv = entry.makeTaggedValue() {
-            // Store tagged value in X reg
-            // Record data entry if recording
-            // and clear data entry state
+        guard let tv = entry.makeTaggedValue() else  {
+            assert(false)
             entry.clearEntry()
-            
-            if let prevCtx = eventContext?.previousContext {
-                if prevCtx is BlockRecord {
-                    // Don't enter value to X
-                    return
-                }
-            }
-            
-            // Keep new entered X value
-            state.stack[regX].value = tv
+            return
         }
+        
+        // Store tagged value in X reg, Record data entry if recording and clear data entry state
+        entry.clearEntry()
+        
+        // Keep new entered X value
+        state.stack[regX].value = tv
     }
 
     
     func grabTextEntry() -> TaggedValue {
         
-        if let tv = entry.makeTaggedValue() {
-            // Return the value
+        guard let tv = entry.makeTaggedValue() else  {
+            assert(false)
             entry.clearEntry()
-            return tv
+            return untypedZero
         }
         
-        assert(false)
-        return untypedZero
+        // Return the value
+        entry.clearEntry()
+        return tv
     }
 
     
@@ -965,7 +1028,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                             // Successful state change
                             return KeyPressResult.stateChange
                         }
-                        
+                        else {
+                            // Failed to produce a new state
+                            popState()
+                        }
+
                         // Fall through to error indication
                     }
                 }

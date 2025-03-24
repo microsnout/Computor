@@ -40,6 +40,12 @@ extension AuxState {
         pauseCount -= 1
     }
     
+    
+    func markMacroIndex() -> Int {
+        // The index of the next element to be added will be...
+        return list.opSeq.count
+    }
+    
     mutating func startRecFn( _ kc: KeyCode ) {
         if KeyCode.fnSet.contains(kc) && kcRecording == nil {
             // We can start recording key kc
