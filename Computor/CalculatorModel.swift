@@ -400,6 +400,7 @@ class ModalContext : EventContext {
                 // Record the open brace of the block
                 model.aux.recordKeyFn(event.kc)
                 
+                // Save start index to recording for extracting block {..}
                 let from = model.aux.markMacroIndex()
 
                 model.pushContext( BlockRecord(), lastEvent: event ) { endEvent in
@@ -452,11 +453,20 @@ class ModalContext : EventContext {
             return result
 
         default:
-            // Restore either the Normal or Recording context before executing the function
-            model.popContext( event )
-            
-            if model.eventContext is RecordingContext {
+            if model.eventContext?.previousContext is RecordingContext {
+                
+                // Save rollback point in case the single key func is backspaced
+                model.saveRollback( to: model.aux.list.opSeq.count )
+                
+                // Restore the Recording context before executing the function
+                model.popContext( event )
+                
+                // Record the key
                 model.aux.recordKeyFn( event.kc )
+            }
+            else {
+                // Restore either the Normal context before executing the function
+                model.popContext( event )
             }
             
             // Save the calc state in case modalExecute returns error
@@ -491,8 +501,8 @@ class ModalContext : EventContext {
 class BlockRecord : EventContext {
     
     var openCount   = 0
-    var fnRecording = false
     var macroIndex  = 0
+    var fnRecording = false
     
     override func onActivate(lastEvent: KeyEvent) {
         guard let model = self.model else {
@@ -540,19 +550,6 @@ class BlockRecord : EventContext {
                 // Pop back to the modal function state
                 model.popContext( event )
                 return KeyPressResult.recordOnly
-                
-//                if fnRecording {
-//                    // Record the close brace and continue
-//                    model.aux.recordKeyFn(event.kc)
-//                    model.popContext( event )
-//                    return model.keyPress( event )
-//                }
-//                else {
-//                    // We were not recording on entry - stop recording now, restore ctx to modal fn and pass .macro
-//                    model.aux.stopRecFn(.openBrace)
-//                    model.popContext( event )
-//                    return model.keyPress( KeyEvent( kc: .macro ))
-//                }
             }
             
             openCount -= 1
@@ -571,16 +568,22 @@ class BlockRecord : EventContext {
                 return KeyPressResult.stateUndo
             }
             else {
-                // Remove last key event from recording
-                model.aux.recordKeyFn( .back )
-                
                 if macroIndex == model.aux.markMacroIndex() {
+                    
+                    // Remove last key event from recording
+                    model.aux.recordKeyFn( .back )
                     
                     // We have deleted the opening brace, return to modal function context
                     model.popContext( event )
+                    
+                    return KeyPressResult.stateUndo
                 }
-                
-                return KeyPressResult.recordOnly
+                else {
+                    // Remove last key event from recording
+                    model.aux.recordKeyFn( .back )
+                    
+                    return KeyPressResult.stateUndo
+                }
             }
             
         default:
