@@ -362,8 +362,13 @@ class ModalContext : EventContext {
     }
     
     func runMacro( model: CalculatorModel ) -> KeyPressResult {
+        
+        logM.debug( "Run Macro: \(String( describing: self.macroFn.getDebugText() ))")
+
         for op in macroFn.opSeq {
             if op.execute( model ) == KeyPressResult.stateError {
+                
+                logM.debug( "Run Macro: ERROR")
                 return KeyPressResult.stateError
             }
         }
@@ -946,10 +951,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // Set of keys valid in data entry mode, all of above plus sign, back and enter exp
     static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.sign, .back, .eex]) )
     
-    // **********************************************************************
-    // **********************************************************************
-    // **********************************************************************
     
+    // **********************************************************************
+    // **********************************************************************
+    // **********************************************************************
     
     func execute( _ event: KeyEvent ) -> KeyPressResult {
         
@@ -990,6 +995,21 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             pushState()
             state.Xtv = untypedZero
             state.noLift = true
+            
+            
+            // TODO: Adding .sto and .rcl here
+            
+        case .sto:
+            if let kcMem = event.kcAux {
+                
+                // state.memory[index].value = state.Xtv
+            }
+            
+        case .rcl:
+            if let kcMem = event.kcAux {
+                
+                // state.memory[index].value = state.Xtv
+            }
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
             if let macro = getMacroFunction(keyCode) {

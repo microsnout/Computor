@@ -272,10 +272,10 @@ func initKeyLayout() {
     SubPadSpec.define( .clX,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.clX,  "X",   caption: "Clear X"),
-                        Key(.clY,  "Y",   caption: "Clear Y"),
-                        Key(.clZ,  "Z",   caption: "Clear Z"),
-                        Key(.clReg,"Reg", caption: "Clear Registers"),
+                        Key(.clX,  "CLx",   caption: "Clear X"),
+                        Key(.clY,  "CLy",   caption: "Clear Y"),
+                        Key(.clZ,  "CLz",   caption: "Clear Z"),
+                        Key(.clReg,"ƒ{0.8}CL Reg", caption: "Clear Registers"),
                        ],
                        caption: "Clear"
     )
