@@ -679,11 +679,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         if let oldContext = eventContext?.previousContext {
             
             eventContext?.onDeactivate( lastEvent: event )
-            eventContext = oldContext
+            self.eventContext = oldContext
             
             // Run the continuation closure if there is one
             if runCCC {
+                // Run the Context Continuation Closure, Be sure to nil it or it will be run again when
+                // you least expect it
                 eventContext?.ccc?( event )
+                eventContext?.ccc = nil
             }
             
             logM.debug( "Restore context: \(String( describing: oldContext.self ))")
