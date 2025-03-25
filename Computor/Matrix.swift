@@ -248,9 +248,6 @@ class MapFunction : ModalContext {
         // Remove parameter value from stack
         model.state.stackDrop()
 
-        model.pauseUndoStack()
-        model.aux.pauseRecording()
-        
         for r in 1 ... seqRows {
             
             if let value = valueList.getValue( row: r) {
@@ -278,15 +275,10 @@ class MapFunction : ModalContext {
                     model.state.stackDrop()
                 }
                 else {
-                    model.aux.resumeRecording()
-                    model.resumeUndoStack()
                     return KeyPressResult.stateError
                 }
             }
         }
-        model.aux.resumeRecording()
-        model.resumeUndoStack()
-
 
         // Push final result list
         model.enterValue(resultList)
@@ -315,9 +307,6 @@ class ReduceFunction : ModalContext {
         // Remove value list parameter from stack, but not initial result
         model.state.stackDrop()
 
-        model.pauseUndoStack()
-        model.aux.pauseRecording()
-        
         for r in 1 ... seqRows {
             
             if let value = valueList.getValue( row: r) {
@@ -325,14 +314,10 @@ class ReduceFunction : ModalContext {
                 model.enterValue( value )
 
                 if executeFn( event ) != .stateChange {
-                    model.aux.resumeRecording()
-                    model.resumeUndoStack()
                     return KeyPressResult.stateError
                 }
             }
         }
-        model.aux.resumeRecording()
-        model.resumeUndoStack()
 
         // Final result is already on stack X
         return KeyPressResult.stateChange

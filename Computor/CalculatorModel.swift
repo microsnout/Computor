@@ -442,40 +442,30 @@ class ModalContext : EventContext {
                 return KeyPressResult.stateChange
             }
             
-        case .macro:
-            // Restore either the Normal or Recording context before executing the function
-            model.popContext( event )
-            
-            // Save the calc state in case modalExecute returns error
-            model.pushState()
-            
-            // ModalExecute runs with Undo stack paused
-            let result =  modalExecute( event )
-            
-            if result == .stateError {
-                model.popState()
-            }
-            return result
-
         default:
-            if model.eventContext?.previousContext is RecordingContext {
+            if event.kc != .macro && model.eventContext?.previousContext is RecordingContext {
                 
                 // Save rollback point in case the single key func is backspaced
                 model.saveRollback( to: model.aux.list.opSeq.count )
                 
-                // Restore the Recording context before executing the function
-                model.popContext( event )
-                
                 // Record the key
                 model.aux.recordKeyFn( event.kc )
-            }
-            else {
-                // Restore either the Normal context before executing the function
+                
+                // Restore the Recording context before executing the function
                 model.popContext( event )
             }
             
+            // Restore either the Normal context before executing the function
+            model.popContext( event )
+
             // Save the calc state in case modalExecute returns error
             model.pushState()
+            
+            model.pauseUndoStack()
+            model.aux.pauseRecording()
+            
+            // Push a new local variable store
+            model.currentLVF = LocalVariableFrame( model.currentLVF )
             
             // ModalExecute runs with Undo stack paused
             let result =  modalExecute( event )
@@ -483,6 +473,12 @@ class ModalContext : EventContext {
             if result == .stateError {
                 model.popState()
             }
+            
+            // Pop the local variable storage, restoring prev
+            model.currentLVF = model.currentLVF?.prevLVF
+            
+            model.aux.resumeRecording()
+            model.resumeUndoStack()
             return result
         }
     }
@@ -614,6 +610,17 @@ class BlockRecord : EventContext {
 }
 
 
+class LocalVariableFrame {
+    let prevLVF: LocalVariableFrame?
+    
+    var local: [KeyCode : TaggedValue] = [:]
+    
+    init( _ prev: LocalVariableFrame? = nil ) {
+        self.prevLVF = prev
+    }
+}
+
+
 
 // ***********************************************************
 // ***********************************************************
@@ -634,6 +641,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     var rowCount: Int { return displayRows}
 
     var eventContext: EventContext?  = nil
+    
+    var currentLVF: LocalVariableFrame? = nil
     
     private var undoStack = UndoStack()
     private var stackPauseCount: Int = 0
@@ -1002,13 +1011,18 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .sto:
             if let kcMem = event.kcAux {
                 
-                // state.memory[index].value = state.Xtv
+                pushState()
+                currentLVF?.local[kcMem] = state.Xtv
             }
             
         case .rcl:
             if let kcMem = event.kcAux {
                 
-                // state.memory[index].value = state.Xtv
+                if let tv = currentLVF?.local[kcMem] {
+                    pushState()
+                    state.stackLift()
+                    state.Xtv = tv
+                }
             }
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
