@@ -254,7 +254,7 @@ class RecordingContext : EventContext {
                 // No op any undefined keys
                 return KeyPressResult.noOp
             }
-            model.aux.recordKeyFn( event.kc )
+            model.aux.recordKeyFn( event )
             return model.execute( event )
             
         case .back:
@@ -267,7 +267,7 @@ class RecordingContext : EventContext {
             }
             else {
                 // First remove last key
-                model.aux.recordKeyFn( event.kc )
+                model.aux.recordKeyFn( event )
                 
                 if let ctx = model.getRollback(to: model.aux.list.opSeq.count) {
                     // Rollback, put modal function context and block record back
@@ -307,7 +307,7 @@ class RecordingContext : EventContext {
             // Record key and execute it
             let result = model.execute( event )
             if result != .stateError {
-                model.aux.recordKeyFn( event.kc )
+                model.aux.recordKeyFn( event )
             }
             return result
         }
@@ -403,7 +403,7 @@ class ModalContext : EventContext {
             if withinRecContext {
                 
                 // Record the open brace of the block
-                model.aux.recordKeyFn(event.kc)
+                model.aux.recordKeyFn(event)
                 
                 // Save start index to recording for extracting block {..}
                 let from = model.aux.markMacroIndex()
@@ -419,7 +419,7 @@ class ModalContext : EventContext {
                         self.macroFn = MacroOpSeq( [any MacroOp](model.aux.list.opSeq[from...]) )
                         
                         // Now record the closing brace of the block
-                        model.aux.recordKeyFn( endEvent.kc )
+                        model.aux.recordKeyFn( endEvent )
                         
                         // Queue a .macro event to execute it
                         model.queueEvent( KeyEvent( kc: .macro ) )
@@ -449,7 +449,7 @@ class ModalContext : EventContext {
                 model.saveRollback( to: model.aux.list.opSeq.count )
                 
                 // Record the key
-                model.aux.recordKeyFn( event.kc )
+                model.aux.recordKeyFn( event )
                 
                 // Restore the Recording context before executing the function
                 model.popContext( event )
@@ -539,7 +539,7 @@ class BlockRecord : EventContext {
             
         case .openBrace:
             openCount += 1
-            model.aux.recordKeyFn(event.kc)
+            model.aux.recordKeyFn(event)
             return KeyPressResult.recordOnly
 
         case .closeBrace:
@@ -556,7 +556,7 @@ class BlockRecord : EventContext {
             openCount -= 1
 
             // Record the close brace and continue
-            model.aux.recordKeyFn(event.kc)
+            model.aux.recordKeyFn(event)
             return KeyPressResult.recordOnly
             
         case .back:
@@ -572,7 +572,7 @@ class BlockRecord : EventContext {
                 if macroIndex == model.aux.markMacroIndex() {
                     
                     // Remove last key event from recording
-                    model.aux.recordKeyFn( .back )
+                    model.aux.recordKeyFn( event )
                     
                     // We have deleted the opening brace, return to modal function context
                     model.popContext( event )
@@ -581,7 +581,7 @@ class BlockRecord : EventContext {
                 }
                 else {
                     // Remove last key event from recording
-                    model.aux.recordKeyFn( .back )
+                    model.aux.recordKeyFn( event )
                     
                     return KeyPressResult.stateUndo
                 }
@@ -603,7 +603,7 @@ class BlockRecord : EventContext {
             }
             
             // Record the key event
-            model.aux.recordKeyFn(event.kc)
+            model.aux.recordKeyFn(event)
             return KeyPressResult.recordOnly
         }
     }

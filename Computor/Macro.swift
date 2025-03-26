@@ -24,22 +24,35 @@ typealias CodableMacroOp = MacroOp & Codable
 
 
 struct MacroKey: CodableMacroOp {
-    var kc: KeyCode
+    var event: KeyEvent
     
     func execute( _ model: CalculatorModel ) -> KeyPressResult {
-        return model.keyPress( KeyEvent( kc: kc) )
+        return model.keyPress( event )
     }
     
     func getRichText( _ model: CalculatorModel ) -> String {
-        if let key = Key.keyList[kc] {
+        if let key = Key.keyList[event.kc] {
+            
             // TODO: Need to combine aux with kc to produce .Sto A
-            return key.text ?? model.getKeyText(kc) ?? "??"
+            if var keyText = key.text {
+                if let kcAux = event.kcAux {
+                    keyText += " "
+                    keyText += String( describing: kcAux )
+                }
+                return keyText
+            }
+            
+            return model.getKeyText(event.kc) ?? "??"
         }
         return "??"
     }
     
     func getPlainText() -> String {
-        return String( describing: kc )
+        return String( describing: event.kc )
+    }
+    
+    init( _ event: KeyEvent ) {
+        self.event = event
     }
 }
 

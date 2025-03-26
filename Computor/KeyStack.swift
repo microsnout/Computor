@@ -12,7 +12,7 @@ typealias KeyID = Int
 
 typealias  KeyEvent0 = KeyCode
 
-struct KeyEvent {
+struct KeyEvent : Codable {
     var kc: KeyCode
     
     // Top level key pressed when kc is from popup menu

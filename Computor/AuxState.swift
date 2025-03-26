@@ -90,7 +90,7 @@ extension AuxState {
         }
     }
     
-    mutating func recordKeyFn( _ kc: KeyCode ) {
+    mutating func recordKeyFn( _ event: KeyEvent ) {
         if pauseCount > 0 {
             logAux.debug( "recordKeyFn: Paused" )
             return
@@ -102,7 +102,7 @@ extension AuxState {
             return
         }
         
-        switch kc {
+        switch event.kc {
             
         case .enter:
             if let last = list.opSeq.last,
@@ -115,7 +115,7 @@ extension AuxState {
                 }
             }
             // Otherwise record the key
-            list.opSeq.append( MacroKey( kc: kc) )
+            list.opSeq.append( MacroKey( event ) )
 
         case .back:
             // Backspace, need to remove last op or possibly undo a unit tag
@@ -164,7 +164,7 @@ extension AuxState {
             
         default:
             // Just record the key
-            list.opSeq.append( MacroKey( kc: kc) )
+            list.opSeq.append( MacroKey( event ) )
         }
         
         // Log debug output
