@@ -44,7 +44,6 @@ struct CalcState: Codable {
     var lastX: TaggedValue = untypedZero
     var noLift: Bool = false
     var memory = [NamedValue]()
-    var fnList: [KeyCode : FnRec] = [:]
 }
 
 

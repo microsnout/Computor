@@ -118,7 +118,7 @@ class NormalContext : EventContext {
             
         case .showFn:
             if let kcFn = event.kcAux {
-                if let fn = model.state.fnList[kcFn] {
+                if let fn = model.appState.fnList[kcFn] {
                     model.aux.list = fn.macro
                     model.aux.macroKey = fn.fnKey
                     model.aux.activeView = .macroList
@@ -250,7 +250,7 @@ class RecordingContext : EventContext {
             return KeyPressResult.macroOp
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
-            if model.state.fnList[event.kc] == nil {
+            if model.appState.fnList[event.kc] == nil {
                 // No op any undefined keys
                 return KeyPressResult.noOp
             }
@@ -621,6 +621,13 @@ class LocalVariableFrame {
 }
 
 
+struct ApplicationState : Codable {
+    // Persistant state of all calculator customization for specific applications
+
+    // Definitions of Fn programmable keys
+    var fnList: [KeyCode : FnRec] = [:]
+}
+
 
 // ***********************************************************
 // ***********************************************************
@@ -633,18 +640,24 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var entry  = EntryState()
     @Published var aux    = AuxState()
     @Published var status = StatusState()
+    
+    // Persistant state of all calculator customization for specific applications
+    // State of macro keys Fn1 to Fn6
+    var appState = ApplicationState()
 
     // Display window into register stack
     @AppStorage(.settingsDisplayRows)
-    private var displayRows = 3
+    var displayRows = 3
     
-    var rowCount: Int { return displayRows}
-
+    // Current event handling context - Normal, Recording, Entry, ModalFunction, Block
     var eventContext: EventContext?  = nil
     
+    // Storage of memories local to a block {..}
     var currentLVF: LocalVariableFrame? = nil
     
     private var undoStack = UndoStack()
+    
+    // If pause count is greater than 0, pause undo stack operations
     private var stackPauseCount: Int = 0
     
     // Queue for when events need to be pushed back by an event context for processing by another context
@@ -765,6 +778,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // *** Data Store ***
     
+    struct DataStore : Codable {
+        var state: CalcState
+        var appState: ApplicationState
+        
+        init( _ state: CalcState = CalcState(), _ appS: ApplicationState = ApplicationState() ) {
+            self.state = state
+            self.appState = appS
+        }
+    }
+    
     private static func fileURL() throws -> URL {
         try FileManager.default.url(for: .documentDirectory,
                                     in: .userDomainMask,
@@ -774,27 +797,30 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     func loadState() async throws {
-        let task = Task<CalcState, Error> {
+        let task = Task<DataStore, Error> {
             let fileURL = try Self.fileURL()
-            guard let data = try? Data(contentsOf: fileURL) else {
-                return CalcState()
+            
+            guard let data = try? Data( contentsOf: fileURL) else {
+                return DataStore()
             }
             
-            let state = try JSONDecoder().decode(CalcState.self, from: data)
+            let state = try JSONDecoder().decode(DataStore.self, from: data)
             return state
         }
         
-        let state = try await task.value
+        let store = try await task.value
         
         Task { @MainActor in
             // Update the @Published property here
-            self.state = state
+            self.state = store.state
+            self.appState = store.appState
         }
     }
     
     func saveState() async throws {
         let task = Task {
-            let data = try JSONEncoder().encode(self.state)
+            let store = DataStore( state, appState )
+            let data = try JSONEncoder().encode(store)
             let outfile = try Self.fileURL()
             try data.write(to: outfile)
         }
@@ -832,15 +858,15 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // **** Macro Recording Stuff ***
     
     func saveMacroFunction( _ kc: KeyCode, _ list: MacroOpSeq ) {
-        state.fnList[kc] = FnRec( fnKey: kc, macro: list)
+        appState.fnList[kc] = FnRec( fnKey: kc, macro: list)
     }
     
     func clearMacroFunction( _ kc: KeyCode) {
-        state.fnList[kc] = nil
+        appState.fnList[kc] = nil
     }
     
     func getMacroFunction( _ kc: KeyCode ) -> MacroOpSeq? {
-        state.fnList[kc]?.macro
+        appState.fnList[kc]?.macro
     }
     
     // *******
@@ -1180,7 +1206,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         if KeyCode.fnSet.contains(kc) {
             
-            if let fn = state.fnList[kc] {
+            if let fn = appState.fnList[kc] {
                 
                 if let text = fn.caption {
                     // Fn key has provided caption text

@@ -81,12 +81,12 @@ struct DisplayView: View {
                 // Status line above register displays
                 StatusView( model: model )
                 
-                ForEach (0 ..< model.rowCount, id: \.self) { index in
+                ForEach (0 ..< model.displayRows, id: \.self) { index in
                     TypedRegister( text: model.renderRow(index: index), size: priDispTextSize )
                         .padding(.leading, 10)
                 }
             }
-            .frame( height: rowHeight*Double(model.rowCount) )
+            .frame( height: rowHeight*Double(model.displayRows) )
         }
         .padding( [.leading, .trailing], 10)
         .background(Color("Display"))

@@ -32,6 +32,7 @@ struct MacroKey: CodableMacroOp {
     
     func getRichText( _ model: CalculatorModel ) -> String {
         if let key = Key.keyList[kc] {
+            // TODO: Need to combine aux with kc to produce .Sto A
             return key.text ?? model.getKeyText(kc) ?? "??"
         }
         return "??"
