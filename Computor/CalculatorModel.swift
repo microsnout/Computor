@@ -364,14 +364,25 @@ class ModalContext : EventContext {
     func runMacro( model: CalculatorModel ) -> KeyPressResult {
         
         logM.debug( "Run Macro: \(String( describing: self.macroFn.getDebugText() ))")
+        
+        // Push a new local variable store
+        model.currentLVF = LocalVariableFrame( model.currentLVF )
 
         for op in macroFn.opSeq {
             if op.execute( model ) == KeyPressResult.stateError {
                 
                 logM.debug( "Run Macro: ERROR")
+                
+                // Pop the local variable storage, restoring prev
+                model.currentLVF = model.currentLVF?.prevLVF
+                
                 return KeyPressResult.stateError
             }
         }
+        
+        // Pop the local variable storage, restoring prev
+        model.currentLVF = model.currentLVF?.prevLVF
+        
         return KeyPressResult.stateChange
     }
     
@@ -464,18 +475,12 @@ class ModalContext : EventContext {
             model.pauseUndoStack()
             model.aux.pauseRecording()
             
-            // Push a new local variable store
-            model.currentLVF = LocalVariableFrame( model.currentLVF )
-            
             // ModalExecute runs with Undo stack paused
             let result =  modalExecute( event )
             
             if result == .stateError {
                 model.popState()
             }
-            
-            // Pop the local variable storage, restoring prev
-            model.currentLVF = model.currentLVF?.prevLVF
             
             model.aux.resumeRecording()
             model.resumeUndoStack()
@@ -916,7 +921,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.Xtv = state.memory[index].value
             break
             
-        case .sto:
+        case .stoX:
             state.memory[index].value = state.Xtv
             break
             
@@ -987,6 +992,41 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.sign, .back, .eex]) )
     
     
+    func storeRegister( _ event: KeyEvent, _ tv: TaggedValue ) {
+        
+        if let kcMem = event.kcAux {
+            
+            if let lvf = currentLVF {
+                
+                // Local block {..} memory
+                lvf.local[kcMem] = tv
+            }
+            else {
+                // Global memory
+                pushState()
+                let name = String( describing: kcMem ).uppercased()
+                let nv   = NamedValue( name, value: tv )
+                
+                if let index = state.memory.firstIndex(where: { $0.name == name }) {
+                    
+                    // Existing global memory
+                    state.memory[index] = nv
+                }
+                else {
+                    // New global memory
+                    state.memory.append( nv )
+                }
+                
+                // Scroll aux display to memory list
+                aux.activeView = .memoryList
+            }
+        }
+        else {
+            assert(false)
+        }
+    }
+    
+    
     // **********************************************************************
     // **********************************************************************
     // **********************************************************************
@@ -1034,21 +1074,40 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             // TODO: Adding .sto and .rcl here
             
-        case .sto:
-            if let kcMem = event.kcAux {
-                
-                pushState()
-                currentLVF?.local[kcMem] = state.Xtv
-            }
+        case .stoX:
+            storeRegister( event, state.Xtv )
             
+        case .stoY:
+            storeRegister( event, state.Ytv )
+            
+        case .stoZ:
+            storeRegister( event, state.Ztv )
+
         case .rcl:
             if let kcMem = event.kcAux {
                 
-                if let tv = currentLVF?.local[kcMem] {
-                    pushState()
-                    state.stackLift()
-                    state.Xtv = tv
+                let name = String( describing: kcMem ).uppercased()
+                
+                var tv: TaggedValue
+                
+                if let lvf = currentLVF,
+                   let val = lvf.local[kcMem]
+                {
+                    // Local block memory found
+                    tv = val
                 }
+                else if let index = state.memory.firstIndex(where: { $0.name == name }) {
+                    
+                    // Global memory found
+                    tv = state.memory[index].value
+                }
+                else {
+                    return KeyPressResult.stateError
+                }
+                
+                pushState()
+                state.stackLift()
+                state.Xtv = tv
             }
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:

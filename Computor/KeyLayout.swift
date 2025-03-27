@@ -128,7 +128,7 @@ let psFunctions2L = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
         keys: [ Key(.quad, "ƒ{0.8}Quadƒ{}"),
-                Key(.sto,  "ƒ{0.9}Sto"),
+                Key(.stoX,  "ƒ{0.9}Sto"),
                 Key(.rcl,  "ƒ{0.9}Rcl"),
             ]
     )
@@ -376,26 +376,37 @@ func initKeyLayout() {
                         Key(.crossProduct, "X\u{0305} ƒ{1.5}\u{2a2f}ƒ{} Y\u{0305}"),
                        ]
     )
-    
+
+    SubPadSpec.define( .stoX,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.stoY,    "StoY"),
+                        Key(.stoZ,    "StoZ"),
+                        Key(.popX,    "ƒ{0.9}PopX"),
+                        Key(.popXY,   "ƒ{0.9}PopXY"),
+                        Key(.popXYZ,  "ƒ{0.9}PopXYZ"),
+                       ]
+    )
+
     // Modal subpad definitions
     // Used to popup keypad for Sto, Rcl
 
-    PadSpec.defineModal( .sto,
+    PadSpec.defineModal( .stoX,
         PadSpec(
             keySpec: ksModalPop,
             cols: 6,
             keys: [
-                Key(.a, "a"), Key(.b, "b"), Key(.c, "c"), Key(.d, "d"), Key(.e, "e"), Key(.f, "f"),
-                Key(.g, "g"), Key(.h, "h"), Key(.i, "i"), Key(.j, "j"), Key(.k, "k"), Key(.l, "l"),
-                Key(.m, "m"), Key(.n, "n"), Key(.o, "o"), Key(.p, "p"), Key(.q, "q"), Key(.r, "r"),
-                Key(.s, "s"), Key(.t, "t"), Key(.u, "u"), Key(.v, "v"), Key(.w, "w"), Key(.x, "x"),
-                Key(.y, "y"), Key(.z, "z"),
+                Key(.a, "A"), Key(.b, "B"), Key(.c, "C"), Key(.d, "D"), Key(.e, "E"), Key(.f, "F"),
+                Key(.g, "G"), Key(.h, "H"), Key(.i, "I"), Key(.j, "J"), Key(.k, "K"), Key(.l, "L"),
+                Key(.m, "M"), Key(.n, "N"), Key(.o, "O"), Key(.p, "P"), Key(.q, "Q"), Key(.r, "R"),
+                Key(.s, "S"), Key(.t, "T"), Key(.u, "U"), Key(.v, "V"), Key(.w, "W"), Key(.x, "X"),
+                Key(.y, "Y"), Key(.z, "Z"),
             ],
             caption: "Memory"
         )
     )
     
-    PadSpec.copySpec( from: .sto, list: [.rcl])
+    PadSpec.copySpec( from: .stoX, list: [.rcl, .stoY, .stoZ])
 }
 
 // ******************

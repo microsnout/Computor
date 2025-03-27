@@ -421,12 +421,26 @@ struct KeyView: View {
             .onEnded { _ in
                 if let key = keyData.selSubkey
                 {
-                    // Subpop menu key event
-                    _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc, kcAux: keyData.pressedKey?.kc))
+                    if let modalPad = PadSpec.getModalPadSpec( key.kc ) {
+                        
+                        // Pop up modal key pad
+                        keyData.pressedKey = key
+                        keyData.modalPad = modalPad
+                        keyData.modalUp = true
+                        
+                        // Do not generate a key event until a selection is made on the modal pad
+                    }
+                    else {
+                        
+                        // Subpop menu key event
+                        _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc, kcAux: keyData.pressedKey?.kc))
+                        
+                        // Cannot clear this value in the modal subpad case above so do it here
+                        keyData.pressedKey = nil
+                    }
                 }
                 
                 keyData.dragPt = CGPoint.zero
-                keyData.pressedKey = nil
                 keyData.selSubkey = nil
                 keyData.keyDown = false
                 keyData.subPad = SubPadSpec()

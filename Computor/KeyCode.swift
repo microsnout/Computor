@@ -29,8 +29,6 @@ enum KeyCode: Int, Codable {
     // Format
     case fix = 120, sci, eng
     
-    case null = 150, noop, rcl, sto, mPlus, mMinus, mRename
-    
     // Softkeys
     case fn0 = 160, fn1, fn2, fn3, fn4, fn5, fn6
     
@@ -43,31 +41,34 @@ enum KeyCode: Int, Codable {
     // Matrix operations
     case matrix = 190, range, seq, map, reduce, dotProduct, crossProduct
     
-    case unitStart = 200
+    // Memory operations
+    case null = 200, noop, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename
+
+    case unitStart = 300
     
     // Length
-    case km = 201, mm, cm, metre, inch, ft, yd, mi
+    case km = 301, mm, cm, metre, inch, ft, yd, mi
     
     // Time
-    case second = 210, min, hr, day, yr, ms, us
+    case second = 310, min, hr, day, yr, ms, us
     
     // Angles
-    case deg = 220, rad, dms, dm, minA
+    case deg = 320, rad, dms, dm, minA
     
     // Mass
-    case kg = 230, mg, gram, tonne, lb, oz, ton, stone
+    case kg = 330, mg, gram, tonne, lb, oz, ton, stone
     
     // Capacity
-    case mL = 240, liter, floz, cup, pint, quart, us_gal, gal
+    case mL = 340, liter, floz, cup, pint, quart, us_gal, gal
     
     // Temperature
-    case degC = 250, degF
+    case degC = 350, degF
     
-    case unitEnd = 299
+    case unitEnd = 399
     
-    case letter = 300, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
+    case letter = 400, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
     
-    case greek  = 350, alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu, nu, xi, omicron, pi, rho, sigma, tau, upsilon, phi, chi, psi, omega
+    case greek  = 450, alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu, nu, xi, omicron, pi, rho, sigma, tau, upsilon, phi, chi, psi, omega
     
     var isUnit: Bool { return self.rawValue > KeyCode.unitStart.rawValue && self.rawValue < KeyCode.unitEnd.rawValue }
     

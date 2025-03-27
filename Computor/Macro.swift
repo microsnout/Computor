@@ -37,7 +37,7 @@ struct MacroKey: CodableMacroOp {
             if var keyText = key.text {
                 if let kcAux = event.kcAux {
                     keyText += " "
-                    keyText += String( describing: kcAux )
+                    keyText += String( describing: kcAux ).uppercased()
                 }
                 return keyText
             }
