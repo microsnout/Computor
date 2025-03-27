@@ -1086,6 +1086,30 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             // TODO: Adding .sto and .rcl here
             
+        case .popX:
+            storeRegister( KeyEvent( kc: .popX, kcAux: .x ), state.Xtv)
+            state.stackDrop()
+
+        case .popXY:
+            pushState()
+            pauseUndoStack()
+            storeRegister( KeyEvent( kc: .popXY, kcAux: .x ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popXY, kcAux: .y ), state.Ytv)
+            resumeUndoStack()
+            state.stackDrop()
+            state.stackDrop()
+            
+        case .popXYZ:
+            pushState()
+            pauseUndoStack()
+            storeRegister( KeyEvent( kc: .popXYZ, kcAux: .x ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popXYZ, kcAux: .y ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXYZ, kcAux: .z ), state.Ytv)
+            resumeUndoStack()
+            state.stackDrop()
+            state.stackDrop()
+            state.stackDrop()
+
         case .stoX:
             storeRegister( event, state.Xtv )
             
