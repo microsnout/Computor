@@ -220,6 +220,9 @@ class RecordingContext : EventContext {
             // Start recording the indicated Fn key
             self.kcFn = kcFn
             model.aux.startRecFn(kcFn)
+            
+            // Push a new local variable store
+            model.currentLVF = LocalVariableFrame( model.currentLVF )
         }
     }
     
@@ -236,6 +239,9 @@ class RecordingContext : EventContext {
             model.clearMacroFunction(kcFn)
             model.aux.stopRecFn(kcFn)
             model.popContext( event )
+            
+            // Pop the local variable storage, restoring prev
+            model.currentLVF = model.currentLVF?.prevLVF
             return KeyPressResult.cancelRecording
             
         case .showFn, .recFn, .openBrace, .closeBrace:
@@ -247,6 +253,9 @@ class RecordingContext : EventContext {
             }
             model.aux.stopRecFn(kcFn)
             model.popContext( event )
+            
+            // Pop the local variable storage, restoring prev
+            model.currentLVF = model.currentLVF?.prevLVF
             return KeyPressResult.macroOp
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
@@ -263,6 +272,9 @@ class RecordingContext : EventContext {
                 // Cancel the recording
                 model.aux.stopRecFn(kcFn)
                 model.popContext( event )
+                
+                // Pop the local variable storage, restoring prev
+                model.currentLVF = model.currentLVF?.prevLVF
                 return KeyPressResult.cancelRecording
             }
             else {
@@ -1117,6 +1129,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 
                 pushContext( PlaybackContext(), lastEvent: event )
                 
+                // Push a new local variable store
+               currentLVF = LocalVariableFrame( currentLVF )
+
                 // Don't maintain undo stack during playback ops
                 pauseUndoStack()
                 for op in macro.opSeq {
@@ -1128,6 +1143,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     }
                 }
                 resumeUndoStack()
+
+                // Pop the local variable storage, restoring prev
+                currentLVF = currentLVF?.prevLVF
+                
                 popContext( KeyEvent( kc: keyCode ) )
             }
             
