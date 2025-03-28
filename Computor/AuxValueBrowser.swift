@@ -12,11 +12,11 @@ struct ValueBrowserView: View {
     @StateObject var model: CalculatorModel
     
     var body: some View {
-        let nv = model.state.stack[regX]
+        let tv = model.state.Xtv
         
-        let nameStr = nv.name ?? "-Unnamed-"
+        let nameStr = "X"
         
-        let color = nv.name != nil ? "DisplayText" : "GrayText"
+        let color = "DisplayText"
 
         VStack {
             AuxHeaderView( theme: Theme.lightRed ) {
@@ -25,8 +25,8 @@ struct ValueBrowserView: View {
             
             Spacer()
             
-            if nv.value.isSimple {
-                let (valueStr, _) = nv.value.renderRichText()
+            if tv.isSimple {
+                let (valueStr, _) = tv.renderRichText()
                 
                 VStack {
                     RichText( "ƒ{1.5}ç{\(color)}\(nameStr)", size: .large )
@@ -35,7 +35,7 @@ struct ValueBrowserView: View {
                 Spacer()
             }
             else {
-                let tvMatrix = nv.value
+                let tvMatrix = tv
                 
                 let ( _, rows, _ ) = tvMatrix.getShape()
                 
@@ -77,7 +77,7 @@ struct ValueBrowserView_Previews: PreviewProvider {
         let newModel = model
         
         // FIX: MacroKey not working here, keys not defined yet?
-        newModel.state.stack[regX].value = TaggedValue(.real, reg: 3.33)
+        newModel.state.Xtv = TaggedValue(.real, reg: 3.33)
         return newModel
     }
     

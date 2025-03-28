@@ -107,7 +107,7 @@ func installMatrix( _ model: CalculatorModel ) {
             var s1 = s0
             s1.stackDrop()
             s1.stackDrop()
-            s1.stack[regX].value = result
+            s1.Xtv = result
             return s1
        }
    ])
@@ -121,12 +121,12 @@ func installMatrix( _ model: CalculatorModel ) {
             let n = Int(floor(s0.X))
             let seq = 1 ... n
             
-            s1.stack[regX].value.setShape( 1, n, 1 )
+            s1.stack[regX].setShape( 1, n, 1 )
             
             for x in seq {
-                s1.stack[regX].value.set1( Double(x), r: x )
+                s1.stack[regX].set1( Double(x), r: x )
             }
-            s1.stack[regX].value.vtp = .real
+            s1.stack[regX].vtp = .real
             return s1
         }
     ])

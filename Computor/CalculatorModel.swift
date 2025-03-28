@@ -776,7 +776,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             entry.clearEntry()
             
             // Keep new entered X value
-            state.stack[regX].value = tv
+            state.stack[regX] = tv
         }
     }
 
@@ -926,7 +926,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             return text
         }
         
-        let tv = state.stack[stkIndex].value
+        let tv = state.stack[stkIndex]
         var text = "ƒ{0.8}ç{Frame}={\(CalculatorModel.stackRegNames[stkIndex])  }ç{}ƒ{}"
         let (valueStr, valueCount) = tv.renderRichText()
         let count = valueCount + 3

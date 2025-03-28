@@ -19,11 +19,11 @@ struct ValuePlotView: View {
     @StateObject var model: CalculatorModel
     
     var body: some View {
-        let nv = model.state.stack[regX]
+        let tv = model.state.Xtv
         
-        let nameStr = nv.name ?? "-Unnamed-"
+        let nameStr = "X"
         
-        let color = nv.name != nil ? "DisplayText" : "GrayText"
+        let color = "DisplayText"
 
         VStack {
             AuxHeaderView( theme: Theme.lightPurple ) {
@@ -31,7 +31,7 @@ struct ValuePlotView: View {
             }
             
             
-            let (valueStr, _) = nv.value.renderRichText()
+            let (valueStr, _) = tv.renderRichText()
             
             Canvas { context, size in
                 context.stroke(
@@ -51,7 +51,7 @@ struct ValuePlotView_Previews: PreviewProvider {
         let newModel = model
         
         // FIX: MacroKey not working here, keys not defined yet?
-        newModel.state.stack[regX].value = TaggedValue(.real, reg: 3.33)
+        newModel.state.Xtv = TaggedValue(.real, reg: 3.33)
         return newModel
     }
     

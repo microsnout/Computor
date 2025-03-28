@@ -164,7 +164,7 @@ struct PlotVectorView : View {
 
     var body: some View {
         
-        let nv = model.state.stack[regX]
+        let tv = model.state.Xtv
         
         VStack {
             AuxHeaderView( theme: Theme.lightPurple ) {
@@ -187,7 +187,7 @@ struct PlotVectorView : View {
                 // Tail of axis - extending into unused quadrant
                 let tail = 25.0
                 
-                let (x, y, length, angle) = getSpecs( nv.value )
+                let (x, y, length, angle) = getSpecs(tv)
                 
                 context.withWindowContext( plotRect, within: viewRect ) { ctx, winRect in
                     
@@ -227,7 +227,7 @@ struct PlotVectorView : View {
                     
                     // Axis Labels
                     let font = Font.custom("Times New Roman", size: 24).italic()
-                    let ( xAxisStr, yAxisStr ) = nv.value.vtp == .complex ? ("Re", "Im") : ("X", "Y")
+                    let ( xAxisStr, yAxisStr ) = tv.vtp == .complex ? ("Re", "Im") : ("X", "Y")
                     context.text( xAxisStr, font: font, color: .blue, at: CGPoint(x: xTo.x, y: 0), in: ctx )
                     context.text( yAxisStr, font: font, color: .blue, at: CGPoint(x: 0, y: yTo.y), in: ctx )
                     
@@ -250,7 +250,7 @@ struct PlotVectorView : View {
                         
                         let textAdj = upperQuad ? 15.0 : -15.0
                         
-                        switch nv.value.vtp {
+                        switch tv.vtp {
                             
                         case .complex:
                             context.text("a+bi", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
@@ -275,7 +275,7 @@ struct PlotVectorView : View {
                             context.text("x", font: font, at: CGPoint( x: pt.x, y: pt.y + textAdj), in: ptx )
                         }
                         
-                        if nv.value.vtp != .real  {
+                        if tv.vtp != .real  {
                             // Add a and b to axis
                             let font = Font.custom("Times New Roman", size: 18)
                             context.text("a", font: font, at: CGPoint( x: pt.x, y: -textAdj ), in: ptx )
@@ -303,7 +303,7 @@ struct PlotVectorView_Previews: PreviewProvider {
     static func addSampleMacro( _ model: CalculatorModel ) -> CalculatorModel {
         
         // FIX: MacroKey not working here, keys not defined yet?
-        model.state.stack[regX].value.setComplex( Comp(4.0, 3.0) )
+        model.state.stack[regX].setComplex( Comp(4.0, 3.0) )
         return model
     }
     

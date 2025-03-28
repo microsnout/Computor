@@ -191,7 +191,7 @@ extension CalculatorModel {
                 var s1 = s0
                 
                 for i in 0 ..< stackSize {
-                    s1.stack[i].value = untypedZero
+                    s1.stack[i] = untypedZero
                 }
                 s1.noLift = true
                 return s1

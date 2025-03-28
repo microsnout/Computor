@@ -742,32 +742,6 @@ extension TaggedValue {
 }
 
 
-struct NamedValue : RichRender, Codable {
-    var name: String?
-    var value: TaggedValue
-    
-    func isType( _ tt: TypeTag ) -> Bool {
-        return value.tag == tt
-    }
-    
-    init(_ name: String? = nil, value: TaggedValue ) {
-        self.name = name
-        self.value = value
-    }
-    
-    func renderRichText() -> (String, Int) {
-        if let prefix = self.name {
-            var text = "ƒ{0.8}ç{Frame}={\(prefix)  }ç{}ƒ{}"
-            let (valueStr, valueCount) = self.value.renderRichText()
-            let count = valueCount + prefix.count + 2
-            text += valueStr
-            return (text, count)
-        }
-        return value.renderRichText()
-    }
-}
-
-
 let untypedZero: TaggedValue = TaggedValue( tag: tagUntyped)
 
 
@@ -780,18 +754,5 @@ extension TaggedValue {
         data[3].setComplex( Comp(1.0, -2.0))
         data[2].setPolar( 1.0, Double.pi/6, fmt: FormatRec( polarAngle: .degrees ))
         return data
-    }
-}
-
-
-extension NamedValue {
-    static let names = ["Pi", "Path", "Nav", "Voltage"]
-    
-    static func getSampleData() -> [NamedValue] {
-        let values = TaggedValue.getSampleData()
-        
-        return zip(names, values).map() { (name, value) in
-            NamedValue(name, value: value)
-        }
     }
 }
