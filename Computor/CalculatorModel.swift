@@ -765,17 +765,19 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // *** Entry State control ***
     
     func acceptTextEntry() {
-        guard let tv = entry.makeTaggedValue() else  {
-            assert(false)
+        if entry.entryMode {
+            guard let tv = entry.makeTaggedValue() else  {
+                assert(false)
+                entry.clearEntry()
+                return
+            }
+            
+            // Store tagged value in X reg, Record data entry if recording and clear data entry state
             entry.clearEntry()
-            return
+            
+            // Keep new entered X value
+            state.stack[regX].value = tv
         }
-        
-        // Store tagged value in X reg, Record data entry if recording and clear data entry state
-        entry.clearEntry()
-        
-        // Keep new entered X value
-        state.stack[regX].value = tv
     }
 
     
@@ -928,12 +930,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         // Leading edge swipe operations
         switch key {
-        case .rcl:
+        case .rclMem:
             state.stackLift()
             state.Xtv = state.memory[index].value
             break
             
-        case .stoX:
+        case .stoMem:
             state.memory[index].value = state.Xtv
             break
             

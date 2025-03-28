@@ -16,8 +16,8 @@ let psMemDetail = PadSpec(
         keys: [
             Key(.mPlus,   "ƒ{0.8}M+"),
             Key(.mMinus,  "ƒ{0.8}M-"),
-            Key(.rcl,     "ƒ{0.8}Rcl"),
-            Key(.stoX,     "ƒ{0.8}Sto"),
+            Key(.rclMem,  "ƒ{0.8}Rcl"),
+            Key(.stoMem,  "ƒ{0.8}Sto"),
             Key(.mRename, "ƒ{0.8}Rename", size: 2),
         ]
     )
@@ -43,7 +43,7 @@ struct MemoryDetailView: View {
             let index = model.aux.detailItemIndex
             
             switch event.kc {
-            case .rcl, .stoX, .mPlus, .mMinus:
+            case .rclMem, .stoMem, .mPlus, .mMinus:
                 model.memoryOp(key: event.kc, index: index)
                 
             case .mRename:

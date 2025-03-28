@@ -10,8 +10,26 @@ import Testing
 
 struct ComputorTests {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    @Suite("Basic") struct basicSuite {
+        
+        
+        @Test("Basic Stack Ops") func testStackOps() async throws {
+            
+            let model = CalculatorModel()
+            _ = model.keyPress( KeyEvent( kc: .key5 ))
+            _ = model.keyPress( KeyEvent( kc: .enter ))
+            
+            #expect( model.state.X == 5.0 )
+        }
+        
+        @Test("Basic Stack Ops 2") func testTwo() async throws {
+            
+            let model = CalculatorModel()
+            _ = model.keyPress( KeyEvent( kc: .key3 ))
+            _ = model.keyPress( KeyEvent( kc: .plus ))
+            
+            #expect( model.state.X == 3.0 )
+        }
     }
 
 }

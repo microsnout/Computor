@@ -42,7 +42,7 @@ enum KeyCode: Int, Codable {
     case matrix = 190, range, seq, map, reduce, dotProduct, crossProduct
     
     // Memory operations
-    case null = 200, noop, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename
+    case null = 200, noop, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem
 
     case unitStart = 300
     
