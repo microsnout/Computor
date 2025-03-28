@@ -34,7 +34,7 @@ struct MemoryListView: View {
             else {
                 let strList = (0 ..< model.state.memory.count).map
                     { ( model.state.memory[$0].name,
-                        model.state.memory[$0].value.renderRichText()) }
+                        model.state.memory[$0].tv.renderRichText()) }
                 
                 ScrollView {
                     LazyVStack {
@@ -82,7 +82,7 @@ struct MemoryListView_Previews: PreviewProvider {
     
     static func addSampleMemory( _ model: CalculatorModel ) -> CalculatorModel {
         let newModel = model
-        newModel.state.memory = NamedValue.getSampleData()
+        newModel.state.memory = []
         return newModel
     }
     

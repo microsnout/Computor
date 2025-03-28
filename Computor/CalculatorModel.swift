@@ -942,22 +942,22 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         switch key {
         case .rclMem:
             state.stackLift()
-            state.Xtv = state.memory[index].value
+            state.Xtv = state.memory[index].tv
             break
             
         case .stoMem:
-            state.memory[index].value = state.Xtv
+            state.memory[index].tv = state.Xtv
             break
             
         case .mPlus:
-            if state.Xt == state.memory[index].value.tag {
-                state.memory[index].value.reg += state.X
+            if state.Xt == state.memory[index].tv.tag {
+                state.memory[index].tv.reg += state.X
             }
             break
             
         case .mMinus:
-            if state.Xt == state.memory[index].value.tag {
-                state.memory[index].value.reg -= state.X
+            if state.Xt == state.memory[index].tv.tag {
+                state.memory[index].tv.reg -= state.X
             }
             break
             
@@ -969,7 +969,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     func addMemoryItem() {
         pushState()
         acceptTextEntry()
-        state.memory.append( NamedValue( value: state.Xtv) )
+        state.memory.append( MemoryRec( tv: state.Xtv) )
         aux.activeView = .memoryList
     }
     
@@ -1029,16 +1029,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // Global memory
                 pushState()
                 let name = String( describing: kcMem ).uppercased()
-                let nv   = NamedValue( name, value: tv )
+                let mr   = MemoryRec( tv: tv, kc: kcMem, name: name )
                 
-                if let index = state.memory.firstIndex(where: { $0.name == name }) {
+                if let index = state.memory.firstIndex( where: { $0.kc == kcMem }) {
                     
                     // Existing global memory
-                    state.memory[index] = nv
+                    state.memory[index] = mr
                 }
                 else {
                     // New global memory
-                    state.memory.append( nv )
+                    state.memory.append( mr )
                 }
                 
                 // Scroll aux display to memory list
@@ -1144,10 +1144,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     // Local block memory found
                     tv = val
                 }
-                else if let index = state.memory.firstIndex(where: { $0.name == name }) {
+                else if let index = state.memory.firstIndex(where: { $0.kc == kcMem }) {
                     
                     // Global memory found
-                    tv = state.memory[index].value
+                    tv = state.memory[index].tv
                 }
                 else {
                     return KeyPressResult.stateError

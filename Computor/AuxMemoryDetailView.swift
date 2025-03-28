@@ -79,10 +79,10 @@ struct MemoryDetailView: View {
                             let count = model.state.memory.count
                             
                             ForEach( 0 ..< count, id: \.self ) { index in
-                                let nv = model.state.memory[index]
-                                let nameStr = nv.name ?? "-Unnamed-"
-                                let (valueStr, _) = nv.value.renderRichText()
-                                let color = nv.name != nil ? "DisplayText" : "GrayText"
+                                let mr = model.state.memory[index]
+                                let nameStr = mr.name ?? "-Unnamed-"
+                                let (valueStr, _) = mr.tv.renderRichText()
+                                let color = mr.name != nil ? "DisplayText" : "GrayText"
 
                                 VStack {
                                     RichText( "ƒ{1.5}ç{\(color)}\(nameStr)", size: .large )
@@ -127,7 +127,7 @@ struct MemoryDetailView_Previews: PreviewProvider {
     
     static func addSampleMemory( _ model: CalculatorModel ) -> CalculatorModel {
         let newModel = model
-        newModel.state.memory = NamedValue.getSampleData()
+        newModel.state.memory = []
         return newModel
     }
     

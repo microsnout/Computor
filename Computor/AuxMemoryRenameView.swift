@@ -45,7 +45,7 @@ struct MemoryRenameView_Previews: PreviewProvider {
     
     static func addSampleMemory( _ model: CalculatorModel ) -> CalculatorModel {
         let newModel = model
-        newModel.state.memory = NamedValue.getSampleData()
+        newModel.state.memory = []
         newModel.aux.detailItemIndex = 2
         return newModel
     }

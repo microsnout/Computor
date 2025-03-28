@@ -37,13 +37,20 @@ struct RegisterPattern {
 }
 
 
+struct MemoryRec: Codable {
+    var tv:   TaggedValue
+    var kc:   KeyCode = KeyCode.null
+    var name: String? = nil
+}
+
+
 struct CalcState: Codable {
     /// Defines the exact state of the calculator at a given time
     ///
     var stack: [NamedValue] = stackPrefixValues.map { NamedValue( $0, value: untypedZero) }
     var lastX: TaggedValue = untypedZero
     var noLift: Bool = false
-    var memory = [NamedValue]()
+    var memory = [MemoryRec]()
 }
 
 
