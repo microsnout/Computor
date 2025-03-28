@@ -895,18 +895,23 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return displayRows - stackIndex - 1
     }
     
+    
+    static let stackRegNames = ["X", "Y", "Z", "T"]
+    
     func renderRow( index: Int ) -> String {
         let stkIndex = bufferIndex(index)
         
-        // Are we are in data entry mode and looking for the X reg
+        guard stkIndex <= regT else {
+            assert(false)
+            return ""
+        }
+        
         if entry.entryMode && stkIndex == regX {
-            let nv = state.stack[stkIndex]
             
-            var text = String()
+            // We are in data entry mode and looking for the X reg
+            let tv = state.Xtv
             
-            if let prefix = nv.name {
-                text.append("ƒ{0.8}ç{Frame}={\(prefix)  }ç{}ƒ{}")
-            }
+            var text = "ƒ{0.8}ç{Frame}={X  }ç{}ƒ{}"
             
             text.append( "={\(entry.entryText)}" )
             
@@ -920,8 +925,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             return text
         }
-        let (str, _) = state.stack[stkIndex].renderRichText()
-        return str
+        
+        let tv = state.stack[stkIndex].value
+        var text = "ƒ{0.8}ç{Frame}={\(CalculatorModel.stackRegNames[stkIndex])  }ç{}ƒ{}"
+        let (valueStr, valueCount) = tv.renderRichText()
+        let count = valueCount + 3
+        text += valueStr
+        return text
     }
     
     func memoryOp( key: KeyCode, index: Int ) {
