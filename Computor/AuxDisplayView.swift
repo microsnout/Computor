@@ -62,7 +62,8 @@ struct AuxiliaryDisplayView: View {
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
-                PlotVectorView( model: model )
+                PointPlotView( model: model )
+//                PlotVectorView( model: model )
                     .id( AuxDispView.valuePlot )
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)

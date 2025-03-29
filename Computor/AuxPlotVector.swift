@@ -67,14 +67,14 @@ extension GraphicsContext {
     }
     
     
-    func arrow( from: CGPoint, to: CGPoint, with shading: GraphicsContext.Shading = .color(.black) ) {
+    func arrow( from: CGPoint, to: CGPoint, with shading: GraphicsContext.Shading = .color(.black), style: StrokeStyle = StrokeStyle() ) {
         
         stroke(
             Path { path in
                 path.addLines( [from, to] )
             },
             with: shading,
-            lineWidth: 3)
+            style: style)
         
         fill(
             arrowPath().applying( arrowTransform( lastPoint: to, previousPoint: from ) ),
@@ -104,6 +104,18 @@ extension GraphicsContext {
         stroke(
             Path { path in
                 path.addLines( [from, to] )
+            },
+            with: shading,
+            style: style
+        )
+    }
+
+    
+    func multiline( points: [CGPoint], with shading: GraphicsContext.Shading = .color(.black), style: StrokeStyle = StrokeStyle() ) {
+        
+        stroke(
+            Path { path in
+                path.addLines( points )
             },
             with: shading,
             style: style
@@ -238,7 +250,8 @@ struct PlotVectorView : View {
                         let pt = CGPoint( x: x * sxy, y: y * sxy)
                         
                         // Vector Line
-                        ptx.arrow( from: .zero, to: pt, with: .color(.blue) )
+                        let ssV = StrokeStyle( lineWidth: 3 )
+                        ptx.arrow( from: .zero, to: pt, with: .color(.blue), style: ssV )
                         
                         // Dashed lines to Axis from Pt
                         let ss = StrokeStyle(lineWidth: 2, dash: [5] )

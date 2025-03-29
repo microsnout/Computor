@@ -292,17 +292,19 @@ extension TaggedValue {
         set2( z.real, z.imaginary)
     }
     
-    func getVector() -> (Double, Double) {
+    func getVector( _ r: Int = 1, _ c: Int = 1 ) -> (Double, Double) {
         switch vtp {
+            
         case .vector, .complex:
-            let (x, y) = get2()
+            let (x, y) = get2( r: r, c: c)
             return (x, y)
             
         case .polar:
-            let (r, w) = get2()
+            let (r, w) = get2( r: r, c: c)
             return polar2rect(r,w)
             
         default:
+//            assert(false)
             return (0.0, 0.0)
         }
     }
