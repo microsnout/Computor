@@ -1,20 +1,13 @@
 //
-//  AuxValuePlot.swift
+//  AuxPlotPoints.swift
 //  Computor
 //
 //  Created by Barry Hall on 2025-03-06.
 //
 import SwiftUI
 
-//            Canvas { gc, size in
-//                gc.translateBy(x: size.width / 2, y: size.height / 2)
-//                let rectangle = Rectangle().path(in: .zero.insetBy(dx: -5, dy: -5))
-//                gc.fill(rectangle, with: .color(.green))
-//            }
-//
 
-
-struct PointPlotView: View {
+struct PlotPointsView: View {
     
     let pointTypes: Set<ValueType> = [.complex, .vector, .polar]
     
@@ -84,7 +77,7 @@ struct PointPlotView: View {
                         let (xRange, yRange) = (xMax - xMin, yMax - yMin)
                         
                         // Scale factor for x and y within plot
-                        var sxy = 0.8
+                        var sxy = 0.75
                         
                         if hW/wW > abs(yRange)/abs(xRange) {
                             // Plot will terminate at X extent
@@ -102,8 +95,8 @@ struct PointPlotView: View {
                         let (xWO, yWO) = ( wW/2 - xO*sxy, hW/2 - yO*sxy)
                         
                         // Find axis co-ordinates and origin point
-                        let (xFrom, xTo) = ( CGPoint( x: 0, y: yWO), CGPoint( x: wW, y: yWO) )
-                        let (yFrom, yTo) = ( CGPoint( x: xWO, y: 0), CGPoint( x: xWO, y: hW) )
+                        let (xFrom, xTo) = ( CGPoint( x: 0, y: yWO), CGPoint( x: wW - 10, y: yWO) )
+                        let (yFrom, yTo) = ( CGPoint( x: xWO, y: 0), CGPoint( x: xWO, y: hW - 10) )
 
                         // X Axis
                         ctx.arrow( from: xFrom, to: xTo )
@@ -112,10 +105,10 @@ struct PointPlotView: View {
                         ctx.arrow( from: yFrom, to: yTo )
                         
                         // Axis Labels
-                        let font = Font.custom("Times New Roman", size: 24).italic()
+                        let font = Font.custom("Times New Roman", size: 16).italic().bold()
                         let ( xAxisStr, yAxisStr ) = tv.vtp == .complex ? ("Re", "Im") : ("X", "Y")
-                        context.text( xAxisStr, font: font, color: .blue, at: CGPoint(x: xTo.x, y: 0), in: ctx )
-                        context.text( yAxisStr, font: font, color: .blue, at: CGPoint(x: 0, y: yTo.y), in: ctx )
+                        context.text( xAxisStr, font: font, color: .blue, at: CGPoint(x: xTo.x + 10, y: xTo.y), in: ctx )
+                        context.text( yAxisStr, font: font, color: .blue, at: CGPoint(x: yTo.x, y: yTo.y + 10), in: ctx )
 
                         // Shift context to origin
                         ctx.withTransform( dx: xWO, dy: yWO ) { ptx in
@@ -162,7 +155,7 @@ struct ValuePlotView_Previews: PreviewProvider {
             
             VStack {
                 VStack {
-                    PointPlotView( model: model)
+                    PlotPointsView( model: model)
                         .frame( maxWidth: .infinity, maxHeight: .infinity)
                         .preferredColorScheme(.light)
                 }
