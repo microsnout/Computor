@@ -302,7 +302,12 @@ struct SubPopModal: View {
     @AppStorage(.settingsKeyCaptions)
     private var keyCaptions = true
     
+    @AppStorage(.settingsKeyCaptions)
+    private var greekKeys = false
+
     @EnvironmentObject var keyData: KeyData
+    
+    @State private var modalPad = psAlpha
     
     var body: some View {
         if keyData.modalUp {
@@ -311,8 +316,12 @@ struct SubPopModal: View {
                 Text( keyData.modalPad.caption ?? "Modal Pad" )
                     .padding( [.top] )
                 
-                KeypadView( padSpec: keyData.modalPad, keyPressHandler: keyPressHandler )
-                    .padding( [.leading, .trailing, .bottom] )
+                VStack {
+                    KeypadView( padSpec: greekKeys ? psGreek : psAlpha, keyPressHandler: keyPressHandler )
+                        .padding( [.leading, .trailing, .bottom] )
+                    
+                    Toggle("\u{03b1}\u{03b2}\u{03b3}", isOn: $greekKeys ).frame( maxWidth: 100 ).padding( [.bottom], 20)
+                }
             }
             .background( Color("Background") )
             .overlay(

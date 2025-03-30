@@ -1028,7 +1028,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             else {
                 // Global memory
                 pushState()
-                let name = String( describing: kcMem ).uppercased()
+                var name: String = ""
+                
+                if let key = Key.keyList[kcMem] {
+                    name = key.text ?? ""
+                }
+                
                 let mr   = MemoryRec( tv: tv, kc: kcMem, name: name )
                 
                 if let index = state.memory.firstIndex( where: { $0.kc == kcMem }) {
@@ -1134,7 +1139,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .rcl:
             if let kcMem = event.kcAux {
                 
-                let name = String( describing: kcMem ).uppercased()
+                let name = String( describing: kcMem )
                 
                 var tv: TaggedValue
                 

@@ -391,22 +391,38 @@ func initKeyLayout() {
     // Modal subpad definitions
     // Used to popup keypad for Sto, Rcl
 
-    PadSpec.defineModal( .stoX,
-        PadSpec(
-            keySpec: ksModalPop,
-            cols: 6,
-            keys: [
-                Key(.a, "A"), Key(.b, "B"), Key(.c, "C"), Key(.d, "D"), Key(.e, "E"), Key(.f, "F"),
-                Key(.g, "G"), Key(.h, "H"), Key(.i, "I"), Key(.j, "J"), Key(.k, "K"), Key(.l, "L"),
-                Key(.m, "M"), Key(.n, "N"), Key(.o, "O"), Key(.p, "P"), Key(.q, "Q"), Key(.r, "R"),
-                Key(.s, "S"), Key(.t, "T"), Key(.u, "U"), Key(.v, "V"), Key(.w, "W"), Key(.x, "X"),
-                Key(.y, "Y"), Key(.z, "Z"),
-            ],
-            caption: "Memory"
-        )
-    )
+    PadSpec.defineModal( .stoX, psAlpha )
     
     PadSpec.copySpec( from: .stoX, list: [.rcl, .stoY, .stoZ])
 }
+
+
+let psAlpha =
+    PadSpec(
+        keySpec: ksModalPop,
+        cols: 6,
+        keys: [
+            Key(.A, "A"), Key(.B, "B"), Key(.C, "C"), Key(.D, "D"), Key(.E, "E"), Key(.F, "F"),
+            Key(.G, "G"), Key(.H, "H"), Key(.I, "I"), Key(.J, "J"), Key(.K, "K"), Key(.L, "L"),
+            Key(.M, "M"), Key(.N, "N"), Key(.O, "O"), Key(.P, "P"), Key(.Q, "Q"), Key(.R, "R"),
+            Key(.S, "S"), Key(.T, "T"), Key(.U, "U"), Key(.V, "V"), Key(.W, "W"), Key(.X, "X"),
+            Key(.Y, "Y"), Key(.Z, "Z"),
+        ],
+        caption: "Memory"
+)
+
+let psGreek =
+    PadSpec(
+        keySpec: ksModalPop,
+        cols: 6,
+        keys: [
+            Key(.alpha,   "\u{03b1}"), Key(.beta,    "\u{03b2}"), Key(.gamma,   "\u{03b3}"), Key(.delta,   "\u{03b4}"), Key(.epsilon, "\u{03b5}"), Key(.zeta,    "\u{03b6}"),
+            Key(.eta,     "\u{03b7}"), Key(.theta,   "\u{03b8}"), Key(.iota,    "\u{03b9}"), Key(.kappa,   "\u{03ba}"), Key(.lambda,  "\u{03bb}"), Key(.mu,      "\u{03bc}"),
+            Key(.nu,      "\u{03bd}"), Key(.xi,      "\u{03be}"), Key(.omicron, "\u{03bf}"), Key(.pi,      "\u{03c0}"), Key(.rho,     "\u{03c1}"), Key(.sigma,   "\u{03c3}"),
+            Key(.tau,     "\u{03c4}"), Key(.upsilon, "\u{03c5}"), Key(.phi,     "\u{03c6}"), Key(.chi,     "\u{03c7}"), Key(.psi,     "\u{03c8}"), Key(.omega,   "\u{03c9}"),
+        ],
+        caption: "Memory"
+    )
+
 
 // ******************
