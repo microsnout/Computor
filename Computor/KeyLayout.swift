@@ -347,6 +347,7 @@ func initKeyLayout() {
                         Key(.mapX,   "ƒ{0.8}Map-x"),
                         Key(.mapXY,  "ƒ{0.8}Map-xy"),
                         Key(.reduce, "ƒ{0.8}Reduce"),
+                        Key(.addCol, "ƒ{0.8}+Col"),
                        ],
                        caption: "Matrix Operations"
     )

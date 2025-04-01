@@ -63,12 +63,33 @@ func rad2deg( _ w: Double ) -> Double {
 // **************
 // Swift Utiliies
 
-// Not currently used
 extension Array {
+    
     func chunked(into size: Int) -> [[Element]] {
-        return stride(from: 0, to: count, by: size).map {
-            Array(self[$0 ..< Swift.min($0 + size, count)])
+        return stride( from: 0, to: count, by: size).map {
+            Array( self[$0 ..< Swift.min($0 + size, count)] )
         }
+    }
+    
+    mutating func resize( to size: Int, with filler: Element ) {
+        let sizeDifference = size - count
+        
+        guard sizeDifference != 0 else {
+            return
+        }
+        
+        if sizeDifference > 0 {
+            self.append( contentsOf: Array<Element>(repeating: filler, count: sizeDifference));
+        }
+        else {
+            self.removeLast( sizeDifference * -1 ) //*-1 because sizeDifference is negative
+        }
+    }
+    
+    func resized( to size: Int, with filler: Element ) -> Array {
+        var selfCopy = self;
+        selfCopy.resize(to: size, with: filler)
+        return selfCopy
     }
 }
 

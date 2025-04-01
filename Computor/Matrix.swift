@@ -177,6 +177,23 @@ func installMatrix( _ model: CalculatorModel ) {
     ])
 
 
+    CalculatorModel.defineOpPatterns( .addCol, [
+        
+        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .matrix) ],
+                   where: { s0 in s0.Xtv.rows == s0.Ytv.rows && s0.Xtv.vtp == s0.Ytv.vtp && s0.Xtv.cols == 1 } ) { s0 in
+            
+                       let colsY = s0.Ytv.cols
+                       
+                       var s1 = s0
+                       s1.stackDrop()
+                       
+                       s1.Xtv.addColumns( 1 )
+                       s1.Xtv.copyColumn( toCol: colsY+1, from: s0.Xtv, atCol: 1 )
+                       return s1
+        }
+    ])
+    
+    
     // *** UNIT Conversions ***
 
     CalculatorModel.defineUnitConversions([

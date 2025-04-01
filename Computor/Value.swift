@@ -180,9 +180,48 @@ extension TaggedValue {
     
     mutating func setShape( _ ss: Int = 1, _ rows: Int = 1, _ cols: Int = 1 ) {
         self.mat = cols + rows*M + ss*M*M
-        
         self.storage = [Double]( repeating: 0.0, count: self.capacity )
     }
+    
+    
+    mutating func addColumns( _ newCols: Int ) {
+        
+        guard isMatrix && newCols > 0 else {
+            assert(false)
+            return
+        }
+        
+        // Current matrix shape
+        let (ss, rows, cols) = getShape()
+        
+        let newCapacity = capacity + newCols * rows * ss
+        
+        storage.resize( to: newCapacity, with: 0.0)
+        
+        // Set new shape
+        mat = (cols + newCols) + rows*M + ss*M*M
+    }
+    
+    
+    mutating func copyColumn( toCol: Int, from: TaggedValue, atCol: Int ) {
+        
+        let (ss, rows, cols) = getShape()
+        
+        let (ssF, rowsF, colsF) = from.getShape()
+        
+        guard isMatrix && from.isMatrix && toCol <= cols && ss == ssF && rows == rowsF && atCol <= colsF else {
+            assert(false)
+            return
+        }
+        
+        let xT = storageIndex( ss, row: 1, col: toCol )
+        let xF = from.storageIndex( ss, row: 1, col: atCol )
+        
+        for i in 0 ..< rows*ss {
+            storage[xT+i] = from.storage[xF+1]
+        }
+    }
+    
     
     mutating func setMatrix( _ vtp: ValueType, tag: TypeTag = tagUntyped, fmt: FormatRec = FormatRec(), rows: Int, cols: Int = 1 ) {
         setShape( valueSize[vtp] ?? 1, rows, cols )
