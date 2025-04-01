@@ -420,6 +420,7 @@ let psGreek =
             Key(.eta,     "\u{03b7}"), Key(.theta,   "\u{03b8}"), Key(.iota,    "\u{03b9}"), Key(.kappa,   "\u{03ba}"), Key(.lambda,  "\u{03bb}"), Key(.mu,      "\u{03bc}"),
             Key(.nu,      "\u{03bd}"), Key(.xi,      "\u{03be}"), Key(.omicron, "\u{03bf}"), Key(.pi,      "\u{03c0}"), Key(.rho,     "\u{03c1}"), Key(.sigma,   "\u{03c3}"),
             Key(.tau,     "\u{03c4}"), Key(.upsilon, "\u{03c5}"), Key(.phi,     "\u{03c6}"), Key(.chi,     "\u{03c7}"), Key(.psi,     "\u{03c8}"), Key(.omega,   "\u{03c9}"),
+            Key(.noop), Key(.noop),
         ],
         caption: "Memory"
     )
