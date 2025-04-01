@@ -46,6 +46,10 @@ struct PlotView : View {
             
         case .none:
             VStack {
+                AuxHeaderView( theme: Theme.lightPurple ) {
+                    RichText( "Plot", size: .small )
+                }
+                
                 Spacer()
                 Text( "Plot Help Text" )
                 Spacer()

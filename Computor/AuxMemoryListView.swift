@@ -43,28 +43,40 @@ struct MemoryListView: View {
                             // Not using render count for now
                             let (prefix, (value, _)) = item
                             
-                            HStack {
-                                VStack( alignment: .leading, spacing: 0 ) {
-                                    let name: String = prefix ?? "-unnamed-"
+                            VStack {
+                                HStack {
+                                    VStack( alignment: .leading, spacing: 0 ) {
+                                        let name: String = prefix ?? "-unnamed-"
+                                        
+                                        let color = prefix != nil ? Color("DisplayText") : Color(.gray)
+                                        
+                                        // Memory name - tap to edit
+                                        Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
+                                        
+                                        // Memory value display
+                                        TypedRegister( text: value, size: .small ).padding( .horizontal, 20)
+                                    }
+                                    .padding( [.leading ], 20)
+                                    .frame( height: 30 )
                                     
-                                    let color = prefix != nil ? Color("DisplayText") : Color(.gray)
+                                    Spacer()
                                     
-                                    // Memory name - tap to edit
-                                    Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
-
-                                    // Memory value display
-                                    TypedRegister( text: value, size: .small ).padding( .horizontal, 20)
                                     
-                                    Divider()
+                                    HStack( spacing: 20 ) {
+                                        Button( action: { model.memoryOp( key: .rclMem, index: index) } ) {
+                                            Image( systemName: "arrowshape.down" )
+                                        }
+                                        Button( action: { model.delMemoryItems(set: [index]) } ) {
+                                            Image( systemName: "trash" )
+                                        }
+                                    }.padding( [.trailing], 20 )
                                 }
-                                .padding( [.leading ], 20)
-                                .frame( height: 30 )
-
-                                Spacer()
-                            }
-                            .onTapGesture {
-                                model.aux.detailItemIndex = index
-                                model.aux.activeView = .memoryDetail
+                                .onTapGesture {
+                                    model.aux.detailItemIndex = index
+                                    model.aux.activeView = .memoryDetail
+                                }
+                                
+                                Divider()
                             }
                         }
                     }
