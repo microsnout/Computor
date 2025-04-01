@@ -16,7 +16,8 @@ struct ComputorApp: App {
     
     init() {
         initKeyLayout()
-        TypeDef.buildUnitData()
+        UnitDef.buildStdUnitData()
+        TypeDef.buildStdTypeData()
     }
     
     var body: some Scene {

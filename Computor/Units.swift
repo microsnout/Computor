@@ -288,13 +288,26 @@ func toUnitCode( from: TypeCode ) -> UnitCode {
 }
 
 
+struct UserUnitDef : Codable {
+    var uid:  UnitId
+    var usig: UnitSignature
+    var sym:  String?
+    
+    init( _ uid: UnitId, _ usig: UnitSignature, _ sym: String? = nil) {
+        self.uid = uid
+        self.usig = usig
+        self.sym = sym
+    }
+}
+
+
 class UnitDef {
     var uid:    UnitId
     var sym:    String?
     var uc:     UnitCode
     
     static var uidNext: UnitId = userIdBase
-    
+
     static func getUserUnitId() -> UnitId {
         // Allocate new UnitId for type .user
         let uid = UnitDef.uidNext
@@ -306,6 +319,7 @@ class UnitDef {
         if uid == .user {
             // For defining unit definitions for standard predefined units only, not .user
             logU.error("Cannot define .user UnitDef without signature")
+            assert(false)
         }
         
         self.uid = uid.rawValue
@@ -319,16 +333,25 @@ class UnitDef {
         }
     }
     
-    init( _ usig: UnitSignature, sym: String? = nil ) {
+    init( _ usig: UnitSignature, uid: UnitId, sym: String? = nil ) {
         // Allocate new UnitId starting at .user, sym is optional, UnitCode produced from signature
-        self.uid = UnitDef.getUserUnitId()
+        self.uid = uid
         self.sym = sym
         self.uc = toUnitCode( from: usig )
     }
     
-    static var unitDict: [UnitId : UnitDef] = [:]
-    static var symDict:  [String : UnitDef] = [:]
+    static var unitDict: [UnitId : UnitDef]        = [:]
+    static var symDict:  [String : UnitDef]        = [:]
     static var sigDict:  [UnitSignature : UnitDef] = [:]
+    
+    static func clearUnitData() {
+        UnitDef.unitDict = [:]
+        UnitDef.symDict  = [:]
+        UnitDef.sigDict  = [:]
+        UnitDef.uidNext  = userIdBase
+    }
+    
+    static var userUnitDefs: [UserUnitDef] = []
 
     static func defineUnit( _ uid: StdUnitId, _ usig: UnitSignature? = nil ) {
         let sym = String( describing: uid )
@@ -339,17 +362,59 @@ class UnitDef {
         UnitDef.symDict[sym] = def
         UnitDef.sigDict[ getUnitSig(def.uc)] = def
     }
-
-    static func defineUserUnit( _ usig: UnitSignature, sym: String? = nil ) -> UnitDef {
-        let def = UnitDef(usig, sym: sym)
+    
+    
+    static func addUserUnit( _ usig: UnitSignature, uid: UnitId, sym: String? = nil ) -> UnitDef {
+        
+        let def = UnitDef(usig, uid: uid, sym: sym)
         
         // Add def to index by UnitId, UnitSignature and Symbol if there is one
         UnitDef.unitDict[def.uid] = def
         UnitDef.sigDict[usig] = def
+        
         if let symbol = sym {
             UnitDef.symDict[symbol] = def
         }
         return def
+    }
+
+    
+    static func defineUserUnit( _ usig: UnitSignature, uid uidProvided: UnitId? = nil, sym: String? = nil ) -> UnitDef {
+        
+        let uid = uidProvided ?? UnitDef.getUserUnitId()
+        
+        // Next uid must be greater than provided one
+        UnitDef.uidNext = max( UnitDef.uidNext, uid+1 )
+        
+        let def = addUserUnit(usig, uid: uid, sym: sym)
+        
+        // Record definition for persistance storage
+        UnitDef.userUnitDefs.append( UserUnitDef(def.uid, usig, def.sym) )
+        
+        return def
+    }
+    
+    
+    static func redefineUserUnits() {
+        
+        for uud in UnitDef.userUnitDefs {
+            _ = UnitDef.addUserUnit(uud.usig, uid: uud.uid, sym: uud.sym)
+        }
+    }
+    
+    static func buildStdUnitData() {
+        UnitDef.defineUnit( .time )
+        UnitDef.defineUnit( .mass )
+        UnitDef.defineUnit( .temp )
+        UnitDef.defineUnit( .angle )
+        UnitDef.defineUnit( .length )
+        UnitDef.defineUnit( .weight )
+        UnitDef.defineUnit( .capacity )
+        UnitDef.defineUnit( .area,          "length^2" )
+        UnitDef.defineUnit( .volume,        "length^3" )
+        UnitDef.defineUnit( .velocity,      "length/time" )
+        UnitDef.defineUnit( .acceleration,  "length/time^2" )
+        UnitDef.defineUnit( .pressure,      "weight/length^2" )
     }
 }
 
@@ -360,6 +425,19 @@ extension UnitDef: CustomStringConvertible {
     }
 }
 #endif
+
+
+struct UserTypeDef : Codable {
+    var tid:  TypeId
+    var uid:  UnitId
+    var tsig: TypeSignature
+    
+    init( _ tid: TypeId, _ uid: UnitId, _ tsig: TypeSignature) {
+        self.tid = tid
+        self.uid = uid
+        self.tsig = tsig
+    }
+}
 
 
 class TypeDef {
@@ -373,10 +451,19 @@ class TypeDef {
     
     static var tidNext: TypeId = 0
     
+    static var tidUserNext: TypeId = 1000
+
     static func getNewTid() -> TypeId {
         // Allocate next type id
         let tid = TypeDef.tidNext
         tidNext += 1
+        return tid
+    }
+
+    static func getNewUserTid() -> TypeId {
+        // Allocate next type id
+        let tid = TypeDef.tidUserNext
+        tidUserNext += 1
         return tid
     }
     
@@ -400,9 +487,9 @@ class TypeDef {
         self.kc = kc
     }
 
-    init( _ uid: UnitId, tsig: TypeSignature ) {
+    init( tid: TypeId, uid: UnitId, tsig: TypeSignature ) {
+        self.tid = tid
         self.uid = uid
-        self.tid = TypeDef.getNewTid()
         self.ratio = 1.0
         self.delta = 0
         self.tc = toTypeCode( from: tsig)
@@ -418,10 +505,20 @@ class TypeDef {
         }
     }
     
-    static var typeDict: [TypeTag : TypeDef] = [tagUntyped : TypeDef()]
-    static var symDict:  [String : TypeTag] = [:]
+    static var typeDict: [TypeTag : TypeDef]       = [tagUntyped : TypeDef()]
+    static var symDict:  [String : TypeTag]        = [:]
     static var sigDict:  [TypeSignature : TypeTag] = [:]
-    static var kcDict:   [KeyCode : TypeTag] = [:]
+    static var kcDict:   [KeyCode : TypeTag]       = [:]
+    
+    static func clearTypeData() {
+        TypeDef.typeDict = [tagUntyped : TypeDef()]
+        TypeDef.symDict  = [:]
+        TypeDef.sigDict  = [:]
+        TypeDef.kcDict   = [:]
+        TypeDef.tidNext  = 0
+    }
+    
+    static var userTypeDefs: [UserTypeDef] = []
     
     static func tagOf( _ sym: String ) -> TypeTag {
         // Required tag lookup or else bug
@@ -431,11 +528,14 @@ class TypeDef {
         return tag
     }
     
-    static func defineType( _ uid: StdUnitId, _ kc: KeyCode, _ sym: String, _ ratio: Double, delta: Double = 0.0 ) {
+    
+    static func defineStdType( _ uid: StdUnitId, _ kc: KeyCode, _ sym: String, _ ratio: Double, delta: Double = 0.0 ) {
+        
         if let _ = UnitDef.unitDict[uid.rawValue] {
-            let def = TypeDef(uid, kc, sym: sym, ratio, delta: delta)
             
+            let def = TypeDef(uid, kc, sym: sym, ratio, delta: delta)
             let tag = TypeTag(uid, def.tid)
+            
             TypeDef.typeDict[tag] = def
             TypeDef.symDict[sym] = tag
             TypeDef.sigDict[sym] = tag
@@ -447,72 +547,87 @@ class TypeDef {
         
     }
     
-    static func defineSigType( _ uid: UnitId, _ tsig: TypeSignature ) {
-        let def = TypeDef(uid, tsig: tsig)
+    
+    static func addUserType( tid: TypeId,  uid: UnitId, _ tsig: TypeSignature ) -> TypeDef {
+        
+        TypeDef.tidUserNext = max( TypeDef.tidUserNext, tid+1 )
+        
+        let def = TypeDef( tid: tid, uid: uid, tsig: tsig)
         let tag = TypeTag(def.uid, def.tid)
+        
         TypeDef.typeDict[tag] = def
         TypeDef.sigDict[tsig] = tag
+        
+        return def
     }
     
     
-    static func buildUnitData() {
-        UnitDef.defineUnit( .time )
-        UnitDef.defineUnit( .mass )
-        UnitDef.defineUnit( .temp )
-        UnitDef.defineUnit( .angle )
-        UnitDef.defineUnit( .length )
-        UnitDef.defineUnit( .weight )
-        UnitDef.defineUnit( .capacity )
-        UnitDef.defineUnit( .area, "length^2" )
-        UnitDef.defineUnit( .volume, "length^3" )
-        UnitDef.defineUnit( .velocity, "length/time" )
-        UnitDef.defineUnit( .acceleration, "length/time^2" )
-        UnitDef.defineUnit( .pressure, "weight/length^2" )
+    static func redefineUserTypes() {
         
-        defineType( .length, .metre,  "m",    1)
-        defineType( .length, .mm, "mm",   1000)
-        defineType( .length, .cm, "cm",   100)
-        defineType( .length, .km, "km",   0.001)
+        for utd in TypeDef.userTypeDefs {
+            _ = TypeDef.addUserType( tid: utd.tid, uid: utd.uid, utd.tsig)
+        }
+    }
+
+    
+    static func defineUserType( tid tidProvided: TypeId? = nil, uid: UnitId, _ tsig: TypeSignature ) {
         
-        defineType( .length, .inch, "in",   1000/25.4)
-        defineType( .length, .ft,   "ft",   1000/(12*25.4))
-        defineType( .length, .yd,   "yd",   1000/(36*25.4))
-        defineType( .length, .mi,   "mi",   1000/(5280*12*25.4))
+        let tid = tidProvided ?? TypeDef.getNewUserTid()
+        
+        TypeDef.tidUserNext = max( TypeDef.tidUserNext, tid+1 )
+        
+        _ = addUserType( tid: tid, uid: uid, tsig)
+        
+        TypeDef.userTypeDefs.append( UserTypeDef(tid, uid, tsig) )
+    }
+    
+    
+    static func buildStdTypeData() {
+        
+        defineStdType( .length, .metre,  "m",1)
+        defineStdType( .length, .mm, "mm",   1000)
+        defineStdType( .length, .cm, "cm",   100)
+        defineStdType( .length, .km, "km",   0.001)
+        
+        defineStdType( .length, .inch, "in",   1000/25.4)
+        defineStdType( .length, .ft,   "ft",   1000/(12*25.4))
+        defineStdType( .length, .yd,   "yd",   1000/(36*25.4))
+        defineStdType( .length, .mi,   "mi",   1000/(5280*12*25.4))
 
         // Angular units
-        defineType( .angle,  .rad,  "rad",  1)
-        defineType( .angle,  .deg,  "deg",  180/Double.pi)
-        defineType( .angle,  .minA, "minA", 180/Double.pi * 60.0)
+        defineStdType( .angle,  .rad,  "rad",  1)
+        defineStdType( .angle,  .deg,  "deg",  180/Double.pi)
+        defineStdType( .angle,  .minA, "minA", 180/Double.pi * 60.0)
 
-        defineType( .time,  .second,   "sec",  1.0)
-        defineType( .time,  .min,   "min",  1.0/60)
-        defineType( .time,  .hr,    "hr",   1.0/(60*60))
-        defineType( .time,  .day,   "day",  1.0/(24*60*60))
-        defineType( .time,  .yr,    "yr",   1.0/(365*24*60*60))
-        defineType( .time,  .ms,    "ms",   1000.0)
-        defineType( .time,  .us,    "\u{03BC}s", 1000000.0)
+        defineStdType( .time,  .second,   "sec",  1.0)
+        defineStdType( .time,  .min,   "min",  1.0/60)
+        defineStdType( .time,  .hr,    "hr",   1.0/(60*60))
+        defineStdType( .time,  .day,   "day",  1.0/(24*60*60))
+        defineStdType( .time,  .yr,    "yr",   1.0/(365*24*60*60))
+        defineStdType( .time,  .ms,    "ms",   1000.0)
+        defineStdType( .time,  .us,    "\u{03BC}s", 1000000.0)
 
-        defineType( .mass,  .kg,    "kg",   1)
-        defineType( .mass,  .gram,  "g",    1000.0)
-        defineType( .mass,  .mg,    "mg",   1000*1000.0)
-        defineType( .mass,  .tonne, "tn",   0.001)
+        defineStdType( .mass,  .kg,    "kg",   1)
+        defineStdType( .mass,  .gram,  "g",    1000.0)
+        defineStdType( .mass,  .mg,    "mg",   1000*1000.0)
+        defineStdType( .mass,  .tonne, "tn",   0.001)
 
-        defineType( .mass, .lb,    "lb",   2.2046226218488)
-        defineType( .mass, .oz,    "oz",   2.2046226218488 * 16.0)
-        defineType( .mass, .ton,   "ton",  2.2046226218488 / 2000.0)
-        defineType( .mass, .stone, "st",   2.2046226218488 / 14.0)
+        defineStdType( .mass, .lb,    "lb",   2.2046226218488)
+        defineStdType( .mass, .oz,    "oz",   2.2046226218488 * 16.0)
+        defineStdType( .mass, .ton,   "ton",  2.2046226218488 / 2000.0)
+        defineStdType( .mass, .stone, "st",   2.2046226218488 / 14.0)
         
-        defineType( .capacity, .mL,    "mL",        1.0)
-        defineType( .capacity, .liter, "L",         1.0/1000)
-        defineType( .capacity, .floz,  "fl-oz",     1.0/29.5735295625)
-        defineType( .capacity, .cup,   "cup",       1.0/(29.5735295625 * 8))
-        defineType( .capacity, .pint,  "pint",      1.0/(29.5735295625 * 16))
-        defineType( .capacity, .quart,  "quart",    1.0/(29.5735295625 * 32))
-        defineType( .capacity, .us_gal,"US-gal",    1.0/(29.5735295625 * 128))
-        defineType( .capacity, .gal,   "gal",       1.0/(1000 * 4.54609))
+        defineStdType( .capacity, .mL,    "mL",        1.0)
+        defineStdType( .capacity, .liter, "L",         1.0/1000)
+        defineStdType( .capacity, .floz,  "fl-oz",     1.0/29.5735295625)
+        defineStdType( .capacity, .cup,   "cup",       1.0/(29.5735295625 * 8))
+        defineStdType( .capacity, .pint,  "pint",      1.0/(29.5735295625 * 16))
+        defineStdType( .capacity, .quart,  "quart",    1.0/(29.5735295625 * 32))
+        defineStdType( .capacity, .us_gal,"US-gal",    1.0/(29.5735295625 * 128))
+        defineStdType( .capacity, .gal,   "gal",       1.0/(1000 * 4.54609))
 
-        defineType( .temp, .degC,    "C",    1.0)
-        defineType( .temp, .degF,    "F",    9.0/5.0, delta: 32)
+        defineStdType( .temp, .degC,    "C",    1.0)
+        defineStdType( .temp, .degF,    "F",    9.0/5.0, delta: 32)
         
         #if DEBUG
         // UnitDef
@@ -869,11 +984,11 @@ func lookupTypeTag( _ tc: TypeCode ) -> TypeTag? {
         
         if let unit = UnitDef.sigDict[usig] {
             // Unit def already exists, add type def
-            TypeDef.defineSigType(unit.uid, tsig)
+            TypeDef.defineUserType( uid: unit.uid, tsig)
         }
         else {
             let unit = UnitDef.defineUserUnit(usig)
-            TypeDef.defineSigType(unit.uid, tsig)
+            TypeDef.defineUserType( uid: unit.uid, tsig)
         }
         
         return TypeDef.sigDict[tsig]
