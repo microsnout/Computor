@@ -132,14 +132,29 @@ func installMatrix( _ model: CalculatorModel ) {
     ])
     
     
-    CalculatorModel.defineOpPatterns( .map, [
+    CalculatorModel.defineOpPatterns( .mapX, [
         
         OpPattern( [ .X(allTypes, .matrix) ], where: { s0 in s0.Xtv.cols == 1 } ) { s0 in
             
             // Create a Reduce function obj capturing the value list and mode reference
-            let mapFn = MapFunction( valueList: s0.Xtv )
+            let mapFn = MapFunctionX( valueList: s0.Xtv )
             
-            model.pushContext( mapFn, lastEvent: KeyEvent( kc: .map) )
+            model.pushContext( mapFn, lastEvent: KeyEvent( kc: .mapX) )
+            
+            // No new state - but don't return nil or it will flag an error
+            return s0
+        }
+    ])
+
+    
+    CalculatorModel.defineOpPatterns( .mapXY, [
+        
+        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .matrix) ], where: { s0 in s0.Xtv.cols == 1 && s0.Ytv.cols == 1 } ) { s0 in
+            
+            // Create a Reduce function obj capturing the value list and mode reference
+            let mapFn = MapFunctionXY( valueListX: s0.Xtv, valueListY: s0.Ytv )
+            
+            model.pushContext( mapFn, lastEvent: KeyEvent( kc: .mapX) )
             
             // No new state - but don't return nil or it will flag an error
             return s0
@@ -225,7 +240,7 @@ func installMatrix( _ model: CalculatorModel ) {
 }
 
 
-class MapFunction : ModalContext {
+class MapFunctionX : ModalContext {
     
     let valueList:  TaggedValue
     
@@ -247,13 +262,80 @@ class MapFunction : ModalContext {
         
         // Remove parameter value from stack
         model.state.stackDrop()
-
+        
         for r in 1 ... seqRows {
             
             if let value = valueList.getValue( row: r) {
                 
                 model.enterValue( value )
                 
+                if executeFn( event ) == .stateChange {
+                    
+                    if r == 1 {
+                        // Grab the first result to define the type tag and format for result
+                        let firstValue = model.state.Xtv
+                        let ss = firstValue.size
+                        
+                        // Establish size of result and add first value
+                        resultList = firstValue
+                        resultList.setShape(ss, seqRows)
+                        resultList.setValue( firstValue, row: 1)
+                    }
+                    else {
+                        // Add next value at correct row
+                        resultList.setValue( model.state.Xtv, row: r )
+                    }
+                    
+                    // Remove intermediate result
+                    model.state.stackDrop()
+                }
+                else {
+                    return KeyPressResult.stateError
+                }
+            }
+        }
+        
+        // Push final result list
+        model.enterValue(resultList)
+        return KeyPressResult.stateChange
+    }
+}
+
+
+class MapFunctionXY : ModalContext {
+    
+    let valueListX:  TaggedValue
+    let valueListY:  TaggedValue
+
+    init( valueListX: TaggedValue, valueListY: TaggedValue ) {
+        self.valueListX = valueListX
+        self.valueListY = valueListY
+    }
+    
+    override var statusString: String? { "ç{Units}Map-xy ƒ(,)" }
+    
+    override func modalExecute( _ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        print( "MapFunctionXY keypress: \(event.kc)")
+        
+        // Start with empty output list
+        let seqRows    = min( valueListX.rows, valueListY.rows )
+        var resultList = TaggedValue()
+        
+        // Remove parameters from stack
+        model.state.stackDrop()
+        model.state.stackDrop()
+
+        for r in 1 ... seqRows {
+            
+            if let valueX = valueListX.getValue( row: r),
+               let valueY = valueListY.getValue( row: r) {
+                
+                model.enterValue( valueY )
+                model.enterValue( valueX )
+
                 if executeFn( event ) == .stateChange {
                     
                     if r == 1 {
