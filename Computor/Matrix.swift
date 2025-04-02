@@ -235,23 +235,41 @@ func installMatrix( _ model: CalculatorModel ) {
         OpPattern( [ .X([.real]), .Y([.real, .rational, .complex, .vector, .polar, .vector3D, .spherical], .matrix) ],
                    where: { s0 in isInt(s0.X) } ) { s0 in
             
-            let ( _, rows, _ ) = s0.Ytv.getShape()
+           let ( _, rows, cols ) = s0.Ytv.getShape()
             
-            let n = Int(s0.X)
+           let n = Int(s0.X)
+                       
+           if cols > 1 {
+               
+               guard n >= 1 && n <= cols else {
+                   return nil
+               }
+               
+               var tv = TaggedValue( s0.Yvtp, tag: s0.Yt, format: s0.Yfmt, rows: rows, cols: 1 )
+               
+               tv.copyColumn( toCol: 1, from: s0.Ytv, atCol: n)
+               
+               var s1 = s0
+               s1.stackDrop()
+               s1.Xtv = tv
+               return s1
+           }
+           else {
+               
+               guard n >= 1 && n <= rows else {
+                   return nil
+               }
+               
+               guard let tv = s0.Ytv.getValue( row: n ) else {
+                   return nil
+               }
+               
+               var s1 = s0
+               s1.stackDrop()
+               s1.Xtv = tv
+               return s1
+           }
             
-            guard n >= 1 && n <= rows else {
-                return nil
-            }
-            
-            guard let tv = s0.Ytv.getValue( row: n ) else {
-                return nil
-            }
-            
-            var s1 = s0
-            s1.stackDrop()
-            
-            s1.Xtv = tv
-            return s1
         },
     ])
 }

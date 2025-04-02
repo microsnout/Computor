@@ -6,37 +6,60 @@
 //
 import SwiftUI
 
+enum PlotType {
+    case none, vector2D, pointArray
+}
+
+struct PlotPattern {
+    let type: PlotType
+    let pattern: RegisterPattern
+    
+    init( _ type: PlotType, _ pattern: [RegisterSpec], where test: StateTest? = nil ) {
+        self.type = type
+        self.pattern = RegisterPattern( pattern, test )
+    }
+}
+
 
 struct PlotView : View {
     
     @StateObject var model: CalculatorModel
     
-    enum PlotPattern {
-        case none, vector2D, pointArray
-    }
     
-    let vectorTypes: Set<ValueType> = [.complex, .vector, .polar]
-    
-    
-    func matchPlotPattern() -> PlotPattern {
-        
-        let tvX = model.state.Xtv
-        
-        if tvX.isSimple && vectorTypes.contains(tvX.vtp) {
-            return .vector2D
-        }
-        
-        if tvX.isMatrix && tvX.cols == 1 && tvX.rows > 1 && vectorTypes.contains(tvX.vtp) {
-            return .pointArray
-        }
 
-        return PlotPattern.none
+    static var plotPatternTable: [PlotPattern] = [
+        
+        PlotPattern(.vector2D,
+                    [ .X(vector2DTypes) ]),
+        
+        PlotPattern(.pointArray,
+                    [ .X(vector2DTypes, .matrix)], where: { $0.Xtv.rows > 1 } ),
+        
+    ]
+    
+    
+    func matchPlotPattern() -> [PlotType] {
+        
+        var plotList = [PlotType]()
+        
+        for pat in PlotView.plotPatternTable {
+            
+            if model.state.patternMatch(pat.pattern) {
+                plotList.append(pat.type)
+            }
+        }
+        
+        return plotList
     }
 
     
     var body: some View {
         
-        switch matchPlotPattern() {
+        let plotList = matchPlotPattern()
+        
+        let plotType = plotList.isEmpty ? PlotType.none : plotList[0]
+        
+        switch plotType {
             
         case .vector2D:
             PlotVectorView( model: model )

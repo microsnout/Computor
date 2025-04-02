@@ -17,6 +17,10 @@ enum ValueType : Int, Codable, Hashable {
 
 typealias ValueTypeSet = Set<ValueType>
 
+let vector2DTypes: ValueTypeSet = [.complex, .vector, .polar]
+let vector3DTypes: ValueTypeSet = [.vector3D, .spherical]
+let allTypes: ValueTypeSet      = [.real, .rational, .complex, .vector, .vector3D, .polar, .spherical]
+
 enum ValueShape : Int, Codable {
     case simple = 0, matrix
 }
@@ -218,7 +222,7 @@ extension TaggedValue {
         let xF = from.storageIndex( ss, row: 1, col: atCol )
         
         for i in 0 ..< rows*ss {
-            storage[xT+i] = from.storage[xF+1]
+            storage[xT+i] = from.storage[xF+i]
         }
     }
     
@@ -289,7 +293,7 @@ extension TaggedValue {
     
     // Get and Set Real, Rational, Complex, Vector, polar, vector3D, spherical
     
-    func getReal() -> Double { get1() }
+    func getReal( _ r: Int = 1, _ c: Int = 1 ) -> Double { get1( r: r, c: c ) }
     
     mutating func setReal( _ value: Double,
                              tag: TypeTag = tagUntyped,
