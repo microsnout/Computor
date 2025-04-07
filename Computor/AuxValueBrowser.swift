@@ -20,7 +20,7 @@ struct ValueBrowserView: View {
 
         VStack {
             AuxHeaderView( theme: Theme.lightRed ) {
-                RichText( "\(nameStr) Register", size: .small )
+                RichText( "\(nameStr) Register", size: .small, weight: .bold )
             }
             
             Spacer()

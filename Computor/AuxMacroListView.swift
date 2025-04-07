@@ -22,7 +22,7 @@ struct MacroListView: View {
                     HStack {
                         Spacer()
                         
-                        RichText(captionTxt, size: .small )
+                        RichText(captionTxt, size: .small, weight: .bold )
                         
                         Spacer()
                     }
@@ -59,7 +59,7 @@ struct MacroListView: View {
         else {
             VStack {
                 AuxHeaderView( theme: Theme.lightYellow ) {
-                    RichText( "Macro List", size: .small  )
+                    RichText( "Macro List", size: .small, weight: .bold  )
                 }
                 
                 Spacer()

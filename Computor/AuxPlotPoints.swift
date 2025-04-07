@@ -49,7 +49,7 @@ struct PlotPointsView: View {
         
         VStack {
             AuxHeaderView( theme: Theme.lightPurple ) {
-                RichText( "Vector Plot", size: .small )
+                RichText( "Vector Plot", size: .small, weight: .bold )
             }
             
             if !plotableValue( model.state.Xtv ) {

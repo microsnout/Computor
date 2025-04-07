@@ -63,7 +63,7 @@ struct MemoryDetailView: View {
     var body: some View {
         VStack {
             AuxHeaderView( theme: Theme.lightGreen ) {
-                RichText( "Memory Detail", size: .small )
+                RichText( "Memory Detail", size: .small, weight: .bold )
             }
             
             Spacer()

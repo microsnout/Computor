@@ -16,7 +16,7 @@ struct MemoryListView: View {
                 
                 HStack {
                     Spacer()
-                    RichText( "Memory List", size: .small )
+                    RichText( "Memory List", size: .small, weight: .bold )
                     Spacer()
                     
                     Button( action: { model.addMemoryItem() }) {

@@ -70,7 +70,7 @@ struct PlotView : View {
         case .none:
             VStack {
                 AuxHeaderView( theme: Theme.lightPurple ) {
-                    RichText( "Plot", size: .small )
+                    RichText( "Plot", size: .small, weight: .bold )
                 }
                 
                 Spacer()

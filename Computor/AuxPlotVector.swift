@@ -180,7 +180,7 @@ struct PlotVectorView : View {
         
         VStack {
             AuxHeaderView( theme: Theme.lightPurple ) {
-                RichText( "Plot", size: .small )
+                RichText( "Plot", size: .small, weight: .bold )
             }
             
             Canvas(
