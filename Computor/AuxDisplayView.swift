@@ -71,6 +71,9 @@ struct AuxiliaryDisplayView: View {
         }
         .scrollPosition( id: $scrollPos )
         .scrollTargetBehavior(.viewAligned)
+        .onAppear() {
+            scrollPos = auxView
+        }
         .onChange( of: auxView ) { oldView, newView in
             withAnimation() {
                 scrollPos = newView
