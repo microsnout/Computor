@@ -116,6 +116,7 @@ struct CalculatorView: View {
                 }
             }
         }
+        .environmentObject(model)
         .task {
             do {
                 try await model.loadState()

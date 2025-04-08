@@ -37,10 +37,6 @@ enum KeyPressResult: Int {
 
 protocol KeyPressHandler {
     func keyPress(_ event: KeyEvent ) -> KeyPressResult
-    
-    func getKeyText( _ kc: KeyCode ) -> String?
-    
-    func isKeyRecording( _ kc: KeyCode ) -> Bool
 }
 
 struct KeySpec {
@@ -344,7 +340,8 @@ struct KeyView: View {
     let keyPressHandler: KeyPressHandler
 
     @EnvironmentObject var keyData: KeyData
-    
+    @EnvironmentObject var model: CalculatorModel
+
     @AppStorage(.settingsKeyCaptions)
     private var keyCaptions = true
 
@@ -478,7 +475,7 @@ struct KeyView: View {
         let hasSubpad = SubPadSpec.getSpec(key.kc) != nil
         
         VStack {
-            let text: String? = key.text == nil ? keyPressHandler.getKeyText(key.kc) : key.text
+            let text: String? = key.text == nil ? model.getKeyText(key.kc) : key.text
             
             GeometryReader { geometry in
                 let vframe = geometry.frame(in: CoordinateSpace.global)
@@ -550,7 +547,7 @@ struct KeyView: View {
                                 _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc))
                             }
                         })
-                    .if( text != nil && !keyPressHandler.isKeyRecording(key.kc) ) { view in
+                    .if( text != nil && !model.aux.isRecordingKey(key.kc) ) { view in
                         // Add rich text label to key
                         view.overlay(
                             RichText( text!, size: .normal, weight: .bold,
@@ -573,7 +570,7 @@ struct KeyView: View {
                                 .alignmentGuide(.trailing) { $0[.trailing] + 3 }
                         }
                     }
-                    .if( keyPressHandler.isKeyRecording(key.kc) ) { view in
+                    .if( model.aux.isRecordingKey(key.kc) ) { view in
                         // Add red recording dot to macro key
                         view.overlay {
                             redCircle

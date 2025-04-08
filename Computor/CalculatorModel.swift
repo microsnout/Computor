@@ -247,6 +247,22 @@ class RecordingContext : EventContext {
         case .showFn, .recFn, .openBrace, .closeBrace:
             return KeyPressResult.noOp
             
+        case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
+            if model.aux.isRecordingKey(event.kc) {
+                
+                // Consider this fn key a stopFn command
+                fallthrough
+            }
+            else if model.appState.fnList[event.kc] == nil {
+                
+                // No op any undefined keys
+                return KeyPressResult.noOp
+            } else {
+                
+                model.aux.recordKeyFn( event )
+                return model.execute( event )
+            }
+            
         case .stopFn:
             if !model.aux.list.opSeq.isEmpty {
                 model.saveMacroFunction(kcFn, model.aux.list)
@@ -257,15 +273,7 @@ class RecordingContext : EventContext {
             // Pop the local variable storage, restoring prev
             model.currentLVF = model.currentLVF?.prevLVF
             return KeyPressResult.macroOp
-            
-        case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
-            if model.appState.fnList[event.kc] == nil {
-                // No op any undefined keys
-                return KeyPressResult.noOp
-            }
-            model.aux.recordKeyFn( event )
-            return model.execute( event )
-            
+
         case .back:
             if model.aux.list.opSeq.isEmpty {
                 
@@ -1349,14 +1357,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         // Not a Fn key
         return nil
-    }
-    
-    
-    func isKeyRecording( _ kc: KeyCode = .null ) -> Bool {
-        if kc == .null {
-            return aux.kcRecording != nil
-        }
-        return aux.kcRecording == kc
     }
     
     

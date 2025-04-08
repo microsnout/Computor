@@ -35,6 +35,10 @@ extension AuxState {
     
     var isRecording: Bool { kcRecording != nil }
     
+    func isRecordingKey( _ kc: KeyCode ) -> Bool {
+        kcRecording == kc
+    }
+
     func getDebugText() -> String {
         var txt = "AuxState("
         txt += String( describing: activeView )
@@ -61,7 +65,7 @@ extension AuxState {
     }
     
     mutating func startRecFn( _ kc: KeyCode ) {
-        if KeyCode.fnSet.contains(kc) && kcRecording == nil {
+        if KeyCode.fnSet.contains(kc) && !isRecording {
             // We can start recording key kc
             // Start with an empty list of instructions
             // Auxiliary display mode to macro list

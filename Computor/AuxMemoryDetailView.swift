@@ -54,10 +54,6 @@ struct MemoryDetailView: View {
             }
             return KeyPressResult.stateChange
         }
-        
-        func getKeyText( _ kc: KeyCode ) -> String? { nil }
-        
-        func isKeyRecording( _ kc: KeyCode ) -> Bool { false }
     }
     
     var body: some View {
