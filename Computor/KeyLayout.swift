@@ -133,14 +133,36 @@ let psFunctions2L = PadSpec(
             ]
     )
 
+// ***
+
 let psFunctions2R = PadSpec(
+    keySpec: ksSoftkey,
+    cols: 3,
+    keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
+            Key(.openBrace, "{"),
+            Key(.noop,      "ç{GrayText}{ }"),
+          ]
+)
+
+let psFunctions2Ro = PadSpec(
+    keySpec: ksSoftkey,
+    cols: 3,
+    keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
+            Key(.openBrace, "{"),
+            Key(.openBrace, "{ ç{GrayText}}"),
+          ]
+)
+
+let psFunctions2Rc = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
         keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
                 Key(.openBrace, "{"),
-                Key(.closeBrace, "}"),
+                Key(.closeBrace, "ç{GrayText}{ ç{}}"),
             ]
     )
+
+// ***
 
 let psFormatL = PadSpec (
     keySpec: ksSoftkey,
@@ -387,6 +409,14 @@ func initKeyLayout() {
                         Key(.popX,    "ƒ{0.9}PopX"),
                         Key(.popXY,   "ƒ{0.9}PopXY"),
                         Key(.popXYZ,  "ƒ{0.9}PopXYZ"),
+                       ]
+    )
+    
+    SubPadSpec.define( .roll,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.roll, "R\u{2193}"),
+                        Key(.lastx, "LSTx"),
                        ]
     )
 

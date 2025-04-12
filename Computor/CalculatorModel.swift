@@ -373,6 +373,9 @@ class ModalContext : EventContext {
         if let model = self.model {
             // We could be used within a recording context or a normal context
             withinRecContext = model.eventContext?.previousContext is RecordingContext
+            
+            // Enable the open brace key on keyboard
+            model.kstate.func2R = psFunctions2Ro
         }
     }
     
@@ -474,6 +477,9 @@ class ModalContext : EventContext {
             }
             
         default:
+            // Disable braces
+            model.kstate.func2R = psFunctions2R
+            
             if event.kc != .macro && model.eventContext?.previousContext is RecordingContext {
                 
                 // Save rollback point in case the single key func is backspaced
@@ -549,6 +555,9 @@ class BlockRecord : EventContext {
         
         // Save the starting macro index
         macroIndex = model.aux.markMacroIndex()
+        
+        // Enable the close brace key on keyboard
+        model.kstate.func2R = psFunctions2Rc
     }
     
     override func event( _ event: KeyEvent ) -> KeyPressResult {
@@ -568,7 +577,9 @@ class BlockRecord : EventContext {
             return KeyPressResult.recordOnly
 
         case .closeBrace:
-            
+            // Disable braces
+            model.kstate.func2R = psFunctions2R
+
             if openCount == 0 {
                 // Restore the modal context and pass the .macro event
                 model.saveRollback( to: model.aux.list.opSeq.count )
@@ -654,6 +665,12 @@ struct ApplicationState : Codable {
 }
 
 
+struct KeyState {
+    
+    var func2R: PadSpec = psFunctions2R
+}
+
+
 // ***********************************************************
 // ***********************************************************
 // ***********************************************************
@@ -665,6 +682,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var entry  = EntryState()
     @Published var aux    = AuxState()
     @Published var status = StatusState()
+    @Published var kstate = KeyState()
     
     // Persistant state of all calculator customization for specific applications
     // State of macro keys Fn1 to Fn6
@@ -785,6 +803,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             // Keep new entered X value
             state.stack[regX] = tv
+            state.lastX = tv
         }
     }
 

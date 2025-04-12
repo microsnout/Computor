@@ -52,7 +52,7 @@ extension CalculatorModel {
         .eExp: UnaryOp( parm: tagUntyped, result: tagUntyped, { x in exp(x) } ),
 
         .pi:    Constant( Double.pi ),
-        .exp:     Constant( exp(1.0) ),
+        .exp:   Constant( exp(1.0) ),
         .abs:   UnaryOp( { x in abs(x) } ),
         .sign:  UnaryOp( { x in -x }),
         
@@ -202,6 +202,15 @@ extension CalculatorModel {
             CustomOp { s0 in
                 var s1 = s0
                 s1.stackRoll()
+                return s1
+            },
+        
+        .lastx:
+            // Recall last X value
+            CustomOp { s0 in
+                var s1 = s0
+                s1.stackLift()
+                s1.Xtv = s0.lastX
                 return s1
             },
         

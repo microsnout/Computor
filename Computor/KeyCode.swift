@@ -33,7 +33,7 @@ enum KeyCode: Int, Codable {
     case fn0 = 160, fn1, fn2, fn3, fn4, fn5, fn6
     
     // Macro Op
-    case macroOp = 170, clrFn, recFn, stopFn, showFn, openBrace, closeBrace, macro
+    case macroOp = 170, clrFn, recFn, stopFn, showFn, braceKey, openBrace, closeBrace, macro
     
     // Multi valued types
     case multiValue = 180, rational, vector, polar, complex, vector3D, spherical

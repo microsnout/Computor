@@ -74,7 +74,7 @@ struct CalculatorView: View {
                                     HStack {
                                         KeypadView( padSpec: psFunctions2L, keyPressHandler: model )
                                         Spacer()
-                                        KeypadView( padSpec: psFunctions2R, keyPressHandler: model )
+                                        KeypadView( padSpec: model.kstate.func2R, keyPressHandler: model )
                                     }
                                     HStack {
                                         KeypadView( padSpec: psFunctionsL, keyPressHandler: model )

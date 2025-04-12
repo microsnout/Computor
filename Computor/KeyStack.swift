@@ -123,6 +123,13 @@ extension SubPadSpec {
     }
 }
 
+
+struct AltKeySet {
+    var kc: KeyCode
+    var keys: [Key]
+}
+
+
 struct PadSpec {
     var keySpec: KeySpec = KeySpec()
     var cols: Int        = 1
