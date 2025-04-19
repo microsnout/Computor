@@ -15,8 +15,11 @@ typealias  KeyEvent0 = KeyCode
 struct KeyEvent : Codable {
     var kc: KeyCode
     
-    // Top level key pressed when kc is from popup menu
-    var kcAux: KeyCode?
+    // Top level key like .fn4 when kc is an opcode from a sub popup menu like .rec
+    var kcTop: KeyCode?
+    
+    // Key code from a sub menu like .A when kc is .Sto
+    var kcSub: KeyCode?
 }
 
 enum KeyPressResult: Int {
@@ -446,7 +449,7 @@ struct KeyView: View {
                     else {
                         
                         // Subpop menu key event
-                        _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc, kcAux: keyData.pressedKey?.kc))
+                        _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc, kcTop: keyData.pressedKey?.kc))
                         
                         // Cannot clear this value in the modal subpad case above so do it here
                         keyData.pressedKey = nil
@@ -530,7 +533,7 @@ struct KeyView: View {
                             if keyData.modalUp {
                                 let modalKey = keyData.pressedKey?.kc
                                 
-                                let event = KeyEvent( kc: modalKey ?? .noop, kcAux: key.kc )
+                                let event = KeyEvent( kc: modalKey ?? .noop, kcSub: key.kc )
                                 
                                 // Close modal popup
                                 keyData.pressedKey = nil

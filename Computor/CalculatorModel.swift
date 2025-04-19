@@ -110,14 +110,14 @@ class NormalContext : EventContext {
         switch event.kc {
             
         case .clrFn:
-            if let kcFn = event.kcAux {
+            if let kcFn = event.kcTop {
                 model.clearMacroFunction(kcFn)
                 model.aux.stopRecFn(kcFn)
             }
             return KeyPressResult.macroOp
             
         case .showFn:
-            if let kcFn = event.kcAux {
+            if let kcFn = event.kcTop {
                 if let fn = model.appState.fnList[kcFn] {
                     model.aux.list = fn.macro
                     model.aux.macroKey = fn.fnKey
@@ -215,7 +215,7 @@ class RecordingContext : EventContext {
         
         guard let model = self.model else { return }
         
-        if let kcFn = lastEvent.kcAux {
+        if let kcFn = lastEvent.kcTop {
             
             // Start recording the indicated Fn key
             self.kcFn = kcFn
@@ -1054,7 +1054,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func storeRegister( _ event: KeyEvent, _ tv: TaggedValue ) {
         
-        if let kcMem = event.kcAux {
+        if let kcMem = event.kcSub {
             
             if let lvf = currentLVF {
                 
@@ -1140,14 +1140,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             // TODO: Adding .sto and .rcl here
             
         case .popX:
-            storeRegister( KeyEvent( kc: .popX, kcAux: .x ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popX, kcSub: .x ), state.Xtv)
             state.stackDrop()
 
         case .popXY:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( kc: .popXY, kcAux: .x ), state.Xtv)
-            storeRegister( KeyEvent( kc: .popXY, kcAux: .y ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXY, kcSub: .x ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popXY, kcSub: .y ), state.Ytv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
@@ -1155,9 +1155,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .popXYZ:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( kc: .popXYZ, kcAux: .x ), state.Xtv)
-            storeRegister( KeyEvent( kc: .popXYZ, kcAux: .y ), state.Ytv)
-            storeRegister( KeyEvent( kc: .popXYZ, kcAux: .z ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .x ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .y ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .z ), state.Ytv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
@@ -1173,7 +1173,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             storeRegister( event, state.Ztv )
 
         case .rcl:
-            if let kcMem = event.kcAux {
+            if let kcMem = event.kcSub {
                 
                 let name = String( describing: kcMem )
                 

@@ -36,11 +36,11 @@ struct MacroListView: View {
                             ForEach (list.opSeq.indices, id: \.self) { x in
                                 let op: MacroOp = list.opSeq[x]
                                 let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
-                                let txt = op.getRichText(model)
+                                let text = op.getRichText(model)
                                 
                                 HStack {
                                     RichText( line, size: .small )
-                                    RichText( txt, size: .small, weight: .bold )
+                                    RichText( text, size: .small, weight: .bold )
                                     Spacer()
                                 }
                             }

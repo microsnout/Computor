@@ -35,9 +35,9 @@ struct MacroKey: CodableMacroOp {
             
             // TODO: Need to combine aux with kc to produce .Sto A
             if var keyText = key.text {
-                if let kcAux = event.kcAux {
+                if let kcSub = event.kcSub {
                     keyText += " "
-                    keyText += String( describing: kcAux )
+                    keyText += String( describing: kcSub )
                 }
                 return keyText
             }
