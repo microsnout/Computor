@@ -139,8 +139,8 @@ let psFunctions2R = PadSpec(
     keySpec: ksSoftkey,
     cols: 3,
     keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
-            Key(.openBrace, "{"),
-            Key(.noop,      "ç{GrayText}{ }"),
+            Key(.noop),
+            Key(.noop, "ç{GrayText}{ }"),
           ]
 )
 
@@ -148,7 +148,7 @@ let psFunctions2Ro = PadSpec(
     keySpec: ksSoftkey,
     cols: 3,
     keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
-            Key(.openBrace, "{"),
+            Key(.noop),
             Key(.openBrace, "{ ç{GrayText}}"),
           ]
 )
@@ -157,7 +157,7 @@ let psFunctions2Rc = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
         keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
-                Key(.openBrace, "{"),
+                Key(.noop),
                 Key(.closeBrace, "ç{GrayText}{ ç{}}"),
             ]
     )

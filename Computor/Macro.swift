@@ -33,9 +33,20 @@ struct MacroKey: CodableMacroOp {
     func getRichText( _ model: CalculatorModel ) -> String {
         if let key = Key.keyList[event.kc] {
             
-            // TODO: Need to combine aux with kc to produce .Sto A
             if var keyText = key.text {
+                
+                // Special case for open brace to avoid {}
+                if event.kc == .openBrace {
+                    keyText = "{"
+                }
+                
+                // Special case for close brace to avoid {}
+                if event.kc == .closeBrace {
+                    keyText = "}"
+                }
+
                 if let kcSub = event.kcSub {
+                    // Add sub key parm to op, like adding .A to .Sto
                     keyText += " "
                     keyText += String( describing: kcSub )
                 }
