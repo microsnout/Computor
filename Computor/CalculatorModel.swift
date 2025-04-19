@@ -87,6 +87,12 @@ class EventContext {
         return KeyPressResult.null
     }
     
+    func enterValue( _ tv: TaggedValue ) {
+        if let model = self.model {
+            model.pushValue(tv)
+        }
+    }
+    
     func onModelSet() {
         // Override if needed
     }
@@ -642,6 +648,15 @@ class BlockRecord : EventContext {
             model.aux.recordKeyFn(event)
             return KeyPressResult.recordOnly
         }
+    }
+    
+    
+    override func enterValue(_ tv: TaggedValue) {
+        
+        guard let model = self.model else { return }
+        
+        model.aux.recordValueFn(tv)
+        model.pushValue(tv)
     }
 }
 
@@ -1380,6 +1395,15 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     func enterValue(_ tv: TaggedValue) {
+        if let ctx = eventContext {
+            ctx.enterValue(tv)
+        }
+        else {
+            pushValue(tv)
+        }
+    }
+
+    func pushValue(_ tv: TaggedValue) {
         // For macros, bypass data entry mode and enter a value directly
         state.stackLift()
         state.Xtv = tv
