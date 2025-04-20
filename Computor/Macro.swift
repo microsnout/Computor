@@ -35,16 +35,6 @@ struct MacroKey: CodableMacroOp {
             
             if var keyText = key.text {
                 
-                // Special case for open brace to avoid {}
-                if event.kc == .openBrace {
-                    keyText = "{"
-                }
-                
-                // Special case for close brace to avoid {}
-                if event.kc == .closeBrace {
-                    keyText = "}"
-                }
-
                 if let kcSub = event.kcSub {
                     // Add sub key parm to op, like adding .A to .Sto
                     keyText += " "

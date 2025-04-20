@@ -149,7 +149,7 @@ let psFunctions2Ro = PadSpec(
     cols: 3,
     keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
             Key(.noop),
-            Key(.openBrace, "{ ç{GrayText}}"),
+            Key(.openBrace, "{"),
           ]
 )
 
@@ -158,7 +158,7 @@ let psFunctions2Rc = PadSpec(
         cols: 3,
         keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
                 Key(.noop),
-                Key(.closeBrace, "ç{GrayText}{ ç{}}"),
+                Key(.closeBrace, "}"),
             ]
     )
 

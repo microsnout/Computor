@@ -482,6 +482,18 @@ class ModalContext : EventContext {
                 return KeyPressResult.stateChange
             }
             
+        case .back:
+            // Disable braces
+            model.kstate.func2R = psFunctions2R
+            
+            // Restore the Normal context
+            model.popContext( event )
+            
+            model.popState()
+            
+            return KeyPressResult.stateUndo
+
+            
         default:
             // Disable braces
             model.kstate.func2R = psFunctions2R
@@ -493,9 +505,6 @@ class ModalContext : EventContext {
                 
                 // Record the key
                 model.aux.recordKeyFn( event )
-                
-                // Restore the Recording context before executing the function
-                model.popContext( event )
             }
             
             // Restore either the Normal context before executing the function
@@ -603,6 +612,7 @@ class BlockRecord : EventContext {
             
         case .back:
             if model.aux.list.opSeq.isEmpty {
+                model.kstate.func2R = psFunctions2R
                 
                 // Cancel both BlockRecord context and the ModalContext that spawned it
                 model.aux.stopRecFn(.openBrace)
@@ -1190,8 +1200,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .rcl:
             if let kcMem = event.kcSub {
                 
-                let name = String( describing: kcMem )
-                
                 var tv: TaggedValue
                 
                 if let lvf = currentLVF,
@@ -1229,8 +1237,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 for op in macro.opSeq {
                     if op.execute(self) == KeyPressResult.stateError {
                         resumeUndoStack()
+                        currentLVF = currentLVF?.prevLVF
                         popContext()
                         popState()
+                        
+                        logM.debug( "Execute \(String( describing: keyCode)): ERROR \(String( describing: op.getRichText(self) ))")
                         return KeyPressResult.stateError
                     }
                 }
