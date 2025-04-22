@@ -186,7 +186,36 @@ extension TaggedValue {
         self.mat = cols + rows*M + ss*M*M
         self.storage = [Double]( repeating: 0.0, count: self.capacity )
     }
+
+    private func storageIndex( _ ssx: Int = 1, r: Int = 1, c: Int = 1 ) -> Int {
+        let (ss, _, cols) = self.getShape()
+        return (r-1)*ss*cols + (c-1)*ss + (ssx-1)
+    }
     
+    private func valueIndex( r: Int = 1, c: Int = 1) -> Int {
+        let (ss, _, cols) = getShape()
+        return (r-1)*ss*cols + (c-1)*ss
+    }
+
+    
+    mutating func addRows( _ newRows: Int ) {
+        
+        guard isMatrix && newRows > 0 else {
+            assert(false)
+            return
+        }
+        
+        // Current matrix shape
+        let (ss, rows, cols) = getShape()
+        
+        let newCapacity = capacity + newRows * cols * ss
+        
+        storage.resize( to: newCapacity, with: 0.0)
+        
+        // Set new shape
+        mat = cols + (rows + newRows)*M + ss*M*M
+    }
+
     
     mutating func addColumns( _ newCols: Int ) {
         
@@ -198,14 +227,44 @@ extension TaggedValue {
         // Current matrix shape
         let (ss, rows, cols) = getShape()
         
-        let newCapacity = capacity + newCols * rows * ss
+        // Save old storage array
+        let oldStorage = storage
         
-        storage.resize( to: newCapacity, with: 0.0)
+        // Reallocate shape to new size
+        setShape( ss, rows: rows, cols: cols+newCols)
         
-        // Set new shape
-        mat = (cols + newCols) + rows*M + ss*M*M
+        // Copy old matrix to newly allocated storage
+        for r in 1 ... rows {
+            for c in 1 ... cols {
+                for x in 0 ..< ss {
+                    let src = x + (c-1)*ss + (r-1)*cols*ss
+                    let dst = x + (c-1)*ss + (r-1)*(cols+newCols)*ss
+                    storage[dst] = oldStorage[src]
+                }
+            }
+        }
     }
     
+    
+    mutating func copyRow( toRow: Int, from: TaggedValue, atRow: Int ) {
+        
+        let (ss, rows, cols) = getShape()
+        
+        let (ssF, rowsF, colsF) = from.getShape()
+        
+        guard isMatrix && from.isMatrix && toRow <= rows && ss == ssF && cols == colsF && atRow <= rowsF else {
+            assert(false)
+            return
+        }
+        
+        let xT = storageIndex( ss, r: toRow, c: 1 )
+        let xF = from.storageIndex( ss, r: atRow, c: 1 )
+        
+        for i in 0 ..< cols*ss {
+            storage[xT+i] = from.storage[xF+i]
+        }
+    }
+
     
     mutating func copyColumn( toCol: Int, from: TaggedValue, atCol: Int ) {
         
@@ -218,11 +277,14 @@ extension TaggedValue {
             return
         }
         
-        let xT = storageIndex( ss, row: 1, col: toCol )
-        let xF = from.storageIndex( ss, row: 1, col: atCol )
-        
-        for i in 0 ..< rows*ss {
-            storage[xT+i] = from.storage[xF+i]
+        for r in 1 ... rows {
+            
+            let xT = storageIndex( ss, r: r, c: toCol )
+            let xF = from.storageIndex( ss, r: r, c: atCol )
+            
+            for x in 0 ..< ss {
+                storage[xT+x] = from.storage[xF+x]
+            }
         }
     }
     
@@ -247,45 +309,35 @@ extension TaggedValue {
     func isUnit( _ uid: UnitId ) -> Bool {
         return self.tag.uid == uid
     }
-
-    private func storageIndex( _ ssx: Int = 1, row: Int, col: Int = 1 ) -> Int {
-        let (ss, rows, _) = self.getShape()
-        return (col-1)*ss*rows + (row-1)*ss + (ssx-1)
-    }
-    
-    private func valueIndex( r: Int, c: Int = 1) -> Int {
-        let (ss, rows, _) = getShape()
-        return (c-1)*ss*rows + (r-1)*ss
-    }
     
     func get1( r: Int = 1, c: Int = 1 ) -> Double {
-        let index = storageIndex( row: r, col: c)
+        let index = storageIndex( r: r, c: c)
         return storage[index]
     }
 
     func get2( r: Int = 1, c: Int = 1 ) -> (Double, Double) {
-        let index = storageIndex( row: r, col: c)
+        let index = storageIndex( r: r, c: c)
         return (storage[index], storage[index+1])
     }
 
     func get3( r: Int = 1, c: Int = 1 ) -> (Double, Double, Double) {
-        let index = storageIndex( row: r, col: c)
+        let index = storageIndex( r: r, c: c)
         return (storage[index], storage[index+1], storage[index+2])
     }
 
     mutating func set1( _ value: Double, r: Int = 1, c: Int = 1 ) {
-        let index = storageIndex( row: r, col: c)
+        let index = storageIndex( r: r, c: c)
         storage[index] = value
     }
     
     mutating func set2( _ v1: Double, _ v2: Double, r: Int = 1, c: Int = 1 ) {
-        let index = storageIndex( row: r, col: c)
+        let index = storageIndex( r: r, c: c)
         storage[index]   = v1
         storage[index+1] = v2
     }
 
     mutating func set3( _ v1: Double, _ v2: Double, _ v3: Double, r: Int = 1, c: Int = 1 ) {
-        let index = storageIndex( row: r, col: c)
+        let index = storageIndex( r: r, c: c)
         storage[index]   = v1
         storage[index+1] = v2
         storage[index+2] = v3
@@ -457,7 +509,9 @@ extension TaggedValue {
 
     mutating func setValue( _ value: TaggedValue, r: Int = 1, c: Int = 1 ) {
         let (ss, rows, cols) = getShape()
-        if ( r > rows || c > cols ) {
+        
+        guard r <= rows && c <= cols else {
+            assert(false)
             return
         }
 
@@ -474,7 +528,7 @@ extension TaggedValue {
         for c in 1...cols {
             for r in 1...rows {
                 for s in 1...ss {
-                    let index = storageIndex(s, row: r, col: c)
+                    let index = storageIndex(s, r: r, c: c)
                     let oldValue = storage[index]
                     let newValue = fn(oldValue, s, r, c)
                     storage[index] = newValue

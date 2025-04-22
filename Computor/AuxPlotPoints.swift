@@ -11,17 +11,17 @@ struct PlotPointsView: View {
     
     func getRange( _ tv: TaggedValue ) -> (Double, Double, Double, Double) {
         
-        guard tv.isMatrix && tv.cols == 1 && tv.rows > 1 && vector2DTypes.contains(tv.vtp) else {
+        guard tv.isMatrix && tv.rows == 1 && tv.cols > 1 && vector2DTypes.contains(tv.vtp) else {
             return (0.0, 0.0, 0.0, 0.0)
         }
         
-        let n = tv.rows
+        let n = tv.cols
         
         var (xMin, yMin) = tv.getVector( r: 1, c: 1)
         var (xMax, yMax) = (xMin, yMin)
         
-        for r in 2...n {
-            let (x, y) = tv.getVector( r: r)
+        for c in 2...n {
+            let (x, y) = tv.getVector( c: c)
             xMin = min(x, xMin)
             yMin = min(y, yMin)
             xMax = max(x, xMax)
@@ -34,8 +34,8 @@ struct PlotPointsView: View {
     
     func plotableValue( _ tv: TaggedValue ) -> Bool {
         
-        // Require a matrix of rows of vector types or complex
-        tv.isMatrix && tv.cols == 1 && tv.rows > 1 && vector2DTypes.contains(tv.vtp)
+        // Require a row matrix of vector types or complex
+        tv.isMatrix && tv.rows == 1 && tv.cols > 1 && vector2DTypes.contains(tv.vtp)
     }
     
     
@@ -111,12 +111,12 @@ struct PlotPointsView: View {
                         // Shift context to origin
                         ctx.withTransform( dx: xWO, dy: yWO ) { ptx in
                             
-                            let n = tv.rows
-                            let (x1, y1) = tv.getVector( r: 1)
+                            let n = tv.cols
+                            let (x1, y1) = tv.getVector( c: 1)
                             var points = [CGPoint( x: x1 * sxy, y: y1 * sxy )]
                             
-                            for r in 2...n {
-                                let (x, y) = tv.getVector( r: r)
+                            for c in 2...n {
+                                let (x, y) = tv.getVector( c: c)
                                 points.append( CGPoint( x: x * sxy, y: y * sxy ) )
                             }
                             

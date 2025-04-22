@@ -18,7 +18,7 @@ extension TaggedValue {
         
         let ( _, rows, cols) = getShape()
         
-        if cols > 1 {
+        if rows > 1 {
             let rowStr = String(rows)
             let colStr = String(cols)
             let text = "ç{Units}[ç{}\(rowStr)ç{Units} x ç{}\(colStr)ç{Units}]ç{}"
@@ -28,8 +28,8 @@ extension TaggedValue {
         var text  = "ç{Units}[ç{}"
         var count = 1
         
-        for r in 1 ... rows {
-            let (simpleStr, simpleCount) = renderValueSimple( r: r)
+        for c in 1 ... cols {
+            let (simpleStr, simpleCount) = renderValueSimple( c: c )
             
             if count + simpleCount > maxStrCount {
                 text.append( "ç{Units}={..]}ç{}" )
@@ -37,7 +37,7 @@ extension TaggedValue {
             }
             text.append(simpleStr)
             
-            if r == rows {
+            if c == cols {
                 text.append( "ç{Units}]ç{}" )
                 count += simpleCount + 1
             }
@@ -76,7 +76,7 @@ func installMatrix( _ model: CalculatorModel ) {
             // Copy intial value from s0 and create result array of size n
             var result = s0.Ztv
             let ss = result.size
-            result.setShape( ss, rows: n, cols: 1 )
+            result.setShape( ss, rows: 1, cols: n )
             
             // Remove N and increment value from stack
             model.state.stackDrop()
@@ -85,9 +85,9 @@ func installMatrix( _ model: CalculatorModel ) {
             model.pauseUndoStack()
             model.aux.pauseRecording()
             
-            for r in seq {
+            for c in seq {
                 // Copy current result value to result array
-                result.setValue(model.state.Xtv, r: r)
+                result.setValue(model.state.Xtv, c: c)
                 
                 // Increment X value by inc
                 model.enterValue(inc)
@@ -121,10 +121,10 @@ func installMatrix( _ model: CalculatorModel ) {
             let n = Int(floor(s0.X))
             let seq = 1 ... n
             
-            s1.stack[regX].setShape( 1, rows: n, cols: 1 )
+            s1.stack[regX].setShape( 1, rows: 1, cols: n )
             
             for x in seq {
-                s1.stack[regX].set1( Double(x), r: x )
+                s1.stack[regX].set1( Double(x), c: x )
             }
             s1.stack[regX].vtp = .real
             return s1
@@ -134,7 +134,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .mapX, [
         
-        OpPattern( [ .X(allTypes, .matrix) ], where: { s0 in s0.Xtv.cols == 1 } ) { s0 in
+        OpPattern( [ .X(allTypes, .matrix) ], where: { s0 in s0.Xtv.rows == 1 } ) { s0 in
             
             // Create a Reduce function obj capturing the value list and mode reference
             let mapFn = MapFunctionX( valueList: s0.Xtv )
@@ -149,7 +149,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .mapXY, [
         
-        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .matrix) ], where: { s0 in s0.Xtv.cols == 1 && s0.Ytv.cols == 1 } ) { s0 in
+        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .matrix) ], where: { s0 in s0.Xtv.rows == 1 && s0.Ytv.rows == 1 } ) { s0 in
             
             // Create a Reduce function obj capturing the value list and mode reference
             let mapFn = MapFunctionXY( valueListX: s0.Xtv, valueListY: s0.Ytv )
@@ -164,7 +164,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .reduce, [
         
-        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .simple) ], where: { s0 in s0.Xtv.cols == 1 } ) { s0 in
+        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .simple) ], where: { s0 in s0.Xtv.rows == 1 } ) { s0 in
             
             // Create a Reduce function obj capturing the value list and mode reference
             let reduceFn = ReduceFunction( valueList: s0.Xtv )
@@ -174,6 +174,23 @@ func installMatrix( _ model: CalculatorModel ) {
             // No new state - but don't return nil or it will flag an error
             return s0
         }
+    ])
+
+    
+    CalculatorModel.defineOpPatterns( .addRow, [
+        
+        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .matrix) ],
+                   where: { s0 in s0.Xtv.cols == s0.Ytv.cols && s0.Xtv.vtp == s0.Ytv.vtp && s0.Xtv.rows == 1 } ) { s0 in
+                       
+                       let rowsY = s0.Ytv.rows
+                       
+                       var s1 = s0
+                       s1.stackDrop()
+                       
+                       s1.Xtv.addRows( 1 )
+                       s1.Xtv.copyRow( toRow: rowsY+1, from: s0.Xtv, atRow: 1 )
+                       return s1
+                   }
     ])
 
 
@@ -239,15 +256,15 @@ func installMatrix( _ model: CalculatorModel ) {
             
            let n = Int(s0.X)
                        
-           if cols > 1 {
+           if rows > 1 {
                
-               guard n >= 1 && n <= cols else {
+               guard n >= 1 && n <= rows else {
                    return nil
                }
                
-               var tv = TaggedValue( s0.Yvtp, tag: s0.Yt, format: s0.Yfmt, rows: rows, cols: 1 )
+               var tv = TaggedValue( s0.Yvtp, tag: s0.Yt, format: s0.Yfmt, rows: 1, cols: cols )
                
-               tv.copyColumn( toCol: 1, from: s0.Ytv, atCol: n)
+               tv.copyRow( toRow: 1, from: s0.Ytv, atRow: n)
                
                var s1 = s0
                s1.stackDrop()
@@ -260,7 +277,7 @@ func installMatrix( _ model: CalculatorModel ) {
                    return nil
                }
                
-               guard let tv = s0.Ytv.getValue( r: n ) else {
+               guard let tv = s0.Ytv.getValue( c: n ) else {
                    return nil
                }
                
@@ -292,33 +309,33 @@ class MapFunctionX : ModalContext {
         print( "MapFunction keypress: \(event.kc)")
         
         // Start with empty output list
-        let seqRows    = valueList.rows
+        let seqCols    = valueList.cols
         var resultList = TaggedValue()
         
         // Remove parameter value from stack
         model.state.stackDrop()
         
-        for r in 1 ... seqRows {
+        for c in 1 ... seqCols {
             
-            if let value = valueList.getValue( r: r) {
+            if let value = valueList.getValue( c: c) {
                 
                 model.enterValue( value )
                 
                 if executeFn( event ) == .stateChange {
                     
-                    if r == 1 {
+                    if c == 1 {
                         // Grab the first result to define the type tag and format for result
                         let firstValue = model.state.Xtv
                         let ss = firstValue.size
                         
                         // Establish size of result and add first value
                         resultList = firstValue
-                        resultList.setShape(ss, rows: seqRows)
-                        resultList.setValue( firstValue, r: 1)
+                        resultList.setShape(ss, cols: seqCols)
+                        resultList.setValue( firstValue, c: 1)
                     }
                     else {
                         // Add next value at correct row
-                        resultList.setValue( model.state.Xtv, r: r )
+                        resultList.setValue( model.state.Xtv, c: c )
                     }
                     
                     // Remove intermediate result
@@ -356,36 +373,36 @@ class MapFunctionXY : ModalContext {
         print( "MapFunctionXY keypress: \(event.kc)")
         
         // Start with empty output list
-        let seqRows    = min( valueListX.rows, valueListY.rows )
+        let seqCols    = min( valueListX.cols, valueListY.cols )
         var resultList = TaggedValue()
         
         // Remove parameters from stack
         model.state.stackDrop()
         model.state.stackDrop()
 
-        for r in 1 ... seqRows {
+        for c in 1 ... seqCols {
             
-            if let valueX = valueListX.getValue( r: r),
-               let valueY = valueListY.getValue( r: r) {
+            if let valueX = valueListX.getValue( c: c),
+               let valueY = valueListY.getValue( c: c) {
                 
                 model.enterValue( valueY )
                 model.enterValue( valueX )
 
                 if executeFn( event ) == .stateChange {
                     
-                    if r == 1 {
+                    if c == 1 {
                         // Grab the first result to define the type tag and format for result
                         let firstValue = model.state.Xtv
                         let ss = firstValue.size
                         
                         // Establish size of result and add first value
                         resultList = firstValue
-                        resultList.setShape(ss, rows: seqRows)
-                        resultList.setValue( firstValue, r: 1)
+                        resultList.setShape(ss, rows: seqCols)
+                        resultList.setValue( firstValue, c: 1)
                     }
                     else {
                         // Add next value at correct row
-                        resultList.setValue( model.state.Xtv, r: r )
+                        resultList.setValue( model.state.Xtv, c: c )
                     }
                     
                     // Remove intermediate result
@@ -419,14 +436,14 @@ class ReduceFunction : ModalContext {
         guard let model = self.model else { return KeyPressResult.null }
         
         // Start with empty output list
-        let seqRows    = valueList.rows
+        let seqCols    = valueList.cols
         
         // Remove value list parameter from stack, but not initial result
         model.state.stackDrop()
 
-        for r in 1 ... seqRows {
+        for c in 1 ... seqCols {
             
-            if let value = valueList.getValue( r: r) {
+            if let value = valueList.getValue( c: c) {
                 
                 model.enterValue( value )
 

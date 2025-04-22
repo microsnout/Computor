@@ -37,7 +37,7 @@ struct ValueBrowserView: View {
             else {
                 let tvMatrix = tv
                 
-                let ( _, rows, _ ) = tvMatrix.getShape()
+                let ( _, _, cols ) = tvMatrix.getShape()
                 
                 VStack( spacing: 0 ) {
                     ScrollView {
@@ -45,11 +45,11 @@ struct ValueBrowserView: View {
                             
                             LazyVStack(spacing: 7) {
                                 
-                                ForEach (1...rows, id: \.self) { r in
+                                ForEach (1...cols, id: \.self) { c in
                                     
-                                    let line = String( format: "ç{LineNoText}={%3d }ç{}", r)
+                                    let line = String( format: "ç{LineNoText}={%3d }ç{}", c)
                                     
-                                    let tv = tvMatrix.getValue( r: r, c: 1 ) ?? untypedZero
+                                    let tv = tvMatrix.getValue( r: 1, c: c ) ?? untypedZero
                                     
                                     let (valueStr, _) = tv.renderRichText()
                                     

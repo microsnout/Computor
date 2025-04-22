@@ -26,14 +26,13 @@ struct PlotView : View {
     @StateObject var model: CalculatorModel
     
     
-
     static var plotPatternTable: [PlotPattern] = [
         
         PlotPattern(.vector2D,
                     [ .X(vector2DTypes) ]),
         
         PlotPattern(.pointArray,
-                    [ .X(vector2DTypes, .matrix)], where: { $0.Xtv.rows > 1 } ),
+                    [ .X(vector2DTypes, .matrix)], where: { $0.Xtv.cols > 1 } ),
         
     ]
     
