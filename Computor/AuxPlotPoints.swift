@@ -17,11 +17,11 @@ struct PlotPointsView: View {
         
         let n = tv.rows
         
-        var (xMin, yMin) = tv.getVector(1,1)
+        var (xMin, yMin) = tv.getVector( r: 1, c: 1)
         var (xMax, yMax) = (xMin, yMin)
         
         for r in 2...n {
-            let (x, y) = tv.getVector(r)
+            let (x, y) = tv.getVector( r: r)
             xMin = min(x, xMin)
             yMin = min(y, yMin)
             xMax = max(x, xMax)
@@ -112,11 +112,11 @@ struct PlotPointsView: View {
                         ctx.withTransform( dx: xWO, dy: yWO ) { ptx in
                             
                             let n = tv.rows
-                            let (x1, y1) = tv.getVector(1)
+                            let (x1, y1) = tv.getVector( r: 1)
                             var points = [CGPoint( x: x1 * sxy, y: y1 * sxy )]
                             
                             for r in 2...n {
-                                let (x, y) = tv.getVector(r)
+                                let (x, y) = tv.getVector( r: r)
                                 points.append( CGPoint( x: x * sxy, y: y * sxy ) )
                             }
                             

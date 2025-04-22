@@ -246,12 +246,12 @@ extension CalcState {
         set { stack[regT].reg = newValue }
     }
     
-    mutating func set2( _ v1: Double, _ v2: Double, row: Int = 1, col: Int = 1 ) {
-        self.stack[regX].set2( v1, v2, r: row, c: col)
+    mutating func set2( _ v1: Double, _ v2: Double, r: Int = 1, c: Int = 1 ) {
+        self.stack[regX].set2( v1, v2, r: r, c: c)
     }
     
     mutating func setShape( _ ss: Int = 1, rows: Int = 1, cols: Int = 1 ) {
-        stack[regX].setShape( ss, rows, cols)
+        stack[regX].setShape( ss, rows: rows, cols: cols)
     }
 
     mutating func stackDrop(_ by: Int = 1 ) {

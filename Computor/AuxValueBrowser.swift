@@ -49,7 +49,7 @@ struct ValueBrowserView: View {
                                     
                                     let line = String( format: "ç{LineNoText}={%3d }ç{}", r)
                                     
-                                    let tv = tvMatrix.getValue( row: r, col: 1 ) ?? untypedZero
+                                    let tv = tvMatrix.getValue( r: r, c: 1 ) ?? untypedZero
                                     
                                     let (valueStr, _) = tv.renderRichText()
                                     

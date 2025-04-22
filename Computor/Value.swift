@@ -155,7 +155,7 @@ struct TaggedValue : RichRender & Codable {
         // Lookup simple value size
         let ss = valueSize[vtp] ?? 1
         
-        setShape(ss, rows, cols)
+        setShape(ss, rows: rows, cols: cols)
         
         if isReal {
             storage[0] = reg
@@ -182,7 +182,7 @@ extension TaggedValue {
         return (self.size, self.rows, self.cols)
     }
     
-    mutating func setShape( _ ss: Int = 1, _ rows: Int = 1, _ cols: Int = 1 ) {
+    mutating func setShape( _ ss: Int = 1, rows: Int = 1, cols: Int = 1 ) {
         self.mat = cols + rows*M + ss*M*M
         self.storage = [Double]( repeating: 0.0, count: self.capacity )
     }
@@ -228,16 +228,16 @@ extension TaggedValue {
     
     
     mutating func setMatrix( _ vtp: ValueType, tag: TypeTag = tagUntyped, fmt: FormatRec = FormatRec(), rows: Int, cols: Int = 1 ) {
-        setShape( valueSize[vtp] ?? 1, rows, cols )
+        setShape( valueSize[vtp] ?? 1, rows: rows, cols: cols )
         self.vtp = vtp
         self.tag = tag
         self.fmt = fmt
     }
     
-    func valueInRange( _ ssV: Int = 1, _ rowV: Int = 1, _ colV: Int = 1 ) -> Bool {
+    func valueInRange( _ vt: ValueType = .real, r: Int = 1, c: Int = 1 ) -> Bool {
         let (ss, rows, cols) = getShape()
-        
-        return ssV <= ss && rowV <= rows && colV <= cols
+        let ssV = valueSize[vt] ?? 1
+        return ssV <= ss && r <= rows && c <= cols
     }
     
     func isType( _ tt: TypeTag ) -> Bool {
@@ -253,9 +253,9 @@ extension TaggedValue {
         return (col-1)*ss*rows + (row-1)*ss + (ssx-1)
     }
     
-    private func valueIndex( _ row: Int, _ col: Int = 1) -> Int {
+    private func valueIndex( r: Int, c: Int = 1) -> Int {
         let (ss, rows, _) = getShape()
-        return (col-1)*ss*rows + (row-1)*ss
+        return (c-1)*ss*rows + (r-1)*ss
     }
     
     func get1( r: Int = 1, c: Int = 1 ) -> Double {
@@ -293,7 +293,7 @@ extension TaggedValue {
     
     // Get and Set Real, Rational, Complex, Vector, polar, vector3D, spherical
     
-    func getReal( _ r: Int = 1, _ c: Int = 1 ) -> Double { get1( r: r, c: c ) }
+    func getReal( r: Int = 1, c: Int = 1 ) -> Double { get1( r: r, c: c ) }
     
     mutating func setReal( _ value: Double,
                              tag: TypeTag = tagUntyped,
@@ -305,7 +305,7 @@ extension TaggedValue {
         self.fmt = fmt
     }
 
-    func getComplex( _ r: Int = 1, _ c: Int = 1 ) -> Comp {
+    func getComplex( r: Int = 1, c: Int = 1 ) -> Comp {
         switch vtp {
         case .complex:
             let (re, im) = get2( r: r, c: c)
@@ -335,7 +335,7 @@ extension TaggedValue {
         set2( z.real, z.imaginary)
     }
     
-    func getVector( _ r: Int = 1, _ c: Int = 1 ) -> (Double, Double) {
+    func getVector( r: Int = 1, c: Int = 1 ) -> (Double, Double) {
         switch vtp {
             
         case .vector, .complex:
@@ -390,8 +390,8 @@ extension TaggedValue {
     func getPolar() -> (Double, Double) {
         switch vtp {
         case .polar:
-            let (r, w) = get2()
-            return (r, w)
+            let (p, w) = get2()
+            return (p, w)
             
         case .vector:
             let (x, y) = get2()
@@ -402,14 +402,14 @@ extension TaggedValue {
         }
     }
 
-    mutating func setPolar( _ r: Double, _ w: Double,
+    mutating func setPolar( _ p: Double, _ w: Double,
                               tag: TypeTag = tagUntyped,
                               fmt: FormatRec = CalcState.defaultDecFormat) {
         setShape(2)
         self.vtp = .polar
         self.tag = tag
         self.fmt = fmt
-        set2( r,w )
+        set2( p,w )
     }
 
     func getSpherical() -> (Double, Double, Double) {
@@ -439,14 +439,14 @@ extension TaggedValue {
 
     // Get and Set Tagged values from this tagged value - from matric to scalar
     
-    func getValue( row: Int = 1, col: Int = 1 ) -> TaggedValue? {
+    func getValue( r: Int = 1, c: Int = 1 ) -> TaggedValue? {
         let (ss, rows, cols) = getShape()
         
-        if ( row > rows || col > cols ) {
+        if ( r > rows || c > cols ) {
             return nil
         }
 
-        let index = valueIndex(row, col)
+        let index = valueIndex( r: r, c: c)
         var value = TaggedValue(self.vtp, tag: self.tag, format: self.fmt)
         
         for n in 0 ..< ss {
@@ -455,13 +455,13 @@ extension TaggedValue {
         return value
     }
 
-    mutating func setValue( _ value: TaggedValue, row: Int = 1, col: Int = 1 ) {
+    mutating func setValue( _ value: TaggedValue, r: Int = 1, c: Int = 1 ) {
         let (ss, rows, cols) = getShape()
-        if ( row > rows || col > cols ) {
+        if ( r > rows || c > cols ) {
             return
         }
 
-        let index = valueIndex(row, col)
+        let index = valueIndex( r: r, c: c)
 
         for n in 0 ..< ss {
             storage[index+n] = value.storage[n]
@@ -513,8 +513,8 @@ extension TaggedValue {
         return (text, count)
     }
     
-    func renderValueReal( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        let value = get1( r: row, c: col)
+    func renderValueReal( r: Int = 1, c: Int = 1 ) -> (String, Int) {
+        let value = get1( r: r, c: c)
         var (text, valueCount) = renderDouble(value)
         
         if isSimple && tag != tagUntyped {
@@ -572,8 +572,8 @@ extension TaggedValue {
         return (text, valueCount)
     }
 
-    func renderValueRational( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        let (num, den) = get2( r: row, c: col)
+    func renderValueRational( r: Int = 1, c: Int = 1 ) -> (String, Int) {
+        let (num, den) = get2( r: r, c: c)
         let (numStr, numCount) = renderDouble(num)
         let (denStr, denCount) = renderDouble(den)
         
@@ -585,8 +585,8 @@ extension TaggedValue {
         return (text, numCount + denCount + 1)
     }
 
-    func renderValueComplex( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        let (re, im) = get2( r: row, c: col)
+    func renderValueComplex( r: Int = 1, c: Int = 1 ) -> (String, Int) {
+        let (re, im) = get2( r: r, c: c)
         let neg = im < 0.0
         let (reStr, reCount) = renderDouble(re)
         let (imStr, imCount) = renderDouble( neg ? -im : im )
@@ -611,8 +611,8 @@ extension TaggedValue {
     }
     
     
-    func renderValueVector( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        let (x, y) = get2( r: row, c: col)
+    func renderValueVector( r: Int = 1, c: Int = 1 ) -> (String, Int) {
+        let (x, y) = get2( r: r, c: c)
         let (xStr, xCount) = renderDouble(x)
         let (yStr, yCount) = renderDouble(y)
         
@@ -637,12 +637,12 @@ extension TaggedValue {
     }
     
     
-    func renderValuePolar( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
+    func renderValuePolar( r: Int = 1, c: Int = 1 ) -> (String, Int) {
         ///
         /// RenderValuePolar
         ///     - Handles .polar
         ///
-        var (r, w) = get2( r: row, c: col)
+        var (r, w) = get2( r: r, c: c)
         
         if fmt.polarAngle == .degrees {
             w *= 180.0 / Double.pi
@@ -677,8 +677,8 @@ extension TaggedValue {
     }
     
     
-    func renderValueVector3D( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
-        let (x, y, z) = get3( r: row, c: col)
+    func renderValueVector3D( r: Int = 1, c: Int = 1 ) -> (String, Int) {
+        let (x, y, z) = get3( r: r, c: c)
         let (xStr, xCount) = renderDouble(x)
         let (yStr, yCount) = renderDouble(y)
         let (zStr, zCount) = renderDouble(z)
@@ -703,12 +703,12 @@ extension TaggedValue {
     }
 
     
-    func renderValueSpherical( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
+    func renderValueSpherical( r: Int = 1, c: Int = 1 ) -> (String, Int) {
         ///
         /// RenderValuePolar
         ///     - Handles spherical
         ///
-        var (r, theta, phi) = get3( r: row, c: col)
+        var (r, theta, phi) = get3( r: r, c: c)
         
         if fmt.polarAngle == .degrees {
             theta *= 180.0 / Double.pi
@@ -752,28 +752,28 @@ extension TaggedValue {
     }
     
     
-    func renderValueSimple( _ row: Int = 1, _ col: Int = 1 ) -> (String, Int) {
+    func renderValueSimple( r: Int = 1, c: Int = 1 ) -> (String, Int) {
         switch vtp {
         case .real:
-            return renderValueReal(row, col)
+            return renderValueReal( r: r, c: c)
             
         case .rational:
-            return renderValueRational(row, col)
+            return renderValueRational( r: r, c: c)
 
         case .complex:
-            return renderValueComplex(row, col)
+            return renderValueComplex( r: r, c: c)
 
         case .vector:
-            return renderValueVector(row, col)
+            return renderValueVector( r: r, c: c)
 
         case .polar:
-            return renderValuePolar(row, col)
+            return renderValuePolar( r: r, c: c)
 
         case .vector3D:
-            return renderValueVector3D(row, col)
+            return renderValueVector3D( r: r, c: c)
 
         case .spherical:
-            return renderValueSpherical(row, col)
+            return renderValueSpherical( r: r, c: c)
         }
     }
 

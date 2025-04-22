@@ -29,7 +29,7 @@ extension TaggedValue {
         var count = 1
         
         for r in 1 ... rows {
-            let (simpleStr, simpleCount) = renderValueSimple(r)
+            let (simpleStr, simpleCount) = renderValueSimple( r: r)
             
             if count + simpleCount > maxStrCount {
                 text.append( "ç{Units}={..]}ç{}" )
@@ -76,7 +76,7 @@ func installMatrix( _ model: CalculatorModel ) {
             // Copy intial value from s0 and create result array of size n
             var result = s0.Ztv
             let ss = result.size
-            result.setShape( ss, n, 1 )
+            result.setShape( ss, rows: n, cols: 1 )
             
             // Remove N and increment value from stack
             model.state.stackDrop()
@@ -87,7 +87,7 @@ func installMatrix( _ model: CalculatorModel ) {
             
             for r in seq {
                 // Copy current result value to result array
-                result.setValue(model.state.Xtv, row: r)
+                result.setValue(model.state.Xtv, r: r)
                 
                 // Increment X value by inc
                 model.enterValue(inc)
@@ -121,7 +121,7 @@ func installMatrix( _ model: CalculatorModel ) {
             let n = Int(floor(s0.X))
             let seq = 1 ... n
             
-            s1.stack[regX].setShape( 1, n, 1 )
+            s1.stack[regX].setShape( 1, rows: n, cols: 1 )
             
             for x in seq {
                 s1.stack[regX].set1( Double(x), r: x )
@@ -260,7 +260,7 @@ func installMatrix( _ model: CalculatorModel ) {
                    return nil
                }
                
-               guard let tv = s0.Ytv.getValue( row: n ) else {
+               guard let tv = s0.Ytv.getValue( r: n ) else {
                    return nil
                }
                
@@ -300,7 +300,7 @@ class MapFunctionX : ModalContext {
         
         for r in 1 ... seqRows {
             
-            if let value = valueList.getValue( row: r) {
+            if let value = valueList.getValue( r: r) {
                 
                 model.enterValue( value )
                 
@@ -313,12 +313,12 @@ class MapFunctionX : ModalContext {
                         
                         // Establish size of result and add first value
                         resultList = firstValue
-                        resultList.setShape(ss, seqRows)
-                        resultList.setValue( firstValue, row: 1)
+                        resultList.setShape(ss, rows: seqRows)
+                        resultList.setValue( firstValue, r: 1)
                     }
                     else {
                         // Add next value at correct row
-                        resultList.setValue( model.state.Xtv, row: r )
+                        resultList.setValue( model.state.Xtv, r: r )
                     }
                     
                     // Remove intermediate result
@@ -365,8 +365,8 @@ class MapFunctionXY : ModalContext {
 
         for r in 1 ... seqRows {
             
-            if let valueX = valueListX.getValue( row: r),
-               let valueY = valueListY.getValue( row: r) {
+            if let valueX = valueListX.getValue( r: r),
+               let valueY = valueListY.getValue( r: r) {
                 
                 model.enterValue( valueY )
                 model.enterValue( valueX )
@@ -380,12 +380,12 @@ class MapFunctionXY : ModalContext {
                         
                         // Establish size of result and add first value
                         resultList = firstValue
-                        resultList.setShape(ss, seqRows)
-                        resultList.setValue( firstValue, row: 1)
+                        resultList.setShape(ss, rows: seqRows)
+                        resultList.setValue( firstValue, r: 1)
                     }
                     else {
                         // Add next value at correct row
-                        resultList.setValue( model.state.Xtv, row: r )
+                        resultList.setValue( model.state.Xtv, r: r )
                     }
                     
                     // Remove intermediate result
@@ -426,7 +426,7 @@ class ReduceFunction : ModalContext {
 
         for r in 1 ... seqRows {
             
-            if let value = valueList.getValue( row: r) {
+            if let value = valueList.getValue( r: r) {
                 
                 model.enterValue( value )
 
