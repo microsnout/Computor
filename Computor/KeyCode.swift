@@ -39,10 +39,10 @@ enum KeyCode: Int, Codable {
     case multiValue = 180, rational, vector, polar, complex, vector3D, spherical
     
     // Matrix operations
-    case matrix = 190, range, seq, mapX, mapXY, reduce, addCol, dotProduct, crossProduct
+    case matrix = 190, range, seq, mapX, mapXY, reduce, addCol, dotProduct, crossProduct, comma, semicolon
     
     // Memory operations
-    case null = 200, noop, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem
+    case null = 210, noop, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem
 
     case unitStart = 300
     
