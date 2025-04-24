@@ -7,7 +7,7 @@
 import SwiftUI
 
 enum PlotType {
-    case none, vector2D, pointArray
+    case none, vector2D, pointArray, multiPoint
 }
 
 struct PlotPattern {
@@ -30,6 +30,9 @@ struct PlotView : View {
         
         PlotPattern(.vector2D,
                     [ .X(vector2DTypes) ]),
+        
+        PlotPattern(.multiPoint,
+                    [ .X([.real], .matrix), .Y([.real], .matrix)], where: { $0.Xtv.rows == 1 && $0.Xtv.cols == $0.Ytv.cols } ),
         
         PlotPattern(.pointArray,
                     [ .X(vector2DTypes, .matrix)], where: { $0.Xtv.cols > 1 } ),
@@ -65,6 +68,9 @@ struct PlotView : View {
             
         case .pointArray:
             PlotPointsView( model: model )
+
+        case .multiPoint:
+            PlotMultiPointView( model: model )
             
         case .none:
             VStack {
