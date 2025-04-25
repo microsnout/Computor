@@ -14,7 +14,7 @@ extension TaggedValue {
     
     func renderMatrix() -> (String, Int) {
         
-        let maxStrCount = 30
+        let maxStrCount = 20
         
         let ( _, rows, cols) = getShape()
         
@@ -33,7 +33,8 @@ extension TaggedValue {
             
             if count + simpleCount > maxStrCount {
                 text.append( "ç{Units}={..]}ç{}" )
-                return (text, count + 3)
+                count += 3
+                break
             }
             text.append(simpleStr)
             
