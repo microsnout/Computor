@@ -160,7 +160,7 @@ struct PlotMultiPointView: View {
             tvY.cols == tvX.cols && tvY.vtp == .real
         else {
             // Should not happen because pattern is checked
-//            assert(false)
+            // Cannot put an assert here because it will hit for some reason
             return (0.0, 0.0, 0.0, 0.0)
         }
         
