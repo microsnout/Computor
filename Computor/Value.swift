@@ -174,6 +174,9 @@ extension TaggedValue {
     var isRational: Bool { isSimple && vtp == .rational }
     var isVector: Bool   { isSimple && vtp == .vector }
     
+    var isRowMatrix: Bool { self.rows == 1 && self.cols > 1 }
+    var isColMatrix: Bool { self.cols == 1 && self.rows > 1 }
+    
     var valueShape: ValueShape { isSimple ? .simple : .matrix }
     
     var capacity: Int { self.size * self.rows * self.cols }

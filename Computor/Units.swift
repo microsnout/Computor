@@ -1,6 +1,6 @@
 //
 //  units.swift
-//  MoneyCalc
+//  Computor
 //
 //  Created by Barry Hall on 2024-09-03.
 //

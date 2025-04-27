@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Softkey
+//  Computor
 //
 //  Created by Barry Hall on 2024-10-06.
 //

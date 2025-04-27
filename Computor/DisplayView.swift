@@ -1,6 +1,6 @@
 //
 //  DisplayView.swift
-//  MoneyCalc
+//  Computor
 //
 //  Created by Barry Hall on 2021-10-28.
 //

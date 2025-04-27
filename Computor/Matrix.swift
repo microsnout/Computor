@@ -212,6 +212,75 @@ func installMatrix( _ model: CalculatorModel ) {
     ])
     
     
+    CalculatorModel.defineOpPatterns( .dotProduct, [
+        
+        OpPattern( [.X([.real], .matrix), .Y([.real], .matrix)],
+                   where: { $0.Xtv.isRowMatrix && $0.Ytv.isRowMatrix && $0.Xtv.cols == $0.Ytv.cols  } ) { s0 in
+                       var s1 = s0
+                       s1.stackDrop()
+                       
+                       let (_, _, cols) = s0.Xtv.getShape()
+                       
+                       var value = 0.0
+                       
+                       for col in 1 ... cols {
+                           value += s0.Xtv.getReal( r: 1, c: col ) * s0.Ytv.getReal( r: 1, c: col )
+                       }
+                       s1.Xtv.setReal(value, tag: s0.Yt, fmt: s0.Yfmt )
+                       return s1
+                   },
+
+        OpPattern( [.X([.real], .matrix), .Y([.real], .matrix)],
+                   where: { $0.Xtv.isColMatrix && $0.Ytv.isColMatrix && $0.Xtv.rows == $0.Ytv.rows  } ) { s0 in
+                       var s1 = s0
+                       s1.stackDrop()
+
+                       let (_, rows, _) = s0.Xtv.getShape()
+                       
+                       var value = 0.0
+                       
+                       for row in 1 ... rows {
+                           value += s0.Xtv.getReal( r: row, c: 1 ) * s0.Ytv.getReal( r: row, c: 1 )
+                       }
+                       s1.Xtv.setReal(value, tag: s0.Yt, fmt: s0.Yfmt )
+                       return s1
+                   },
+    ])
+    
+    
+    CalculatorModel.defineOpPatterns( .times, [
+        
+        OpPattern( [.X([.real], .matrix), .Y([.real], .matrix)],
+                   where: { $0.Xtv.rows == $0.Ytv.cols && $0.Xvtp == $0.Yvtp  } ) { s0 in
+                       
+                       var s1 = s0
+                       s1.stackDrop()
+
+                       let (ssx, xRows, xCols) = s0.Xtv.getShape()
+                       let (ssy, yRows, yCols) = s0.Ytv.getShape()
+                       assert( xRows == yCols && ssx == ssy )
+                       
+                       s1.Xtv.setShape(ssx, rows: yRows, cols: xCols)
+
+                       for col in 1 ... xCols {
+                           
+                           for row in 1 ... yRows {
+                               
+                               var value = 0.0
+                               
+                               for n in 1 ... yCols {
+                                   
+                                   value += s0.Ytv.getReal( r: row, c: n ) * s0.Xtv.getReal( r: n, c: col )
+                               }
+                               
+                               s1.Xtv.set1(value, r: row, c: col )
+                           }
+                       }
+                       return s1
+                   },
+    ])
+
+    
     // *** UNIT Conversions ***
 
     CalculatorModel.defineUnitConversions([
