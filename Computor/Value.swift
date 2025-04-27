@@ -289,7 +289,7 @@ extension TaggedValue {
     }
     
     
-    mutating func setMatrix( _ vtp: ValueType, tag: TypeTag = tagUntyped, fmt: FormatRec = FormatRec(), rows: Int, cols: Int = 1 ) {
+    mutating func setMatrix( _ vtp: ValueType, tag: TypeTag = tagUntyped, fmt: FormatRec = FormatRec(), rows: Int = 1, cols: Int = 1 ) {
         setShape( valueSize[vtp] ?? 1, rows: rows, cols: cols )
         self.vtp = vtp
         self.tag = tag

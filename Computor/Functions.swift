@@ -33,17 +33,17 @@ func installFunctions( _ model: CalculatorModel ) {
             }
             else if rad > 0.0 {
                 // Two real solutions
-                s1.setShape( rows: 2 )
-                s1.stack[regX].set1( (-b + sqrt(rad))/2*a, r: 1 )
-                s1.stack[regX].set1( (-b - sqrt(rad))/2*a, r: 2 )
+                s1.setShape( cols: 2 )
+                s1.stack[regX].set1( (-b + sqrt(rad))/2*a, c: 1 )
+                s1.stack[regX].set1( (-b - sqrt(rad))/2*a, c: 2 )
             }
             else {
                 // Return 2 complex values
-                s1.stack[regX].setMatrix( .complex, rows: 2 )
+                s1.stack[regX].setMatrix( .complex, cols: 2 )
                 let re = -b/2*a
                 let im = sqrt(-rad)/2*a
-                s1.stack[regX].set2( re, im, r: 1 )
-                s1.stack[regX].set2( re, -im, r: 2 )
+                s1.stack[regX].set2( re, im, c: 1 )
+                s1.stack[regX].set2( re, -im, c: 2 )
             }
             return s1
         }
