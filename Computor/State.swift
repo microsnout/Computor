@@ -142,17 +142,17 @@ extension CalcState {
             switch spec {
                 
             case .X( let vt, let vs):
-                if !vt.contains(Xvtp) || Xtv.valueShape != vs {
+                if !vt.contains(Xvtp) ||  (vs != .any &&  Xtv.valueShape != vs) {
                     return false
                 }
                 
             case .Y( let vt, let vs):
-                if !vt.contains(Yvtp) || Ytv.valueShape != vs {
+                if !vt.contains(Yvtp) || (vs != .any &&  Ytv.valueShape != vs) {
                     return false
                 }
                 
             case .Z( let vt, let vs):
-                if !vt.contains(Zvtp) || Ztv.valueShape != vs {
+                if !vt.contains(Zvtp) || (vs != .any &&  Ztv.valueShape != vs) {
                     return false
                 }
             }

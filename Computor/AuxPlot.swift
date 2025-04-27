@@ -32,7 +32,7 @@ struct PlotView : View {
                     [ .X(vector2DTypes) ]),
         
         PlotPattern(.multiPoint,
-                    [ .X([.real], .matrix), .Y([.real], .matrix)], where: { $0.Xtv.rows == 1 && $0.Xtv.cols == $0.Ytv.cols } ),
+                    [ .X([.real], .matrix), .Y([.real], .matrix)], where: { $0.Xtv.rows == 1 && $0.Xtv.cols == $0.Ytv.cols && $0.Xtv.cols > 1 } ),
         
         PlotPattern(.pointArray,
                     [ .X(vector2DTypes, .matrix)], where: { $0.Xtv.cols > 1 } ),

@@ -426,14 +426,6 @@ func initKeyLayout() {
                         Key(.lastx, "LSTx"),
                        ]
     )
-    
-    SubPadSpec.define( .dot,
-                       keySpec: ksSubFn,
-                       keys: [
-                        Key(.comma, "ƒ{1.3},"),
-                        Key(.semicolon, "ƒ{1.3};"),
-                       ]
-    )
 
     // Modal subpad definitions
     // Used to popup keypad for Sto, Rcl

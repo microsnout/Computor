@@ -22,7 +22,7 @@ let vector3DTypes: ValueTypeSet = [.vector3D, .spherical]
 let allTypes: ValueTypeSet      = [.real, .rational, .complex, .vector, .vector3D, .polar, .spherical]
 
 enum ValueShape : Int, Codable {
-    case simple = 0, matrix
+    case simple = 0, matrix, any
 }
 
 let valueSize: [ValueType : Int] = [
@@ -200,7 +200,7 @@ extension TaggedValue {
     
     mutating func addRows( _ newRows: Int ) {
         
-        guard isMatrix && newRows > 0 else {
+        guard newRows > 0 else {
             assert(false)
             return
         }
@@ -219,7 +219,7 @@ extension TaggedValue {
     
     mutating func addColumns( _ newCols: Int ) {
         
-        guard isMatrix && newCols > 0 else {
+        guard newCols > 0 else {
             assert(false)
             return
         }
@@ -252,7 +252,7 @@ extension TaggedValue {
         
         let (ssF, rowsF, colsF) = from.getShape()
         
-        guard isMatrix && from.isMatrix && toRow <= rows && ss == ssF && cols == colsF && atRow <= rowsF else {
+        guard toRow <= rows && ss == ssF && cols == colsF && atRow <= rowsF else {
             assert(false)
             return
         }
@@ -272,7 +272,7 @@ extension TaggedValue {
         
         let (ssF, rowsF, colsF) = from.getShape()
         
-        guard isMatrix && from.isMatrix && toCol <= cols && ss == ssF && rows == rowsF && atCol <= colsF else {
+        guard toCol <= cols && ss == ssF && rows == rowsF && atCol <= colsF else {
             assert(false)
             return
         }

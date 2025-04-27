@@ -180,7 +180,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .addRow, [
         
-        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .matrix) ],
+        OpPattern( [ .X(allTypes, .any), .Y(allTypes, .any) ],
                    where: { s0 in s0.Xtv.cols == s0.Ytv.cols && s0.Xtv.vtp == s0.Ytv.vtp && s0.Xtv.rows == 1 } ) { s0 in
                        
                        let rowsY = s0.Ytv.rows
@@ -197,7 +197,7 @@ func installMatrix( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .addCol, [
         
-        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .matrix) ],
+        OpPattern( [ .X(allTypes, .any), .Y(allTypes, .any) ],
                    where: { s0 in s0.Xtv.rows == s0.Ytv.rows && s0.Xtv.vtp == s0.Ytv.vtp && s0.Xtv.cols == 1 } ) { s0 in
             
                        let colsY = s0.Ytv.cols
