@@ -104,11 +104,17 @@ extension CalcState {
                                    tag: TypeTag = tagUntyped,
                                    fmt: FormatRec = CalcState.defaultDecFormat )
     {
-        stack[index].setShape(2)
-        stack[index].vtp = .complex
-        stack[index].set2( z.real, z.imaginary )
-        stack[index].tag = tag
-        stack[index].fmt = fmt
+        if z.imaginary == 0 {
+            // Reduce to a real type
+            setRealValue( z.real, tag: tag, fmt: fmt)
+        }
+        else {
+            stack[index].setShape(2)
+            stack[index].vtp = .complex
+            stack[index].set2( z.real, z.imaginary )
+            stack[index].tag = tag
+            stack[index].fmt = fmt
+        }
     }
 
     mutating func setSphericalValue( reg index: Int = regX, _ r: Double, _ w: Double, _ p: Double,

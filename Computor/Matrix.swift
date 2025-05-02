@@ -467,7 +467,7 @@ class MapFunctionXY : ModalContext {
                         
                         // Establish size of result and add first value
                         resultList = firstValue
-                        resultList.setShape(ss, rows: seqCols)
+                        resultList.setShape(ss, cols: seqCols)
                         resultList.setValue( firstValue, c: 1)
                     }
                     else {

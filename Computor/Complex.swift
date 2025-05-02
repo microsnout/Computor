@@ -5,6 +5,7 @@
 //  Created by Barry Hall on 2025-02-10.
 //
 import Foundation
+import Numerics
 
 
 func installComplex( _ model: CalculatorModel ) {
@@ -239,7 +240,7 @@ func installComplex( _ model: CalculatorModel ) {
             // Complex RECIPROCOL
             if let (tagProduct, _) = typeProduct(tagUntyped, s0.Xt, quotient: true ) {
                 var s1 = s0
-
+                
                 let x = s0.Xtv.getComplex()
                 
                 if let z = x.reciprocal {
@@ -253,9 +254,243 @@ func installComplex( _ model: CalculatorModel ) {
         }
     ])
 
+    // MARK: - exp-like functions
+
+    CalculatorModel.defineOpPatterns( .eExp, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex exponential
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.exp(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
     
-    // *** TYPE Conversions ***
+    CalculatorModel.defineOpPatterns( .cosh, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex cosh
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.cosh(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
     
+    CalculatorModel.defineOpPatterns( .sinh, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex sinh
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.sinh(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+    
+    CalculatorModel.defineOpPatterns( .tanh, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex tanh
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.tanh(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+
+    CalculatorModel.defineOpPatterns( .cos, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex cos
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.cos(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+
+    CalculatorModel.defineOpPatterns( .sin, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex sin
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.sin(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+
+    CalculatorModel.defineOpPatterns( .tan, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex tan
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.tan(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+
+    // MARK: - log-like functions
+
+    CalculatorModel.defineOpPatterns( .log, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex log
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.log(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+    
+    CalculatorModel.defineOpPatterns( .acosh, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex acosh
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.acosh(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+    
+    CalculatorModel.defineOpPatterns( .asinh, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex asinh
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.asinh(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+    
+    CalculatorModel.defineOpPatterns( .atanh, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex atanh
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.atanh(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+    
+    CalculatorModel.defineOpPatterns( .acos, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex acos
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.acos(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+    
+    CalculatorModel.defineOpPatterns( .asin, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex asin
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.asin(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+    
+    CalculatorModel.defineOpPatterns( .atan, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex atan
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.atan(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+
+    // MARK: - pow-like functions
+
+    CalculatorModel.defineOpPatterns( .y2x, [
+        
+        OpPattern( [ .X([.complex]), .Y([.complex]) ] ) { s0 in
+            
+            // Complex pow y2x
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let y = s0.Ytv.getComplex()
+            let z = Complex.pow(y, x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        },
+
+        OpPattern( [ .X([.real]), .Y([.complex]) ] ) { s0 in
+            
+            // Complex pow y2x
+            var s1 = s0
+            let x = s0.Xtv.getReal()
+            let y = s0.Ytv.getComplex()
+            var z: Comp
+            
+            if let n = getInt(x) {
+                z = Complex.pow(y, n)
+            }
+            else {
+                let w = Comp(x, 0.0)
+                z = Complex.pow(y, w)
+            }
+            
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+    
+    CalculatorModel.defineOpPatterns( .sqrt, [
+        
+        OpPattern( [ .X([.complex]) ] ) { s0 in
+            
+            // Complex square root
+            var s1 = s0
+            let x = s0.Xtv.getComplex()
+            let z = Complex.sqrt(x)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return s1
+        }
+    ])
+
+    // MARK: - Type Conversions
+
     CalculatorModel.defineOpPatterns( .complex, [
         
         OpPattern( [ .X([.vector])] ) { s0 in
@@ -284,7 +519,7 @@ func installComplex( _ model: CalculatorModel ) {
     ])
     
     
-    // *** UNIT Conversions ***
+    // MARK: UNIT Conversions
 
     CalculatorModel.defineUnitConversions([
         
