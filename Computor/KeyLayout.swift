@@ -139,7 +139,7 @@ let psFunctions2R = PadSpec(
     keySpec: ksSoftkey,
     cols: 3,
     keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
-            Key(.noop),
+            Key(.seq, "ƒ{0.8}Seq"),
             Key(.noop, "ç{GrayText}{ }"),
           ]
 )
@@ -148,7 +148,7 @@ let psFunctions2Ro = PadSpec(
     keySpec: ksSoftkey,
     cols: 3,
     keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
-            Key(.noop),
+            Key(.seq, "ƒ{0.8}Seq"),
             Key(.openBrace, "{"),
           ]
 )
@@ -157,7 +157,7 @@ let psFunctions2Rc = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
         keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
-                Key(.noop),
+                Key(.seq, "ƒ{0.8}Seq"),
                 Key(.closeBrace, "}"),
             ]
     )
@@ -361,19 +361,19 @@ func initKeyLayout() {
                        caption: "Vector"
     )
 
-    SubPadSpec.define( .matrix,
+    SubPadSpec.define( .seq,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.seq,    "ƒ{0.8}Seq"),
-                        Key(.range,  "ƒ{0.8}Range"),
-                        Key(.mapX,   "ƒ{0.8}Map-x"),
-                        Key(.mapXY,  "ƒ{0.8}Map-xy"),
-                        Key(.reduce, "ƒ{0.8}Reduce"),
+                        Key(.seq,    "ƒ{0.8}Seq",    caption: "ƒ{0.9}Seq x values from z by y" ),
+                        Key(.range,  "ƒ{0.8}Range",  caption: "Range 1..x" ),
+                        Key(.mapX,   "ƒ{0.8}Map-x",  caption: "Map f(x)"   ),
+                        Key(.mapXY,  "ƒ{0.8}Map-xy", caption: "Map f(x,y)" ),
+                        Key(.reduce, "ƒ{0.8}Reduce", caption: "Reduce x"   ),
                        ],
-                       caption: "Matrix Operations"
+                       caption: "Sequence Operations"
     )
 
-    SubPadSpec.define( .enter,
+    SubPadSpec.define( .matrix,
                        keySpec: ksSubFn,
                        keys: [
                         Key(.addRow, "ƒ{0.8}+Row"),

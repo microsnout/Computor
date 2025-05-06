@@ -25,7 +25,6 @@ struct PlotView : View {
     
     @StateObject var model: CalculatorModel
     
-    
     static var plotPatternTable: [PlotPattern] = [
         
         PlotPattern(.vector2D,
@@ -53,24 +52,36 @@ struct PlotView : View {
         
         return plotList
     }
+    
+    
+    func test( _ pt: PlotType ) {
+        print( String( describing: pt))
+    }
 
     
     var body: some View {
         
+        let _ = Self._printChanges()
+        
         let plotList = matchPlotPattern()
         
         let plotType = plotList.isEmpty ? PlotType.none : plotList[0]
+
+        let _ = test(plotType)
         
         switch plotType {
             
         case .vector2D:
             PlotVectorView( model: model )
+                .id( PlotType.vector2D )
             
         case .pointArray:
             PlotPointsView( model: model )
+                .id( PlotType.pointArray )
 
         case .multiPoint:
             PlotMultiPointView( model: model )
+                .id( PlotType.multiPoint )
             
         case .none:
             VStack {
@@ -82,6 +93,7 @@ struct PlotView : View {
                 Text( "Plot Help Text" )
                 Spacer()
             }
+            .id( PlotType.none )
         }
         
     }

@@ -343,7 +343,7 @@ func installMatrix( _ model: CalculatorModel ) {
            }
            else {
                
-               guard n >= 1 && n <= rows else {
+               guard n >= 1 && n <= cols else {
                    return nil
                }
                
