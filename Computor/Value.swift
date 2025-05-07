@@ -260,8 +260,8 @@ extension TaggedValue {
             return
         }
         
-        let xT = storageIndex( ss, r: toRow, c: 1 )
-        let xF = from.storageIndex( ss, r: atRow, c: 1 )
+        let xT = storageIndex( r: toRow, c: 1 )
+        let xF = from.storageIndex( r: atRow, c: 1 )
         
         for i in 0 ..< cols*ss {
             storage[xT+i] = from.storage[xF+i]
@@ -282,8 +282,8 @@ extension TaggedValue {
         
         for r in 1 ... rows {
             
-            let xT = storageIndex( ss, r: r, c: toCol )
-            let xF = from.storageIndex( ss, r: r, c: atCol )
+            let xT = storageIndex( r: r, c: toCol )
+            let xF = from.storageIndex( r: r, c: atCol )
             
             for x in 0 ..< ss {
                 storage[xT+x] = from.storage[xF+x]

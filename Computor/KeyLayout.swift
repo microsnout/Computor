@@ -365,7 +365,7 @@ func initKeyLayout() {
                        keySpec: ksSubFn,
                        keys: [
                         Key(.seq,    "ƒ{0.8}Seq",    caption: "ƒ{0.9}Seq x values from z by y" ),
-                        Key(.range,  "ƒ{0.8}Range",  caption: "Range 1..x" ),
+                        Key(.range,  "ƒ{0.8}Range",  caption: "Range 1 to x" ),
                         Key(.mapX,   "ƒ{0.8}Map-x",  caption: "Map f(x)"   ),
                         Key(.mapXY,  "ƒ{0.8}Map-xy", caption: "Map f(x,y)" ),
                         Key(.reduce, "ƒ{0.8}Reduce", caption: "Reduce x"   ),
@@ -376,9 +376,12 @@ func initKeyLayout() {
     SubPadSpec.define( .matrix,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.addRow, "ƒ{0.8}+Row"),
-                        Key(.addCol, "ƒ{0.8}+Col"),
-                       ]
+                        Key(.addRow, "ƒ{0.8}+Row",   caption: "Add New Row"),
+                        Key(.addCol, "ƒ{0.8}+Col",   caption: "Add New Col"),
+                        Key(.transpose, "={[]}^{T}", caption: "Transpose"),
+                        Key(.identity, "I_{N}",      caption: "Identity"),
+                       ],
+                       caption: "Matrix Operations"
     )
 
     SubPadSpec.define( .x2,

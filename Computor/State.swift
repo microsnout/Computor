@@ -252,6 +252,10 @@ extension CalcState {
         set { stack[regT].reg = newValue }
     }
     
+    mutating func set1( _ v1: Double, r: Int = 1, c: Int = 1 ) {
+        self.stack[regX].set1( v1, r: r, c: c)
+    }
+
     mutating func set2( _ v1: Double, _ v2: Double, r: Int = 1, c: Int = 1 ) {
         self.stack[regX].set2( v1, v2, r: r, c: c)
     }

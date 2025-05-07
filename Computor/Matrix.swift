@@ -18,7 +18,7 @@ extension TaggedValue {
         
         let ( _, rows, cols) = getShape()
         
-        if rows > 1 {
+        if rows > 1 && cols > 1 {
             let rowStr = String(rows)
             let colStr = String(cols)
             let text = "ç{Units}[ç{}\(rowStr)ç{Units} x ç{}\(colStr)ç{Units}]ç{}"
@@ -28,23 +28,50 @@ extension TaggedValue {
         var text  = "ç{Units}[ç{}"
         var count = 1
         
-        for c in 1 ... cols {
-            let (simpleStr, simpleCount) = renderValueSimple( c: c )
+        if rows == 1 {
+            // Row matrix
             
-            if count + simpleCount > maxStrCount {
-                text.append( "ç{Units}={..]}ç{}" )
-                count += 3
-                break
+            for c in 1 ... cols {
+                let (simpleStr, simpleCount) = renderValueSimple( c: c )
+                
+                if count + simpleCount > maxStrCount {
+                    text.append( "ç{Units}={..]}ç{}" )
+                    count += 3
+                    break
+                }
+                text.append(simpleStr)
+                
+                if c == cols {
+                    text.append( "ç{Units}]ç{}" )
+                    count += simpleCount + 1
+                }
+                else {
+                    text.append( "ç{Units}={, }ç{}" )
+                    count += simpleCount + 2
+                }
             }
-            text.append(simpleStr)
+        }
+        else {
+            // Column matrix
             
-            if c == cols {
-                text.append( "ç{Units}]ç{}" )
-                count += simpleCount + 1
-            }
-            else {
-                text.append( "ç{Units}={, }ç{}" )
-                count += simpleCount + 2
+            for row in 1 ... rows {
+                let (simpleStr, simpleCount) = renderValueSimple( r: row )
+                
+                if count + simpleCount > maxStrCount {
+                    text.append( "ç{Units}={..]}ç{}" )
+                    count += 3
+                    break
+                }
+                text.append(simpleStr)
+                
+                if row == rows {
+                    text.append( "ç{Units}]^{T}ç{}" )
+                    count += simpleCount + 2
+                }
+                else {
+                    text.append( "ç{Units}={, }ç{}" )
+                    count += simpleCount + 2
+                }
             }
         }
         
@@ -278,6 +305,49 @@ func installMatrix( _ model: CalculatorModel ) {
                        }
                        return s1
                    },
+    ])
+    
+    
+    CalculatorModel.defineOpPatterns( .transpose, [
+        
+        OpPattern( [.X(allTypes, .matrix)] ) { s0 in
+            
+            var s1 = s0
+            let (_, rows, cols) = s0.Xtv.getShape()
+            
+            var tr = TaggedValue( s0.Xvtp, tag: s0.Xt, format: s0.Xfmt, rows: cols, cols: rows )
+            
+            for row in 1 ... rows {
+                
+                for col in 1 ... cols {
+                    
+                    if let val = s0.Xtv.getValue( r: row, c: col ) {
+                        tr.setValue( val, r: col, c: row)
+                    }
+                }
+            }
+            
+            s1.stack[regX] = tr
+            return s1
+        },
+    ])
+
+    
+    CalculatorModel.defineOpPatterns( .identity, [
+        
+        OpPattern( [.X([.real])], where: { isInt($0.X) } ) { s0 in
+            
+            var s1 = s0
+            
+            let n = getInt(s0.X) ?? 2
+            
+            s1.stack[regX].setShape(1, rows: n, cols: n)
+            
+            for i in 1 ... n {
+                s1.set1( 1.0, r: i, c: i)
+            }
+            return s1
+        },
     ])
 
     
