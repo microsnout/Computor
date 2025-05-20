@@ -206,6 +206,12 @@ struct ModalBlock: View {
             // Transparent rectangle to block all key interactions below the popup - opacity 0 passes key presses through
             Rectangle()
                 .opacity(0.0001)
+                .onTapGesture {
+                    // Close modal popup
+                    keyData.pressedKey = nil
+                    keyData.modalPad = PadSpec()
+                    keyData.modalUp = false
+                }
         }
     }
 }
@@ -541,7 +547,10 @@ struct KeyView: View {
                                 keyData.modalUp = false
 
                                 // Generate key press event
-                                _ = keyPressHandler.keyPress( event )
+                                // Blank key on subpad will be .noop
+                                if key.kc != .noop {
+                                    _ = keyPressHandler.keyPress( event )
+                                }
                             }
                             else if let modalPad = PadSpec.getModalPadSpec( key.kc ) {
                                 
