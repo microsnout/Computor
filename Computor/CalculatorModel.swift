@@ -682,7 +682,7 @@ class LocalVariableFrame {
 }
 
 
-struct ApplicationState : Codable {
+struct ApplicationConfig : Codable {
     // Persistant state of all calculator customization for specific applications
 
     // Definitions of Fn programmable keys
@@ -711,7 +711,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // Persistant state of all calculator customization for specific applications
     // State of macro keys Fn1 to Fn6
-    var appState = ApplicationState()
+    var appState = ApplicationConfig()
 
     // Display window into register stack
     @AppStorage(.settingsDisplayRows)
@@ -877,10 +877,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func saveMacroFunction( _ kc: KeyCode, _ list: MacroOpSeq ) {
         appState.fnList[kc] = FnRec( fnKey: kc, macro: list)
+        saveConfiguration()
     }
     
     func clearMacroFunction( _ kc: KeyCode) {
         appState.fnList[kc] = nil
+        saveConfiguration()
     }
     
     func getMacroFunction( _ kc: KeyCode ) -> MacroOpSeq? {

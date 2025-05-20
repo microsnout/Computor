@@ -119,6 +119,7 @@ struct CalculatorView: View {
         .environmentObject(model)
         .task {
             do {
+                try await model.loadConfig()
                 try await model.loadState()
             } catch {
                 //                fatalError(error.localizedDescription)
@@ -143,10 +144,10 @@ struct CalculatorView: View {
 }
 
 
-struct CalculatorView_Previews: PreviewProvider {
-    static var previews: some View {
-        CalculatorView()
-            .preferredColorScheme(.light)
-    }
-}
+//struct CalculatorView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        CalculatorView()
+//            .preferredColorScheme(.light)
+//    }
+//}
 
