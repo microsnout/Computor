@@ -38,9 +38,9 @@ struct RegisterPattern {
 
 
 struct MemoryRec: Codable {
-    var tv:   TaggedValue
-    var kc:   KeyCode = KeyCode.null
-    var name: String? = nil
+    var tv:      TaggedValue
+    var symbol:  KeyCode = KeyCode.null
+    var caption: String? = nil
 }
 
 

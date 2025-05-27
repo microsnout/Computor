@@ -88,7 +88,7 @@ struct EntryState {
     mutating func startTextEntry( _ kc: KeyCode ) {
         clearEntry()
         entryMode = true
-        entryText = (kc == .dot) ? "0." : String( kc.rawValue )
+        entryText = (kc == .dot) ? "0." : String( kc.rawValue - KeyCode.key0.rawValue )
         digitCount = 1
         decimalSeen = entryText.contains(".")
     }

@@ -983,7 +983,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     func renameMemoryItem( index: Int, newName: String ) {
         pushState()
         entry.clearEntry()
-        state.memory[index].name = newName
+        state.memory[index].caption = newName
     }
     
     static var patternTable: [KeyCode : [OpPattern]] = [:]
@@ -1035,9 +1035,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     name = key.text ?? ""
                 }
                 
-                let mr   = MemoryRec( tv: tv, kc: kcMem, name: name )
+                let mr   = MemoryRec( tv: tv, symbol: kcMem, caption: name )
                 
-                if let index = state.memory.firstIndex( where: { $0.kc == kcMem }) {
+                if let index = state.memory.firstIndex( where: { $0.symbol == kcMem }) {
                     
                     // Existing global memory
                     state.memory[index] = mr
@@ -1148,7 +1148,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     // Local block memory found
                     tv = val
                 }
-                else if let index = state.memory.firstIndex(where: { $0.kc == kcMem }) {
+                else if let index = state.memory.firstIndex(where: { $0.symbol == kcMem }) {
                     
                     // Global memory found
                     tv = state.memory[index].tv

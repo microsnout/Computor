@@ -33,7 +33,7 @@ struct MemoryListView: View {
             }
             else {
                 let strList = (0 ..< model.state.memory.count).map
-                    { ( model.state.memory[$0].name,
+                    { ( model.state.memory[$0].caption,
                         model.state.memory[$0].tv.renderRichText()) }
                 
                 ScrollView {
@@ -50,9 +50,11 @@ struct MemoryListView: View {
                                         
                                         let color = prefix != nil ? Color("DisplayText") : Color(.gray)
                                         
-                                        // Memory name - tap to edit
-                                        Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
-                                        
+                                        HStack {
+                                            // Memory caption - tap to edit
+                                            Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
+                                        }
+                                            
                                         // Memory value display
                                         TypedRegister( text: value, size: .small ).padding( .horizontal, 20)
                                     }

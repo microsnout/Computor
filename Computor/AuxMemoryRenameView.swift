@@ -26,7 +26,7 @@ struct MemoryRenameView: View {
             .disableAutocorrection(true)
             .autocapitalization(.none)
             .onAppear {
-                if let name = value.name {
+                if let name = value.caption {
                     editName = name
                 }
                 nameFocused = true

@@ -7,9 +7,11 @@
 import Foundation
 
 enum KeyCode: Int, Codable {
-    case key0 = 0, key1, key2, key3, key4, key5, key6, key7, key8, key9
+    case null = 0
     
-    case plus = 10, minus, times, divide
+    case key0 = 1, key1, key2, key3, key4, key5, key6, key7, key8, key9
+    
+    case plus = 15, minus, times, divide
     
     case dot = 20, enter, clX, clY, clZ, clReg, back, sign, eex
     
@@ -42,7 +44,7 @@ enum KeyCode: Int, Codable {
     case matrix = 190, range, seq, mapX, mapXY, reduce, addRow, addCol, dotProduct, crossProduct, transpose, identity
     
     // Memory operations
-    case null = 210, noop, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem
+    case noop = 210, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem
 
     case unitStart = 300
     
@@ -72,13 +74,21 @@ enum KeyCode: Int, Codable {
     
     case greek  = 500, alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu, nu, xi, omicron, pi, rho, sigma, tau, upsilon, phi, chi, psi, omega
     
-    var isUnit: Bool { return self.rawValue > KeyCode.unitStart.rawValue && self.rawValue < KeyCode.unitEnd.rawValue }
+    case lastCode = 999
     
+    // *********
+    
+    var isUnit: Bool { return self.rawValue > KeyCode.unitStart.rawValue && self.rawValue < KeyCode.unitEnd.rawValue }
     
     static let digitSet:Set<KeyCode> = [.key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9]
 
     static let fnSet:Set<KeyCode> = [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6, .openBrace]
 
     static let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .showFn, .openBrace]
+
+    static let greekAlpha = [
+        "\u{03b1}", "\u{03b2}", "\u{03b3}", "\u{03b4}", "\u{03b5}", "\u{03b6}", "\u{03b7}", "\u{03b8}",
+        "\u{03b9}", "\u{03ba}", "\u{03bb}", "\u{03bc}", "\u{03bd}", "\u{03be}", "\u{03bf}", "\u{03c0}",
+        "\u{03c1}", "\u{03c3}", "\u{03c4}", "\u{03c5}", "\u{03c6}", "\u{03c7}", "\u{03c8}", "\u{03c9}" ]
 }
 

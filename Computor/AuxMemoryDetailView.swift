@@ -18,7 +18,7 @@ let psMemDetail = PadSpec(
             Key(.mMinus,  "ƒ{0.8}M-"),
             Key(.rclMem,  "ƒ{0.8}Rcl"),
             Key(.stoMem,  "ƒ{0.8}Sto"),
-            Key(.mRename, "ƒ{0.8}Rename", size: 2),
+            Key(.mRename, "ƒ{0.8}Caption", size: 2),
         ]
     )
 
@@ -29,8 +29,6 @@ struct MemoryDetailView: View {
     @Binding var itemIndex: Int
     
     @State private var renameSheet = false
-    
-//    @State private var position: ScrollPosition = .init(idType: Int.self)
     
     @State private var position: Int? = 0
 
@@ -76,9 +74,9 @@ struct MemoryDetailView: View {
                             
                             ForEach( 0 ..< count, id: \.self ) { index in
                                 let mr = model.state.memory[index]
-                                let nameStr = mr.name ?? "-Unnamed-"
+                                let nameStr = mr.caption ?? "-Unnamed-"
                                 let (valueStr, _) = mr.tv.renderRichText()
-                                let color = mr.name != nil ? "DisplayText" : "GrayText"
+                                let color = mr.caption != nil ? "DisplayText" : "GrayText"
 
                                 VStack {
                                     RichText( "ƒ{1.5}ç{\(color)}\(nameStr)", size: .large )
