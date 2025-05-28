@@ -28,24 +28,23 @@ struct MemoryListView: View {
                     .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
             }
             else {
-                let strList = (0 ..< model.state.memory.count).map
-                    { ( model.state.memory[$0].tag,
-                        model.state.memory[$0].caption,
-                        model.state.memory[$0].tv.renderRichText()) }
+                let memList = model.state.memory
+                let count   = memList.count
                 
                 ScrollView {
                     LazyVStack {
-                        ForEach ( Array(strList.enumerated()), id: \.offset ) { index, item in
+                        ForEach ( 0 ..< count, id: \.self ) { index in
                             
-                            // Not using render count for now
-                            let (tag, prefix, (value, _)) = item
+                            let mr  = model.state.memory[index]
+                            
+                            let (txt, _) = mr.tv.renderRichText()
                             
                             VStack {
                                 HStack {
                                     VStack( alignment: .leading, spacing: 0 ) {
-                                        let name: String = prefix ?? "-unnamed-"
+                                        let name: String = mr.caption ?? "-unnamed-"
                                         
-                                        let color = prefix != nil ? Color("DisplayText") : Color(.gray)
+                                        let color = mr.caption != nil ? Color("DisplayText") : Color(.gray)
                                         
                                         HStack {
                                             // Memory caption - tap to edit
@@ -53,7 +52,7 @@ struct MemoryListView: View {
                                         }
                                             
                                         // Memory value display
-                                        TypedRegister( text: value, size: .small ).padding( .horizontal, 20)
+                                        TypedRegister( text: txt, size: .small ).padding( .horizontal, 20)
                                     }
                                     .padding( [.leading ], 20)
                                     .frame( height: 30 )
@@ -62,7 +61,7 @@ struct MemoryListView: View {
                                     
                                     
                                     HStack( spacing: 20 ) {
-                                        Button( action: { model.memoryOp( key: .rclMem, tag: tag ) } ) {
+                                        Button( action: { model.memoryOp( key: .rclMem, tag: mr.tag ) } ) {
                                             Image( systemName: "arrowshape.down" )
                                         }
                                         Button( action: { model.delMemoryItems(set: [index]) } ) {
