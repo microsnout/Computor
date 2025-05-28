@@ -42,7 +42,7 @@ struct MemoryTag: Codable, Equatable {
     
     var kc: KeyCode
     
-    init( _ kc: KeyCode) {
+    init( _ kc: KeyCode = .null ) {
         self.kc = kc
     }
 }
