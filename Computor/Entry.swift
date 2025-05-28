@@ -229,7 +229,7 @@ struct EntryState {
             switch keyCode {
             case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
                 // Append a digit
-                appendTextEntry( String(keyCode.rawValue))
+                appendTextEntry( String(keyCode.rawValue - KeyCode.key0.rawValue))
                 
             case .dot:
                 appendTextEntry(".")

@@ -59,6 +59,14 @@ extension CalcState {
     static let defaultDecFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )
     
+    func memoryAt( index: Int ) -> MemoryRec? {
+        guard index >= 0 && index < memory.count else {
+            return nil
+        }
+        
+        return memory[index]
+    }
+    
     mutating func setRealValue( reg index: Int = regX, _ value: Double,
                                 tag: TypeTag = tagUntyped,
                                 fmt: FormatRec = CalcState.defaultDecFormat ) {
