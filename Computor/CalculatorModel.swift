@@ -910,8 +910,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         if entry.entryMode && stkIndex == regX {
             
             // We are in data entry mode and looking for the X reg
-            let tv = state.Xtv
-            
             var text = "ƒ{0.8}ç{Frame}={X  }ç{}ƒ{}"
             
             text.append( "={\(entry.entryText)}" )
@@ -929,8 +927,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         let tv = state.stack[stkIndex]
         var text = "ƒ{0.8}ç{Frame}={\(CalculatorModel.stackRegNames[stkIndex])  }ç{}ƒ{}"
-        let (valueStr, valueCount) = tv.renderRichText()
-        let count = valueCount + 3
+        let (valueStr, _) = tv.renderRichText()
         text += valueStr
         return text
     }
@@ -965,13 +962,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         default:
             break
         }
-    }
-    
-    func addMemoryItem() {
-        pushState()
-        acceptTextEntry()
-        state.memory.append( MemoryRec( tv: state.Xtv) )
-        aux.activeView = .memoryList
     }
     
     func delMemoryItems( set: IndexSet) {
@@ -1035,9 +1025,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     name = key.text ?? ""
                 }
                 
-                let mr   = MemoryRec( tv: tv, symbol: kcMem, caption: name )
+                let mr   = MemoryRec( tag: MemoryTag(kcMem), caption: name, tv: tv )
                 
-                if let index = state.memory.firstIndex( where: { $0.symbol == kcMem }) {
+                if let index = state.memory.firstIndex( where: { $0.tag.kc == kcMem }) {
                     
                     // Existing global memory
                     state.memory[index] = mr
@@ -1148,7 +1138,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     // Local block memory found
                     tv = val
                 }
-                else if let index = state.memory.firstIndex(where: { $0.symbol == kcMem }) {
+                else if let index = state.memory.firstIndex(where: { $0.tag.kc == kcMem }) {
                     
                     // Global memory found
                     tv = state.memory[index].tv

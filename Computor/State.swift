@@ -38,7 +38,7 @@ struct RegisterPattern {
 
 
 // Set to KeyCode for now...
-struct MemorySym: Codable, Equatable {
+struct MemoryTag: Codable, Equatable {
     
     var kc: KeyCode
     
@@ -48,9 +48,9 @@ struct MemorySym: Codable, Equatable {
 }
 
 struct MemoryRec: Codable {
-    var tv:      TaggedValue
-    var symbol:  KeyCode = KeyCode.null
+    var tag:     MemoryTag
     var caption: String? = nil
+    var tv:      TaggedValue
 }
 
 
@@ -73,8 +73,35 @@ extension CalcState {
         guard index >= 0 && index < memory.count else {
             return nil
         }
-        
         return memory[index]
+    }
+    
+    func memoryIndex( at tag: MemoryTag ) -> Int? {
+        return memory.firstIndex( where: { tag == $0.tag })
+    }
+    
+    func memoryAt( tag: MemoryTag ) -> MemoryRec? {
+        return memory.first( where: { tag == $0.tag } )
+    }
+    
+    mutating func memorySetValue( at tag: MemoryTag, _ tv: TaggedValue ) {
+        
+        if let index = memoryIndex(at: tag) {
+            // Modify existing memory
+            memory[index].tv = tv
+        }
+        else {
+            // Add new memory
+            memory.append( MemoryRec( tag: tag, tv: tv ) )
+        }
+    }
+
+    mutating func memorySetCaption( at tag: MemoryTag, _ str: String ) {
+        
+        if let index = memoryIndex(at: tag) {
+            // Modify existing memory
+            memory[index].caption = str
+        }
     }
     
     mutating func setRealValue( reg index: Int = regX, _ value: Double,

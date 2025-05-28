@@ -18,10 +18,6 @@ struct MemoryListView: View {
                     Spacer()
                     RichText( "Memory List", size: .small, weight: .bold )
                     Spacer()
-                    
-                    Button( action: { model.addMemoryItem() }) {
-                        Image( systemName: "plus")
-                    }.padding( [.trailing], 10 )
                 }
             }
             
