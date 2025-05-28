@@ -72,6 +72,10 @@ struct MemoryListView: View {
                                 .onTapGesture {
                                     model.aux.detailItemIndex = index
                                     model.aux.activeView = .memoryDetail
+                                    
+                                    if let mr = model.state.memoryAt( index: index ) {
+                                        model.aux.detailItemTag = mr.tag
+                                    }
                                 }
                                 
                                 Divider()
