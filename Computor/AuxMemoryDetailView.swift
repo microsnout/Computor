@@ -39,10 +39,11 @@ struct MemoryDetailView: View {
 
         func keyPress(_ event: KeyEvent ) -> KeyPressResult {
             let index = model.aux.detailItemIndex
+            let tag = model.state.memory[index].tag
             
             switch event.kc {
             case .rclMem, .stoMem, .mPlus, .mMinus:
-                model.memoryOp(key: event.kc, index: index)
+                model.memoryOp(key: event.kc, index: index, tag: tag )
                 
             case .mRename:
                 renameSheet = true

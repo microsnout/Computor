@@ -39,6 +39,8 @@ struct MemoryListView: View {
                             // Not using render count for now
                             let (prefix, (value, _)) = item
                             
+                            let tag = model.state.memory[index].tag
+                            
                             VStack {
                                 HStack {
                                     VStack( alignment: .leading, spacing: 0 ) {
@@ -61,7 +63,7 @@ struct MemoryListView: View {
                                     
                                     
                                     HStack( spacing: 20 ) {
-                                        Button( action: { model.memoryOp( key: .rclMem, index: index) } ) {
+                                        Button( action: { model.memoryOp( key: .rclMem, index: index, tag: tag ) } ) {
                                             Image( systemName: "arrowshape.down" )
                                         }
                                         Button( action: { model.delMemoryItems(set: [index]) } ) {
@@ -72,10 +74,6 @@ struct MemoryListView: View {
                                 .onTapGesture {
                                     model.aux.detailItemIndex = index
                                     model.aux.activeView = .memoryDetail
-                                    
-                                    if let mr = model.state.memoryAt( index: index ) {
-                                        model.aux.detailItemTag = mr.tag
-                                    }
                                 }
                                 
                                 Divider()
