@@ -74,3 +74,38 @@ struct MemoryRenameView_Previews: PreviewProvider {
         }
     }
 }
+
+
+//struct MemoryRenameView_Previews: PreviewProvider {
+//    
+//    static func addSampleMemory( _ model: CalculatorModel ) -> CalculatorModel {
+//        let newModel = model
+//        newModel.state.memory = []
+//        newModel.aux.detailItemIndex = 2
+//        return newModel
+//    }
+//    
+//    static var previews: some View {
+//        @StateObject  var model = MemoryListView_Previews.addSampleMemory( CalculatorModel())
+//        
+//        ZStack {
+//            Rectangle()
+//                .fill(Color("Background"))
+//                .edgesIgnoringSafeArea( .all )
+//            
+//            VStack {
+//                VStack {
+//                    MemoryRenameView( model: model)
+//                        .frame( maxWidth: .infinity, maxHeight: .infinity)
+//                        .preferredColorScheme(.light)
+//                }
+//                .padding([.leading, .trailing, .top, .bottom], 0)
+//                .background( Color("Display") )
+//                .border(Color("Frame"), width: 3)
+//            }
+//            .padding(.horizontal, 30)
+//            .padding(.vertical, 5)
+//            .background( Color("Background"))
+//        }
+//    }
+//}

@@ -37,6 +37,16 @@ struct RegisterPattern {
 }
 
 
+// Set to KeyCode for now...
+struct MemorySym: Codable, Equatable {
+    
+    var kc: KeyCode
+    
+    init( _ kc: KeyCode) {
+        self.kc = kc
+    }
+}
+
 struct MemoryRec: Codable {
     var tv:      TaggedValue
     var symbol:  KeyCode = KeyCode.null
