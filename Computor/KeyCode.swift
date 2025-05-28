@@ -80,11 +80,26 @@ enum KeyCode: Int, Codable {
     
     var isUnit: Bool { return self.rawValue > KeyCode.unitStart.rawValue && self.rawValue < KeyCode.unitEnd.rawValue }
     
+    var isDigit: Bool
+    { return self.rawValue >= KeyCode.key0.rawValue && self.rawValue <= KeyCode.key9.rawValue }
+
+    var isLowerAlpha: Bool
+    { return self.rawValue >= KeyCode.a.rawValue && self.rawValue <= KeyCode.z.rawValue }
+    
+    var isUpperAlpha: Bool
+    { return self.rawValue >= KeyCode.A.rawValue && self.rawValue <= KeyCode.Z.rawValue }
+    
+    var isGreekAlpha: Bool
+    { return self.rawValue >= KeyCode.alpha.rawValue && self.rawValue <= KeyCode.omega.rawValue }
+
     static let digitSet:Set<KeyCode> = [.key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9]
 
     static let fnSet:Set<KeyCode> = [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6, .openBrace]
 
     static let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .showFn, .openBrace]
+
+    static let lowerAlpha = Array( "abcdefghijklmnopqrstuvwxyz" )
+    static let upperAlpha = Array( "ABCDEFGHIJKLMNOPQRSTUVWXYZ" )
 
     static let greekAlpha = [
         "\u{03b1}", "\u{03b2}", "\u{03b3}", "\u{03b4}", "\u{03b5}", "\u{03b6}", "\u{03b7}", "\u{03b8}",

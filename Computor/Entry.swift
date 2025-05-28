@@ -195,7 +195,7 @@ struct EntryState {
             case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
                 // Append a digit to exponent
                 if exponentText.starts( with: "-") && exponentText.count < 4 || exponentText.count < 3 {
-                    appendExpEntry( String(keyCode.rawValue))
+                    appendExpEntry( String(keyCode.rawValue - KeyCode.key0.rawValue ))
                 }
 
             case .dot, .eex:

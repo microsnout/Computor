@@ -39,16 +39,20 @@ struct MemoryListView: View {
                             
                             let (txt, _) = mr.tv.renderRichText()
                             
+                            let sym = mr.tag.getRichText() ?? "??"
+                            
+                            let caption: String = mr.caption ?? "-caption-"
+                            
+                            let color = mr.caption != nil ? "Units" : "GrayText"
+                            
                             VStack {
                                 HStack {
                                     VStack( alignment: .leading, spacing: 0 ) {
-                                        let name: String = mr.caption ?? "-unnamed-"
-                                        
-                                        let color = mr.caption != nil ? Color("DisplayText") : Color(.gray)
                                         
                                         HStack {
-                                            // Memory caption - tap to edit
-                                            Text(name).font(.footnote).bold().foregroundColor(color).listRowBackground(Color("List0"))
+                                            RichText(sym, size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
+                                            
+                                            RichText(caption, size: .normal, weight: .regular, design: .serif, defaultColor: color )
                                         }
                                             
                                         // Memory value display

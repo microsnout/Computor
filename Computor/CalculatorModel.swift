@@ -1022,13 +1022,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             else {
                 // Global memory
                 pushState()
-                var name: String = ""
-                
-                if let key = Key.keyList[kcMem] {
-                    name = key.text ?? ""
-                }
-                
-                let mr   = MemoryRec( tag: MemoryTag(kcMem), caption: name, tv: tv )
+                let mr   = MemoryRec( tag: MemoryTag(kcMem), tv: tv )
                 
                 if let index = state.memory.firstIndex( where: { $0.tag.kc == kcMem }) {
                     
