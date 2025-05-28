@@ -938,26 +938,29 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         // Leading edge swipe operations
         switch key {
+            
         case .rclMem:
-            state.stackLift()
-            state.Xtv = state.memory[index].tv
-            break
+            if let mr = state.memoryAt( tag: tag ) {
+                state.stackLift()
+                state.Xtv = mr.tv
+            }
             
         case .stoMem:
-            state.memory[index].tv = state.Xtv
-            break
+            state.memorySetValue( at: tag, state.Xtv )
             
         case .mPlus:
-            if state.Xt == state.memory[index].tv.tag {
-                state.memory[index].tv.reg += state.X
+            if let index = state.memoryIndex( at: tag ) {
+                if state.Xt == state.memory[index].tv.tag {
+                    state.memory[index].tv.reg += state.X
+                }
             }
-            break
             
         case .mMinus:
-            if state.Xt == state.memory[index].tv.tag {
-                state.memory[index].tv.reg -= state.X
+            if let index = state.memoryIndex( at: tag ) {
+                if state.Xt == state.memory[index].tv.tag {
+                    state.memory[index].tv.reg -= state.X
+                }
             }
-            break
             
         default:
             break
