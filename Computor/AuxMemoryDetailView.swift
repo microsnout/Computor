@@ -43,7 +43,7 @@ struct MemoryDetailView: View {
             
             switch event.kc {
             case .rclMem, .stoMem, .mPlus, .mMinus:
-                model.memoryOp(key: event.kc, index: index, tag: tag )
+                model.memoryOp(key: event.kc, tag: tag )
                 
             case .mRename:
                 renameSheet = true

@@ -932,7 +932,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return text
     }
     
-    func memoryOp( key: KeyCode, index: Int, tag: MemoryTag ) {
+    func memoryOp( key: KeyCode, tag: MemoryTag ) {
         pushState()
         acceptTextEntry()
         

@@ -63,7 +63,7 @@ struct MemoryListView: View {
                                     
                                     
                                     HStack( spacing: 20 ) {
-                                        Button( action: { model.memoryOp( key: .rclMem, index: index, tag: tag ) } ) {
+                                        Button( action: { model.memoryOp( key: .rclMem, tag: tag ) } ) {
                                             Image( systemName: "arrowshape.down" )
                                         }
                                         Button( action: { model.delMemoryItems(set: [index]) } ) {
