@@ -29,7 +29,8 @@ struct MemoryListView: View {
             }
             else {
                 let strList = (0 ..< model.state.memory.count).map
-                    { ( model.state.memory[$0].caption,
+                    { ( model.state.memory[$0].tag,
+                        model.state.memory[$0].caption,
                         model.state.memory[$0].tv.renderRichText()) }
                 
                 ScrollView {
@@ -37,9 +38,7 @@ struct MemoryListView: View {
                         ForEach ( Array(strList.enumerated()), id: \.offset ) { index, item in
                             
                             // Not using render count for now
-                            let (prefix, (value, _)) = item
-                            
-                            let tag = model.state.memory[index].tag
+                            let (tag, prefix, (value, _)) = item
                             
                             VStack {
                                 HStack {
