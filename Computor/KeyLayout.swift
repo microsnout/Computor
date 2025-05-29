@@ -67,7 +67,7 @@ let psOperations = PadSpec(
 let psClear = PadSpec(
         keySpec: ksNormal,
         cols: 3,
-        keys: [ Key(.back, "ƒ{0.8}BACK/UNDO", size: 2), Key(.clX, "CLx") ]
+        keys: [ Key(.back, "ƒ{0.8}BACK/UNDO", size: 2), Key(.clX, "ƒ{0.8}ClrX") ]
     )
 
 let psSoftkeyL = PadSpec (
@@ -200,34 +200,37 @@ func initKeyLayout() {
     SubPadSpec.define( .sin,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.csc, "csc"),
-                        Key(.acsc, "acsc"),
-                        Key(.asin, "asin"),
-                        Key(.sinh, "sinh"),
-                        Key(.asinh, "asinh"),
-                       ]
+                        Key(.csc, "csc",    caption: "cosecant" ),
+                        Key(.acsc, "acsc",  caption: "Inverse csc"),
+                        Key(.asin, "asin",  caption: "Inverse sin" ),
+                        Key(.sinh, "sinh",  caption: "Hyperbolic sin" ),
+                        Key(.asinh, "asinh",caption: "Inverse sinh" ),
+                       ],
+                       caption: "Sin functions"
     )
     
     SubPadSpec.define( .cos,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.sec, "sec"),
-                        Key(.asec, "asec"),
-                        Key(.acos, "acos"),
-                        Key(.cosh, "cosh"),
-                        Key(.acosh, "acosh"),
-                       ]
+                        Key(.sec, "sec",    caption: "secant"),
+                        Key(.asec, "asec",  caption: "Inverse secant"),
+                        Key(.acos, "acos",  caption: "Inverse cos"),
+                        Key(.cosh, "cosh",  caption: "Hyperbolic cos"),
+                        Key(.acosh, "acosh",caption: "Inverse cosh"),
+                       ],
+                       caption: "Cos functions"
     )
     
     SubPadSpec.define( .tan,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.cot, "cot"),
-                        Key(.acot, "acot"),
-                        Key(.asin, "atan"),
-                        Key(.tanh, "tanh"),
-                        Key(.atanh, "atanh"),
-                       ]
+                        Key(.cot, "cot",    caption: "cotangent"),
+                        Key(.acot, "acot",  caption: "Inverse cot"),
+                        Key(.asin, "atan",  caption: "Inverse tan"),
+                        Key(.tanh, "tanh",  caption: "Hyperbolic tan"),
+                        Key(.atanh, "atanh",caption: "Inverse tanh"),
+                       ],
+                       caption: "Tan functions"
     )
     
     SubPadSpec.define( .log,
@@ -294,9 +297,9 @@ func initKeyLayout() {
     SubPadSpec.define( .clX,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.clX,  "CLx",   caption: "Clear X"),
-                        Key(.clY,  "CLy",   caption: "Clear Y"),
-                        Key(.clZ,  "CLz",   caption: "Clear Z"),
+                        Key(.clX,  "ƒ{0.8}ClrX",   caption: "Clear X"),
+                        Key(.clY,  "ƒ{0.8}ClrY",   caption: "Clear Y"),
+                        Key(.clZ,  "ƒ{0.8}ClrY",   caption: "Clear Z"),
                         Key(.clReg,"ƒ{0.8}CL Reg", caption: "Clear Registers"),
                        ],
                        caption: "Clear"
