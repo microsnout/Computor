@@ -21,11 +21,11 @@ extension TaggedValue {
         if rows > 1 && cols > 1 {
             let rowStr = String(rows)
             let colStr = String(cols)
-            let text = "ç{Units}[ç{}\(rowStr)ç{Units} x ç{}\(colStr)ç{Units}]ç{}"
+            let text = "ç{UnitText}[ç{}\(rowStr)ç{UnitText} x ç{}\(colStr)ç{UnitText}]ç{}"
             return (text, rowStr.count + colStr.count + 5)
         }
         
-        var text  = "ç{Units}[ç{}"
+        var text  = "ç{UnitText}[ç{}"
         var count = 1
         
         if rows == 1 {
@@ -35,18 +35,18 @@ extension TaggedValue {
                 let (simpleStr, simpleCount) = renderValueSimple( c: c )
                 
                 if count + simpleCount > maxStrCount {
-                    text.append( "ç{Units}={..]}ç{}" )
+                    text.append( "ç{UnitText}={..]}ç{}" )
                     count += 3
                     break
                 }
                 text.append(simpleStr)
                 
                 if c == cols {
-                    text.append( "ç{Units}]ç{}" )
+                    text.append( "ç{UnitText}]ç{}" )
                     count += simpleCount + 1
                 }
                 else {
-                    text.append( "ç{Units}={, }ç{}" )
+                    text.append( "ç{UnitText}={, }ç{}" )
                     count += simpleCount + 2
                 }
             }
@@ -58,18 +58,18 @@ extension TaggedValue {
                 let (simpleStr, simpleCount) = renderValueSimple( r: row )
                 
                 if count + simpleCount > maxStrCount {
-                    text.append( "ç{Units}={..]}ç{}" )
+                    text.append( "ç{UnitText}={..]}ç{}" )
                     count += 3
                     break
                 }
                 text.append(simpleStr)
                 
                 if row == rows {
-                    text.append( "ç{Units}]^{T}ç{}" )
+                    text.append( "ç{UnitText}]^{T}ç{}" )
                     count += simpleCount + 2
                 }
                 else {
-                    text.append( "ç{Units}={, }ç{}" )
+                    text.append( "ç{UnitText}={, }ç{}" )
                     count += simpleCount + 2
                 }
             }
@@ -78,7 +78,7 @@ extension TaggedValue {
         if tag != tagUntyped {
             // Add unit string
             if let sym = tag.symbol {
-                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                text.append( "ç{UnitText}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
                 count += sym.count + 1
             }
         }
@@ -440,7 +440,7 @@ class MapFunctionX : ModalContext {
         self.valueList = valueList
     }
     
-    override var statusString: String? { "ç{Units}Map ƒ()" }
+    override var statusString: String? { "ç{UnitText}Map ƒ()" }
     
     override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
         
@@ -504,7 +504,7 @@ class MapFunctionXY : ModalContext {
         self.valueListY = valueListY
     }
     
-    override var statusString: String? { "ç{Units}Map-xy ƒ(,)" }
+    override var statusString: String? { "ç{UnitText}Map-xy ƒ(,)" }
     
     override func modalExecute( _ event: KeyEvent ) -> KeyPressResult {
         
@@ -569,7 +569,7 @@ class ReduceFunction : ModalContext {
         self.valueList = valueList
     }
     
-    override var statusString: String? { "ƒ{0.9}ç{Units}Reduce ƒ(,)" }
+    override var statusString: String? { "ƒ{0.9}ç{UnitText}Reduce ƒ(,)" }
     
     override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
         

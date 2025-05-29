@@ -622,7 +622,7 @@ extension TaggedValue {
             }
             else if let sym = tag.symbol {
                 // Add unit symbol
-                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                text.append( "ç{UnitText}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
                 valueCount += sym.count + 1
             }
         }
@@ -652,14 +652,14 @@ extension TaggedValue {
         
         var text = String()
         text.append(reStr)
-        text.append( neg ? "ç{Units} ={-} ç{}" : "ç{Units} ={+} ç{}")
+        text.append( neg ? "ç{UnitText} ={-} ç{}" : "ç{UnitText} ={+} ç{}")
         text.append(imStr)
-        text.append("ç{Units}={i}ç{}")
+        text.append("ç{UnitText}={i}ç{}")
         
         if isSimple && tag != tagUntyped {
             // Add unit string
             if let sym = tag.symbol {
-                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                text.append( "ç{UnitText}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
                 unitCount += sym.count + 1
             }
         }
@@ -676,16 +676,16 @@ extension TaggedValue {
         var unitCount = 0
         
         var text = String()
-        text.append("ç{Units}\u{276c}ç{}")
+        text.append("ç{UnitText}\u{276c}ç{}")
         text.append(xStr)
-        text.append( "ç{Units}={ ,}ç{}")
+        text.append( "ç{UnitText}={ ,}ç{}")
         text.append(yStr)
-        text.append("ç{Units}\u{276d}ç{}")
+        text.append("ç{UnitText}\u{276d}ç{}")
         
         if isSimple && tag != tagUntyped {
             // Add unit string
             if let sym = tag.symbol {
-                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                text.append( "ç{UnitText}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
                 unitCount += sym.count + 1
             }
         }
@@ -711,24 +711,24 @@ extension TaggedValue {
         var unitCount = 0
         var text = String()
         
-        text.append("ç{Units}\u{276c} \u{03c1}: ç{}" + rStr )
+        text.append("ç{UnitText}\u{276c} \u{03c1}: ç{}" + rStr )
         
         if isSimple && tag != tagUntyped {
             // Add unit string
             if let sym = tag.symbol {
-                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                text.append( "ç{UnitText}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
                 unitCount += sym.count + 1
             }
         }
 
-        text.append( "ç{Units}={,} \u{03b8}: ç{}" + wStr )
+        text.append( "ç{UnitText}={,} \u{03b8}: ç{}" + wStr )
         
         if fmt.polarAngle == .degrees {
             text.append( "\u{00B0}" )
             unitCount += 1
         }
         
-        text.append("ç{Units}\u{276d}ç{}")
+        text.append("ç{UnitText}\u{276d}ç{}")
         
         return (text, rCount + wCount + unitCount + 11)
     }
@@ -743,15 +743,15 @@ extension TaggedValue {
         var unitCount = 0
         
         var text = String()
-        text.append("ç{Units}\u{276c}ç{}" + xStr)
-        text.append( "ç{Units}={,} ç{}" + yStr)
-        text.append( "ç{Units}={,} ç{}" + zStr)
-        text.append("ç{Units}\u{276d}ç{}")
+        text.append("ç{UnitText}\u{276c}ç{}" + xStr)
+        text.append( "ç{UnitText}={,} ç{}" + yStr)
+        text.append( "ç{UnitText}={,} ç{}" + zStr)
+        text.append("ç{UnitText}\u{276d}ç{}")
         
         if isSimple && tag != tagUntyped {
             // Add unit string
             if let sym = tag.symbol {
-                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                text.append( "ç{UnitText}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
                 unitCount += sym.count + 1
             }
         }
@@ -779,31 +779,31 @@ extension TaggedValue {
         var unitCount = 0
         var text = String()
         
-        text.append("ç{Units}\u{276c} \u{03c1}: ç{}" + rStr)
+        text.append("ç{UnitText}\u{276c} \u{03c1}: ç{}" + rStr)
         
         if isSimple && tag != tagUntyped {
             // Add unit string
             if let sym = tag.symbol {
-                text.append( "ç{Units}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+                text.append( "ç{UnitText}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
                 unitCount += sym.count + 1
             }
         }
 
-        text.append( "ç{Units}={,} \u{03b8}: ç{}" + thetaStr )
+        text.append( "ç{UnitText}={,} \u{03b8}: ç{}" + thetaStr )
         
         if fmt.polarAngle == .degrees {
             text.append( "\u{00B0}" )
             unitCount += 1
         }
 
-        text.append( "ç{Units}={,} \u{03c6}: ç{}" + phiStr )
+        text.append( "ç{UnitText}={,} \u{03c6}: ç{}" + phiStr )
         
         if fmt.polarAngle == .degrees {
             text.append( "\u{00B0}" )
             unitCount += 1
         }
         
-        text.append("ç{Units}\u{276d}ç{}")
+        text.append("ç{UnitText}\u{276d}ç{}")
         
         return (text, rCount + thetaCount + phiCount + unitCount + 16)
     }

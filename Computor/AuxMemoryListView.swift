@@ -43,7 +43,7 @@ struct MemoryListView: View {
                             
                             let caption: String = mr.caption ?? "-caption-"
                             
-                            let color = mr.caption != nil ? "Units" : "GrayText"
+                            let color = mr.caption != nil ? "UnitText" : "GrayText"
                             
                             VStack {
                                 HStack {
