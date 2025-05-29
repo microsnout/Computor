@@ -44,7 +44,7 @@ struct ValueBrowserView: View {
                 let (valueStr, _) = tv.renderRichText()
                 
                 VStack {
-                    RichText( "ƒ{1.5}ç{\(color)}\(nameStr)", size: .large )
+                    RichText( "ƒ{1.5}ç{\(color)}\(nameStr)", size: .large, weight: .bold, design: .serif )
                     TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
                 }
                 Spacer()
