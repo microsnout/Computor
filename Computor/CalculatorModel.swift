@@ -1109,7 +1109,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             pauseUndoStack()
             storeRegister( KeyEvent( kc: .popXYZ, kcSub: .X ), state.Xtv)
             storeRegister( KeyEvent( kc: .popXYZ, kcSub: .Y ), state.Ytv)
-            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .Z ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .Z ), state.Ztv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
