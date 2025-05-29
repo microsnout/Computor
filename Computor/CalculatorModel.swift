@@ -1092,14 +1092,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             // TODO: Adding .sto and .rcl here
             
         case .popX:
-            storeRegister( KeyEvent( kc: .popX, kcSub: .x ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popX, kcSub: .X ), state.Xtv)
             state.stackDrop()
 
         case .popXY:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( kc: .popXY, kcSub: .x ), state.Xtv)
-            storeRegister( KeyEvent( kc: .popXY, kcSub: .y ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXY, kcSub: .X ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popXY, kcSub: .Y ), state.Ytv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
@@ -1107,9 +1107,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .popXYZ:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .x ), state.Xtv)
-            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .y ), state.Ytv)
-            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .z ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .X ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .Y ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .Z ), state.Ytv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()

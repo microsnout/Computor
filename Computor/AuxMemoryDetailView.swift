@@ -74,13 +74,18 @@ struct MemoryDetailView: View {
                             let count = model.state.memory.count
                             
                             ForEach( 0 ..< count, id: \.self ) { index in
+                                
                                 let mr = model.state.memory[index]
-                                let nameStr = mr.caption ?? "-Unnamed-"
+                                let sym = mr.tag.getRichText() ?? "??"
+                                let caption = mr.caption ?? "-Unnamed-"
                                 let (valueStr, _) = mr.tv.renderRichText()
-                                let color = mr.caption != nil ? "DisplayText" : "GrayText"
+                                let color = mr.caption != nil ? "UnitText" : "GrayText"
 
                                 VStack {
-                                    RichText( "ƒ{1.5}ç{\(color)}\(nameStr)", size: .large )
+                                    RichText("ƒ{1.5}\(sym)", size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
+                                    
+                                    RichText( "ƒ{1.2}ç{\(color)}\(caption)", size: .large, design: .serif )
+                                    
                                     TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
                                 }
                                 .id( index )
