@@ -35,7 +35,8 @@ enum KeyPressResult: Int {
          modalFunction,     // Start modal function, no new state yet
          modalFnNewState,    // Start modal function with new state
          recordOnly,
-         resendEvent        // Re-dispacth this event because the eventContext has changed
+         resendEvent,        // Re-dispacth this event because the eventContext has changed
+         modalPopupContinue
 }
 
 protocol KeyPressHandler {
@@ -77,6 +78,21 @@ struct Key: Identifiable {
         Key.keyList[self.kc] = self
     }
 }
+
+
+extension Key {
+    
+    static var modalKeyList: [ KeyCode : ModalKey ] = [:]
+    
+    static func getModalKey( _ kc: KeyCode ) -> ModalKey? {
+        return Key.modalKeyList[kc]
+    }
+    
+    static func defineModalKey( _ kc: KeyCode, _ key: ModalKey ) {
+        Key.modalKeyList[kc] = key
+    }
+}
+
 
 struct SubPadSpec {
     var kc: KeyCode      = .noop
@@ -169,6 +185,10 @@ extension PadSpec {
 
 // ****************************************************
 
+enum ModalKey: Int {
+    case none = 0, selectMemory, newMemory, localMemory
+}
+
 class KeyData : ObservableObject {
     //    Origin of pressed key rect
     //    Rect of outer ZStack
@@ -187,6 +207,7 @@ class KeyData : ObservableObject {
     @Published var dragPt   = CGPoint.zero
     @Published var keyDown  = false
     @Published var modalUp  = false
+    @Published var modalKey = ModalKey.none
 }
 
 
@@ -202,7 +223,7 @@ struct ModalBlock: View {
     @EnvironmentObject var keyData: KeyData
 
     var body: some View {
-        if keyData.keyDown || keyData.modalUp {
+        if keyData.keyDown || keyData.modalUp || keyData.modalKey != .none  {
             // Transparent rectangle to block all key interactions below the popup - opacity 0 passes key presses through
             Rectangle()
                 .opacity(0.0001)
@@ -211,6 +232,7 @@ struct ModalBlock: View {
                     keyData.pressedKey = nil
                     keyData.modalPad = PadSpec()
                     keyData.modalUp = false
+                    keyData.modalKey = .none
                 }
         }
     }
@@ -308,12 +330,6 @@ struct SubPopMenu: View {
 struct SubPopModal: View {
     let keyPressHandler: KeyPressHandler
 
-    @AppStorage(.settingsSerifFontKey)
-    private var serifFont = false
-    
-    @AppStorage(.settingsKeyCaptions)
-    private var keyCaptions = true
-    
     @AppStorage(.settingsKeyCaptions)
     private var greekKeys = false
 
@@ -340,6 +356,74 @@ struct SubPopModal: View {
                 RoundedRectangle( cornerRadius: 6 )
                     .stroke( Color("Frame"), lineWidth: 4))
             .shadow( radius: 20 )
+        }
+    }
+}
+
+
+struct CustomModalPopup<Content: View>: View {
+    
+    let keyPressHandler: KeyPressHandler
+    
+    let myKey: ModalKey
+    
+    @EnvironmentObject var keyData: KeyData
+
+    @ViewBuilder let content: Content
+    
+    var body: some View {
+        if keyData.modalKey == myKey {
+            
+            content
+                .background( Color("Background") )
+                .overlay(
+                    RoundedRectangle( cornerRadius: 6 )
+                        .stroke( Color("Frame"), lineWidth: 4))
+                .shadow( radius: 20 )
+        }
+        
+    }
+}
+
+
+struct NewMemoryPopup: View {
+    
+    @EnvironmentObject var model: CalculatorModel
+    
+    @AppStorage(.settingsKeyCaptions)
+    private var greekKeys = false
+    
+    @EnvironmentObject var keyData: KeyData
+
+    struct NewMemoryHandler: KeyPressHandler {
+        
+        var model: CalculatorModel
+        
+        func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+            
+            let evt = KeyEvent( kc: .stoZ, kcSub: event.kc  )
+            
+            return model.keyPress(evt)
+        }
+    }
+    
+    var body: some View {
+        
+        let keyHandler = NewMemoryHandler(model: model)
+
+        CustomModalPopup( keyPressHandler: keyHandler, myKey: .newMemory ) {
+
+            VStack {
+                Text( keyData.modalPad.caption ?? "Modal Pad" )
+                    .padding( [.top] )
+                
+                VStack {
+                    KeypadView( padSpec: greekKeys ? psGreek : psAlpha, keyPressHandler: keyHandler )
+                        .padding( [.leading, .trailing, .bottom] )
+                    
+                    Toggle("\u{03b1}\u{03b2}\u{03b3}", isOn: $greekKeys ).frame( maxWidth: 100 ).padding( [.bottom], 20)
+                }
+            }
         }
     }
 }
@@ -452,6 +536,14 @@ struct KeyView: View {
                         
                         // Do not generate a key event until a selection is made on the modal pad
                     }
+                    else if let modalKey = Key.getModalKey(key.kc) {
+                        
+                        // Pop up modal key pad
+                        keyData.pressedKey = key
+                        keyData.modalKey = modalKey
+
+                        // Do not generate a key event until the modal terminates
+                    }
                     else {
                         
                         // Subpop menu key event
@@ -561,9 +653,24 @@ struct KeyView: View {
                                 
                                 // Do not generate a key event until a selection is made on the modal pad
                             }
+                            else if let modalKey = Key.getModalKey(key.kc) {
+                                
+                                // Pop up modal key pad
+                                keyData.pressedKey = key
+                                keyData.modalKey = modalKey
+                                
+                                // Do not generate a key event until the modal terminates
+                            }
                             else {
                                 // Generate key press event
-                                _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc))
+                                let result = keyPressHandler.keyPress( KeyEvent( kc: key.kc))
+                                
+                                if keyData.modalKey != .none && result != .modalPopupContinue {
+                                    
+                                    // Cancel a modal popup if there is one and the key press result is not continue
+                                    keyData.pressedKey = nil
+                                    keyData.modalKey = .none
+                                }
                             }
                         })
                     .if( text != nil && !model.aux.isRecordingKey(key.kc) ) { view in
@@ -691,6 +798,8 @@ struct KeyStack<Content: View>: View {
             SubPopMenu()
             
             SubPopModal( keyPressHandler: keyPressHandler )
+            
+            NewMemoryPopup()
         }
         .onGeometryChange( for: CGRect.self, of: {proxy in proxy.frame(in: .global)} ) { newValue in
             keyData.zFrame = newValue

@@ -438,7 +438,11 @@ func initKeyLayout() {
 
     PadSpec.defineModal( .stoX, psAlpha )
     
-    PadSpec.copySpec( from: .stoX, list: [.rcl, .stoY, .stoZ])
+    // Removed .stoZ for testing modals
+    PadSpec.copySpec( from: .stoX, list: [.rcl, .stoY])
+    
+    // Testing new modal popups
+    Key.defineModalKey( .stoZ, .newMemory )
 }
 
 
