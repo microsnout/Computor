@@ -443,15 +443,30 @@ func initKeyLayout() {
 
 
 let psAlpha =
+PadSpec(
+    keySpec: ksModalPop,
+    cols: 6,
+    keys: [
+        Key(.A, "A"), Key(.B, "B"), Key(.C, "C"), Key(.D, "D"), Key(.E, "E"), Key(.F, "F"),
+        Key(.G, "G"), Key(.H, "H"), Key(.I, "I"), Key(.J, "J"), Key(.K, "K"), Key(.L, "L"),
+        Key(.M, "M"), Key(.N, "N"), Key(.O, "O"), Key(.P, "P"), Key(.Q, "Q"), Key(.R, "R"),
+        Key(.S, "S"), Key(.T, "T"), Key(.U, "U"), Key(.V, "V"), Key(.W, "W"), Key(.X, "X"),
+        Key(.Y, "Y"), Key(.Z, "Z"),
+    ],
+    caption: "Memory"
+)
+
+
+let psAlphaLower =
     PadSpec(
         keySpec: ksModalPop,
         cols: 6,
         keys: [
-            Key(.A, "A"), Key(.B, "B"), Key(.C, "C"), Key(.D, "D"), Key(.E, "E"), Key(.F, "F"),
-            Key(.G, "G"), Key(.H, "H"), Key(.I, "I"), Key(.J, "J"), Key(.K, "K"), Key(.L, "L"),
-            Key(.M, "M"), Key(.N, "N"), Key(.O, "O"), Key(.P, "P"), Key(.Q, "Q"), Key(.R, "R"),
-            Key(.S, "S"), Key(.T, "T"), Key(.U, "U"), Key(.V, "V"), Key(.W, "W"), Key(.X, "X"),
-            Key(.Y, "Y"), Key(.Z, "Z"),
+            Key(.a, "a"), Key(.b, "b"), Key(.c, "c"), Key(.d, "d"), Key(.e, "e"), Key(.f, "f"),
+            Key(.g, "g"), Key(.h, "h"), Key(.i, "i"), Key(.j, "j"), Key(.k, "k"), Key(.l, "l"),
+            Key(.m, "m"), Key(.n, "n"), Key(.o, "o"), Key(.p, "p"), Key(.q, "q"), Key(.r, "r"),
+            Key(.s, "s"), Key(.t, "t"), Key(.u, "u"), Key(.v, "v"), Key(.w, "w"), Key(.x, "x"),
+            Key(.y, "y"), Key(.z, "z"),
         ],
         caption: "Memory"
 )
@@ -465,6 +480,21 @@ let psGreek =
             Key(.eta,     "\u{03b7}"), Key(.theta,   "\u{03b8}"), Key(.iota,    "\u{03b9}"), Key(.kappa,   "\u{03ba}"), Key(.lambda,  "\u{03bb}"), Key(.mu,      "\u{03bc}"),
             Key(.nu,      "\u{03bd}"), Key(.xi,      "\u{03be}"), Key(.omicron, "\u{03bf}"), Key(.pi,      "\u{03c0}"), Key(.rho,     "\u{03c1}"), Key(.sigma,   "\u{03c3}"),
             Key(.tau,     "\u{03c4}"), Key(.upsilon, "\u{03c5}"), Key(.phi,     "\u{03c6}"), Key(.chi,     "\u{03c7}"), Key(.psi,     "\u{03c8}"), Key(.omega,   "\u{03c9}"),
+            Key(.noop), Key(.noop),
+        ],
+        caption: "Memory"
+    )
+
+
+let psDigits =
+    PadSpec(
+        keySpec: ksModalPop,
+        cols: 6,
+        keys: [
+            Key(.key1, "1"), Key(.key2, "2"), Key(.key3, "3"), Key(.key4, "4"), Key(.key5, "5"), Key(.key6, "6"),
+            Key(.key7, "7"), Key(.key8, "8"), Key(.key9, "9"), Key(.noop, "0"), Key(.noop), Key(.noop),
+            Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop),
+            Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop),
             Key(.noop), Key(.noop),
         ],
         caption: "Memory"

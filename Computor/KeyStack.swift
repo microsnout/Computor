@@ -333,6 +333,84 @@ struct NewMemoryPopup: View {
     private var greekKeys = false
     
     @EnvironmentObject var keyData: KeyData
+    
+    @State private var charSet = CharSet.upper
+    
+    enum CharSet: Int {
+        case upper = 0, lower, greek, digit
+        
+        var nextSet: CharSet {
+            switch self {
+            case .upper:    return .lower
+            case .lower:    return .greek
+            case .greek:    return .digit
+            case .digit:    return .upper
+            }
+        }
+    }
+    
+    let setList: [CharSet] = [.upper, .lower, .greek, .digit]
+    
+    let padList: [PadSpec] = [psAlpha, psAlphaLower, psGreek, psDigits]
+    
+    let setLabels = ["ABC", "abc", "\u{03b1}\u{03b2}\u{03b3}", "123"]
+    
+    struct NewMemoryHandler: KeyPressHandler {
+        
+        var kcMem: KeyCode
+        var model: CalculatorModel
+        
+        func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+            
+            let evt = KeyEvent( kc: kcMem, kcSub: event.kc  )
+            
+            return model.keyPress(evt)
+        }
+    }
+
+    var body: some View {
+        
+        let keyHandler = NewMemoryHandler( kcMem: keyData.selSubkey?.kc ?? keyData.pressedKey?.kc ?? .noop , model: model)
+        
+        CustomModalPopup( keyPressHandler: keyHandler, myModalKey: .newMemory ) {
+            
+            VStack {
+                Text( keyData.modalPad.caption ?? "Modal Pad" )
+                    .padding( [.top] )
+                
+                VStack {
+                    KeypadView( padSpec: padList[charSet.rawValue], keyPressHandler: keyHandler )
+                        .padding( [.leading, .trailing, .bottom] )
+                    
+                    HStack {
+                        Button( "key" ) {
+                            charSet = charSet.nextSet
+                        }
+                        
+                        HStack {
+                            ForEach ( setList, id: \.self ) { cs in
+                                Text( setLabels[cs.rawValue] )
+                                    .if ( cs == charSet ) { txt in
+                                        txt.border(.blue)
+                                    }
+                            }
+                        }
+                    }.padding( [.bottom], 20)
+                }
+            }
+        }
+    }
+}
+
+
+struct localMemoryPopup: View {
+    
+    @EnvironmentObject var model: CalculatorModel
+    
+    @AppStorage(.settingsKeyCaptions)
+    private var greekKeys = false
+    
+    @EnvironmentObject var keyData: KeyData
 
     struct NewMemoryHandler: KeyPressHandler {
         
