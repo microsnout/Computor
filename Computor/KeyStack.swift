@@ -158,31 +158,6 @@ struct PadSpec {
 }
 
 
-extension PadSpec {
-    
-    // Dictionary of modal subpad specs associated with keycodes
-    static var modalSpecList: [KeyCode : PadSpec] = [:]
-    
-    static func defineModal( _ kc: KeyCode, _ ps: PadSpec ) {
-        // Add a modal subpad to the keycode kc
-        PadSpec.modalSpecList[kc] = ps
-    }
-    
-    static func getModalPadSpec( _ kc: KeyCode ) -> PadSpec? {
-        PadSpec.modalSpecList[kc]
-    }
-    
-    static func copySpec( from: KeyCode, list: [KeyCode]) {
-        if let spec = PadSpec.modalSpecList[from] {
-            // Copy the subpad from one key to many, used for Fn keys
-            for kc in list {
-                PadSpec.modalSpecList[kc] = spec
-            }
-        }
-    }
-}
-
-
 // ****************************************************
 
 enum ModalKey: Int {
@@ -206,7 +181,6 @@ class KeyData : ObservableObject {
 
     @Published var dragPt   = CGPoint.zero
     @Published var keyDown  = false
-    @Published var modalUp  = false
     @Published var modalKey = ModalKey.none
 }
 
@@ -223,7 +197,7 @@ struct ModalBlock: View {
     @EnvironmentObject var keyData: KeyData
 
     var body: some View {
-        if keyData.keyDown || keyData.modalUp || keyData.modalKey != .none  {
+        if keyData.keyDown || keyData.modalKey != .none  {
             // Transparent rectangle to block all key interactions below the popup - opacity 0 passes key presses through
             Rectangle()
                 .opacity(0.0001)
@@ -231,7 +205,6 @@ struct ModalBlock: View {
                     // Close modal popup
                     keyData.pressedKey = nil
                     keyData.modalPad = PadSpec()
-                    keyData.modalUp = false
                     keyData.modalKey = .none
                 }
         }
@@ -322,40 +295,6 @@ struct SubPopMenu: View {
                     }
                 }
                 .position(x: keyData.popFrame.minX - zOrigin.x + w/2, y: keyData.keyOrigin.y - zOrigin.y - keyData.popFrame.height/2 - keySpec.radius )
-        }
-    }
-}
-
-
-struct SubPopModal: View {
-    let keyPressHandler: KeyPressHandler
-
-    @AppStorage(.settingsKeyCaptions)
-    private var greekKeys = false
-
-    @EnvironmentObject var keyData: KeyData
-    
-    @State private var modalPad = psAlpha
-    
-    var body: some View {
-        if keyData.modalUp {
-            
-            VStack {
-                Text( keyData.modalPad.caption ?? "Modal Pad" )
-                    .padding( [.top] )
-                
-                VStack {
-                    KeypadView( padSpec: greekKeys ? psGreek : psAlpha, keyPressHandler: keyPressHandler )
-                        .padding( [.leading, .trailing, .bottom] )
-                    
-                    Toggle("\u{03b1}\u{03b2}\u{03b3}", isOn: $greekKeys ).frame( maxWidth: 100 ).padding( [.bottom], 20)
-                }
-            }
-            .background( Color("Background") )
-            .overlay(
-                RoundedRectangle( cornerRadius: 6 )
-                    .stroke( Color("Frame"), lineWidth: 4))
-            .shadow( radius: 20 )
         }
     }
 }
@@ -528,16 +467,7 @@ struct KeyView: View {
             .onEnded { _ in
                 if let key = keyData.selSubkey
                 {
-                    if let modalPad = PadSpec.getModalPadSpec( key.kc ) {
-                        
-                        // Pop up modal key pad
-                        keyData.pressedKey = key
-                        keyData.modalPad = modalPad
-                        keyData.modalUp = true
-                        
-                        // Do not generate a key event until a selection is made on the modal pad
-                    }
-                    else if let modalKey = Key.getModalKey(key.kc) {
+                    if let modalKey = Key.getModalKey(key.kc) {
                         
                         // Pop up modal key pad
                         keyData.pressedKey = key
@@ -629,32 +559,7 @@ struct KeyView: View {
                             // Keypress event occured, send event
                             hapticFeedback.impactOccurred()
                             
-                            if keyData.modalUp {
-                                let modalKey = keyData.pressedKey?.kc
-                                
-                                let event = KeyEvent( kc: modalKey ?? .noop, kcSub: key.kc )
-                                
-                                // Close modal popup
-                                keyData.pressedKey = nil
-                                keyData.modalPad = PadSpec()
-                                keyData.modalUp = false
-
-                                // Generate key press event
-                                // Blank key on subpad will be .noop
-                                if key.kc != .noop {
-                                    _ = keyPressHandler.keyPress( event )
-                                }
-                            }
-                            else if let modalPad = PadSpec.getModalPadSpec( key.kc ) {
-                                
-                                // Pop up modal key pad
-                                keyData.pressedKey = key
-                                keyData.modalPad = modalPad
-                                keyData.modalUp = true
-                                
-                                // Do not generate a key event until a selection is made on the modal pad
-                            }
-                            else if let modalKey = Key.getModalKey(key.kc) {
+                            if let modalKey = Key.getModalKey(key.kc) {
                                 
                                 // Pop up modal key pad
                                 keyData.pressedKey = key
@@ -797,8 +702,6 @@ struct KeyStack<Content: View>: View {
             ModalBlock()
             
             SubPopMenu()
-            
-            SubPopModal( keyPressHandler: keyPressHandler )
             
             NewMemoryPopup()
         }
