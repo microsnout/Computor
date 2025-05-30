@@ -336,6 +336,8 @@ struct NewMemoryPopup: View {
     
     @State private var charSet = CharSet.upper
     
+    @State private var symName = "D"
+    
     enum CharSet: Int {
         case upper = 0, lower, greek, digit
         
@@ -375,15 +377,15 @@ struct NewMemoryPopup: View {
         CustomModalPopup( keyPressHandler: keyHandler, myModalKey: .newMemory ) {
             
             VStack {
-                Text( keyData.modalPad.caption ?? "Modal Pad" )
-                    .padding( [.top] )
                 
                 VStack {
+                    RichText("ƒ{2.0}\(symName)", size: .large).padding( [.top], 20 )
+                    
                     KeypadView( padSpec: padList[charSet.rawValue], keyPressHandler: keyHandler )
                         .padding( [.leading, .trailing, .bottom] )
                     
                     HStack {
-                        Button( "key" ) {
+                        Button( "", systemImage: "arrowshape.left.arrowshape.right" ) {
                             charSet = charSet.nextSet
                         }
                         
@@ -391,9 +393,23 @@ struct NewMemoryPopup: View {
                             ForEach ( setList, id: \.self ) { cs in
                                 Text( setLabels[cs.rawValue] )
                                     .if ( cs == charSet ) { txt in
-                                        txt.border(.blue)
+                                        txt.overlay(
+                                            RoundedRectangle( cornerRadius: 5).inset(by: -1).stroke(.blue, lineWidth: 1) )
                                     }
                             }
+                        }
+                    }.padding( [.bottom], 10)
+                    
+                    HStack {
+                        Button("", systemImage: "clear") {
+                        }
+                        Button("", systemImage: "arrowshape.down") {
+                        }
+                        Button("", systemImage: "arrowshape.up") {
+                        }
+                        Button("", systemImage: "delete.left") {
+                        }
+                        Button("", systemImage: "checkmark.diamond.fill") {
                         }
                     }.padding( [.bottom], 20)
                 }
