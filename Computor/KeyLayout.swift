@@ -435,14 +435,10 @@ func initKeyLayout() {
 
     // Modal subpad definitions
     // Used to popup keypad for Sto, Rcl
-
-    PadSpec.defineModal( .stoX, psAlpha )
-    
-    // Removed .stoZ for testing modals
-    PadSpec.copySpec( from: .stoX, list: [.rcl, .stoY])
-    
-    // Testing new modal popups
+    Key.defineModalKey( .stoX, .newMemory )
+    Key.defineModalKey( .stoY, .newMemory )
     Key.defineModalKey( .stoZ, .newMemory )
+    Key.defineModalKey( .rcl,  .newMemory )
 }
 
 

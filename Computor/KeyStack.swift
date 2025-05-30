@@ -365,14 +365,14 @@ struct CustomModalPopup<Content: View>: View {
     
     let keyPressHandler: KeyPressHandler
     
-    let myKey: ModalKey
+    let myModalKey: ModalKey
     
     @EnvironmentObject var keyData: KeyData
 
     @ViewBuilder let content: Content
     
     var body: some View {
-        if keyData.modalKey == myKey {
+        if keyData.modalKey == myModalKey {
             
             content
                 .background( Color("Background") )
@@ -397,11 +397,12 @@ struct NewMemoryPopup: View {
 
     struct NewMemoryHandler: KeyPressHandler {
         
+        var kcMem: KeyCode
         var model: CalculatorModel
         
         func keyPress(_ event: KeyEvent ) -> KeyPressResult {
             
-            let evt = KeyEvent( kc: .stoZ, kcSub: event.kc  )
+            let evt = KeyEvent( kc: kcMem, kcSub: event.kc  )
             
             return model.keyPress(evt)
         }
@@ -409,9 +410,9 @@ struct NewMemoryPopup: View {
     
     var body: some View {
         
-        let keyHandler = NewMemoryHandler(model: model)
+        let keyHandler = NewMemoryHandler( kcMem: keyData.selSubkey?.kc ?? keyData.pressedKey?.kc ?? .noop , model: model)
 
-        CustomModalPopup( keyPressHandler: keyHandler, myKey: .newMemory ) {
+        CustomModalPopup( keyPressHandler: keyHandler, myModalKey: .newMemory ) {
 
             VStack {
                 Text( keyData.modalPad.caption ?? "Modal Pad" )
