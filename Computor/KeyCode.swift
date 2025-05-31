@@ -76,6 +76,26 @@ enum KeyCode: Int, Codable {
     
     case lastCode = 999
     
+    var str: String {
+        
+        if self.isLowerAlpha {
+            let ix = self.rawValue - KeyCode.a.rawValue
+            return String( KeyCode.lowerAlpha[ix] )
+        }
+        if self.isUpperAlpha {
+            let ix = self.rawValue - KeyCode.A.rawValue
+            return String( KeyCode.upperAlpha[ix] )
+        }
+        if self.isGreekAlpha {
+            let ix = self.rawValue - KeyCode.alpha.rawValue
+            return String( KeyCode.greekAlpha[ix] )
+        }
+        if self.isDigit {
+            return String( self.rawValue - KeyCode.key0.rawValue )
+        }
+        return String( describing: self )
+    }
+
     // *********
     
     var isUnit: Bool { return self.rawValue > KeyCode.unitStart.rawValue && self.rawValue < KeyCode.unitEnd.rawValue }

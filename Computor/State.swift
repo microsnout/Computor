@@ -48,19 +48,9 @@ struct MemoryTag: Codable, Equatable {
     
     func getRichText() -> String? {
         
-        if kc.isLowerAlpha {
-            let ix = kc.rawValue - KeyCode.a.rawValue
-            return String( KeyCode.lowerAlpha[ix] )
-        }
-        if kc.isUpperAlpha {
-            let ix = kc.rawValue - KeyCode.A.rawValue
-            return String( KeyCode.upperAlpha[ix] )
-        }
-        if kc.isGreekAlpha {
-            let ix = kc.rawValue - KeyCode.alpha.rawValue
-            return String( KeyCode.greekAlpha[ix] )
-        }
-        return nil
+        let s = kc.str
+        
+        return s
     }
 }
 
