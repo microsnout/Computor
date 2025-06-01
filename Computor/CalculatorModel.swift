@@ -674,7 +674,7 @@ class BlockRecord : EventContext {
 class LocalVariableFrame {
     let prevLVF: LocalVariableFrame?
     
-    var local: [KeyCode : TaggedValue] = [:]
+    var local: [MemoryTag : TaggedValue] = [:]
     
     init( _ prev: LocalVariableFrame? = nil ) {
         self.prevLVF = prev
@@ -1012,19 +1012,19 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func storeRegister( _ event: KeyEvent, _ tv: TaggedValue ) {
         
-        if let kcMem = event.kcSub {
+        if let mTag = event.mTag {
             
             if let lvf = currentLVF {
                 
                 // Local block {..} memory
-                lvf.local[kcMem] = tv
+                lvf.local[mTag] = tv
             }
             else {
                 // Global memory
                 pushState()
-                let mr   = MemoryRec( tag: MemoryTag(kcMem), tv: tv )
+                let mr   = MemoryRec( tag: mTag, tv: tv )
                 
-                if let index = state.memory.firstIndex( where: { $0.tag.kc == kcMem }) {
+                if let index = state.memory.firstIndex( where: { $0.tag == mTag }) {
                     
                     // Existing global memory
                     state.memory[index] = mr
@@ -1088,18 +1088,15 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.Xtv = untypedZero
             state.noLift = true
             
-            
-            // TODO: Adding .sto and .rcl here
-            
         case .popX:
-            storeRegister( KeyEvent( kc: .popX, kcSub: .X ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popX, mTag: MemoryTag(.X) ), state.Xtv)
             state.stackDrop()
 
         case .popXY:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( kc: .popXY, kcSub: .X ), state.Xtv)
-            storeRegister( KeyEvent( kc: .popXY, kcSub: .Y ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXY, mTag: MemoryTag(.X) ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popXY, mTag: MemoryTag(.Y) ), state.Ytv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
@@ -1107,9 +1104,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .popXYZ:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .X ), state.Xtv)
-            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .Y ), state.Ytv)
-            storeRegister( KeyEvent( kc: .popXYZ, kcSub: .Z ), state.Ztv)
+            storeRegister( KeyEvent( kc: .popXYZ, mTag: MemoryTag(.X) ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popXYZ, mTag: MemoryTag(.Y) ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXYZ, mTag: MemoryTag(.Z) ), state.Ztv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
@@ -1125,17 +1122,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             storeRegister( event, state.Ztv )
 
         case .rcl:
-            if let kcMem = event.kcSub {
+            if let mTag = event.mTag {
                 
                 var tv: TaggedValue
                 
                 if let lvf = currentLVF,
-                   let val = lvf.local[kcMem]
+                   let val = lvf.local[mTag]
                 {
                     // Local block memory found
                     tv = val
                 }
-                else if let index = state.memory.firstIndex(where: { $0.tag.kc == kcMem }) {
+                else if let index = state.memory.firstIndex(where: { $0.tag == mTag }) {
                     
                     // Global memory found
                     tv = state.memory[index].tv
@@ -1284,6 +1281,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return KeyPressResult.stateChange
     }
     
+    // **********************************************************************
+    // **********************************************************************
+    // **********************************************************************
+
     
     func keyPress(_ keyEvent: KeyEvent) -> KeyPressResult {
         
@@ -1306,9 +1307,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return result
     }
     
-    // **********************************************************************
-    // **********************************************************************
-    // **********************************************************************
     
     func getKeyText( _ kc: KeyCode ) -> String? {
         
@@ -1334,13 +1332,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func enterValue(_ tv: TaggedValue) {
         if let ctx = eventContext {
+            // Allow the current context to enter this value
             ctx.enterValue(tv)
         }
         else {
+            // There should always be an event context
+            assert(false)
             pushValue(tv)
         }
     }
 
+    
     func pushValue(_ tv: TaggedValue) {
         // For macros, bypass data entry mode and enter a value directly
         state.stackLift()

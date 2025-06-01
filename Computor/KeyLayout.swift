@@ -492,7 +492,7 @@ let psDigits =
         cols: 6,
         keys: [
             Key(.key1, "1"), Key(.key2, "2"), Key(.key3, "3"), Key(.key4, "4"), Key(.key5, "5"), Key(.key6, "6"),
-            Key(.key7, "7"), Key(.key8, "8"), Key(.key9, "9"), Key(.noop, "0"), Key(.noop), Key(.noop),
+            Key(.key7, "7"), Key(.key8, "8"), Key(.key9, "9"), Key(.key0, "0"), Key(.noop), Key(.noop),
             Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop),
             Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop),
             Key(.noop), Key(.noop),

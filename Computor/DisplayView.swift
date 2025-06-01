@@ -14,9 +14,9 @@ enum TextSize: Int, Hashable {
 }
 
 let textSpecTable: [TextSize: TextSizeSpec] = [
-    .small  : ( 12.0,  8.0, 6.0 ),
-    .normal : ( 14.0, 10.0, 6.0 ),
-    .large  : ( 16.0, 12.0, 6.0 )
+    .small  : ( 12.0,  9.0, 6.0 ),
+    .normal : ( 14.0, 10.0, 7.0 ),
+    .large  : ( 16.0, 11.0, 8.0 )
 ]
 
 func getTextSpec( _ size: TextSize ) -> TextSizeSpec {

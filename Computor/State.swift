@@ -38,19 +38,38 @@ struct RegisterPattern {
 
 
 // Set to KeyCode for now...
-struct MemoryTag: Codable, Equatable {
+struct MemoryTag: Hashable, Codable, Equatable {
     
-    var kc: KeyCode
+    var tag: Int
     
-    init( _ kc: KeyCode = .null ) {
-        self.kc = kc
-    }
+    var kc: KeyCode { KeyCode(rawValue: tag) ?? KeyCode.noop }
     
     func getRichText() -> String? {
         
         let s = kc.str
         
         return s
+    }
+    
+    init( _ kc: KeyCode = .null ) {
+        self.tag = kc.rawValue
+    }
+
+    init( _ symA: [KeyCode], subPt: Int, superPt: Int ) {
+        assert( symA.count > 0 && symA.count <= 3 && subPt*superPt == 0 && subPt+superPt <= 3 && subPt+superPt != 1 )
+        
+        var tag: Int = 0
+        var mul: Int = 1
+
+        for kc in symA {
+            
+            tag += kc.rawValue * mul
+            mul *= 1000
+        }
+        
+        tag += (subPt*10 + superPt) * 1000000000
+        
+        self.tag = tag
     }
 }
 

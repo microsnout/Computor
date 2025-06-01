@@ -18,8 +18,8 @@ struct KeyEvent : Codable {
     // Top level key like .fn4 when kc is an opcode from a sub popup menu like .rec
     var kcTop: KeyCode?
     
-    // Key code from a sub menu like .A when kc is .Sto
-    var kcSub: KeyCode?
+    // Code representing a symbol for a memory
+    var mTag: MemoryTag?
 }
 
 enum KeyPressResult: Int {
@@ -342,6 +342,8 @@ struct NewMemoryPopup: View, KeyPressHandler {
     @State private var superPt = 0
     @State private var subPt   = 0
     
+    @State private var symArray: [KeyCode] = []
+    
     enum CharSet: Int {
         case upper = 0, lower, greek, digit
         
@@ -370,30 +372,23 @@ struct NewMemoryPopup: View, KeyPressHandler {
     
     let setLabels = ["ABC", "abc", "\u{03b1}\u{03b2}\u{03b3}", "123"]
     
-    struct NewMemoryHandler: KeyPressHandler {
-        
-        var kcMem: KeyCode
-        var model: CalculatorModel
-        
-        func keyPress(_ event: KeyEvent ) -> KeyPressResult {
-            
-            let evt = KeyEvent( kc: kcMem, kcSub: event.kc  )
-            
-            guard evt.kc != .noop && evt.kcSub != .noop else {
-                return KeyPressResult.modalPopupContinue
-            }
-            
-            return model.keyPress(evt)
-        }
-    }
-    
     func keyPress(_ event: KeyEvent ) -> KeyPressResult {
         if symN < 3 {
             // Max three char in symbol
             let ch = event.kc.str
             symName.append(ch)
+            symArray.append( event.kc )
         }
         return KeyPressResult.modalPopupContinue
+    }
+    
+    func reset() {
+        // Clear symbol name
+        subPt = 0
+        superPt = 0
+        symN = 0
+        symName = ""
+        symArray = []
     }
     
     func getSymbolText() -> String {
@@ -441,7 +436,7 @@ struct NewMemoryPopup: View, KeyPressHandler {
             VStack {
                 
                 VStack {
-                    RichText( getSymbolText(), size: .large, defaultColor: "BlackText").padding( [.top], 20 )
+                    RichText( getSymbolText(), size: .normal, defaultColor: "BlackText").padding( [.top], 20 )
                     
                     KeypadView( padSpec: padList[charSet.rawValue], keyPressHandler: self )
                         .padding( [.leading, .trailing, .bottom] )
@@ -470,8 +465,7 @@ struct NewMemoryPopup: View, KeyPressHandler {
                     
                     HStack( spacing: 20 ) {
                         Button( action: {
-                            // Clear symbol name
-                            symName = ""
+                            reset()
                         })
                         {
                             Image( systemName: "clear" )
@@ -515,6 +509,7 @@ struct NewMemoryPopup: View, KeyPressHandler {
                             if symN > 0 {
                                 symN -= 1
                                 symName.removeLast()
+                                symArray.removeLast()
                             }
                         })
                         {
@@ -523,7 +518,18 @@ struct NewMemoryPopup: View, KeyPressHandler {
                         }
                         Button( action: {
                             if symN > 0 {
+                                let tag = MemoryTag( symArray, subPt: subPt, superPt: superPt )
                                 
+                                if let kcOp = keyData.pressedKey {
+                                    // Send event for memory op
+                                    _ = model.keyPress( KeyEvent( kc: kcOp.kc, mTag: tag ) )
+                                }
+                                
+                                reset()
+                                
+                                // Close modal popup
+                                keyData.pressedKey = nil
+                                keyData.modalKey = .none
                             }
                         })
                         {
@@ -567,7 +573,7 @@ struct localMemoryPopup: View {
         
         func keyPress(_ event: KeyEvent ) -> KeyPressResult {
             
-            let evt = KeyEvent( kc: kcMem, kcSub: event.kc  )
+            let evt = KeyEvent( kc: kcMem, mTag: MemoryTag(event.kc)  )
             
             return model.keyPress(evt)
         }
