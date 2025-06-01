@@ -35,10 +35,10 @@ struct MacroKey: CodableMacroOp {
             
             if var keyText = key.text {
                 
-                if let kcSub = event.mTag {
+                if let mTag = event.mTag {
                     // Add sub key parm to op, like adding .A to .Sto
                     keyText += " "
-                    keyText += String( describing: kcSub )
+                    keyText += mTag.getRichText()
                 }
                 return keyText
             }
