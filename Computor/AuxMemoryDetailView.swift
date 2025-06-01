@@ -76,7 +76,7 @@ struct MemoryDetailView: View {
                             ForEach( 0 ..< count, id: \.self ) { index in
                                 
                                 let mr = model.state.memory[index]
-                                let sym = mr.tag.getRichText() ?? "??"
+                                let sym = mr.tag.getRichText()
                                 let caption = mr.caption ?? "-Unnamed-"
                                 let (valueStr, _) = mr.tv.renderRichText()
                                 let color = mr.caption != nil ? "UnitText" : "GrayText"

@@ -39,7 +39,7 @@ struct MemoryListView: View {
                             
                             let (txt, _) = mr.tv.renderRichText()
                             
-                            let sym = mr.tag.getRichText() ?? "??"
+                            let sym = mr.tag.getRichText()
                             
                             let caption: String = mr.caption ?? "-caption-"
                             
@@ -50,7 +50,7 @@ struct MemoryListView: View {
                                     VStack( alignment: .leading, spacing: 0 ) {
                                         
                                         HStack {
-                                            RichText(sym, size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
+                                            RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
                                             
                                             RichText(caption, size: .normal, weight: .regular, design: .serif, defaultColor: color )
                                         }

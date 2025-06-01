@@ -41,14 +41,79 @@ struct RegisterPattern {
 struct MemoryTag: Hashable, Codable, Equatable {
     
     var tag: Int
-    
+}
+
+
+extension MemoryTag {
     var kc: KeyCode { KeyCode(rawValue: tag) ?? KeyCode.noop }
     
-    func getRichText() -> String? {
+    var isSingleChar: Bool { tag < 1000 }
+    
+    func getSymbolText( symName: String, subPt: Int, superPt: Int ) -> String {
         
-        let s = kc.str
+        let symN = symName.count
+        let symA = Array(symName)
         
-        return s
+        if symN == 0 {
+            // Placeholder text
+            return "ç{GrayText}---"
+        }
+        
+        if symN == 1 || (subPt == 0 && superPt == 0) {
+            // No sub or superscripts
+            return symName
+        }
+        
+        if symN == 2 {
+            assert( (subPt*superPt == 0) && (subPt+superPt == 2) )
+            
+            let op = subPt > 0 ? "_" : "^"
+            
+            return "\(symA[0])\(op){\(symA[1])}"
+        }
+        
+        if symN == 3 {
+            assert( (subPt*superPt == 0) && (subPt+superPt >= 2) )
+            
+            // Sub or Super operator and starting point
+            let op = subPt > 0 ? "_" : "^"
+            let pt = subPt + superPt
+            
+            // Sub or superscript point starting at position 2 or 3
+            return pt == 2 ? "\(symA[0])\(op){\(symA[1])\(symA[2])}" : "\(symA[0])\(symA[1])\(op){\(symA[2])}"
+        }
+        
+        // Invalid
+        assert(false)
+        return ""
+    }
+
+    func getRichText() -> String {
+        
+        if isSingleChar {
+            let s = kc.str
+            return s
+        }
+        else {
+            var code = tag
+            var symS = ""
+            
+            for _ in 1...3 {
+                let y = code % 1000
+                
+                if y != 0 {
+                    guard let kc = KeyCode( rawValue: y) else { assert(false) }
+                    symS.append( kc.str )
+                }
+                
+                code /= 1000
+            }
+            
+            let superPt: Int = code % 10
+            let subPt: Int   = code / 10
+            
+            return getSymbolText(symName: symS, subPt: subPt, superPt: superPt)
+        }
     }
     
     init( _ kc: KeyCode = .null ) {
