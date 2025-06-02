@@ -433,7 +433,7 @@ struct NewMemoryPopup: View, KeyPressHandler {
         
         CustomModalPopup( keyPressHandler: self, myModalKey: .newMemory ) {
             
-            if keyData.pressedKey?.kc == .rcl {
+            if keyData.pressedKey?.kc == .rcl || !model.state.memory.isEmpty {
                 SelectMemoryPopup()
             }
             else {
@@ -571,9 +571,6 @@ struct MemoryKeyView: View {
     
     @EnvironmentObject var model: CalculatorModel
     
-    let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
-    
-    
     var body: some View {
         
         let keyW = keySpec.width
@@ -582,7 +579,7 @@ struct MemoryKeyView: View {
             let text: String = mTag.getRichText()
             
             GeometryReader { geometry in
-                let vframe = geometry.frame(in: CoordinateSpace.global)
+                let _ = geometry.frame(in: CoordinateSpace.global)
                 
                 // This is the key itself
                 Rectangle()
@@ -593,13 +590,6 @@ struct MemoryKeyView: View {
                     .overlay(
                         RichText( text, size: .normal, weight: .bold, defaultColor: keySpec.textColor)
                     )
-                    .onTapGesture {
-                        // Keypress event occured, send event
-                        hapticFeedback.impactOccurred()
-                        
-                        // Generate key press event
-                        let _ = keyPressHandler.keyPress( KeyEvent( kc: .stoX, mTag: mTag))
-                    }
             }
         }
         .frame( maxWidth: keyW, maxHeight: keySpec.height )
@@ -614,6 +604,8 @@ struct SelectMemoryPopup: View, KeyPressHandler {
     @EnvironmentObject var model: CalculatorModel
     @EnvironmentObject var keyData: KeyData
     
+    let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
+
     func keyPress(_ event: KeyEvent ) -> KeyPressResult {
         return KeyPressResult.modalPopupContinue
     }
@@ -638,6 +630,18 @@ struct SelectMemoryPopup: View, KeyPressHandler {
                             ForEach ( row.indices, id: \.self ) { c in
                                 
                                 MemoryKeyView( mTag: row[c], keySpec: keySpec, keyPressHandler: self )
+                                    .onTapGesture {
+                                        if let kcOp = keyData.pressedKey {
+                                            // Send event for memory op
+                                            _ = model.keyPress( KeyEvent( kc: kcOp.kc, mTag: row[c] ) )
+                                            
+                                            hapticFeedback.impactOccurred()
+                                        }
+                                        
+                                        // Close modal popup
+                                        keyData.pressedKey = nil
+                                        keyData.modalKey = .none
+                                    }
                             }
                         }
                         .padding( [.top, .bottom], 10 )
@@ -649,13 +653,21 @@ struct SelectMemoryPopup: View, KeyPressHandler {
             .background( Color("Display") )
             .border(Color("Frame"), width: 2)
             
-            HStack( spacing: 20 ) {
-                
-                Button( "New..." )
-                {
+            if keyData.pressedKey?.kc != .rcl {
+                HStack( spacing: 20 ) {
+                    
+                    // New Memory Button
+                    Button( "New..." )
+                    {
+                        keyData.modalKey = .newMemory
+                    }
                 }
+                .padding( [.top, .bottom], 10)
             }
-            .padding( [.top, .bottom], 10)
+            else {
+                // Recall op has no New memory button
+                Spacer().frame( height: 20 ).padding([.top, .bottom], 0)
+            }
         }
         .frame( maxHeight: 340 )
         .padding( [.leading, .trailing], 20 )
