@@ -433,126 +433,232 @@ struct NewMemoryPopup: View, KeyPressHandler {
         
         CustomModalPopup( keyPressHandler: self, myModalKey: .newMemory ) {
             
-            VStack {
-                
+            if keyData.pressedKey?.kc == .rcl {
+                SelectMemoryPopup()
+            }
+            else {
                 VStack {
-                    RichText( getSymbolText(), size: .normal, defaultColor: "BlackText").padding( [.top], 20 )
                     
-                    KeypadView( padSpec: padList[charSet.rawValue], keyPressHandler: self )
-                        .padding( [.leading, .trailing, .bottom] )
-                    
-                    HStack {
-                        Button( "", systemImage: "arrowshape.left.arrowshape.right" ) {
-                            // Don't include digits for the first letter
-                            charSet = symN == 0 ? charSet.nextSetZero : charSet.nextSet
-                        }
+                    VStack {
+                        RichText( getSymbolText(), size: .normal, defaultColor: "BlackText").padding( [.top], 20 )
+                        
+                        KeypadView( padSpec: padList[charSet.rawValue], keyPressHandler: self )
+                            .padding( [.leading, .trailing, .bottom] )
                         
                         HStack {
-                            ForEach ( setList, id: \.self ) { cs in
-                                Text( setLabels[cs.rawValue] )
-                                    .if ( cs == charSet ) { txt in
-                                        // Add border around selected char set
-                                        txt.overlay(
-                                            RoundedRectangle( cornerRadius: 5).inset(by: -1).stroke(.blue, lineWidth: 1) )
-                                    }
-                                    .if ( symN == 0 && cs == CharSet.digit ) { txt in
-                                        // Digits not allowed for first char
-                                        txt.foregroundColor(.gray)
-                                    }
+                            Button( "", systemImage: "arrowshape.left.arrowshape.right" ) {
+                                // Don't include digits for the first letter
+                                charSet = symN == 0 ? charSet.nextSetZero : charSet.nextSet
                             }
-                        }
-                    }.padding( [.bottom], 12)
-                    
-                    HStack( spacing: 20 ) {
-                        Button( action: {
-                            reset()
-                        })
-                        {
-                            Image( systemName: "clear" )
-                                .foregroundStyle( symN > 0 ? Color.accentColor : Color.gray )
-                        }
-                        Button( action: {
-                            if symN >= 2 && subPt == 0 {
-                                
-                                if superPt != 0 {
-                                    // Return to flat text
-                                    superPt = 0
-                                }
-                                else {
-                                    // Add subscript point
-                                    subPt = symN
+                            
+                            HStack {
+                                ForEach ( setList, id: \.self ) { cs in
+                                    Text( setLabels[cs.rawValue] )
+                                        .if ( cs == charSet ) { txt in
+                                            // Add border around selected char set
+                                            txt.overlay(
+                                                RoundedRectangle( cornerRadius: 5).inset(by: -1).stroke(.blue, lineWidth: 1) )
+                                        }
+                                        .if ( symN == 0 && cs == CharSet.digit ) { txt in
+                                            // Digits not allowed for first char
+                                            txt.foregroundColor(.gray)
+                                        }
                                 }
                             }
-                        })
-                        {
-                            Image( systemName: "arrowshape.down" )
-                                .foregroundStyle( symN >= 2 && subPt == 0 ? Color.accentColor : Color.gray )
-                        }
-                        Button( action: {
-                            if symN >= 2 && superPt == 0 {
-                                
-                                if subPt != 0 {
-                                    // Return to flat text
-                                    subPt = 0
-                                }
-                                else {
-                                    // Add superscript point
-                                    superPt = symN
-                                }
-                            }
-                        })
-                        {
-                            Image( systemName: "arrowshape.up" )
-                                .foregroundStyle( symN >= 2 && superPt == 0 ? Color.accentColor : Color.gray )
-                        }
-                        Button( action: {
-                            if symN > 0 {
-                                symN -= 1
-                                symName.removeLast()
-                                symArray.removeLast()
-                            }
-                        })
-                        {
-                            Image( systemName: "delete.left" )
-                                .foregroundStyle( symN > 0 ? Color.accentColor : Color.gray )
-                        }
-                        Button( action: {
-                            if symN > 0 {
-                                let tag = MemoryTag( symArray, subPt: subPt, superPt: superPt )
-                                
-                                if let kcOp = keyData.pressedKey {
-                                    // Send event for memory op
-                                    _ = model.keyPress( KeyEvent( kc: kcOp.kc, mTag: tag ) )
-                                }
-                                
+                        }.padding( [.bottom], 12)
+                        
+                        HStack( spacing: 20 ) {
+                            Button( action: {
                                 reset()
-                                
-                                // Close modal popup
-                                keyData.pressedKey = nil
-                                keyData.modalKey = .none
+                            })
+                            {
+                                Image( systemName: "clear" )
+                                    .foregroundStyle( symN > 0 ? Color.accentColor : Color.gray )
                             }
-                        })
-                        {
-                            Image( systemName: "checkmark.diamond.fill" )
-                                .foregroundStyle( symN > 0 ? Color.green : Color.gray )
-                        }
-                    }.padding( [.bottom], 20)
-                }
-            }.onChange( of: symName, initial: true ) {
-                symN = symName.count
-                
-                if symN == 0 {
-                    // Back to zero chars, first can't be a digit
-                    charSet = CharSet.upper
-                }
-                
-                if symN < 2 {
-                    // Reset subscript/superscript points if only one char
-                    superPt = 0
-                    subPt = 0
+                            Button( action: {
+                                if symN >= 2 && subPt == 0 {
+                                    
+                                    if superPt != 0 {
+                                        // Return to flat text
+                                        superPt = 0
+                                    }
+                                    else {
+                                        // Add subscript point
+                                        subPt = symN
+                                    }
+                                }
+                            })
+                            {
+                                Image( systemName: "arrowshape.down" )
+                                    .foregroundStyle( symN >= 2 && subPt == 0 ? Color.accentColor : Color.gray )
+                            }
+                            Button( action: {
+                                if symN >= 2 && superPt == 0 {
+                                    
+                                    if subPt != 0 {
+                                        // Return to flat text
+                                        subPt = 0
+                                    }
+                                    else {
+                                        // Add superscript point
+                                        superPt = symN
+                                    }
+                                }
+                            })
+                            {
+                                Image( systemName: "arrowshape.up" )
+                                    .foregroundStyle( symN >= 2 && superPt == 0 ? Color.accentColor : Color.gray )
+                            }
+                            Button( action: {
+                                if symN > 0 {
+                                    symN -= 1
+                                    symName.removeLast()
+                                    symArray.removeLast()
+                                }
+                            })
+                            {
+                                Image( systemName: "delete.left" )
+                                    .foregroundStyle( symN > 0 ? Color.accentColor : Color.gray )
+                            }
+                            Button( action: {
+                                if symN > 0 {
+                                    let tag = MemoryTag( symArray, subPt: subPt, superPt: superPt )
+                                    
+                                    if let kcOp = keyData.pressedKey {
+                                        // Send event for memory op
+                                        _ = model.keyPress( KeyEvent( kc: kcOp.kc, mTag: tag ) )
+                                    }
+                                    
+                                    reset()
+                                    
+                                    // Close modal popup
+                                    keyData.pressedKey = nil
+                                    keyData.modalKey = .none
+                                }
+                            })
+                            {
+                                Image( systemName: "checkmark.diamond.fill" )
+                                    .foregroundStyle( symN > 0 ? Color.green : Color.gray )
+                            }
+                        }.padding( [.bottom], 20)
+                    }
+                }.onChange( of: symName, initial: true ) {
+                    symN = symName.count
+                    
+                    if symN == 0 {
+                        // Back to zero chars, first can't be a digit
+                        charSet = CharSet.upper
+                    }
+                    
+                    if symN < 2 {
+                        // Reset subscript/superscript points if only one char
+                        superPt = 0
+                        subPt = 0
+                    }
                 }
             }
         }
+    }
+}
+
+struct MemoryKeyView: View {
+    @AppStorage(.settingsSerifFontKey)
+    private var serifFont = false
+    
+    let mTag: MemoryTag
+    let keySpec: KeySpec
+    let keyPressHandler: KeyPressHandler
+    
+    @EnvironmentObject var model: CalculatorModel
+    
+    let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
+    
+    
+    var body: some View {
+        
+        let keyW = keySpec.width
+        
+        VStack {
+            let text: String = mTag.getRichText()
+            
+            GeometryReader { geometry in
+                let vframe = geometry.frame(in: CoordinateSpace.global)
+                
+                // This is the key itself
+                Rectangle()
+                    .foregroundColor( Color(keySpec.keyColor) )
+                    .frame( width: keyW, height: keySpec.height )
+                    .cornerRadius( keySpec.radius )
+                    .shadow( radius: 2 )
+                    .overlay(
+                        RichText( text, size: .normal, weight: .bold, defaultColor: keySpec.textColor)
+                    )
+                    .onTapGesture {
+                        // Keypress event occured, send event
+                        hapticFeedback.impactOccurred()
+                        
+                        // Generate key press event
+                        let _ = keyPressHandler.keyPress( KeyEvent( kc: .stoX, mTag: mTag))
+                    }
+            }
+        }
+        .frame( maxWidth: keyW, maxHeight: keySpec.height )
+    }
+}
+
+
+struct SelectMemoryPopup: View, KeyPressHandler {
+    
+    let keySpec: KeySpec = ksSoftkey
+    
+    @EnvironmentObject var model: CalculatorModel
+    @EnvironmentObject var keyData: KeyData
+    
+    func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+        return KeyPressResult.modalPopupContinue
+    }
+    
+    var body: some View {
+        
+        let tagRowList: [[MemoryTag]] = model.state.memory.map( { $0.tag } ).chunked(into: 4)
+        
+        VStack( spacing: 0) {
+            Text( "Select Memory" ).padding( [.top, .bottom], 10 )
+            
+            ScrollView( [.vertical] ) {
+                
+                Grid {
+                    
+                    ForEach ( tagRowList.indices, id: \.self ) { r in
+                        
+                        let row = tagRowList[r]
+                        
+                        GridRow {
+                            
+                            ForEach ( row.indices, id: \.self ) { c in
+                                
+                                MemoryKeyView( mTag: row[c], keySpec: keySpec, keyPressHandler: self )
+                            }
+                        }
+                        .padding( [.top, .bottom], 10 )
+                    }
+                }
+            }
+            .padding( [.top, .bottom], 5 )
+            .padding( [.leading, .trailing], 10 )
+            .background( Color("Display") )
+            .border(Color("Frame"), width: 2)
+            
+            HStack( spacing: 20 ) {
+                
+                Button( "New..." )
+                {
+                }
+            }
+            .padding( [.top, .bottom], 10)
+        }
+        .frame( maxHeight: 340 )
+        .padding( [.leading, .trailing], 20 )
     }
 }
 
@@ -934,7 +1040,6 @@ struct KeyStack<Content: View>: View {
             ModalBlock()
             
             SubPopMenu()
-            
             NewMemoryPopup()
         }
         .onGeometryChange( for: CGRect.self, of: {proxy in proxy.frame(in: .global)} ) { newValue in
