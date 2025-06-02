@@ -435,10 +435,10 @@ func initKeyLayout() {
 
     // Modal subpad definitions
     // Used to popup keypad for Sto, Rcl
-    Key.defineModalKey( .stoX, .newMemory )
-    Key.defineModalKey( .stoY, .newMemory )
-    Key.defineModalKey( .stoZ, .newMemory )
-    Key.defineModalKey( .rcl,  .newMemory )
+    Key.defineModalKey( .stoX, .globalMemory )
+    Key.defineModalKey( .stoY, .globalMemory )
+    Key.defineModalKey( .stoZ, .globalMemory )
+    Key.defineModalKey( .rcl,  .globalMemory )
 }
 
 
