@@ -559,9 +559,6 @@ struct MemoryKeyView: View {
     
     let mTag: MemoryTag
     let keySpec: KeySpec
-    let keyPressHandler: KeyPressHandler
-    
-    @EnvironmentObject var model: CalculatorModel
     
     var body: some View {
         
@@ -570,21 +567,17 @@ struct MemoryKeyView: View {
         VStack {
             let text: String = mTag.getRichText()
             
-            GeometryReader { geometry in
-                let _ = geometry.frame(in: CoordinateSpace.global)
-                
-                // This is the key itself
-                Rectangle()
-                    .foregroundColor( Color(keySpec.keyColor) )
-                    .frame( width: keyW, height: keySpec.height )
-                    .cornerRadius( keySpec.radius )
-                    .shadow( radius: 2 )
-                    .overlay(
-                        RichText( text, size: .normal, weight: .bold, defaultColor: keySpec.textColor)
-                    )
-            }
+            // This is the key itself
+            Rectangle()
+                .foregroundColor( Color(keySpec.keyColor) )
+                .frame( width: keyW, height: keySpec.height )
+                .cornerRadius( keySpec.radius )
+                .shadow( radius: 2 )
+                .overlay(
+                    RichText( text, size: .normal, weight: .bold, defaultColor: keySpec.textColor)
+                )
         }
-        .frame( maxWidth: keyW, maxHeight: keySpec.height )
+        .frame( width: keyW, height: keySpec.height )
     }
 }
 
@@ -632,7 +625,7 @@ struct GlobalMemoryPopup: View, KeyPressHandler {
 }
 
 
-struct SelectMemoryPopup: View, KeyPressHandler {
+struct SelectMemoryPopup: View {
     
     let keySpec: KeySpec = ksSoftkey
     
@@ -641,10 +634,6 @@ struct SelectMemoryPopup: View, KeyPressHandler {
     
     let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
 
-    func keyPress(_ event: KeyEvent ) -> KeyPressResult {
-        return KeyPressResult.modalPopupContinue
-    }
-    
     func getTagList() -> [MemoryTag] {
         
         if let lvf = model.currentLVF {
@@ -678,7 +667,7 @@ struct SelectMemoryPopup: View, KeyPressHandler {
                             
                             ForEach ( row.indices, id: \.self ) { c in
                                 
-                                MemoryKeyView( mTag: row[c], keySpec: keySpec, keyPressHandler: self )
+                                MemoryKeyView( mTag: row[c], keySpec: keySpec )
                                     .onTapGesture {
                                         if let kcOp = keyData.pressedKey {
                                             // Send event for memory op
@@ -701,7 +690,7 @@ struct SelectMemoryPopup: View, KeyPressHandler {
                                 }
                             }
                         }
-                        .padding( [.top, .bottom], 10 )
+                        .padding( [.top], 5 )
                     }
                 }
             }
