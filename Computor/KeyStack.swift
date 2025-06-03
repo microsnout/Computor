@@ -645,9 +645,21 @@ struct SelectMemoryPopup: View, KeyPressHandler {
         return KeyPressResult.modalPopupContinue
     }
     
+    func getTagList() -> [MemoryTag] {
+        
+        if let lvf = model.currentLVF {
+            
+            // Local variable frame list
+            return Array( lvf.local.keys )
+        }
+        else {
+            return model.state.memory.map( { $0.tag } )
+        }
+    }
+    
     var body: some View {
         
-        let tagRowList: [[MemoryTag]] = model.state.memory.map( { $0.tag } ).chunked(into: 4)
+        let tagRowList: [[MemoryTag]] = getTagList().chunked(into: 4)
         
         VStack( spacing: 0) {
             Text( "Select Memory" ).padding( [.top, .bottom], 10 )
@@ -661,6 +673,8 @@ struct SelectMemoryPopup: View, KeyPressHandler {
                         let row = tagRowList[r]
                         
                         GridRow {
+                            
+                            let n = row.count
                             
                             ForEach ( row.indices, id: \.self ) { c in
                                 
@@ -678,11 +692,20 @@ struct SelectMemoryPopup: View, KeyPressHandler {
                                         keyData.modalKey = .none
                                     }
                             }
+                            
+                            // Pad the row to 4 col so the frame doesn't shrink
+                            if n < 4 {
+                                ForEach ( 1 ... 4-n, id: \.self ) { _ in
+                                    Color.clear
+                                        .frame( width: keySpec.width, height: keySpec.height )
+                                }
+                            }
                         }
                         .padding( [.top, .bottom], 10 )
                     }
                 }
             }
+            .frame( minWidth: 212, maxWidth: 212 )
             .padding( [.top, .bottom], 5 )
             .padding( [.leading, .trailing], 10 )
             .background( Color("Display") )

@@ -1022,7 +1022,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             else {
                 // Global memory
                 pushState()
-                let mr   = MemoryRec( tag: mTag, tv: tv )
                 
                 if let index = state.memory.firstIndex( where: { $0.tag == mTag }) {
                     
@@ -1031,6 +1030,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
                 else {
                     // New global memory
+                    let mr   = MemoryRec( tag: mTag, tv: tv )
                     state.memory.append( mr )
                 }
                 
