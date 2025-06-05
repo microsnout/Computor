@@ -11,9 +11,6 @@ import OSLog
 let logS = Logger(subsystem: "com.microsnout.calculator", category: "state")
 
 
-// Standard HP calculator registers
-let stackPrefixValues = ["X", "Y", "Z", "T", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
-
 // Register index values
 let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 16
 

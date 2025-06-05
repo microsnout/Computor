@@ -1312,15 +1312,15 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         if KeyCode.fnSet.contains(kc) {
             
-            if let fn = appState.macroList[ SymbolTag(kc) ] {
+            if let macroRec = appState.macroList[ SymbolTag(kc) ] {
                 
-                if let text = fn.caption {
+                if let text = macroRec.caption {
                     // Fn key has provided caption text
                     return text
                 }
                 
                 // Fn key has no caption text - make caption from key code
-                return "Fn\(kc.rawValue % 10)"
+                return "F\(kc.rawValue % 10)"
             }
             
         }
