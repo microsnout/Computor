@@ -20,7 +20,7 @@ struct AuxState {
     var detailItemIndex: Int = 0
     
     // MacroListView state
-    var macroKey: KeyCode = .null
+    var macroKey = SymbolTag(.null)
     var list = MacroOpSeq()
     
     // Fn key currrently recording
@@ -71,7 +71,7 @@ extension AuxState {
             // Auxiliary display mode to macro list
             
             // Clear display of existing macro if any
-            macroKey = .null
+            macroKey = SymbolTag(.null)
             list.clear()
             
             kcRecording = kc
@@ -192,11 +192,9 @@ extension AuxState {
     mutating func stopRecFn( _ kc: KeyCode ) {
         if let kcRec = kcRecording {
             
-//            assert( kc == kcRec )
-            
             // Stop recording and Change macro display to display the new macro
             kcRecording = nil
-            macroKey = kcRec
+            macroKey = SymbolTag(kcRec)
             
             // Re-enable all recording keys
             SubPadSpec.disableList.removeAll()

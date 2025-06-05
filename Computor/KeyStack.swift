@@ -19,7 +19,7 @@ struct KeyEvent : Codable {
     var kcTop: KeyCode?
     
     // Code representing a symbol for a memory
-    var mTag: MemoryTag?
+    var mTag: SymbolTag?
 }
 
 enum KeyPressResult: Int {
@@ -515,7 +515,7 @@ struct NewMemoryPopup: View, KeyPressHandler {
                     }
                     Button( action: {
                         if symN > 0 {
-                            let tag = MemoryTag( symArray, subPt: subPt, superPt: superPt )
+                            let tag = SymbolTag( symArray, subPt: subPt, superPt: superPt )
                             
                             if let kcOp = keyData.pressedKey {
                                 // Send event for memory op
@@ -557,7 +557,7 @@ struct MemoryKeyView: View {
     @AppStorage(.settingsSerifFontKey)
     private var serifFont = false
     
-    let mTag: MemoryTag
+    let mTag: SymbolTag
     let keySpec: KeySpec
     
     var body: some View {
@@ -634,7 +634,7 @@ struct SelectMemoryPopup: View {
     
     let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
 
-    func getTagList() -> [MemoryTag] {
+    func getTagList() -> [SymbolTag] {
         
         if let lvf = model.currentLVF {
             
@@ -648,7 +648,7 @@ struct SelectMemoryPopup: View {
     
     var body: some View {
         
-        let tagRowList: [[MemoryTag]] = getTagList().chunked(into: 4)
+        let tagRowList: [[SymbolTag]] = getTagList().chunked(into: 4)
         
         VStack( spacing: 0) {
             Text( "Select Memory" ).padding( [.top, .bottom], 10 )
@@ -738,7 +738,7 @@ struct localMemoryPopup: View {
         
         func keyPress(_ event: KeyEvent ) -> KeyPressResult {
             
-            let evt = KeyEvent( kc: kcMem, mTag: MemoryTag(event.kc)  )
+            let evt = KeyEvent( kc: kcMem, mTag: SymbolTag(event.kc)  )
             
             return model.keyPress(evt)
         }

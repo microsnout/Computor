@@ -311,37 +311,37 @@ struct PlotVectorView : View {
 }
 
 
-struct PlotVectorView_Previews: PreviewProvider {
-    
-    static func addSampleMacro( _ model: CalculatorModel ) -> CalculatorModel {
-        
-        // FIX: MacroKey not working here, keys not defined yet?
-        model.state.stack[regX].setComplex( Comp(4.0, 3.0) )
-        return model
-    }
-    
-    static var previews: some View {
-        @StateObject  var model = MacroListView_Previews.addSampleMacro( CalculatorModel())
-        
-        ZStack {
-            Rectangle()
-                .fill(Color("Background"))
-                .edgesIgnoringSafeArea( .all )
-            
-            VStack {
-                VStack {
-                    PlotVectorView( model: model)
-                        .frame( maxWidth: .infinity, maxHeight: .infinity)
-                        .preferredColorScheme(.light)
-                }
-                .padding([.leading, .trailing, .top, .bottom], 0)
-                .background( Color("Display") )
-                .border(Color("Frame"), width: 3)
-            }
-            .padding(.horizontal, 30)
-            .padding(.vertical, 5)
-            .background( Color("Background"))
-        }
-    }
-}
+//struct PlotVectorView_Previews: PreviewProvider {
+//    
+//    static func addSampleMacro( _ model: CalculatorModel ) -> CalculatorModel {
+//        
+//        // FIX: MacroKey not working here, keys not defined yet?
+//        model.state.stack[regX].setComplex( Comp(4.0, 3.0) )
+//        return model
+//    }
+//    
+//    static var previews: some View {
+//        @StateObject  var model = MacroListView_Previews.addSampleMacro( CalculatorModel())
+//        
+//        ZStack {
+//            Rectangle()
+//                .fill(Color("Background"))
+//                .edgesIgnoringSafeArea( .all )
+//            
+//            VStack {
+//                VStack {
+//                    PlotVectorView( model: model)
+//                        .frame( maxWidth: .infinity, maxHeight: .infinity)
+//                        .preferredColorScheme(.light)
+//                }
+//                .padding([.leading, .trailing, .top, .bottom], 0)
+//                .background( Color("Display") )
+//                .border(Color("Frame"), width: 3)
+//            }
+//            .padding(.horizontal, 30)
+//            .padding(.vertical, 5)
+//            .background( Color("Background"))
+//        }
+//    }
+//}
 

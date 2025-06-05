@@ -17,10 +17,11 @@ let stackPrefixValues = ["X", "Y", "Z", "T", "A", "B", "C", "D", "E", "F", "G", 
 // Register index values
 let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 16
 
-struct FnRec: Codable {
-    var fnKey: KeyCode
-    var caption: String? = nil
-    var macro: MacroOpSeq
+
+struct MacroRec: Codable {
+    var symTag:     SymbolTag
+    var caption:    String? = nil
+    var macro:      MacroOpSeq
 }
 
 
@@ -38,13 +39,13 @@ struct RegisterPattern {
 
 
 // Set to KeyCode for now...
-struct MemoryTag: Hashable, Codable, Equatable {
+struct SymbolTag: Hashable, Codable, Equatable {
     
     var tag: Int
 }
 
 
-extension MemoryTag {
+extension SymbolTag {
     var kc: KeyCode { KeyCode(rawValue: tag) ?? KeyCode.noop }
     
     var isSingleChar: Bool { tag < 1000 }
@@ -139,7 +140,7 @@ extension MemoryTag {
 }
 
 struct MemoryRec: Codable {
-    var tag:     MemoryTag
+    var tag:     SymbolTag
     var caption: String? = nil
     var tv:      TaggedValue
 }
@@ -167,15 +168,15 @@ extension CalcState {
         return memory[index]
     }
     
-    func memoryIndex( at tag: MemoryTag ) -> Int? {
+    func memoryIndex( at tag: SymbolTag ) -> Int? {
         return memory.firstIndex( where: { tag == $0.tag })
     }
     
-    func memoryAt( tag: MemoryTag ) -> MemoryRec? {
+    func memoryAt( tag: SymbolTag ) -> MemoryRec? {
         return memory.first( where: { tag == $0.tag } )
     }
     
-    mutating func memorySetValue( at tag: MemoryTag, _ tv: TaggedValue ) {
+    mutating func memorySetValue( at tag: SymbolTag, _ tv: TaggedValue ) {
         
         if let index = memoryIndex(at: tag) {
             // Modify existing memory
@@ -187,7 +188,7 @@ extension CalcState {
         }
     }
 
-    mutating func memorySetCaption( at tag: MemoryTag, _ str: String ) {
+    mutating func memorySetCaption( at tag: SymbolTag, _ str: String ) {
         
         if let index = memoryIndex(at: tag) {
             // Modify existing memory

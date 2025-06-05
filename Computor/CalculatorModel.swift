@@ -117,16 +117,16 @@ class NormalContext : EventContext {
             
         case .clrFn:
             if let kcFn = event.kcTop {
-                model.clearMacroFunction(kcFn)
+                model.clearMacroFunction( SymbolTag(kcFn) )
                 model.aux.stopRecFn(kcFn)
             }
             return KeyPressResult.macroOp
             
         case .showFn:
             if let kcFn = event.kcTop {
-                if let fn = model.appState.fnList[kcFn] {
-                    model.aux.list = fn.macro
-                    model.aux.macroKey = fn.fnKey
+                if let macroRec = model.appState.macroList[ SymbolTag(kcFn) ] {
+                    model.aux.list = macroRec.macro
+                    model.aux.macroKey = macroRec.symTag
                     model.aux.activeView = .macroList
                 }
             }
@@ -242,7 +242,7 @@ class RecordingContext : EventContext {
         switch event.kc {
             
         case .clrFn:
-            model.clearMacroFunction(kcFn)
+            model.clearMacroFunction( SymbolTag(kcFn) )
             model.aux.stopRecFn(kcFn)
             model.popContext( event )
             
@@ -259,7 +259,7 @@ class RecordingContext : EventContext {
                 // Consider this fn key a stopFn command
                 fallthrough
             }
-            else if model.appState.fnList[event.kc] == nil {
+            else if model.appState.macroList[ SymbolTag(event.kc) ] == nil {
                 
                 // No op any undefined keys
                 return KeyPressResult.noOp
@@ -271,7 +271,7 @@ class RecordingContext : EventContext {
             
         case .stopFn:
             if !model.aux.list.opSeq.isEmpty {
-                model.saveMacroFunction(kcFn, model.aux.list)
+                model.saveMacroFunction( SymbolTag(kcFn), model.aux.list)
             }
             model.aux.stopRecFn(kcFn)
             model.popContext( event )
@@ -674,7 +674,7 @@ class BlockRecord : EventContext {
 class LocalVariableFrame {
     let prevLVF: LocalVariableFrame?
     
-    var local: [MemoryTag : TaggedValue] = [:]
+    var local: [SymbolTag : TaggedValue] = [:]
     
     init( _ prev: LocalVariableFrame? = nil ) {
         self.prevLVF = prev
@@ -686,7 +686,7 @@ struct ApplicationConfig : Codable {
     // Persistant state of all calculator customization for specific applications
 
     // Definitions of Fn programmable keys
-    var fnList: [KeyCode : FnRec] = [:]
+    var macroList: [SymbolTag : MacroRec] = [:]
 }
 
 
@@ -875,18 +875,18 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // **** Macro Recording Stuff ***
     
-    func saveMacroFunction( _ kc: KeyCode, _ list: MacroOpSeq ) {
-        appState.fnList[kc] = FnRec( fnKey: kc, macro: list)
+    func saveMacroFunction( _ sTag: SymbolTag, _ list: MacroOpSeq ) {
+        appState.macroList[sTag] = MacroRec( symTag: sTag, macro: list)
         saveConfiguration()
     }
     
-    func clearMacroFunction( _ kc: KeyCode) {
-        appState.fnList[kc] = nil
+    func clearMacroFunction( _ sTag: SymbolTag) {
+        appState.macroList[sTag] = nil
         saveConfiguration()
     }
     
-    func getMacroFunction( _ kc: KeyCode ) -> MacroOpSeq? {
-        appState.fnList[kc]?.macro
+    func getMacroFunction( _ sTag: SymbolTag ) -> MacroOpSeq? {
+        appState.macroList[sTag]?.macro
     }
     
     // *******
@@ -932,7 +932,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return text
     }
     
-    func memoryOp( key: KeyCode, tag: MemoryTag ) {
+    func memoryOp( key: KeyCode, tag: SymbolTag ) {
         pushState()
         acceptTextEntry()
         
@@ -1089,14 +1089,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.noLift = true
             
         case .popX:
-            storeRegister( KeyEvent( kc: .popX, mTag: MemoryTag(.X) ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popX, mTag: SymbolTag(.X) ), state.Xtv)
             state.stackDrop()
 
         case .popXY:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( kc: .popXY, mTag: MemoryTag(.X) ), state.Xtv)
-            storeRegister( KeyEvent( kc: .popXY, mTag: MemoryTag(.Y) ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXY, mTag: SymbolTag(.X) ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popXY, mTag: SymbolTag(.Y) ), state.Ytv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
@@ -1104,9 +1104,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .popXYZ:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( kc: .popXYZ, mTag: MemoryTag(.X) ), state.Xtv)
-            storeRegister( KeyEvent( kc: .popXYZ, mTag: MemoryTag(.Y) ), state.Ytv)
-            storeRegister( KeyEvent( kc: .popXYZ, mTag: MemoryTag(.Z) ), state.Ztv)
+            storeRegister( KeyEvent( kc: .popXYZ, mTag: SymbolTag(.X) ), state.Xtv)
+            storeRegister( KeyEvent( kc: .popXYZ, mTag: SymbolTag(.Y) ), state.Ytv)
+            storeRegister( KeyEvent( kc: .popXYZ, mTag: SymbolTag(.Z) ), state.Ztv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
@@ -1147,7 +1147,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             }
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
-            if let macro = getMacroFunction(keyCode) {
+            if let macro = getMacroFunction( SymbolTag(keyCode) ) {
                 // Macro playback - save inital state just in case
                 pushState()
                 
@@ -1312,7 +1312,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         if KeyCode.fnSet.contains(kc) {
             
-            if let fn = appState.fnList[kc] {
+            if let fn = appState.macroList[ SymbolTag(kc) ] {
                 
                 if let text = fn.caption {
                     // Fn key has provided caption text
