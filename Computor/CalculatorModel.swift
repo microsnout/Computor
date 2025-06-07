@@ -1319,8 +1319,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     return text
                 }
                 
-                // Fn key has no caption text - make caption from key code
+                // F key has no caption text - make caption from key code
                 return "F\(kc.rawValue % 10)"
+            }
+            else {
+                
+                // Unassigned F key
+                return "ç{GrayText}F\(kc.rawValue % 10)"
             }
             
         }
