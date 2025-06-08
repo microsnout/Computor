@@ -52,7 +52,7 @@ struct AuxiliaryDisplayView: View {
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 
-                MacroListView( model: model )
+                MacroDetailView( model: model )
                     .id( AuxDispView.macroList )
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)

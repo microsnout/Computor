@@ -9,6 +9,26 @@ import SwiftUI
 
 struct MacroListView: View {
     @StateObject var model: CalculatorModel
+
+    var body: some View {
+        
+        NavigationStack {
+            ScrollView {
+                
+                ForEach ( Array(model.appState.macroList.keys), id: \.self ) { tag in
+                    
+                    let mr = model.appState.macroList[tag]
+                    
+                    Text( mr?.symTag.getRichText() ?? "?" )
+                }
+            }
+        }
+    }
+}
+
+
+struct MacroDetailView: View {
+    @StateObject var model: CalculatorModel
     
     var body: some View {
         let name = model.getKeyText( model.aux.macroKey.kc )

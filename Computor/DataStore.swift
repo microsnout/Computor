@@ -14,10 +14,10 @@ extension CalculatorModel {
         /// Long term configuration data such as Fn key definitions
         /// File updated immediately when calculator configuration is changed
         
-        var appConfig: ApplicationConfig
+        var macroLib: MacroLibrary
         
-        init( _ appC: ApplicationConfig = ApplicationConfig() ) {
-            self.appConfig = appC
+        init( _ appC: MacroLibrary = MacroLibrary() ) {
+            self.macroLib = appC
         }
     }
     
@@ -65,7 +65,7 @@ extension CalculatorModel {
         
         Task { @MainActor in
             // Update the @Published property here
-            self.appState = store.appConfig
+            self.appState = store.macroLib
         }
     }
 

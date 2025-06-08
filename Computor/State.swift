@@ -15,13 +15,6 @@ let logS = Logger(subsystem: "com.microsnout.calculator", category: "state")
 let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 16
 
 
-struct MacroRec: Codable {
-    var symTag:     SymbolTag
-    var caption:    String? = nil
-    var macro:      MacroOpSeq
-}
-
-
 typealias StateTest = ( _ s0: CalcState) -> Bool
 
 struct RegisterPattern {
@@ -134,12 +127,6 @@ extension SymbolTag {
         
         self.tag = tag
     }
-}
-
-struct MemoryRec: Codable {
-    var tag:     SymbolTag
-    var caption: String? = nil
-    var tv:      TaggedValue
 }
 
 

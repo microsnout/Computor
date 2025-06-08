@@ -682,14 +682,6 @@ class LocalVariableFrame {
 }
 
 
-struct ApplicationConfig : Codable {
-    // Persistant state of all calculator customization for specific applications
-
-    // Definitions of Fn programmable keys
-    var macroList: [SymbolTag : MacroRec] = [:]
-}
-
-
 struct KeyState {
     
     var func2R: PadSpec = psFunctions2R
@@ -711,7 +703,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // Persistant state of all calculator customization for specific applications
     // State of macro keys Fn1 to Fn6
-    var appState = ApplicationConfig()
+    var appState = MacroLibrary()
 
     // Display window into register stack
     @AppStorage(.settingsDisplayRows)
