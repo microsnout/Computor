@@ -49,7 +49,7 @@ struct MacroKey: CodableMacroOp {
     }
     
     func getPlainText() -> String {
-        return String( describing: event.kc )
+        return String( describing: event.keyTag )
     }
     
     init( _ event: KeyEvent ) {

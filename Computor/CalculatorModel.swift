@@ -113,7 +113,7 @@ class NormalContext : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        switch event.kc {
+        switch event.keyTag.kc {
             
         case .clrFn:
             if let kcFn = event.kcTop {
@@ -141,7 +141,7 @@ class NormalContext : EventContext {
             
         default:
             
-            if CalculatorModel.entryStartKeys.contains(event.kc) {
+            if CalculatorModel.entryStartKeys.contains(event.keyTag.kc) {
                 
                 // Start data entry mode, save current state and lift stack to make room for new data
                 model.pushState()
@@ -149,7 +149,7 @@ class NormalContext : EventContext {
                 
                 model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
                     
-                    if exitEvent.kc ==  .back {
+                    if exitEvent.keyTag.kc ==  .back {
                         
                         // Data entry was cancelled by back/undo key
                         model.popState()
@@ -178,14 +178,14 @@ class EntryContext : EventContext {
     
     override func onActivate( lastEvent: KeyEvent ) {
         // Start data entry with a digit or a dot determined by the key that got us here
-        model?.entry.startTextEntry( lastEvent.kc )
+        model?.entry.startTextEntry( lastEvent.keyTag.kc )
     }
     
     override func event( _ event: KeyEvent ) -> KeyPressResult {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        if !CalculatorModel.entryKeys.contains(event.kc) {
+        if !CalculatorModel.entryKeys.contains(event.keyTag.kc) {
             
             // Return to invoking context, either Normal or Recording
             model.popContext( event )
@@ -195,7 +195,7 @@ class EntryContext : EventContext {
         }
         
         // Process data entry key event
-        let keyRes = model.entry.entryModeKeypress(event.kc)
+        let keyRes = model.entry.entryModeKeypress(event.keyTag.kc)
         
         if keyRes == .cancelEntry {
             // Exited entry mode
@@ -237,9 +237,9 @@ class RecordingContext : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        print( "RecordingContext event: \(event.kc)")
+        print( "RecordingContext event: \(event.keyTag)")
 
-        switch event.kc {
+        switch event.keyTag.kc {
             
         case .clrFn:
             model.clearMacroFunction( SymbolTag(kcFn) )
@@ -254,12 +254,12 @@ class RecordingContext : EventContext {
             return KeyPressResult.noOp
             
         case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
-            if model.aux.isRecordingKey(event.kc) {
+            if model.aux.isRecordingKey(event.keyTag.kc) {
                 
                 // Consider this fn key a stopFn command
                 fallthrough
             }
-            else if model.appState.macroList[ SymbolTag(event.kc) ] == nil {
+            else if model.appState.macroList[ event.keyTag ] == nil {
                 
                 // No op any undefined keys
                 return KeyPressResult.noOp
@@ -306,7 +306,7 @@ class RecordingContext : EventContext {
             
         default:
             
-            if CalculatorModel.entryStartKeys.contains(event.kc) {
+            if CalculatorModel.entryStartKeys.contains(event.keyTag.kc) {
                 
                 // Start data entry mode, save current state and lift stack to make room for new data
                 model.pushState()
@@ -314,7 +314,7 @@ class RecordingContext : EventContext {
                 
                 model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
                     
-                    if exitEvent.kc ==  .back {
+                    if exitEvent.keyTag.kc ==  .back {
                         
                         // Data entry was cancelled by back/undo key
                         model.popState()
@@ -418,7 +418,7 @@ class ModalContext : EventContext {
     func executeFn( _ event: KeyEvent ) -> KeyPressResult {
         guard let model = self.model else { return KeyPressResult.null }
         
-        print( "ModalContext executeFn: \(event.kc)")
+        print( "ModalContext executeFn: \(event.keyTag)")
         
         switch event.kc {
             
@@ -434,7 +434,7 @@ class ModalContext : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        print( "ModalContext event: \(event.kc)")
+        print( "ModalContext event: \(event.keyTag)")
 
         switch event.kc {
             
@@ -462,7 +462,7 @@ class ModalContext : EventContext {
                         model.aux.recordKeyFn( endEvent )
                         
                         // Queue a .macro event to execute it
-                        model.queueEvent( KeyEvent( kc: .macro ) )
+                        model.queueEvent( KeyEvent(.macro) )
                     }
                 }
                 return KeyPressResult.recordOnly
@@ -477,7 +477,7 @@ class ModalContext : EventContext {
                     self.macroFn = model.aux.list
                     
                     // Queue a .macro event to execute it
-                    model.queueEvent( KeyEvent( kc: .macro ) )
+                    model.queueEvent( KeyEvent(.macro) )
                 }
                 return KeyPressResult.stateChange
             }
@@ -579,7 +579,7 @@ class BlockRecord : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        print( "BlockRecord event: \(event.kc)")
+        print( "BlockRecord event: \(event.keyTag)")
         
         switch event.kc {
             
@@ -747,7 +747,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // *** Event Context functions ***
 
-    func pushContext( _ ctx: EventContext, lastEvent: KeyEvent = KeyEvent( kc: .null ), _ ccc: ContextContinuationClosure? = nil ) {
+    func pushContext( _ ctx: EventContext, lastEvent: KeyEvent = KeyEvent(.null), _ ccc: ContextContinuationClosure? = nil ) {
         
         // Make this context active, linking to previous ones
         ctx.model = self
@@ -760,7 +760,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         logM.debug( "Push context: \(String( describing: ctx.self ))")
     }
     
-    func popContext( _ event: KeyEvent = KeyEvent( kc: .null ), runCCC: Bool = true ) {
+    func popContext( _ event: KeyEvent = KeyEvent(.null), runCCC: Bool = true ) {
         
         // Restore previous context
         if let oldContext = eventContext?.previousContext {
@@ -1081,14 +1081,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.noLift = true
             
         case .popX:
-            storeRegister( KeyEvent( kc: .popX, mTag: SymbolTag(.X) ), state.Xtv)
+            storeRegister( KeyEvent( .popX, mTag: SymbolTag(.X) ), state.Xtv)
             state.stackDrop()
 
         case .popXY:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( kc: .popXY, mTag: SymbolTag(.X) ), state.Xtv)
-            storeRegister( KeyEvent( kc: .popXY, mTag: SymbolTag(.Y) ), state.Ytv)
+            storeRegister( KeyEvent( .popXY, mTag: SymbolTag(.X) ), state.Xtv)
+            storeRegister( KeyEvent( .popXY, mTag: SymbolTag(.Y) ), state.Ytv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
@@ -1096,9 +1096,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .popXYZ:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( kc: .popXYZ, mTag: SymbolTag(.X) ), state.Xtv)
-            storeRegister( KeyEvent( kc: .popXYZ, mTag: SymbolTag(.Y) ), state.Ytv)
-            storeRegister( KeyEvent( kc: .popXYZ, mTag: SymbolTag(.Z) ), state.Ztv)
+            storeRegister( KeyEvent( .popXYZ, mTag: SymbolTag(.X) ), state.Xtv)
+            storeRegister( KeyEvent( .popXYZ, mTag: SymbolTag(.Y) ), state.Ytv)
+            storeRegister( KeyEvent( .popXYZ, mTag: SymbolTag(.Z) ), state.Ztv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
@@ -1166,7 +1166,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 // Pop the local variable storage, restoring prev
                 currentLVF = currentLVF?.prevLVF
                 
-                popContext( KeyEvent( kc: keyCode ) )
+                popContext( KeyEvent(keyCode) )
             }
             
         default:

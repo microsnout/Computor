@@ -13,13 +13,29 @@ typealias KeyID = Int
 typealias  KeyEvent0 = KeyCode
 
 struct KeyEvent : Codable {
-    var kc: KeyCode
+    var keyTag: SymbolTag
     
     // Top level key like .fn4 when kc is an opcode from a sub popup menu like .rec
     var kcTop: KeyCode?
     
     // Code representing a symbol for a memory
     var mTag: SymbolTag?
+    
+    var kc: KeyCode { keyTag.kc }
+    
+    init( _ kc: KeyCode ) {
+        keyTag = SymbolTag(kc)
+    }
+    
+    init( _ kc: KeyCode, mTag: SymbolTag ) {
+        keyTag = SymbolTag(kc)
+        self.mTag = mTag
+    }
+    
+    init( _ kc: KeyCode, kcTop: KeyCode? ) {
+        keyTag = SymbolTag(kc)
+        self.kcTop = kcTop
+    }
 }
 
 enum KeyPressResult: Int {
@@ -519,7 +535,7 @@ struct NewMemoryPopup: View, KeyPressHandler {
                             
                             if let kcOp = keyData.pressedKey {
                                 // Send event for memory op
-                                _ = model.keyPress( KeyEvent( kc: kcOp.kc, mTag: tag ) )
+                                _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )
                             }
                             
                             reset()
@@ -671,7 +687,7 @@ struct SelectMemoryPopup: View {
                                     .onTapGesture {
                                         if let kcOp = keyData.pressedKey {
                                             // Send event for memory op
-                                            _ = model.keyPress( KeyEvent( kc: kcOp.kc, mTag: row[c] ) )
+                                            _ = model.keyPress( KeyEvent( kcOp.kc, mTag: row[c] ) )
                                             
                                             hapticFeedback.impactOccurred()
                                         }
@@ -738,7 +754,7 @@ struct localMemoryPopup: View {
         
         func keyPress(_ event: KeyEvent ) -> KeyPressResult {
             
-            let evt = KeyEvent( kc: kcMem, mTag: SymbolTag(event.kc)  )
+            let evt = KeyEvent( kcMem, mTag: event.keyTag )
             
             return model.keyPress(evt)
         }
@@ -875,7 +891,7 @@ struct KeyView: View {
                     else {
                         
                         // Subpop menu key event
-                        _ = keyPressHandler.keyPress( KeyEvent( kc: key.kc, kcTop: keyData.pressedKey?.kc))
+                        _ = keyPressHandler.keyPress( KeyEvent( key.kc, kcTop: keyData.pressedKey?.kc))
                         
                         // Cannot clear this value in the modal subpad case above so do it here
                         keyData.pressedKey = nil
@@ -966,7 +982,7 @@ struct KeyView: View {
                             }
                             else {
                                 // Generate key press event
-                                let result = keyPressHandler.keyPress( KeyEvent( kc: key.kc))
+                                let result = keyPressHandler.keyPress( KeyEvent(key.kc))
                                 
                                 if keyData.modalKey != .none && result != .modalPopupContinue {
                                     

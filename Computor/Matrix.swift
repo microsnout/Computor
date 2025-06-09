@@ -120,7 +120,7 @@ func installMatrix( _ model: CalculatorModel ) {
                 // Increment X value by inc
                 model.enterValue(inc)
                 
-                if model.keyPress( KeyEvent( kc: .plus)) != .stateChange {
+                if model.keyPress( KeyEvent(.plus)) != .stateChange {
                     // Addition error
                     model.aux.resumeRecording()
                     model.resumeUndoStack()
@@ -167,7 +167,7 @@ func installMatrix( _ model: CalculatorModel ) {
             // Create a Reduce function obj capturing the value list and mode reference
             let mapFn = MapFunctionX( valueList: s0.Xtv )
             
-            model.pushContext( mapFn, lastEvent: KeyEvent( kc: .mapX) )
+            model.pushContext( mapFn, lastEvent: KeyEvent(.mapX) )
             
             // No new state - but don't return nil or it will flag an error
             return s0
@@ -182,7 +182,7 @@ func installMatrix( _ model: CalculatorModel ) {
             // Create a Reduce function obj capturing the value list and mode reference
             let mapFn = MapFunctionXY( valueListX: s0.Xtv, valueListY: s0.Ytv )
             
-            model.pushContext( mapFn, lastEvent: KeyEvent( kc: .mapX) )
+            model.pushContext( mapFn, lastEvent: KeyEvent(.mapX) )
             
             // No new state - but don't return nil or it will flag an error
             return s0
@@ -197,7 +197,7 @@ func installMatrix( _ model: CalculatorModel ) {
             // Create a Reduce function obj capturing the value list and mode reference
             let reduceFn = ReduceFunction( valueList: s0.Xtv )
             
-            model.pushContext( reduceFn, lastEvent: KeyEvent( kc: .reduce) )
+            model.pushContext( reduceFn, lastEvent: KeyEvent(.reduce) )
             
             // No new state - but don't return nil or it will flag an error
             return s0
@@ -446,7 +446,7 @@ class MapFunctionX : ModalContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        print( "MapFunction keypress: \(event.kc)")
+        print( "MapFunction keypress: \(event.keyTag)")
         
         // Start with empty output list
         let seqCols    = valueList.cols
@@ -510,7 +510,7 @@ class MapFunctionXY : ModalContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        print( "MapFunctionXY keypress: \(event.kc)")
+        print( "MapFunctionXY keypress: \(event.keyTag)")
         
         // Start with empty output list
         let seqCols    = min( valueListX.cols, valueListY.cols )
