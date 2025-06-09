@@ -124,7 +124,7 @@ class NormalContext : EventContext {
             
         case .showFn:
             if let kcFn = event.kcTop {
-                if let macroRec = model.appState.macroList[ SymbolTag(kcFn) ] {
+                if let macroRec = model.appState.getMacro( SymbolTag(kcFn) ) {
                     model.aux.list = macroRec.macro
                     model.aux.macroKey = macroRec.symTag
                     model.aux.activeView = .macroList
@@ -259,7 +259,7 @@ class RecordingContext : EventContext {
                 // Consider this fn key a stopFn command
                 fallthrough
             }
-            else if model.appState.macroList[ event.keyTag ] == nil {
+            else if model.appState.getMacro( event.keyTag ) == nil {
                 
                 // No op any undefined keys
                 return KeyPressResult.noOp
@@ -703,7 +703,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // Persistant state of all calculator customization for specific applications
     // State of macro keys Fn1 to Fn6
-    var appState = MacroLibrary()
+    var appState = MacroRecTable()
 
     // Display window into register stack
     @AppStorage(.settingsDisplayRows)
@@ -868,17 +868,21 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // **** Macro Recording Stuff ***
     
     func saveMacroFunction( _ sTag: SymbolTag, _ list: MacroOpSeq ) {
-        appState.macroList[sTag] = MacroRec( symTag: sTag, macro: list)
+        let mr = MacroRec( symTag: sTag, macro: list)
+        appState.setMacro(sTag, mr)
         saveConfiguration()
     }
     
     func clearMacroFunction( _ sTag: SymbolTag) {
-        appState.macroList[sTag] = nil
+        appState.clearMacro(sTag)
         saveConfiguration()
     }
     
     func getMacroFunction( _ sTag: SymbolTag ) -> MacroOpSeq? {
-        appState.macroList[sTag]?.macro
+        if let mr = appState.getMacro(sTag) {
+            return mr.macro
+        }
+        return nil
     }
     
     // *******
@@ -1304,7 +1308,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         if KeyCode.fnSet.contains(kc) {
             
-            if let macroRec = appState.macroList[ SymbolTag(kc) ] {
+            if let macroRec = appState.getMacro( SymbolTag(kc) ) {
                 
                 if let text = macroRec.caption {
                     // Fn key has provided caption text

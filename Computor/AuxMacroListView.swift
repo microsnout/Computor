@@ -15,11 +15,9 @@ struct MacroListView: View {
         NavigationStack {
             ScrollView {
                 
-                ForEach ( Array(model.appState.macroList.keys), id: \.self ) { tag in
+                ForEach ( model.appState.macroTable, id: \.symTag ) { mr in
                     
-                    let mr = model.appState.macroList[tag]
-                    
-                    Text( mr?.symTag.getRichText() ?? "?" )
+                    Text( mr.symTag.getRichText() )
                 }
             }
         }

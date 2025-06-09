@@ -21,14 +21,6 @@ struct MacroRec: Codable {
 }
 
 
-struct MacroLibrary : Codable {
-    // Persistant state of all calculator customization for specific applications
-    
-    // Definitions of Fn programmable keys
-    var macroList: [SymbolTag : MacroRec] = [:]
-}
-
-
 // New code, not yet in service
 
 typealias GroupId = Int
@@ -37,10 +29,38 @@ struct MacroRecTable: Codable {
     
     /// One of these files per macro lib group
     
-    var id:         UUID
-    var caption:    String?
-    var groupTable: [UUID]
-    var macroTable: [MacroRec]
+    var id:         UUID = UUID()
+    var caption:    String? = nil
+    var groupTable: [UUID] = []
+    var macroTable: [MacroRec] = []
+}
+
+extension MacroRecTable {
+    
+    func getMacro( _ sTag: SymbolTag ) -> MacroRec? {
+        for mr in self.macroTable {
+            if mr.symTag == sTag {
+                return mr
+            }
+        }
+        return nil
+    }
+    
+    mutating func clearMacro( _ sTag: SymbolTag ) {
+        self.macroTable.removeAll( where: { $0.symTag == sTag } )
+    }
+    
+    mutating func setMacro( _ sTag: SymbolTag, _ mr: MacroRec ) {
+        
+        if let x = self.macroTable.firstIndex( where: { $0.symTag == sTag } ) {
+            // Replace existing macro
+            self.macroTable[x] = mr
+        }
+        else {
+            // Add new macro to the end
+            self.macroTable.append(mr)
+        }
+    }
 }
 
 

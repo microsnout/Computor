@@ -14,9 +14,9 @@ extension CalculatorModel {
         /// Long term configuration data such as Fn key definitions
         /// File updated immediately when calculator configuration is changed
         
-        var macroLib: MacroLibrary
+        var macroLib: MacroRecTable
         
-        init( _ appC: MacroLibrary = MacroLibrary() ) {
+        init( _ appC: MacroRecTable = MacroRecTable() ) {
             self.macroLib = appC
         }
     }
