@@ -76,13 +76,40 @@ struct MacroValue: CodableMacroOp {
 }
 
 
-struct MacroOpSeq: Codable {
+struct MacroOpSeq: Codable, Sequence {
     
-    var opSeq = [MacroOp]()
+    private var opList = [MacroOp]()
     
-    mutating func clear() {
-        self.opSeq = []
+    var count: Int { opList.count }
+    
+    var isEmpty: Bool { opList.isEmpty }
+    
+    var last: MacroOp? { opList.last }
+    
+    var indices: Range<Int> { opList.indices }
+    
+    var endIndex: Int { opList.endIndex }
+    
+    mutating func clear() { self.opList = [] }
+
+    mutating func append( _ op: MacroOp ) { opList.append(op) }
+    
+    mutating func removeLast() { opList.removeLast() }
+    
+    subscript(index:Int) -> MacroOp {
+        get { return opList[index] }
+        set(newOp) { opList[index] = newOp }
     }
+
+    subscript( r: PartialRangeFrom<Int> ) -> ArraySlice<MacroOp> {
+        get { return opList[r] }
+    }
+    
+    func makeIterator() -> IndexingIterator<[any MacroOp]> {
+        return opList.makeIterator()
+    }
+    
+    // ***
     
     enum CodingKeys: String, CodingKey {
         case opSeq
@@ -93,7 +120,7 @@ struct MacroOpSeq: Codable {
         
         var opC = c.nestedUnkeyedContainer( forKey: .opSeq)
         
-        for op in opSeq {
+        for op in opList {
             
             if let key = op as? MacroKey {
                 try opC.encode(key)
@@ -105,14 +132,14 @@ struct MacroOpSeq: Codable {
     }
     
     func getDebugText() -> String {
-        if opSeq.isEmpty {
+        if opList.isEmpty {
             return "[]"
         }
         
         var str = "["
-        let end = opSeq.last
+        let end = opList.last
         
-        for s in opSeq.dropLast() {
+        for s in opList.dropLast() {
             str += s.getPlainText()
             str += ", "
         }
@@ -131,15 +158,15 @@ struct MacroOpSeq: Codable {
         while !opC.isAtEnd {
             
             if let key = try? opC.decode( MacroKey.self) {
-                opSeq.append(key)
+                opList.append(key)
             }
             else if let value = try? opC.decode( MacroValue.self) {
-                opSeq.append(value)
+                opList.append(value)
             }
         }
     }
     
     init( _ opSeq: [MacroOp] = [] ) {
-        self.opSeq = opSeq
+        self.opList = opSeq
     }
 }

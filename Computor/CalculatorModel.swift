@@ -125,7 +125,7 @@ class NormalContext : EventContext {
         case .showFn:
             if let kcFn = event.kcTop {
                 if let macroRec = model.appState.getMacro( SymbolTag(kcFn) ) {
-                    model.aux.list = macroRec.macro
+                    model.aux.macroSeq = macroRec.opSeq
                     model.aux.macroKey = macroRec.symTag
                     model.aux.activeView = .macroList
                 }
@@ -270,8 +270,8 @@ class RecordingContext : EventContext {
             }
             
         case .stopFn:
-            if !model.aux.list.opSeq.isEmpty {
-                model.saveMacroFunction( SymbolTag(kcFn), model.aux.list)
+            if !model.aux.macroSeq.isEmpty {
+                model.saveMacroFunction( SymbolTag(kcFn), model.aux.macroSeq)
             }
             model.aux.stopRecFn(kcFn)
             model.popContext( event )
@@ -281,7 +281,7 @@ class RecordingContext : EventContext {
             return KeyPressResult.macroOp
 
         case .back:
-            if model.aux.list.opSeq.isEmpty {
+            if model.aux.macroSeq.isEmpty {
                 
                 // Cancel the recording
                 model.aux.stopRecFn(kcFn)
@@ -295,7 +295,7 @@ class RecordingContext : EventContext {
                 // First remove last key
                 model.aux.recordKeyFn( event )
                 
-                if let ctx = model.getRollback(to: model.aux.list.opSeq.count) {
+                if let ctx = model.getRollback(to: model.aux.macroSeq.count) {
                     // Rollback, put modal function context and block record back
                     model.rollback(ctx)
                 }
@@ -397,7 +397,7 @@ class ModalContext : EventContext {
         // Push a new local variable store
         model.currentLVF = LocalVariableFrame( model.currentLVF )
 
-        for op in macroFn.opSeq {
+        for op in macroFn {
             if op.execute( model ) == KeyPressResult.stateError {
                 
                 logM.debug( "Run Macro: ERROR")
@@ -456,7 +456,7 @@ class ModalContext : EventContext {
                     }
                     else {
                         // Before recording closing brace, extract the macro
-                        self.macroFn = MacroOpSeq( [any MacroOp](model.aux.list.opSeq[from...]) )
+                        self.macroFn = MacroOpSeq( [any MacroOp](model.aux.macroSeq[from...]) )
                         
                         // Now record the closing brace of the block
                         model.aux.recordKeyFn( endEvent )
@@ -474,7 +474,7 @@ class ModalContext : EventContext {
                     model.aux.stopRecFn(.openBrace)
                     
                     // Capture the block macro
-                    self.macroFn = model.aux.list
+                    self.macroFn = model.aux.macroSeq
                     
                     // Queue a .macro event to execute it
                     model.queueEvent( KeyEvent(.macro) )
@@ -501,7 +501,7 @@ class ModalContext : EventContext {
             if event.kc != .macro && model.eventContext?.previousContext is RecordingContext {
                 
                 // Save rollback point in case the single key func is backspaced
-                model.saveRollback( to: model.aux.list.opSeq.count )
+                model.saveRollback( to: model.aux.macroSeq.count )
                 
                 // Record the key
                 model.aux.recordKeyFn( event )
@@ -597,7 +597,7 @@ class BlockRecord : EventContext {
 
             if openCount == 0 {
                 // Restore the modal context and pass the .macro event
-                model.saveRollback( to: model.aux.list.opSeq.count )
+                model.saveRollback( to: model.aux.macroSeq.count )
                 
                 // Pop back to the modal function state
                 model.popContext( event )
@@ -611,7 +611,7 @@ class BlockRecord : EventContext {
             return KeyPressResult.recordOnly
             
         case .back:
-            if model.aux.list.opSeq.isEmpty {
+            if model.aux.macroSeq.isEmpty {
                 model.kstate.func2R = psFunctions2R
                 
                 // Cancel both BlockRecord context and the ModalContext that spawned it
@@ -868,7 +868,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // **** Macro Recording Stuff ***
     
     func saveMacroFunction( _ sTag: SymbolTag, _ list: MacroOpSeq ) {
-        let mr = MacroRec( symTag: sTag, macro: list)
+        let mr = MacroRec( symTag: sTag, opSeq: list)
         appState.setMacro(sTag, mr)
         saveConfiguration()
     }
@@ -880,7 +880,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func getMacroFunction( _ sTag: SymbolTag ) -> MacroOpSeq? {
         if let mr = appState.getMacro(sTag) {
-            return mr.macro
+            return mr.opSeq
         }
         return nil
     }
@@ -1154,7 +1154,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
 
                 // Don't maintain undo stack during playback ops
                 pauseUndoStack()
-                for op in macro.opSeq {
+                for op in macro {
                     if op.execute(self) == KeyPressResult.stateError {
                         resumeUndoStack()
                         currentLVF = currentLVF?.prevLVF

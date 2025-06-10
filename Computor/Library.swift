@@ -17,7 +17,7 @@ struct MemoryRec: Codable {
 struct MacroRec: Codable {
     var symTag:     SymbolTag
     var caption:    String? = nil
-    var macro:      MacroOpSeq
+    var opSeq:      MacroOpSeq
 }
 
 

@@ -21,7 +21,7 @@ struct AuxState {
     
     // MacroListView state
     var macroKey = SymbolTag(.null)
-    var list = MacroOpSeq()
+    var macroSeq = MacroOpSeq()
     
     // Fn key currrently recording
     var kcRecording: KeyCode? = nil
@@ -44,7 +44,7 @@ extension AuxState {
         txt += String( describing: activeView )
         txt += ") Detail:\(detailItemIndex) MacroKey:"
         txt += String( describing: macroKey )
-        txt += " OpSeq:\(list.getDebugText()) Rec:"
+        txt += " OpSeq:\(macroSeq.getDebugText()) Rec:"
         txt += String( describing: kcRecording ?? KeyCode.null )
         txt += " Pause:\(pauseCount)"
         return txt
@@ -61,7 +61,7 @@ extension AuxState {
     
     func markMacroIndex() -> Int {
         // The index of the next element to be added will be...
-        return list.opSeq.count
+        return macroSeq.count
     }
     
     mutating func startRecFn( _ kc: KeyCode ) {
@@ -72,7 +72,7 @@ extension AuxState {
             
             // Clear display of existing macro if any
             macroKey = SymbolTag(.null)
-            list.clear()
+            macroSeq.clear()
             
             kcRecording = kc
             activeView = .macroList
@@ -109,7 +109,7 @@ extension AuxState {
         switch event.kc {
             
         case .enter:
-            if let last = list.opSeq.last,
+            if let last = macroSeq.last,
                let value = last as? MacroValue
             {
                 if value.tv.tag == tagUntyped {
@@ -119,11 +119,11 @@ extension AuxState {
                 }
             }
             // Otherwise record the key
-            list.opSeq.append( MacroKey( event ) )
+            macroSeq.append( MacroKey( event ) )
 
         case .back:
             // Backspace, need to remove last op or possibly undo a unit tag
-            if let last = list.opSeq.last {
+            if let last = macroSeq.last {
                 
                 if let value = last as? MacroValue
                 {
@@ -131,24 +131,24 @@ extension AuxState {
                     if value.tv.tag == tagUntyped {
                         
                         // No unit tag, just remove the value
-                        list.opSeq.removeLast()
+                        macroSeq.removeLast()
                     }
                     else {
                         // A tagged value, remove the tag
-                        list.opSeq.removeLast()
+                        macroSeq.removeLast()
                         var tv = value.tv
                         tv.tag = tagUntyped
-                        list.opSeq.append( MacroValue( tv: tv))
+                        macroSeq.append( MacroValue( tv: tv))
                     }
                 }
                 else {
                     // Last op id just a key op
-                    list.opSeq.removeLast()
+                    macroSeq.removeLast()
                 }
             }
             
         case let kc where kc.isUnit:
-            if let last = list.opSeq.last,
+            if let last = macroSeq.last,
                let value = last as? MacroValue
             {
                 if value.tv.tag == tagUntyped {
@@ -157,9 +157,9 @@ extension AuxState {
                     if let tag = TypeDef.kcDict[kc] {
                         
                         var tv = value.tv
-                        list.opSeq.removeLast()
+                        macroSeq.removeLast()
                         tv.tag = tag
-                        list.opSeq.append( MacroValue( tv: tv))
+                        macroSeq.append( MacroValue( tv: tv))
                         break
                     }
                 }
@@ -168,7 +168,7 @@ extension AuxState {
             
         default:
             // Just record the key
-            list.opSeq.append( MacroKey( event ) )
+            macroSeq.append( MacroKey( event ) )
         }
         
         // Log debug output
@@ -180,7 +180,7 @@ extension AuxState {
     mutating func recordValueFn( _ tv: TaggedValue ) {
         if isRecording
         {
-            list.opSeq.append( MacroValue( tv: tv) )
+            macroSeq.append( MacroValue( tv: tv) )
             
             // Log debug output
             let auxTxt = getDebugText()
