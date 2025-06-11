@@ -7,6 +7,41 @@
 import SwiftUI
 
 
+typealias SubmitContinuationClosure = ( _ str: String ) -> Void
+
+
+struct AuxRenameView: View {
+    @FocusState private var nameFocused: Bool
+    
+    @Environment(\.dismiss) var dismiss
+    
+    @State private var editName = ""
+    
+    var name: String
+    
+    var scc: SubmitContinuationClosure
+    
+    var body: some View {
+        
+        Form {
+            TextField( "-Caption-", text: $editName )
+                .focused($nameFocused)
+                .disableAutocorrection(true)
+                .autocapitalization(.none)
+                .onAppear {
+                    editName = name
+                    nameFocused = true
+                }
+                .onSubmit {
+                    scc( editName )
+                    dismiss()
+                }
+        }
+        .scrollContentBackground(.hidden) // iOS 16+
+    }
+}
+
+
 struct MemoryRenameView: View {
     @StateObject var model: CalculatorModel
     
@@ -21,7 +56,7 @@ struct MemoryRenameView: View {
         let value = model.state.memory[index]
         
         Form {
-            TextField( "-Unnamed-", text: $editName )
+            TextField( "-Caption-", text: $editName )
             .focused($nameFocused)
             .disableAutocorrection(true)
             .autocapitalization(.none)

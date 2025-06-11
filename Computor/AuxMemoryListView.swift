@@ -32,6 +32,8 @@ struct MemoryListView: View {
 
     var body: some View {
         VStack {
+            
+            // Header bar
             AuxHeaderView( theme: Theme.lightBlue ) {
                 
                 HStack {
@@ -41,11 +43,14 @@ struct MemoryListView: View {
                 }
             }
             
-            Spacer()
-            
             if model.state.memory.isEmpty {
-                Text("Memory List\n(Press + to store X register)")
-                    .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                Spacer()
+                VStack {
+                    // Placeholder for empty memory list
+                    Text("Memory List")
+                        .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                }
+                Spacer()
             }
             else {
                 let memList = model.state.memory
@@ -67,11 +72,15 @@ struct MemoryListView: View {
                             
                             VStack {
                                 HStack {
+                                    
+                                    // Memory two line description
                                     VStack( alignment: .leading, spacing: 0 ) {
                                         
                                         HStack {
+                                            // Tag Symbol
                                             RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
                                             
+                                            // Caption text
                                             RichText(caption, size: .normal, weight: .regular, design: .serif, defaultColor: color )
                                         }
                                             
@@ -84,6 +93,7 @@ struct MemoryListView: View {
                                     Spacer()
                                     
                                     
+                                    // Button controls at right of rows
                                     HStack( spacing: 20 ) {
                                         Button( action: { model.memoryOp( key: .rclMem, tag: mr.tag ) } ) {
                                             Image( systemName: "arrowshape.down" )
@@ -107,7 +117,6 @@ struct MemoryListView: View {
                     .padding( .top, 0)
                 }
             }
-            Spacer()
         }
     }
 }

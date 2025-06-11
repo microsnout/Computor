@@ -47,41 +47,78 @@ struct MacroListView: View {
         
         VStack {
             AuxHeaderView( theme: Theme.lightYellow ) {
-                
                 HStack {
                     Spacer()
                     RichText("Macro Library", size: .small, weight: .bold )
                     Spacer()
                 }
             }
-            .padding( [.leading], 5 )
 
-            ScrollView {
-                
-                LazyVStack( spacing: 5 ) {
+            if model.state.memory.isEmpty {
+                Spacer()
+                VStack {
+                    // Placeholder for empty memory list
+                    Text("Macro List")
+                        .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                }
+                Spacer()
+            }
+            else {
+                ScrollView {
                     
-                    ForEach ( model.appState.macroTable, id: \.symTag ) { mr in
+                    LazyVStack {
                         
-                        let caption = mr.caption ?? "ç{GrayText}-caption-"
-                        
-                        HStack( spacing: 0 ) {
-                            RichText( mr.symTag.getRichText(), size: .small, weight: .bold )
-                                .frame( width: 50 )
+                        ForEach ( model.appState.macroTable, id: \.symTag ) { mr in
                             
-                            RichText( caption, size: .small, weight: .bold )
                             
-                            Spacer()
-                        }
-                        .onTapGesture {
-                            withAnimation {
-                                model.aux.macroKey = mr.symTag
-                                model.aux.macroSeq = mr.opSeq
+                            let sym = mr.symTag.getRichText()
+                            let caption = mr.caption ?? "ç{GrayText}-caption-"
+                            
+                            VStack {
+                                HStack {
+                                    
+                                    VStack( alignment: .leading, spacing: 0 ) {
+                                        
+                                        HStack {
+                                            // Tag Symbol
+                                            RichText( sym, size: .small, weight: .bold, design: .serif )
+                                            
+                                            // Caption text
+                                            RichText( caption, size: .small, weight: .bold )
+                                        }
+                                        
+                                        // Second line of row
+                                        RichText( "2nd Line", size: .small, weight: .bold ).padding( [.leading], 20 )
+                                    }
+                                    .padding( [.leading ], 20)
+                                    .frame( height: 30 )
+                                    
+                                    Spacer()
+                                    
+                                    // Button controls at right of rows
+                                    HStack( spacing: 20 ) {
+                                        Button( action: {  } ) {
+                                            Image( systemName: "arrowshape.down" )
+                                        }
+                                        Button( action: {  } ) {
+                                            Image( systemName: "trash" )
+                                        }
+                                    }.padding( [.trailing], 20 )
+                                }
+                                .onTapGesture {
+                                    withAnimation {
+                                        model.aux.macroKey = mr.symTag
+                                        model.aux.macroSeq = mr.opSeq
+                                    }
+                                }
                             }
                             
+                            Divider()
                         }
                     }
+                    .padding( .horizontal, 0)
+                    .padding( [.top], 0 )
                 }
-                .padding( [.top], 0 )
             }
         }
     }
@@ -91,7 +128,18 @@ struct MacroListView: View {
 struct MacroDetailView: View, KeyPressHandler {
     @StateObject var model: CalculatorModel
     
+    @State private var renameSheet = false
+
     func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+        
+        switch event.kc {
+            
+        case .mRename:
+            renameSheet = true
+            
+        default:
+            break
+        }
         return KeyPressResult.null
     }
 
@@ -99,12 +147,15 @@ struct MacroDetailView: View, KeyPressHandler {
         let name = model.getKeyText( model.aux.macroKey.kc )
             
         if name != nil || model.aux.isRecording  {
+            
             VStack( spacing: 0 ) {
                 let captionTxt = "Macro " + ( name ?? "ç{StatusRedText}REC" )
                 
                 AuxHeaderView( theme: Theme.lightYellow ) {
                     
+                    // Header bar definition
                     HStack {
+                        // Navigation Back button
                         Image( systemName: "chevron.left")
                             .padding( [.leading], 10 )
                             .onTapGesture {
@@ -114,15 +165,17 @@ struct MacroDetailView: View, KeyPressHandler {
                             }
                         
                         Spacer()
-                        
                         RichText(captionTxt, size: .small, weight: .bold )
-                        
                         Spacer()
                     }
                 }
                 
+                // Side by side views, macro op list and other fields
                 HStack {
+                    
+                    // List of macro ops with line numbers
                     VStack {
+                        
                         ScrollView {
                             ScrollViewReader { proxy in
                                 let list = model.aux.macroSeq
@@ -169,6 +222,17 @@ struct MacroDetailView: View, KeyPressHandler {
                 KeypadView( padSpec: psMemDetail, keyPressHandler: self)
             }
             .padding( [.bottom], 10 )
+            .sheet(isPresented: $renameSheet) {
+                ZStack {
+                    Color("ListBack").edgesIgnoringSafeArea(.all)
+                    AuxRenameView( name: "My Name" )
+                    {
+                        print($0)
+                    }
+                        .presentationDetents([.fraction(0.4)])
+                        .presentationBackground( Color("ListBack") )
+                }
+            }
         }
         else {
             VStack {
