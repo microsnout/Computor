@@ -7,6 +7,19 @@
 import SwiftUI
 
 
+let psMacroDetail = PadSpec(
+    keySpec: ksMemDetail,
+    cols: 6,
+    keys: [
+        Key(.mPlus,   "ƒ{0.8}M+"),
+        Key(.mMinus,  "ƒ{0.8}M-"),
+        Key(.rclMem,  "ƒ{0.8}Rcl"),
+        Key(.stoMem,  "ƒ{0.8}Sto"),
+        Key(.mRename, "ƒ{0.8}Caption", size: 2),
+    ]
+)
+
+
 struct MacroLibraryView: View {
     @StateObject var model: CalculatorModel
     
@@ -16,10 +29,12 @@ struct MacroLibraryView: View {
             
             // List of all available macros
             MacroListView(model: model)
+                .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
         }
         else {
             // Detailed view of selected macro
             MacroDetailView(model: model)
+                .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
         }
     }
 }
@@ -58,8 +73,11 @@ struct MacroListView: View {
                             Spacer()
                         }
                         .onTapGesture {
-                            model.aux.macroKey = mr.symTag
-                            model.aux.macroSeq = mr.opSeq
+                            withAnimation {
+                                model.aux.macroKey = mr.symTag
+                                model.aux.macroSeq = mr.opSeq
+                            }
+                            
                         }
                     }
                 }
@@ -70,9 +88,13 @@ struct MacroListView: View {
 }
 
 
-struct MacroDetailView: View {
+struct MacroDetailView: View, KeyPressHandler {
     @StateObject var model: CalculatorModel
     
+    func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+        return KeyPressResult.null
+    }
+
     var body: some View {
         let name = model.getKeyText( model.aux.macroKey.kc )
             
@@ -86,7 +108,9 @@ struct MacroDetailView: View {
                         Image( systemName: "chevron.left")
                             .padding( [.leading], 10 )
                             .onTapGesture {
-                                model.aux.macroKey = SymbolTag(.null)
+                                withAnimation {
+                                    model.aux.macroKey = SymbolTag(.null)
+                                }
                             }
                         
                         Spacer()
@@ -97,33 +121,54 @@ struct MacroDetailView: View {
                     }
                 }
                 
-                ScrollView {
-                    ScrollViewReader { proxy in
-                        let list = model.aux.macroSeq
-                        
-                        VStack(spacing: 7) {
-                            ForEach (list.indices, id: \.self) { x in
-                                let op: MacroOp = list[x]
-                                let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
-                                let text = op.getRichText(model)
+                HStack {
+                    VStack {
+                        ScrollView {
+                            ScrollViewReader { proxy in
+                                let list = model.aux.macroSeq
                                 
-                                HStack {
-                                    RichText( line, size: .small )
-                                    RichText( text, size: .small, weight: .bold )
-                                    Spacer()
+                                VStack(spacing: 7) {
+                                    ForEach (list.indices, id: \.self) { x in
+                                        let op: MacroOp = list[x]
+                                        let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
+                                        let text = op.getRichText(model)
+                                        
+                                        HStack {
+                                            RichText( line, size: .small )
+                                            RichText( text, size: .small, weight: .bold )
+                                            Spacer()
+                                        }
+                                    }
+                                    .onChange( of: list.count ) {
+                                        if list.count > 1 {
+                                            proxy.scrollTo( list.indices[list.endIndex - 1] )
+                                        }
+                                    }
                                 }
-                            }
-                            .onChange( of: list.count ) {
-                                if list.count > 1 {
-                                    proxy.scrollTo( list.indices[list.endIndex - 1] )
-                                }
+                                .padding([.leading, .trailing], 20)
+                                .padding([.top, .bottom], 10)
                             }
                         }
-                        .padding([.leading, .trailing], 20)
-                        .padding([.top, .bottom], 10)
+                        .frame( width: 150 )
                     }
+                    
+                    HStack {
+                        let caption = "ç{GrayText}-caption-"
+                        
+                        VStack( alignment: .leading ) {
+                            RichText( caption, size: .small, weight: .bold )
+                            RichText( model.aux.macroKey.getRichText(), size: .small, weight: .bold )
+                            Spacer()
+                            
+                        }
+                        Spacer()
+                    }
+                    .border(.red)
                 }
+                
+                KeypadView( padSpec: psMemDetail, keyPressHandler: self)
             }
+            .padding( [.bottom], 10 )
         }
         else {
             VStack {
