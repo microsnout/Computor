@@ -57,8 +57,20 @@ struct MemoryDetailView: View {
     
     var body: some View {
         VStack {
-            AuxHeaderView( theme: Theme.lightGreen ) {
-                RichText( "Memory Detail", size: .small, weight: .bold )
+            AuxHeaderView( theme: Theme.lightBlue ) {
+                HStack {
+                    Image( systemName: "chevron.left")
+                        .padding( [.leading], 10 )
+                        .onTapGesture {
+                            withAnimation {
+                                model.aux.detailItemIndex = -1
+                            }
+                        }
+                    
+                    Spacer()
+                    RichText( "Memory Detail", size: .small, weight: .bold )
+                    Spacer()
+                }
             }
             
             Spacer()

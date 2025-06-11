@@ -17,7 +17,7 @@ struct AuxState {
     var activeView = AuxDispView.memoryList
     
     // Memory Detail Item - current focused memory item in detail view
-    var detailItemIndex: Int = 0
+    var detailItemIndex: Int = -1
     
     // MacroListView state
     var macroKey = SymbolTag(.null)

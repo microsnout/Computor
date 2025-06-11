@@ -7,7 +7,7 @@
 import SwiftUI
 
 enum AuxDispView: String, CaseIterable, Identifiable {
-    case memoryList, memoryDetail, macroList, valueBrowser, valuePlot
+    case memoryList, macroList, valueBrowser, valuePlot
     
     var id: String {
         rawValue
@@ -19,7 +19,6 @@ enum AuxDispView: String, CaseIterable, Identifiable {
     
     static let themeMap: [AuxDispView : Theme] = [
         .memoryList : Theme.lightBlue,
-        .memoryDetail : Theme.lightGreen,
         .macroList : Theme.lightYellow,
         .valueBrowser: Theme.lightRed,
         .valuePlot: Theme.lightPurple,
@@ -42,13 +41,8 @@ struct AuxiliaryDisplayView: View {
         ScrollView(.horizontal) {
             LazyHStack {
                 
-                MemoryListView( model: model )
+                AuxMemoryView( model: model )
                     .id( AuxDispView.memoryList )
-                    .frame( maxWidth: .infinity, maxHeight: .infinity)
-                    .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
-
-                MemoryDetailView( model: model, itemIndex: $model.aux.detailItemIndex )
-                    .id( AuxDispView.memoryDetail )
                     .frame( maxWidth: .infinity, maxHeight: .infinity)
                     .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
 

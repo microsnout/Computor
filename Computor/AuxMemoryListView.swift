@@ -7,6 +7,26 @@
 import SwiftUI
 
 
+struct AuxMemoryView: View {
+    @StateObject var model: CalculatorModel
+    
+    var body: some View {
+        
+        if model.aux.detailItemIndex == -1 {
+            
+            // List of all available macros
+            MemoryListView(model: model)
+                .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
+        }
+        else {
+            // Detailed view of selected macro
+            MemoryDetailView(model: model, itemIndex: $model.aux.detailItemIndex)
+                .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+        }
+    }
+}
+
+
 struct MemoryListView: View {
     @StateObject var model: CalculatorModel
 
@@ -74,8 +94,9 @@ struct MemoryListView: View {
                                     }.padding( [.trailing], 20 )
                                 }
                                 .onTapGesture {
-                                    model.aux.detailItemIndex = index
-                                    model.aux.activeView = .memoryDetail
+                                    withAnimation {
+                                        model.aux.detailItemIndex = index
+                                    }
                                 }
                                 
                                 Divider()
