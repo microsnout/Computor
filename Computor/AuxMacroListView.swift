@@ -11,10 +11,9 @@ let psMacroDetail = PadSpec(
     keySpec: ksMemDetail,
     cols: 6,
     keys: [
-        Key(.mPlus,   "ƒ{0.8}M+"),
-        Key(.mMinus,  "ƒ{0.8}M-"),
-        Key(.rclMem,  "ƒ{0.8}Rcl"),
-        Key(.stoMem,  "ƒ{0.8}Sto"),
+        Key(.mPlus,  image: "play.circle" ),
+        Key(.mMinus, image: "playpause.circle" ),
+        Key(.rclMem, image: "stop.circle" ),
         Key(.mRename, "ƒ{0.8}Caption", size: 2),
     ]
 )
@@ -51,6 +50,10 @@ struct MacroListView: View {
                     Spacer()
                     RichText("Macro Library", size: .small, weight: .bold )
                     Spacer()
+                    
+                    // New macro creation button
+                    Image( systemName: "plus")
+                        .padding( [.trailing], 5 )
                 }
             }
 
@@ -206,27 +209,29 @@ struct MacroDetailView: View, KeyPressHandler {
                     }
                     
                     HStack {
-                        let caption = "ç{GrayText}-caption-"
+                        let caption = model.aux.macroCap.isEmpty ? "ç{GrayText}-caption-" : model.aux.macroCap
                         
                         VStack( alignment: .leading ) {
-                            RichText( caption, size: .small, weight: .bold )
-                            RichText( model.aux.macroKey.getRichText(), size: .small, weight: .bold )
+                            RichText( model.aux.macroKey.getRichText(), size: .small, weight: .bold ).padding( [.top], 5 )
+                            RichText( "ƒ{1.2}ç{UnitText}\(caption)", size: .small, weight: .bold )
                             Spacer()
                             
                         }
                         Spacer()
                     }
-                    .border(.red)
+                    //.border(.red)
                 }
                 
-                KeypadView( padSpec: psMemDetail, keyPressHandler: self)
+                // Macro detail key menu
+                KeypadView( padSpec: psMacroDetail, keyPressHandler: self)
             }
             .padding( [.bottom], 10 )
             .sheet(isPresented: $renameSheet) {
                 ZStack {
                     Color("ListBack").edgesIgnoringSafeArea(.all)
-                    AuxRenameView( name: "My Name" )
+                    AuxRenameView( name: model.aux.macroCap )
                     {
+                        model.aux.macroCap = $0
                         print($0)
                     }
                         .presentationDetents([.fraction(0.4)])

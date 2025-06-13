@@ -22,6 +22,7 @@ struct AuxState {
     // MacroListView state
     var macroKey = SymbolTag(.null)
     var macroSeq = MacroOpSeq()
+    var macroCap = ""
     
     // Fn key currrently recording
     var kcRecording: KeyCode? = nil

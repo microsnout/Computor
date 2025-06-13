@@ -76,14 +76,14 @@ struct Key: Identifiable {
     var kc: KeyCode
     var size: Int           // Either 1 or 2, single width keys or double width
     var text: String?
-    var image: ImageResource?
+    var image: String?
     var caption: String?
     
     var id: Int { return self.kc.rawValue }
     
     static var keyList: [KeyCode : Key] = [:]
 
-    init( _ kc: KeyCode, _ label: String? = nil, size: Int = 1, image: ImageResource? = nil, caption: String? = nil ) {
+    init( _ kc: KeyCode, _ label: String? = nil, size: Int = 1, image: String? = nil, caption: String? = nil ) {
         self.kc = kc
         self.text = label
         self.size = size
@@ -1002,7 +1002,7 @@ struct KeyView: View {
                     .if ( key.image != nil ) { view in
                         // Add image to key - currently not used
                         view.overlay(
-                            Image(key.image!)
+                            Image( systemName: key.image!)
                                 .renderingMode(.template)
                                 .foregroundColor( Color(padSpec.keySpec.textColor)), alignment: .center)
                             
