@@ -21,6 +21,26 @@ struct MacroRec: Codable {
 }
 
 
+struct KeyMapRec: Codable {
+    
+    var fnRow: [ KeyCode : SymbolTag ] = [:]
+    
+    func keyAssignment( _ tag: SymbolTag ) -> KeyCode? {
+        if tag.isNull {
+            // Null tag, no key
+            return nil
+        }
+        
+        // Find the Fn key to which this sym is assigned if any
+        if let index = fnRow.firstIndex( where: { $0.value == tag } ) {
+            return fnRow[index].key
+        }
+        return nil
+    }
+    
+    // Could add unitRow here
+}
+
 // New code, not yet in service
 
 typealias GroupId = Int

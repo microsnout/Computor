@@ -45,7 +45,7 @@ struct StatusView: View {
         
         let midText = model.status.midText
         
-        let rightText = model.aux.isRecording ? "ç{StatusRedText}RECç{}" : model.status.rightText
+        let rightText = model.aux.isRec ? "ç{StatusRedText}RECç{}" : model.status.rightText
         
         HStack {
             RichText(leftText, size: .small, weight: .bold)

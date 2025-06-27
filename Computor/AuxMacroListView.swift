@@ -11,10 +11,10 @@ let psMacroDetail = PadSpec(
     keySpec: ksMemDetail,
     cols: 6,
     keys: [
-        Key(.mPlus,  image: "play.circle" ),
-        Key(.mMinus, image: "playpause.circle" ),
-        Key(.rclMem, image: "stop.circle" ),
-        Key(.mRename, "ƒ{0.8}Caption", size: 2),
+        Key(.macroPlay, image: "play" ),
+        Key(.macroStep, image: "playpause" ),
+        Key(.macroStop, image: "stop" ),
+        Key(.macroRename, "ƒ{0.8}Caption", size: 2),
     ]
 )
 
@@ -24,16 +24,18 @@ struct MacroLibraryView: View {
     
     var body: some View {
         
-        if model.aux.macroKey == SymbolTag(.null) {
-            
-            // List of all available macros
-            MacroListView(model: model)
-                .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
-        }
-        else {
+        // if we are recording OR there is a selected symbol, we are in detail view
+        
+        if model.aux.macroKey != SymbolTag(.null) || model.aux.recState != .none {
+
             // Detailed view of selected macro
             MacroDetailView(model: model)
                 .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+        }
+        else {
+            // List of all available macros
+            MacroListView(model: model)
+                .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
         }
     }
 }
@@ -54,6 +56,9 @@ struct MacroListView: View {
                     // New macro creation button
                     Image( systemName: "plus")
                         .padding( [.trailing], 5 )
+                        .onTapGesture {
+                            model.aux.recState = .stop
+                        }
                 }
             }
 
@@ -137,7 +142,10 @@ struct MacroDetailView: View, KeyPressHandler {
         
         switch event.kc {
             
-        case .mRename:
+        case .macroRecord:
+            model.aux.recState = .record
+            
+        case .macroRename:
             renameSheet = true
             
         default:
@@ -147,105 +155,117 @@ struct MacroDetailView: View, KeyPressHandler {
     }
 
     var body: some View {
-        let name = model.getKeyText( model.aux.macroKey.kc )
+        let symTag: SymbolTag = model.aux.macroKey
+        
+        let symName  = symTag.getRichText()
+        
+        let kcFn: KeyCode? = model.kstate.keyMap.keyAssignment(symTag)
+        
+        let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
+
+        VStack( spacing: 0 ) {
+            let captionTxt = "Macro " + symName
             
-        if name != nil || model.aux.isRecording  {
-            
-            VStack( spacing: 0 ) {
-                let captionTxt = "Macro " + ( name ?? "ç{StatusRedText}REC" )
+            AuxHeaderView( theme: Theme.lightYellow ) {
                 
-                AuxHeaderView( theme: Theme.lightYellow ) {
-                    
-                    // Header bar definition
-                    HStack {
-                        // Navigation Back button
-                        Image( systemName: "chevron.left")
-                            .padding( [.leading], 10 )
-                            .onTapGesture {
-                                withAnimation {
-                                    model.aux.macroKey = SymbolTag(.null)
-                                }
-                            }
-                        
-                        Spacer()
-                        RichText(captionTxt, size: .small, weight: .bold )
-                        Spacer()
-                    }
-                }
-                
-                // Side by side views, macro op list and other fields
+                // Header bar definition
                 HStack {
-                    
-                    // List of macro ops with line numbers
-                    VStack {
-                        
-                        ScrollView {
-                            ScrollViewReader { proxy in
-                                let list = model.aux.macroSeq
-                                
-                                VStack(spacing: 7) {
-                                    ForEach (list.indices, id: \.self) { x in
-                                        let op: MacroOp = list[x]
-                                        let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
-                                        let text = op.getRichText(model)
-                                        
-                                        HStack {
-                                            RichText( line, size: .small )
-                                            RichText( text, size: .small, weight: .bold )
-                                            Spacer()
-                                        }
-                                    }
-                                    .onChange( of: list.count ) {
-                                        if list.count > 1 {
-                                            proxy.scrollTo( list.indices[list.endIndex - 1] )
-                                        }
-                                    }
-                                }
-                                .padding([.leading, .trailing], 20)
-                                .padding([.top, .bottom], 10)
+                    // Navigation Back button
+                    Image( systemName: "chevron.left")
+                        .padding( [.leading], 10 )
+                        .onTapGesture {
+                            withAnimation {
+                                model.aux.macroKey = SymbolTag(.null)
                             }
                         }
-                        .frame( width: 150 )
-                    }
                     
-                    HStack {
-                        let caption = model.aux.macroCap.isEmpty ? "ç{GrayText}-caption-" : model.aux.macroCap
-                        
-                        VStack( alignment: .leading ) {
-                            RichText( model.aux.macroKey.getRichText(), size: .small, weight: .bold ).padding( [.top], 5 )
-                            RichText( "ƒ{1.2}ç{UnitText}\(caption)", size: .small, weight: .bold )
-                            Spacer()
+                    Spacer()
+                    RichText(captionTxt, size: .small, weight: .bold )
+                    Spacer()
+                }
+            }
+            
+            // Side by side views, macro op list and other fields
+            HStack {
+                
+                // List of macro ops with line numbers
+                VStack {
+                    
+                    ScrollView {
+                        ScrollViewReader { proxy in
+                            let list = model.aux.macroSeq
                             
+                            VStack(spacing: 7) {
+                                ForEach (list.indices, id: \.self) { x in
+                                    let op: MacroOp = list[x]
+                                    let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
+                                    let text = op.getRichText(model)
+                                    
+                                    HStack {
+                                        RichText( line, size: .small )
+                                        RichText( text, size: .small, weight: .bold )
+                                        Spacer()
+                                    }
+                                }
+                                .onChange( of: list.count ) {
+                                    if list.count > 1 {
+                                        proxy.scrollTo( list.indices[list.endIndex - 1] )
+                                    }
+                                }
+                            }
+                            .padding([.leading, .trailing], 20)
+                            .padding([.top, .bottom], 10)
                         }
+                    }
+                    .frame( width: 150 )
+                }
+                
+                // Right panel fields
+                HStack {
+                    let caption = model.aux.macroCap.isEmpty ? "ç{GrayText}-caption-" : model.aux.macroCap
+                    
+                    VStack( alignment: .leading, spacing: 10 ) {
+                        
+                        Spacer().frame( height: 5 )
+                        
+                        // CAPTION
+                        RichText( "ƒ{1.2}ç{UnitText}\(caption)", size: .small, weight: .bold )
+                        
+                        // SYMBOL
+                        HStack( spacing: 0 ) {
+                            RichText("ç{GrayText}Symbol:", size: .small, weight: .regular).padding( [.trailing], 5 )
+                            RichText( symName, size: .small, weight: .bold )
+                            Spacer()
+                        }
+                        
+                        // Assigned Key
+                        HStack( spacing: 0 ) {
+                            RichText("ç{GrayText}Assigned key:", size: .small, weight: .regular).padding( [.trailing], 5 )
+                            RichText( fnText, size: .small, weight: .bold )
+                            Spacer()
+                        }
+
                         Spacer()
                     }
-                    //.border(.red)
+                    Spacer()
                 }
-                
-                // Macro detail key menu
-                KeypadView( padSpec: psMacroDetail, keyPressHandler: self)
+                //.border(.red)
             }
-            .padding( [.bottom], 10 )
-            .sheet(isPresented: $renameSheet) {
-                ZStack {
-                    Color("ListBack").edgesIgnoringSafeArea(.all)
-                    AuxRenameView( name: model.aux.macroCap )
-                    {
-                        model.aux.macroCap = $0
-                        print($0)
-                    }
-                        .presentationDetents([.fraction(0.4)])
-                        .presentationBackground( Color("ListBack") )
-                }
-            }
+            
+            // Macro detail key menu
+            KeypadView( padSpec: psMacroDetail, keyPressHandler: self)
         }
-        else {
-            VStack {
-                AuxHeaderView( theme: Theme.lightYellow ) {
-                    RichText( "Macro List", size: .small, weight: .bold  )
+        .padding( [.bottom], 10 )
+        .sheet(isPresented: $renameSheet) {
+            ZStack {
+                Color("ListBack").edgesIgnoringSafeArea(.all)
+                AuxRenameView( name: model.aux.macroCap )
+                {
+                    model.aux.macroCap = $0
+                    print($0)
                 }
-                
-                Spacer()
+                    .presentationDetents([.fraction(0.4)])
+                    .presentationBackground( Color("ListBack") )
             }
         }
     }

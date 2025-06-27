@@ -73,18 +73,18 @@ let psClear = PadSpec(
 let psSoftkeyL = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
-    keys: [ Key(.fn1),
-            Key(.fn2),
-            Key(.fn3)
+    keys: [ Key(.F1),
+            Key(.F2),
+            Key(.F4)
           ]
 )
 
 let psSoftkeyR = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
-    keys: [ Key(.fn4),
-            Key(.fn5),
-            Key(.fn6)
+    keys: [ Key(.F4),
+            Key(.F5),
+            Key(.F6)
           ]
 )
 
@@ -185,7 +185,7 @@ let psFormatR = PadSpec (
 )
 
 func initKeyLayout() {
-    SubPadSpec.define( .fn0,
+    SubPadSpec.define( .F0,
                        keySpec: ksSubFn,
                        keys: [
                         Key(.clrFn, "Clear"),
@@ -195,7 +195,7 @@ func initKeyLayout() {
                        ]
     )
     
-    SubPadSpec.copySpec(from: .fn0, list: [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6])
+    SubPadSpec.copySpec(from: .F0, list: [.F1, .F2, .F4, . F4, .F5, .F6])
     
     SubPadSpec.define( .sin,
                        keySpec: ksSubpad,

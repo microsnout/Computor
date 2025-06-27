@@ -118,7 +118,7 @@ class NormalContext : EventContext {
         case .clrFn:
             if let kcFn = event.kcTop {
                 model.clearMacroFunction( SymbolTag(kcFn) )
-                model.aux.stopRecFn(kcFn)
+                model.aux.clearMacroState()
             }
             return KeyPressResult.macroOp
             
@@ -135,7 +135,8 @@ class NormalContext : EventContext {
         case .stopFn, .openBrace, .closeBrace:
             return KeyPressResult.noOp
             
-        case .recFn:
+        case .recFn, .macroRecord:
+            // Record menu from Fn key or record op from macro detail view
             model.pushContext( RecordingContext(), lastEvent: event )
             return KeyPressResult.macroOp
             
@@ -225,7 +226,7 @@ class RecordingContext : EventContext {
             
             // Start recording the indicated Fn key
             self.kcFn = kcFn
-            model.aux.startRecFn(kcFn)
+            model.aux.record(kcFn: kcFn)
             
             // Push a new local variable store
             model.currentLVF = LocalVariableFrame( model.currentLVF )
@@ -243,7 +244,7 @@ class RecordingContext : EventContext {
             
         case .clrFn:
             model.clearMacroFunction( SymbolTag(kcFn) )
-            model.aux.stopRecFn(kcFn)
+            model.aux.recordStop()
             model.popContext( event )
             
             // Pop the local variable storage, restoring prev
@@ -253,7 +254,7 @@ class RecordingContext : EventContext {
         case .showFn, .recFn, .openBrace, .closeBrace:
             return KeyPressResult.noOp
             
-        case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
+        case .F1, .F2, .F3, . F4, .F5, .F6:
             if model.aux.isRecordingKey(event.keyTag.kc) {
                 
                 // Consider this fn key a stopFn command
@@ -273,7 +274,7 @@ class RecordingContext : EventContext {
             if !model.aux.macroSeq.isEmpty {
                 model.saveMacroFunction( SymbolTag(kcFn), model.aux.macroSeq)
             }
-            model.aux.stopRecFn(kcFn)
+            model.aux.recordStop()
             model.popContext( event )
             
             // Pop the local variable storage, restoring prev
@@ -284,7 +285,7 @@ class RecordingContext : EventContext {
             if model.aux.macroSeq.isEmpty {
                 
                 // Cancel the recording
-                model.aux.stopRecFn(kcFn)
+                model.aux.recordStop()
                 model.popContext( event )
                 
                 // Pop the local variable storage, restoring prev
@@ -461,6 +462,8 @@ class ModalContext : EventContext {
                         // Now record the closing brace of the block
                         model.aux.recordKeyFn( endEvent )
                         
+                        model.aux.modalRecStop()
+                        
                         // Queue a .macro event to execute it
                         model.queueEvent( KeyEvent(.macro) )
                     }
@@ -471,7 +474,7 @@ class ModalContext : EventContext {
                 model.pushContext( BlockRecord(), lastEvent: event ) { _ in
                     
                     // Stop recording the Block {}
-                    model.aux.stopRecFn(.openBrace)
+                    model.aux.modalRecStop()
                     
                     // Capture the block macro
                     self.macroFn = model.aux.macroSeq
@@ -557,15 +560,16 @@ class BlockRecord : EventContext {
             return
         }
         
-        if model.aux.isRecording {
+        if model.aux.isRec {
             // Already recording an Fn key
             // Remember that we were recording on enty - record the open brace
+            model.aux.recordModal()
             fnRecording = true
         }
         else {
             // Start recording but remember we were not on entry
             fnRecording = false
-            model.aux.startRecFn( lastEvent.kc )
+            model.aux.recordModal()
         }
         
         // Save the starting macro index
@@ -615,7 +619,7 @@ class BlockRecord : EventContext {
                 model.kstate.func2R = psFunctions2R
                 
                 // Cancel both BlockRecord context and the ModalContext that spawned it
-                model.aux.stopRecFn(.openBrace)
+                model.aux.modalRecStop()
                 model.popContext( event, runCCC: false )
                 model.popContext( event, runCCC: false )
                 return KeyPressResult.stateUndo
@@ -685,6 +689,9 @@ class LocalVariableFrame {
 struct KeyState {
     
     var func2R: PadSpec = psFunctions2R
+    
+    // F1 .. F6 key mappings
+    var keyMap: KeyMapRec = KeyMapRec()
 }
 
 
@@ -865,6 +872,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
     }
     
+    
+    // ******************************
     // **** Macro Recording Stuff ***
     
     func saveMacroFunction( _ sTag: SymbolTag, _ list: MacroOpSeq ) {
@@ -885,7 +894,37 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         return nil
     }
     
-    // *******
+    
+    func record( _ sTag: SymbolTag = SymbolTag(.null), kcFn: KeyCode? = nil ) {
+        switch aux.recState {
+            
+        case .stop, .none:
+            // Start recording, sTag is requireds but can be null, kc is optional
+            aux.macroKey = sTag
+            aux.macroSeq.clear()
+            aux.macroCap = ""
+            aux.kcRecording = kcFn
+            aux.activeView = .macroList
+            aux.modalRecCount = 0
+            aux.recState = .record
+            
+            if let kc = kcFn {
+                aux.disableAllFnSubmenu( except: kc )
+            }
+            
+            // Log debug output
+            let auxTxt = aux.getDebugText()
+            logAux.debug( "startRecFn: \(auxTxt)" )
+            
+        default:
+            assert(false)
+            break
+        }
+    }
+
+    // ******************************
+    // ******************************
+
     
     private func bufferIndex(_ stackIndex: Int ) -> Int {
         // Convert a bottom up index into the stack array to a top down index into the displayed registers
@@ -1142,7 +1181,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 state.Xtv = tv
             }
             
-        case .fn1, .fn2, .fn3, .fn4, .fn5, .fn6:
+        case .F1, .F2, .F3, .F4, .F5, .F6:
             if let macro = getMacroFunction( SymbolTag(keyCode) ) {
                 // Macro playback - save inital state just in case
                 pushState()
@@ -1306,27 +1345,38 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func getKeyText( _ kc: KeyCode ) -> String? {
         
-        if KeyCode.fnSet.contains(kc) {
-            
-            if let macroRec = appState.getMacro( SymbolTag(kc) ) {
-                
-                if let text = macroRec.caption {
-                    // Fn key has provided caption text
-                    return text
-                }
-                
-                // F key has no caption text - make caption from key code
-                return "F\(kc.rawValue % 10)"
-            }
-            else {
-                
-                // Unassigned F key
-                return "ç{GrayText}F\(kc.rawValue % 10)"
-            }
-            
+        if kc == .noop {
+            return nil
         }
         
-        // Not a Fn key
+        guard let key = Key.keyList[kc] else {
+            // All keys must be in keyList
+            assert(false)
+            return nil
+        }
+        
+        if let text = key.text {
+            // A key with custom text assigned
+            return text
+        }
+
+        if KeyCode.fnSet.contains(kc) {
+            // F1 to F6
+            
+            if let fTag = kstate.keyMap.fnRow[kc] {
+                // A SymbolTag is assigned to this key
+                return fTag.getRichText()
+            }
+            
+            if let _ = self.appState.getMacro( SymbolTag(kc) ) {
+                // Macro assigned to key but no symbol
+                return "F\(kc.rawValue % 10)"
+            }
+            
+            // Disabled key, no macro
+            return "ç{GrayText}F\(kc.rawValue % 10)"
+        }
+    
         return nil
     }
     

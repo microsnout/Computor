@@ -16,8 +16,11 @@ extension CalculatorModel {
         
         var macroLib: MacroRecTable
         
-        init( _ appC: MacroRecTable = MacroRecTable() ) {
+        var keyMap: KeyMapRec
+        
+        init( _ appC: MacroRecTable = MacroRecTable(), _ keyM: KeyMapRec = KeyMapRec() ) {
             self.macroLib = appC
+            self.keyMap   = keyM
         }
     }
     
@@ -66,6 +69,7 @@ extension CalculatorModel {
         Task { @MainActor in
             // Update the @Published property here
             self.appState = store.macroLib
+            self.kstate.keyMap = store.keyMap
         }
     }
 
@@ -99,7 +103,7 @@ extension CalculatorModel {
         /// Don't wait for app termination
         
         let task = Task {
-            let store = ConfigStore( appState )
+            let store = ConfigStore( appState, kstate.keyMap )
             let data = try JSONEncoder().encode(store)
             let outfile = try Self.configFileURL()
             try data.write(to: outfile)

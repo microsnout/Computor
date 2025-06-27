@@ -10,6 +10,11 @@ import OSLog
 let logAux = Logger(subsystem: "com.microsnout.calculator", category: "aux")
 
 
+enum MacroRecState: Int {
+    case none = 0, stop, record, recModal, recNestedModal, play, playSlow
+}
+
+
 /// State variables associated with the auxiliary display
 
 struct AuxState {
@@ -20,6 +25,8 @@ struct AuxState {
     var detailItemIndex: Int = -1
     
     // MacroListView state
+    var recState: MacroRecState = .none
+    
     var macroKey = SymbolTag(.null)
     var macroSeq = MacroOpSeq()
     var macroCap = ""
@@ -29,12 +36,152 @@ struct AuxState {
     
     // Pause recording when value greater than 0
     var pauseCount: Int = 0
+    
+    // Number of active modal recording blocks {..}
+    var modalRecCount: Int = 0
 }
 
 
 extension AuxState {
     
-    var isRecording: Bool { kcRecording != nil }
+    static let recStates:Set<MacroRecState> = [.record, .recModal, .recNestedModal]
+    
+    var isRec: Bool { AuxState.recStates.contains( self.recState ) }
+    
+    func disableAllFnSubmenu( except kc: KeyCode = .null ) {
+        // Disable all Fn key submenus except the one recording
+        for key in KeyCode.fnSet {
+            if key != kc {
+                SubPadSpec.disableList.insert(key)
+            }
+        }
+    }
+    
+    
+    mutating func clearMacroState() {
+        macroKey = SymbolTag(.null)
+        macroSeq.clear()
+        kcRecording = nil
+        pauseCount = 0
+        modalRecCount = 0
+    }
+    
+    
+    mutating func record( _ sTag: SymbolTag = SymbolTag(.null), kcFn: KeyCode? = nil ) {
+        switch recState {
+            
+        case .stop, .none:
+            // Start recording, sTag is requireds but can be null, kc is optional
+            macroKey = sTag
+            macroSeq.clear()
+            macroCap = ""
+            kcRecording = kcFn
+            activeView = .macroList
+            modalRecCount = 0
+            recState = .record
+
+            if let kc = kcFn {
+                disableAllFnSubmenu( except: kc )
+            }
+            
+            // Log debug output
+            let auxTxt = getDebugText()
+            logAux.debug( "startRecFn: \(auxTxt)" )
+
+        default:
+            assert(false)
+            break
+        }
+    }
+    
+    
+    mutating func recordModal() {
+        
+        switch recState {
+            
+        case .stop, .none:
+            macroKey = SymbolTag(.null)
+            macroSeq.clear()
+            kcRecording = nil
+            activeView = .macroList
+            disableAllFnSubmenu()
+            modalRecCount = 1
+            recState = .recModal
+
+        case .record:
+            modalRecCount = 1
+            recState = .recNestedModal
+            
+        case .recModal:
+            modalRecCount += 1
+
+        case .recNestedModal:
+            modalRecCount += 1
+
+        default:
+            // Should not happen
+            assert(false)
+            break
+        }
+    }
+    
+    
+    mutating func recordStop() {
+        
+        switch recState {
+            
+        case .record:
+            kcRecording = nil
+            recState = .stop
+            
+            // Re-enable all recording keys
+            SubPadSpec.disableList.removeAll()
+            
+        case .recNestedModal:
+            // Cancel recording as modal rec is incomplete
+            clearMacroState()
+            recState = .stop
+            
+            // Re-enable all recording keys
+            SubPadSpec.disableList.removeAll()
+
+
+        default:
+            // Should not happen
+            assert(false)
+            break
+        }
+        
+        // Log debug output
+        let auxTxt = getDebugText()
+        logAux.debug( "stopRecFn: \(auxTxt)" )
+    }
+
+    
+    mutating func modalRecStop() {
+        
+        switch recState {
+            
+        case .recModal, .recNestedModal:
+            modalRecCount -= 1
+           
+            if modalRecCount == 0 {
+                // Re-enable all recording keys
+                SubPadSpec.disableList.removeAll()
+            }
+            
+            recState = recState == .recNestedModal ? .record : .none
+
+        default:
+            // Should not happen
+            assert(false)
+            break
+        }
+    }
+    
+    
+    
+    // Old Code below
     
     func isRecordingKey( _ kc: KeyCode ) -> Bool {
         kcRecording == kc
@@ -43,7 +190,8 @@ extension AuxState {
     func getDebugText() -> String {
         var txt = "AuxState("
         txt += String( describing: activeView )
-        txt += ") Detail:\(detailItemIndex) MacroKey:"
+        txt += ") state:\(recState)"
+        txt += " Detail:\(detailItemIndex) MacroKey:"
         txt += String( describing: macroKey )
         txt += " OpSeq:\(macroSeq.getDebugText()) Rec:"
         txt += String( describing: kcRecording ?? KeyCode.null )
@@ -65,35 +213,6 @@ extension AuxState {
         return macroSeq.count
     }
     
-    mutating func startRecFn( _ kc: KeyCode ) {
-        if KeyCode.fnSet.contains(kc) && !isRecording {
-            // We can start recording key kc
-            // Start with an empty list of instructions
-            // Auxiliary display mode to macro list
-            
-            // Clear display of existing macro if any
-            macroKey = SymbolTag(.null)
-            macroSeq.clear()
-            
-            kcRecording = kc
-            activeView = .macroList
-            
-            // Disable all Fn keys except the one recording
-            for key in KeyCode.fnSet {
-                if key != kc {
-                    SubPadSpec.disableList.insert(key)
-                }
-            }
-            
-            // Log debug output
-            let auxTxt = getDebugText()
-            logAux.debug( "startRecFn: \(auxTxt)" )
-        }
-        else {
-            // Trying to start recording for an invalid key or we are already recording
-            assert(false)
-        }
-    }
     
     mutating func recordKeyFn( _ event: KeyEvent ) {
         if pauseCount > 0 {
@@ -101,7 +220,7 @@ extension AuxState {
             return
         }
         
-        if !isRecording
+        if !isRec
         {
             logAux.debug( "recordKeyFn: Not Recording" )
             return
@@ -179,7 +298,7 @@ extension AuxState {
     
     
     mutating func recordValueFn( _ tv: TaggedValue ) {
-        if isRecording
+        if isRec
         {
             macroSeq.append( MacroValue( tv: tv) )
             
@@ -189,21 +308,5 @@ extension AuxState {
         }
     }
     
-    
-    mutating func stopRecFn( _ kc: KeyCode ) {
-        if let kcRec = kcRecording {
-            
-            // Stop recording and Change macro display to display the new macro
-            kcRecording = nil
-            macroKey = SymbolTag(kcRec)
-            
-            // Re-enable all recording keys
-            SubPadSpec.disableList.removeAll()
-            
-            // Log debug output
-            let auxTxt = getDebugText()
-            logAux.debug( "stopRecFn: \(auxTxt)" )
-        }
-    }
 }
 

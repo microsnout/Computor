@@ -32,7 +32,7 @@ enum KeyCode: Int, Codable {
     case fix = 120, sci, eng
     
     // Softkeys
-    case fn0 = 160, fn1, fn2, fn3, fn4, fn5, fn6
+    case F0 = 160, F1, F2, F3, F4, F5, F6
     
     // Macro Op
     case macroOp = 170, clrFn, recFn, stopFn, showFn, braceKey, openBrace, closeBrace, macro
@@ -45,6 +45,9 @@ enum KeyCode: Int, Codable {
     
     // Memory operations
     case noop = 210, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem
+    
+    // Macro recorder operations
+    case macroRecord = 230, macroStop, macroPlay, macroSlowPlay, macroStep, macroRename
 
     case unitStart = 300
     
@@ -73,6 +76,8 @@ enum KeyCode: Int, Codable {
     case letterU = 450, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
     
     case greek  = 500, alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu, nu, xi, omicron, pi, rho, sigma, tau, upsilon, phi, chi, psi, omega
+    
+    case newMacro = 600
     
     case lastCode = 999
     
@@ -114,7 +119,7 @@ enum KeyCode: Int, Codable {
 
     static let digitSet:Set<KeyCode> = [.key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9]
 
-    static let fnSet:Set<KeyCode> = [.fn1, .fn2, .fn3, .fn4, .fn5, .fn6, .openBrace]
+    static let fnSet:Set<KeyCode> = [.F1, .F2, .F3, .F4, .F5, .F6]
 
     static let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .showFn, .openBrace]
 

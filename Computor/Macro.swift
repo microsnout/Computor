@@ -31,21 +31,25 @@ struct MacroKey: CodableMacroOp {
     }
     
     func getRichText( _ model: CalculatorModel ) -> String {
-        if let key = Key.keyList[event.kc] {
-            
-            if var keyText = key.text {
-                
-                if let mTag = event.mTag {
-                    // Add sub key parm to op, like adding .A to .Sto
-                    keyText += " "
-                    keyText += mTag.getRichText()
-                }
-                return keyText
-            }
-            
-            return model.getKeyText(event.kc) ?? "??"
+        
+        guard let key = Key.keyList[event.kc] else {
+            // All keys must be in keyList
+            assert(false)
+            return "??"
         }
-        return "??"
+        
+        if var keyText = key.text {
+            // Key has custom text string
+            
+            if let mTag = event.mTag {
+                // Add sub key parm to op, like adding .A to .Sto
+                keyText += " "
+                keyText += mTag.getRichText()
+            }
+            return keyText
+        }
+        
+        return model.getKeyText(event.kc) ?? "??"
     }
     
     func getPlainText() -> String {

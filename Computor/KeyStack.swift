@@ -18,7 +18,7 @@ struct KeyEvent : Codable {
     // Top level key like .fn4 when kc is an opcode from a sub popup menu like .rec
     var kcTop: KeyCode?
     
-    // Code representing a symbol for a memory
+    // Code representing a symbol for a memory or macro
     var mTag: SymbolTag?
     
     var kc: KeyCode { keyTag.kc }
@@ -927,7 +927,7 @@ struct KeyView: View {
         let hasSubpad = SubPadSpec.getSpec(key.kc) != nil
         
         VStack {
-            let text: String? = key.text == nil ? model.getKeyText(key.kc) : key.text
+            let keyText: String? = model.getKeyText(key.kc)
             
             GeometryReader { geometry in
                 let vframe = geometry.frame(in: CoordinateSpace.global)
@@ -992,10 +992,10 @@ struct KeyView: View {
                                 }
                             }
                         })
-                    .if( text != nil && !model.aux.isRecordingKey(key.kc) ) { view in
+                    .if( keyText != nil && !model.aux.isRecordingKey(key.kc) ) { view in
                         // Add rich text label to key
                         view.overlay(
-                            RichText( text!, size: .normal, weight: .bold,
+                            RichText( keyText!, size: .normal, weight: .bold,
                                       defaultColor: padSpec.keySpec.textColor)
                         )
                     }

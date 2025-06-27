@@ -38,6 +38,8 @@ struct SymbolTag: Hashable, Codable, Equatable {
 extension SymbolTag {
     var kc: KeyCode { KeyCode(rawValue: tag) ?? KeyCode.noop }
     
+    var isNull: Bool { self.kc == .null }
+    
     var isSingleChar: Bool { tag < 1000 }
     
     func getSymbolText( symName: String, subPt: Int, superPt: Int ) -> String {
@@ -81,6 +83,10 @@ extension SymbolTag {
 
     func getRichText() -> String {
         
+        if isNull {
+            return ""
+        }
+        
         if isSingleChar {
             let s = kc.str
             return s
@@ -111,7 +117,7 @@ extension SymbolTag {
         self.tag = kc.rawValue
     }
 
-    init( _ symA: [KeyCode], subPt: Int, superPt: Int ) {
+    init( _ symA: [KeyCode], subPt: Int = 0, superPt: Int = 0 ) {
         assert( symA.count > 0 && symA.count <= 3 && subPt*superPt == 0 && subPt+superPt <= 3 && subPt+superPt != 1 )
         
         var tag: Int = 0
@@ -126,6 +132,21 @@ extension SymbolTag {
         tag += (subPt*10 + superPt) * 1000000000
         
         self.tag = tag
+    }
+    
+    // ******
+    
+    static var fnSym: [ KeyCode : SymbolTag ] = [
+        .F1 : SymbolTag( [.F, .key1]),
+        .F2 : SymbolTag( [.F, .key2]),
+        .F3 : SymbolTag( [.F, .key3]),
+        .F4 : SymbolTag( [.F, .key4]),
+        .F5 : SymbolTag( [.F, .key5]),
+        .F6 : SymbolTag( [.F, .key6]),
+    ]
+    
+    static func getFnSym( _ kc: KeyCode ) -> SymbolTag? {
+        SymbolTag.fnSym[kc]
     }
 }
 
