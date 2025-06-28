@@ -14,11 +14,11 @@ extension CalculatorModel {
         /// Long term configuration data such as Fn key definitions
         /// File updated immediately when calculator configuration is changed
         
-        var macroLib: MacroRecTable
+        var macroLib: ModuleFile
         
         var keyMap: KeyMapRec
         
-        init( _ appC: MacroRecTable = MacroRecTable(), _ keyM: KeyMapRec = KeyMapRec() ) {
+        init( _ appC: ModuleFile = ModuleFile(), _ keyM: KeyMapRec = KeyMapRec() ) {
             self.macroLib = appC
             self.keyMap   = keyM
         }
@@ -68,7 +68,7 @@ extension CalculatorModel {
         
         Task { @MainActor in
             // Update the @Published property here
-            self.appState = store.macroLib
+            self.macroMod = store.macroLib
             self.kstate.keyMap = store.keyMap
         }
     }
@@ -103,7 +103,7 @@ extension CalculatorModel {
         /// Don't wait for app termination
         
         let task = Task {
-            let store = ConfigStore( appState, kstate.keyMap )
+            let store = ConfigStore( macroMod, kstate.keyMap )
             let data = try JSONEncoder().encode(store)
             let outfile = try Self.configFileURL()
             try data.write(to: outfile)

@@ -124,7 +124,7 @@ class NormalContext : EventContext {
             
         case .showFn:
             if let kcFn = event.kcTop {
-                if let macroRec = model.appState.getMacro( SymbolTag(kcFn) ) {
+                if let macroRec = model.macroMod.getMacro( SymbolTag(kcFn) ) {
                     model.aux.macroSeq = macroRec.opSeq
                     model.aux.macroKey = macroRec.symTag
                     model.aux.activeView = .macroList
@@ -260,7 +260,7 @@ class RecordingContext : EventContext {
                 // Consider this fn key a stopFn command
                 fallthrough
             }
-            else if model.appState.getMacro( event.keyTag ) == nil {
+            else if model.macroMod.getMacro( event.keyTag ) == nil {
                 
                 // No op any undefined keys
                 return KeyPressResult.noOp
@@ -708,9 +708,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var status = StatusState()
     @Published var kstate = KeyState()
     
-    // Persistant state of all calculator customization for specific applications
-    // State of macro keys Fn1 to Fn6
-    var appState = MacroRecTable()
+    // Current selected macro module file
+    var macroMod = ModuleFile()
 
     // Display window into register stack
     @AppStorage(.settingsDisplayRows)
@@ -878,17 +877,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func saveMacroFunction( _ sTag: SymbolTag, _ list: MacroOpSeq ) {
         let mr = MacroRec( symTag: sTag, opSeq: list)
-        appState.setMacro(sTag, mr)
+        macroMod.setMacro(sTag, mr)
         saveConfiguration()
     }
     
     func clearMacroFunction( _ sTag: SymbolTag) {
-        appState.clearMacro(sTag)
+        macroMod.clearMacro(sTag)
         saveConfiguration()
     }
     
     func getMacroFunction( _ sTag: SymbolTag ) -> MacroOpSeq? {
-        if let mr = appState.getMacro(sTag) {
+        if let mr = macroMod.getMacro(sTag) {
             return mr.opSeq
         }
         return nil
@@ -1368,7 +1367,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 return fTag.getRichText()
             }
             
-            if let _ = self.appState.getMacro( SymbolTag(kc) ) {
+            if let _ = self.macroMod.getMacro( SymbolTag(kc) ) {
                 // Macro assigned to key but no symbol
                 return "F\(kc.rawValue % 10)"
             }

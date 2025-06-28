@@ -7,18 +7,6 @@
 import SwiftUI
 
 
-let psMacroDetail = PadSpec(
-    keySpec: ksMemDetail,
-    cols: 6,
-    keys: [
-        Key(.macroPlay, image: "play" ),
-        Key(.macroStep, image: "playpause" ),
-        Key(.macroStop, image: "stop" ),
-        Key(.macroRename, "ƒ{0.8}Caption", size: 2),
-    ]
-)
-
-
 struct MacroLibraryView: View {
     @StateObject var model: CalculatorModel
     
@@ -46,11 +34,16 @@ struct MacroListView: View {
 
     var body: some View {
         
+        // Symbol for currently selected macro module
+        let modSymStr = model.macroMod.symStr
+        
         VStack {
             AuxHeaderView( theme: Theme.lightYellow ) {
                 HStack {
                     Spacer()
-                    RichText("Macro Library", size: .small, weight: .bold )
+                    
+                    // Macro List Header Title
+                    RichText("Macro Library: ƒ{0.9}ç{ModText}\(modSymStr)", size: .small, weight: .bold )
                     Spacer()
                     
                     // New macro creation button
@@ -76,7 +69,7 @@ struct MacroListView: View {
                     
                     LazyVStack {
                         
-                        ForEach ( model.appState.macroTable, id: \.symTag ) { mr in
+                        ForEach ( model.macroMod.macroTable, id: \.symTag ) { mr in
                             
                             
                             let sym = mr.symTag.getRichText()
@@ -133,26 +126,10 @@ struct MacroListView: View {
 }
 
 
-struct MacroDetailView: View, KeyPressHandler {
+struct MacroDetailView: View {
     @StateObject var model: CalculatorModel
     
     @State private var renameSheet = false
-
-    func keyPress(_ event: KeyEvent ) -> KeyPressResult {
-        
-        switch event.kc {
-            
-        case .macroRecord:
-            model.aux.recState = .record
-            
-        case .macroRename:
-            renameSheet = true
-            
-        default:
-            break
-        }
-        return KeyPressResult.null
-    }
 
     var body: some View {
         let symTag: SymbolTag = model.aux.macroKey
@@ -219,7 +196,7 @@ struct MacroDetailView: View, KeyPressHandler {
                     }
                     .frame( width: 150 )
                 }
-                
+
                 // Right panel fields
                 HStack {
                     let caption = model.aux.macroCap.isEmpty ? "ç{GrayText}-caption-" : model.aux.macroCap
@@ -246,14 +223,48 @@ struct MacroDetailView: View, KeyPressHandler {
                         }
 
                         Spacer()
+                        
+                        // Detail Edit Controls
+                        HStack( spacing: 15 ) {
+                            Spacer()
+                            
+                            Button {
+                                renameSheet = true
+                            } label: {
+                                Image( systemName: "record.circle").foregroundColor(Color("StatusRedText"))
+                            }
+
+                            Button {
+                                renameSheet = true
+                            } label: {
+                                Image( systemName: "play.fill").foregroundColor(Color("MenuIcon"))
+                            }
+
+                            Button {
+                                renameSheet = true
+                            } label: {
+                                Image( systemName: "stop.fill").foregroundColor(Color("MenuIcon"))
+                            }
+
+                            Button {
+                                renameSheet = true
+                            } label: {
+                                Image( systemName: "square.and.pencil").foregroundColor(Color("MenuIcon"))
+                            }
+                            
+                            Spacer().frame( width: 10 )
+                            
+//                            .padding( [.trailing], 10)
+                        }
                     }
                     Spacer()
                 }
+                .padding( [.leading], 10)
                 //.border(.red)
             }
             
             // Macro detail key menu
-            KeypadView( padSpec: psMacroDetail, keyPressHandler: self)
+            // KeypadView( padSpec: psMacroDetail, keyPressHandler: self)
         }
         .padding( [.bottom], 10 )
         .sheet(isPresented: $renameSheet) {

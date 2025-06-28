@@ -45,17 +45,29 @@ struct KeyMapRec: Codable {
 
 typealias GroupId = Int
 
-struct MacroRecTable: Codable {
+struct ModuleFile: Codable {
     
-    /// One of these files per macro lib group
+    /// One of these files per macro  module file
     
+    // Unique ID for this module/file
     var id:         UUID = UUID()
+    
+    // Short name of module - displayed as prefix to symbol
+    var modSym: String = "STAT"
+    
+    // Descriptive caption for this module
     var caption:    String? = nil
+    
+    // Table of IDs of external referenced modules - array index is encoded in symbols
     var groupTable: [UUID] = []
+    
+    // List of macro definitions in this module
     var macroTable: [MacroRec] = []
 }
 
-extension MacroRecTable {
+extension ModuleFile {
+    
+    var symStr: String { "{\(self.modSym)}" }
     
     func getMacro( _ sTag: SymbolTag ) -> MacroRec? {
         for mr in self.macroTable {

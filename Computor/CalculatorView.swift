@@ -13,6 +13,8 @@ struct CalculatorView: View {
 
     @StateObject var model = CalculatorModel()
     
+    @State private var presentSettings: Bool = false
+    
     @State var orientation = UIDevice.current.orientation
     
     let orientationChanged = NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)
@@ -33,86 +35,89 @@ struct CalculatorView: View {
                         .edgesIgnoringSafeArea( .all )
                     
                     KeyStack( keyPressHandler: model ) {
-                        NavigationStack {
-                            VStack( spacing: 5 ) {
-                                VStack( spacing: 0 ) {
-                                    AuxiliaryDisplayView( model: model, auxView: $model.aux.activeView )
+                        VStack( spacing: 5 ) {
+                            VStack( spacing: 0 ) {
+                                AuxiliaryDisplayView( model: model, auxView: $model.aux.activeView )
+                                
+                                DotIndicatorView( currentView: $model.aux.activeView )
+                                    .padding( .top, 4 )
+                                    .frame( maxHeight: 8)
+                                
+                                HStack {
+                                    Text("Computor").foregroundColor(Color("Frame"))/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
                                     
-                                    DotIndicatorView( currentView: $model.aux.activeView )
-                                        .padding( .top, 4 )
-                                        .frame( maxHeight: 8)
+                                    Spacer()
                                     
-                                    HStack {
-                                        Text("Computor").foregroundColor(Color("Frame"))/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
-                                        
-                                        Spacer()
-                                        
-                                        NavigationLink( destination: SettingsView() ) {
-                                            Image( systemName: "gearshape").foregroundColor(Color("Frame"))
-                                        }
-                                    }
-                                    .frame( maxHeight: 22 )
-                                }
-                                .padding(0)
-                                
-                                // Main calculator display
-                                DisplayView( model: model )
-                                
-                                Spacer().frame( height: 3)
-                                
-                                VStack( spacing: 7 ) {
-                                    HStack {
-                                        KeypadView( padSpec: psSoftkeyL, keyPressHandler: model )
-                                        Spacer()
-                                        KeypadView( padSpec: psSoftkeyR, keyPressHandler: model )
-                                    }
-                                    HStack {
-                                        KeypadView( padSpec: psUnitsL, keyPressHandler: model )
-                                        Spacer()
-                                        KeypadView( padSpec: psUnitsR, keyPressHandler: model )
-                                    }
-                                    HStack {
-                                        KeypadView( padSpec: psFunctions2L, keyPressHandler: model )
-                                        Spacer()
-                                        KeypadView( padSpec: model.kstate.func2R, keyPressHandler: model )
-                                    }
-                                    HStack {
-                                        KeypadView( padSpec: psFunctionsL, keyPressHandler: model )
-                                        Spacer()
-                                        KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
+                                    Button {
+                                        presentSettings = true
+                                    } label: {
+                                        Image( systemName: "gearshape").foregroundColor(Color("Frame"))
                                     }
                                 }
-                                
-                                VStack( spacing: 5) {
-                                    Divider()
-                                    HStack {
-                                        VStack( spacing: 10 ) {
-                                            KeypadView( padSpec: psNumeric, keyPressHandler: model )
-                                            KeypadView( padSpec: psEnter, keyPressHandler: model )
-                                        }
-                                        Spacer()
-                                        VStack( spacing: 10 ) {
-                                            KeypadView( padSpec: psOperations, keyPressHandler: model )
-                                            KeypadView( padSpec: psClear, keyPressHandler: model )
-                                        }
-                                    }
-                                }
-                                VStack( spacing: 5 ) {
-                                    Divider().frame(height: 1)
-                                    HStack {
-                                        KeypadView( padSpec: psFormatL, keyPressHandler: model )
-                                        Spacer()
-                                        KeypadView( padSpec: psFormatR, keyPressHandler: model )
-                                    }
-                                }
-                                Spacer()
+                                .frame( maxHeight: 22 )
                             }
-                            .padding(.horizontal, 30)
-                            .padding(.vertical, 5)
-                            .background( Color("Background"))
+                            .padding(0)
+                            
+                            // Main calculator display
+                            DisplayView( model: model )
+                            
+                            Spacer().frame( height: 3)
+                            
+                            VStack( spacing: 7 ) {
+                                HStack {
+                                    KeypadView( padSpec: psSoftkeyL, keyPressHandler: model )
+                                    Spacer()
+                                    KeypadView( padSpec: psSoftkeyR, keyPressHandler: model )
+                                }
+                                HStack {
+                                    KeypadView( padSpec: psUnitsL, keyPressHandler: model )
+                                    Spacer()
+                                    KeypadView( padSpec: psUnitsR, keyPressHandler: model )
+                                }
+                                HStack {
+                                    KeypadView( padSpec: psFunctions2L, keyPressHandler: model )
+                                    Spacer()
+                                    KeypadView( padSpec: model.kstate.func2R, keyPressHandler: model )
+                                }
+                                HStack {
+                                    KeypadView( padSpec: psFunctionsL, keyPressHandler: model )
+                                    Spacer()
+                                    KeypadView( padSpec: psFunctionsR, keyPressHandler: model )
+                                }
+                            }
+                            
+                            VStack( spacing: 5) {
+                                Divider()
+                                HStack {
+                                    VStack( spacing: 10 ) {
+                                        KeypadView( padSpec: psNumeric, keyPressHandler: model )
+                                        KeypadView( padSpec: psEnter, keyPressHandler: model )
+                                    }
+                                    Spacer()
+                                    VStack( spacing: 10 ) {
+                                        KeypadView( padSpec: psOperations, keyPressHandler: model )
+                                        KeypadView( padSpec: psClear, keyPressHandler: model )
+                                    }
+                                }
+                            }
+                            VStack( spacing: 5 ) {
+                                Divider().frame(height: 1)
+                                HStack {
+                                    KeypadView( padSpec: psFormatL, keyPressHandler: model )
+                                    Spacer()
+                                    KeypadView( padSpec: psFormatR, keyPressHandler: model )
+                                }
+                            }
+                            Spacer()
                         }
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 5)
+                        .background( Color("Background"))
                     }
                     .ignoresSafeArea(.keyboard)
+                }
+                .sheet( isPresented: $presentSettings ) {
+                    SettingsView()
                 }
             }
         }
