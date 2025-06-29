@@ -75,8 +75,12 @@ struct Measure<V: View>: View {
     }
     
     var mergedSizes: String {
-        String(reportedSizes.map { String(format: "(%.1f, %.1f)" , $0.width, $0.height) }.joined(separator: " - "))
+        String(reportedSizes.map { String(format: "(%.1f)" , $0.width) }.joined(separator: " - "))
     }
+
+//    var mergedSizes: String {
+//        String(reportedSizes.map { String(format: "(%.1f, %.1f)" , $0.width, $0.height) }.joined(separator: " - "))
+//    }
 }
 
 struct MeasureLayout: Layout {

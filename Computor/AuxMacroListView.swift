@@ -149,10 +149,11 @@ struct MacroDetailView: View {
                 HStack {
                     // Navigation Back button
                     Image( systemName: "chevron.left")
-                        .padding( [.leading], 10 )
+                        .padding( [.leading], 5 )
                         .onTapGesture {
                             withAnimation {
                                 model.aux.macroKey = SymbolTag(.null)
+                                model.aux.recState = .none
                             }
                         }
                     
@@ -163,7 +164,7 @@ struct MacroDetailView: View {
             }
             
             // Side by side views, macro op list and other fields
-            HStack {
+            HStack( spacing: 0 ) {
                 
                 // List of macro ops with line numbers
                 VStack {
@@ -172,7 +173,7 @@ struct MacroDetailView: View {
                         ScrollViewReader { proxy in
                             let list = model.aux.macroSeq
                             
-                            VStack(spacing: 7) {
+                            VStack(spacing: 1) {
                                 ForEach (list.indices, id: \.self) { x in
                                     let op: MacroOp = list[x]
                                     let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
@@ -183,6 +184,11 @@ struct MacroDetailView: View {
                                         RichText( text, size: .small, weight: .bold )
                                         Spacer()
                                     }
+                                    .frame( height: 18 )
+                                    .frame( maxWidth: .infinity )
+                                    .if ( isEven(x+1) ) { view in
+                                        view.background( Color("SuperLightGray") )
+                                    }
                                 }
                                 .onChange( of: list.count ) {
                                     if list.count > 1 {
@@ -190,17 +196,23 @@ struct MacroDetailView: View {
                                     }
                                 }
                             }
-                            .padding([.leading, .trailing], 20)
+                            .padding([.leading, .trailing], 2)
                             .padding([.top, .bottom], 10)
                         }
                     }
-                    .frame( width: 150 )
                 }
+                .frame( width: 150 )
+                // .border(.blue)
+                // .showSizes([.current])
+                
+                Divider()
 
                 // Right panel fields
                 HStack {
                     let caption = model.aux.macroCap.isEmpty ? "ç{GrayText}-caption-" : model.aux.macroCap
                     
+                    let modSymStr = model.macroMod.symStr
+
                     VStack( alignment: .leading, spacing: 10 ) {
                         
                         Spacer().frame( height: 5 )
@@ -222,51 +234,51 @@ struct MacroDetailView: View {
                             Spacer()
                         }
 
+                        // Module name
+                        HStack( spacing: 0 ) {
+                            RichText("ç{GrayText}Module:", size: .small, weight: .regular).padding( [.trailing], 5 )
+                            RichText( "ƒ{0.9}ç{ModText}\(modSymStr)", size: .small, weight: .bold )
+                            Spacer()
+                        }
+
                         Spacer()
                         
                         // Detail Edit Controls
-                        HStack( spacing: 15 ) {
-                            Spacer()
-                            
+                        HStack( spacing: 25 ) {
+
                             Button {
                                 renameSheet = true
                             } label: {
-                                Image( systemName: "record.circle").foregroundColor(Color("StatusRedText"))
+                                Image( systemName: "record.circle.fill").foregroundColor(Color("RedMenuIcon"))
+                                    .frame( minWidth: 0 )
                             }
 
                             Button {
                                 renameSheet = true
                             } label: {
                                 Image( systemName: "play.fill").foregroundColor(Color("MenuIcon"))
+                                    .frame( minWidth: 0 )
                             }
 
                             Button {
                                 renameSheet = true
                             } label: {
                                 Image( systemName: "stop.fill").foregroundColor(Color("MenuIcon"))
+                                    .frame( minWidth: 0 )
                             }
 
-                            Button {
-                                renameSheet = true
-                            } label: {
-                                Image( systemName: "square.and.pencil").foregroundColor(Color("MenuIcon"))
-                            }
-                            
-                            Spacer().frame( width: 10 )
-                            
-//                            .padding( [.trailing], 10)
                         }
+                        .frame( maxWidth: .infinity )
+                        .padding( [.bottom], 5 )
                     }
                     Spacer()
                 }
                 .padding( [.leading], 10)
-                //.border(.red)
+                // .border(.red)
+                // .showSizes([.current])
             }
-            
-            // Macro detail key menu
-            // KeypadView( padSpec: psMacroDetail, keyPressHandler: self)
         }
-        .padding( [.bottom], 10 )
+        .padding( [.bottom, .leading, .trailing], 5 )
         .sheet(isPresented: $renameSheet) {
             ZStack {
                 Color("ListBack").edgesIgnoringSafeArea(.all)
