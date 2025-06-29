@@ -219,6 +219,9 @@ struct MacroDetailView: View {
                         
                         // CAPTION
                         RichText( "ƒ{1.2}ç{UnitText}\(caption)", size: .small, weight: .bold )
+                            .onTapGesture {
+                                renameSheet = true
+                            }
                         
                         // SYMBOL
                         HStack( spacing: 0 ) {
@@ -282,10 +285,10 @@ struct MacroDetailView: View {
         .sheet(isPresented: $renameSheet) {
             ZStack {
                 Color("ListBack").edgesIgnoringSafeArea(.all)
+                
                 AuxRenameView( name: model.aux.macroCap )
                 {
                     model.aux.macroCap = $0
-                    print($0)
                 }
                     .presentationDetents([.fraction(0.4)])
                     .presentationBackground( Color("ListBack") )

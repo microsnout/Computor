@@ -75,7 +75,7 @@ let psSoftkeyL = PadSpec (
     cols: 3,
     keys: [ Key(.F1),
             Key(.F2),
-            Key(.F4)
+            Key(.F3)
           ]
 )
 
