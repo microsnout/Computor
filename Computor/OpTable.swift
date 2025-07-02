@@ -80,6 +80,31 @@ extension CalculatorModel {
                 // Failed operation
                 return nil
             },
+
+        .root3:
+            CustomOp { s0 in
+                guard s0.Xtv.isReal else {
+                    // Real values only
+                    return nil
+                }
+                
+                if s0.Xt == tagUntyped {
+                    // Simple case, X is untyped value
+                    var s1 = s0
+                    s1.X = cbrt(s0.X)
+                    return s1
+                }
+                
+                if let tag = typeNthRoot(s0.Xt, n: 3) {
+                    // Successful nth root of type tag
+                    var s1 = s0
+                    s1.Xtv = TaggedValue( tag: tag, reg: cbrt(s0.X), format: s0.Xfmt)
+                    return s1
+                }
+                
+                // Failed operation
+                return nil
+            },
         
         .y2x:
             CustomOp { (s0: CalcState) -> CalcState? in
@@ -125,6 +150,21 @@ extension CalculatorModel {
                 if let (tag, ratio) = typeProduct(s0.Xt, s0.Xt) {
                     var s1 = s0
                     s1.Xtv = TaggedValue(tag: tag, reg: s0.X * s0.X, format: s0.Xfmt)
+                    return s1
+                }
+                return nil
+            },
+
+        .x3:
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal else {
+                    // Real values only
+                    return nil
+                }
+                
+                if let tag = typeExponent( s0.Xt, x: 3) {
+                    var s1 = s0
+                    s1.Xtv = TaggedValue(tag: tag, reg: s0.X * s0.X * s0.X, format: s0.Xfmt)
                     return s1
                 }
                 return nil

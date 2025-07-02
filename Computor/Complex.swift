@@ -148,6 +148,27 @@ func installComplex( _ model: CalculatorModel ) {
     ])
 
     
+    CalculatorModel.defineOpPatterns( .x3, [
+        
+        OpPattern( [ .X([.complex])] ) { s0 in
+            
+            // Complex SQUARE
+            if let (tagProduct, _) = typeProduct(s0.Xt, s0.Xt ) {
+                var s1 = s0
+                
+                let x = s0.Xtv.getComplex()
+                
+                s1.setComplexValue( x*x*x, tag: tagProduct, fmt: s0.Yfmt )
+                return s1
+            }
+            
+            // Incompatible units - NOT possible because types are the same
+            assert(false)
+            return nil
+        }
+    ])
+
+    
     CalculatorModel.defineOpPatterns( .abs, [
         
         OpPattern( [ .X([.complex])] ) { s0 in

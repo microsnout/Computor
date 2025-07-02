@@ -58,10 +58,10 @@ let psEnter = PadSpec(
 let psOperations = PadSpec(
     keySpec: ksNormal,
     cols: 3,
-    keys: [ Key(.divide, "ƒ{1.4}÷"), Key(.deg, "ƒ{0.9}deg\u{00B0}"), Key(.y2x, "y^{x}"),
-            Key(.times,  "ƒ{1.4}×"),  Key(.percent, "%"),    Key(.inv, "1/x"),
-            Key(.minus,  "ƒ{1.4}−"),  Key(.xy, "ƒ{0.9}X\u{21c6}Y"),    Key(.x2, "x^{2}"),
-            Key(.plus,   "ƒ{1.4}+"),  Key(.roll, "R\u{2193}"),   Key(.sqrt, "\u{221a}x")
+    keys: [ Key(.divide, "ƒ{1.4}÷"),  Key(.deg, "ƒ{0.9}deg\u{00B0}"), Key(.y2x, "y^{x}"),
+            Key(.times,  "ƒ{1.4}×"),  Key(.percent, "%"),             Key(.inv, "1/x"),
+            Key(.minus,  "ƒ{1.4}−"),  Key(.xy, "ƒ{0.9}X\u{21c6}Y"),   Key(.x2, "x^{2}"),
+            Key(.plus,   "ƒ{1.4}+"),  Key(.roll, "R\u{2193}"),        Key(.sqrt, "\u{221a}x")
           ])
 
 let psClear = PadSpec(
@@ -127,7 +127,7 @@ let psFunctionsR = PadSpec(
 let psFunctions2L = PadSpec(
         keySpec: ksSoftkey,
         cols: 3,
-        keys: [ Key(.quad, "ƒ{0.8}Quadƒ{}"),
+        keys: [ Key(.lib,   "Lib"),
                 Key(.stoX,  "ƒ{0.9}Sto"),
                 Key(.rcl,  "ƒ{0.9}Rcl"),
             ]
@@ -391,6 +391,15 @@ func initKeyLayout() {
                        keySpec: ksSubFn,
                        keys: [
                         Key(.abs,    "|x|"),
+                        Key(.x3,     "x^{3}"),
+                       ]
+    )
+
+    SubPadSpec.define( .sqrt,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.sqrt,    "\u{221a}x"),
+                        Key(.root3,   "ƒ{1.5}\u{221b}ƒ{}x"),
                        ]
     )
 

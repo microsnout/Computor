@@ -17,13 +17,13 @@ enum KeyCode: Int, Codable {
     
     case fixL = 30, fixR, roll, xy, xz, yz, lastx, percent
     
-    case y2x = 40, inv, x2, sqrt, abs
+    case y2x = 40, inv, x2, sqrt, abs, x3, root3
     
     case sin = 50, cos, tan, asin, acos, atan, csc, sec, cot, acsc, asec, acot, sinh, cosh, tanh, asinh, acosh, atanh
     
     case log = 80, ln, log2, logY
     
-    case tenExp = 90, eExp, exp, quad
+    case tenExp = 90, eExp, exp, quad, lib
     
     // Complex operations
     case zRe = 100, zIm, zArg, zConj, zNorm
