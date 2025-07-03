@@ -80,6 +80,40 @@ extension SymbolTag {
         assert(false)
         return ""
     }
+    
+    func getSymSpecs() -> ( String, [KeyCode], Int, Int ) {
+        
+        if isNull {
+            return ( "", [], 0, 0 )
+        }
+        
+        if isSingleChar {
+            let s = kc.str
+            return ( String(s), [kc], 0, 0 )
+        }
+        else {
+            var code = tag
+            var symS = ""
+            var kcA: [KeyCode] = []
+            
+            for _ in 1...3 {
+                let y = code % 1000
+                
+                if y != 0 {
+                    guard let kc = KeyCode( rawValue: y) else { assert(false) }
+                    symS.append( kc.str )
+                    kcA.append( kc )
+                }
+                
+                code /= 1000
+            }
+            
+            let superPt: Int = code % 10
+            let subPt: Int   = code / 10
+            
+            return (symS, kcA, subPt, superPt)
+        }
+    }
 
     func getRichText() -> String {
         
@@ -114,7 +148,15 @@ extension SymbolTag {
     }
     
     init( _ kc: KeyCode = .null ) {
-        self.tag = kc.rawValue
+        
+        if let fnTag = SymbolTag.getFnSym(kc) {
+            
+            self.tag = fnTag.tag
+        }
+        else {
+            
+            self.tag = kc.rawValue
+        }
     }
 
     init( _ symA: [KeyCode], subPt: Int = 0, superPt: Int = 0 ) {
@@ -137,12 +179,12 @@ extension SymbolTag {
     // ******
     
     static var fnSym: [ KeyCode : SymbolTag ] = [
-        .F1 : SymbolTag( [.F, .key1]),
-        .F2 : SymbolTag( [.F, .key2]),
-        .F3 : SymbolTag( [.F, .key3]),
-        .F4 : SymbolTag( [.F, .key4]),
-        .F5 : SymbolTag( [.F, .key5]),
-        .F6 : SymbolTag( [.F, .key6]),
+        .F1 : SymbolTag( [.F, .d1]),
+        .F2 : SymbolTag( [.F, .d2]),
+        .F3 : SymbolTag( [.F, .d3]),
+        .F4 : SymbolTag( [.F, .d4]),
+        .F5 : SymbolTag( [.F, .d5]),
+        .F6 : SymbolTag( [.F, .d6]),
     ]
     
     static func getFnSym( _ kc: KeyCode ) -> SymbolTag? {

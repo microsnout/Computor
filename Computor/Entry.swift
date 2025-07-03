@@ -88,7 +88,7 @@ struct EntryState {
     mutating func startTextEntry( _ kc: KeyCode ) {
         clearEntry()
         entryMode = true
-        entryText = (kc == .dot) ? "0." : String( kc.rawValue - KeyCode.key0.rawValue )
+        entryText = (kc == .dot) ? "0." : String( kc.rawValue - KeyCode.d0.rawValue )
         digitCount = 1
         decimalSeen = entryText.contains(".")
     }
@@ -192,10 +192,10 @@ struct EntryState {
     mutating func entryModeKeypress(_ keyCode: KeyCode ) -> KeyPressResult {
         if exponentEntry {
             switch keyCode {
-            case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
+            case .d0, .d1, .d2, .d3, .d4, .d5, .d6, .d7, .d8, .d9:
                 // Append a digit to exponent
                 if exponentText.starts( with: "-") && exponentText.count < 4 || exponentText.count < 3 {
-                    appendExpEntry( String(keyCode.rawValue - KeyCode.key0.rawValue ))
+                    appendExpEntry( String(keyCode.rawValue - KeyCode.d0.rawValue ))
                 }
 
             case .dot, .eex:
@@ -227,9 +227,9 @@ struct EntryState {
         }
         else {
             switch keyCode {
-            case .key0, .key1, .key2, .key3, .key4, .key5, .key6, .key7, .key8, .key9:
+            case .d0, .d1, .d2, .d3, .d4, .d5, .d6, .d7, .d8, .d9:
                 // Append a digit
-                appendTextEntry( String(keyCode.rawValue - KeyCode.key0.rawValue))
+                appendTextEntry( String(keyCode.rawValue - KeyCode.d0.rawValue))
                 
             case .dot:
                 appendTextEntry(".")

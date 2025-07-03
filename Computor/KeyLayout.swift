@@ -42,10 +42,10 @@ let psUnits = PadSpec (
 let psNumeric = PadSpec(
     keySpec: ksNormal,
     cols: 3,
-    keys: [ Key(.key7, "ƒ{1.2}7"), Key(.key8, "ƒ{1.2}8"), Key(.key9, "ƒ{1.2}9"),
-            Key(.key4, "ƒ{1.2}4"), Key(.key5, "ƒ{1.2}5"), Key(.key6, "ƒ{1.2}6"),
-            Key(.key1, "ƒ{1.2}1"), Key(.key2, "ƒ{1.2}2"), Key(.key3, "ƒ{1.2}3"),
-            Key(.key0, "ƒ{1.2}0"), Key(.dot, "ƒ{1.2}."),  Key(.sign, "ƒ{1.2}+/-")
+    keys: [ Key(.d7, "ƒ{1.2}7"), Key(.d8, "ƒ{1.2}8"), Key(.d9, "ƒ{1.2}9"),
+            Key(.d4, "ƒ{1.2}4"), Key(.d5, "ƒ{1.2}5"), Key(.d6, "ƒ{1.2}6"),
+            Key(.d1, "ƒ{1.2}1"), Key(.d2, "ƒ{1.2}2"), Key(.d3, "ƒ{1.2}3"),
+            Key(.d0, "ƒ{1.2}0"), Key(.dot, "ƒ{1.2}."),  Key(.sign, "ƒ{1.2}+/-")
           ]
 )
 
@@ -500,8 +500,8 @@ let psDigits =
         keySpec: ksModalPop,
         cols: 6,
         keys: [
-            Key(.key1, "1"), Key(.key2, "2"), Key(.key3, "3"), Key(.key4, "4"), Key(.key5, "5"), Key(.key6, "6"),
-            Key(.key7, "7"), Key(.key8, "8"), Key(.key9, "9"), Key(.key0, "0"), Key(.noop), Key(.noop),
+            Key(.d1, "1"), Key(.d2, "2"), Key(.d3, "3"), Key(.d4, "4"), Key(.d5, "5"), Key(.d6, "6"),
+            Key(.d7, "7"), Key(.d8, "8"), Key(.d9, "9"), Key(.d0, "0"), Key(.noop), Key(.noop),
             Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop),
             Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop),
             Key(.noop), Key(.noop),

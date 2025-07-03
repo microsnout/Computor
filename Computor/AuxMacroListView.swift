@@ -130,6 +130,8 @@ struct MacroDetailView: View {
     @StateObject var model: CalculatorModel
     
     @State private var renameSheet = false
+    
+    @State private var symbolSheet = false
 
     var body: some View {
         let symTag: SymbolTag = model.aux.macroKey
@@ -228,6 +230,8 @@ struct MacroDetailView: View {
                             RichText("ç{GrayText}Symbol:", size: .small, weight: .regular).padding( [.trailing], 5 )
                             RichText( symName, size: .small, weight: .bold )
                             Spacer()
+                        }.onTapGesture {
+                            symbolSheet = true
                         }
                         
                         // Assigned Key
@@ -293,6 +297,19 @@ struct MacroDetailView: View {
                     .presentationDetents([.fraction(0.4)])
                     .presentationBackground( Color("ListBack") )
             }
+        }
+        .sheet( isPresented: $symbolSheet ) {
+            
+            VStack {
+                NewMemoryPopup( tag: symTag ) { tag in
+                    model.aux.macroKey = tag
+                }
+                Button( "Close" ) {
+                    symbolSheet = false
+                }
+            }
+            .presentationDetents([.fraction(0.7)])
+            .presentationBackground( Color("PopBack") )
         }
     }
 }

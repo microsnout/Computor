@@ -341,6 +341,9 @@ struct CustomModalPopup<Content: View>: View {
 }
 
 
+typealias SymbolContinuationClosure = ( _ symTag: SymbolTag ) -> Void
+
+
 struct NewMemoryPopup: View, KeyPressHandler {
     
     @EnvironmentObject var model: CalculatorModel
@@ -358,6 +361,10 @@ struct NewMemoryPopup: View, KeyPressHandler {
     @State private var subPt   = 0
     
     @State private var symArray: [KeyCode] = []
+    
+    // Pre-existing symbol can be provided
+    var tag: SymbolTag = SymbolTag(.null)
+    var scc: SymbolContinuationClosure
     
     enum CharSet: Int {
         case upper = 0, lower, greek, digit
@@ -529,20 +536,18 @@ struct NewMemoryPopup: View, KeyPressHandler {
                         Image( systemName: "delete.left" )
                             .foregroundStyle( symN > 0 ? Color.accentColor : Color.gray )
                     }
+                    
+                    // OK  button, symbol selected
                     Button( action: {
+                        
                         if symN > 0 {
+                            // Create symbol Tag
                             let tag = SymbolTag( symArray, subPt: subPt, superPt: superPt )
-                            
-                            if let kcOp = keyData.pressedKey {
-                                // Send event for memory op
-                                _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )
-                            }
                             
                             reset()
                             
-                            // Close modal popup
-                            keyData.pressedKey = nil
-                            keyData.modalKey = .none
+                            // Process tag in parent view
+                            scc( tag )
                         }
                     })
                     {
@@ -551,7 +556,17 @@ struct NewMemoryPopup: View, KeyPressHandler {
                     }
                 }.padding( [.bottom], 20)
             }
-        }.onChange( of: symName, initial: true ) {
+        }
+        .onAppear() {
+            // Initialize provided tag specs
+            let (str, arr, subPt, superPt) = tag.getSymSpecs()
+            self.symName = str
+            self.symArray = arr
+            self.subPt = subPt
+            self.superPt = superPt
+            self.symN = str.count
+        }
+        .onChange( of: symName, initial: true ) {
             symN = symName.count
             
             if symN == 0 {
@@ -611,7 +626,16 @@ struct NewMemoryCustomPopup: View, KeyPressHandler {
         
         CustomModalPopup( keyPressHandler: self, myModalKey: .newMemory ) {
             
-            NewMemoryPopup()
+            NewMemoryPopup() { tag in
+                if let kcOp = keyData.pressedKey {
+                    // Send event for memory op
+                    _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )
+                }
+                
+                // Close modal popup
+                keyData.pressedKey = nil
+                keyData.modalKey = .none
+            }
         }
     }
 }
@@ -634,7 +658,16 @@ struct GlobalMemoryPopup: View, KeyPressHandler {
                 SelectMemoryPopup()
             }
             else {
-                NewMemoryPopup()
+                NewMemoryPopup() { tag in
+                    if let kcOp = keyData.pressedKey {
+                        // Send event for memory op
+                        _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )
+                    }
+                    
+                    // Close modal popup
+                    keyData.pressedKey = nil
+                    keyData.modalKey = .none
+                }
             }
         }
     }
