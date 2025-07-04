@@ -70,15 +70,19 @@ enum KeyCode: Int, Codable {
     case unitEnd = 399
     
     // *********
-    // Sym chars: 26+26+24+10 = 86 chars - 2 digits
+    // Sym chars: 26+26+24+10+5 = 91 chars - 2 digits
     
-    case symbolCharStart = 400, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
+    case symbolCharStart = 400
+         
+    case a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
 
     case A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
     
     case alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu, nu, xi, omicron, pi, rho, sigma, tau, upsilon, phi, chi, psi, omega
     
     case d0, d1, d2, d3, d4, d5, d6, d7, d8, d9
+    
+    case period, asterisk, prime, doublePrime, dash
     
     case symbolCharEnd
     
@@ -129,6 +133,8 @@ enum KeyCode: Int, Codable {
     static let fnSet:Set<KeyCode> = [.F1, .F2, .F3, .F4, .F5, .F6]
 
     static let UnSet:Set<KeyCode> = [.U1, .U2, .U3, .U4, .U5, .U6]
+    
+    static let specialSymSet:Set<KeyCode> = [.period, .asterisk, .prime, .doublePrime, .dash]
 
     static let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .showFn, .openBrace]
 
