@@ -14,10 +14,16 @@ struct MemoryRec: Codable {
 }
 
 
-struct MacroRec: Codable {
+class MacroRec: Codable {
     var symTag:     SymbolTag
     var caption:    String? = nil
     var opSeq:      MacroOpSeq
+    
+    init(symTag: SymbolTag, caption: String? = nil, opSeq: MacroOpSeq) {
+        self.symTag = symTag
+        self.caption = caption
+        self.opSeq = opSeq
+    }
 }
 
 
@@ -54,7 +60,10 @@ struct KeyMapRec: Codable {
 
 typealias GroupId = Int
 
-struct ModuleFile: Codable {
+
+/// **  Module File **
+
+class ModuleFile: Codable {
     
     /// One of these files per macro  module file
     
@@ -87,11 +96,11 @@ extension ModuleFile {
         return nil
     }
     
-    mutating func clearMacro( _ sTag: SymbolTag ) {
+    func clearMacro( _ sTag: SymbolTag ) {
         self.macroTable.removeAll( where: { $0.symTag == sTag } )
     }
     
-    mutating func setMacro( _ sTag: SymbolTag, _ mr: MacroRec ) {
+    func setMacro( _ sTag: SymbolTag, _ mr: MacroRec ) {
         
         if let x = self.macroTable.firstIndex( where: { $0.symTag == sTag } ) {
             // Replace existing macro
