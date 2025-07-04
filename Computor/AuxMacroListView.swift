@@ -134,7 +134,7 @@ struct MacroDetailView: View {
     @State private var symbolSheet = false
 
     var body: some View {
-        let symTag: SymbolTag = model.aux.macroKey
+        var symTag: SymbolTag = model.aux.macroKey
         
         let symName  = symTag.getRichText()
         
@@ -301,9 +301,11 @@ struct MacroDetailView: View {
         .sheet( isPresented: $symbolSheet ) {
             
             VStack {
-                NewMemoryPopup( tag: symTag ) { tag in
-                    model.aux.macroKey = tag
+                NewSymbolPopup( tag: symTag ) { tag in
+                    model.changeMacroSymbol(old: symTag, new: tag)
+                    symTag = tag
                 }
+                
                 Button( "Close" ) {
                     symbolSheet = false
                 }

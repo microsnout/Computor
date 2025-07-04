@@ -344,7 +344,7 @@ struct CustomModalPopup<Content: View>: View {
 typealias SymbolContinuationClosure = ( _ symTag: SymbolTag ) -> Void
 
 
-struct NewMemoryPopup: View, KeyPressHandler {
+struct NewSymbolPopup: View, KeyPressHandler {
     
     @EnvironmentObject var model: CalculatorModel
     @EnvironmentObject var keyData: KeyData
@@ -626,7 +626,7 @@ struct NewMemoryCustomPopup: View, KeyPressHandler {
         
         CustomModalPopup( keyPressHandler: self, myModalKey: .newMemory ) {
             
-            NewMemoryPopup() { tag in
+            NewSymbolPopup() { tag in
                 if let kcOp = keyData.pressedKey {
                     // Send event for memory op
                     _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )
@@ -658,7 +658,7 @@ struct GlobalMemoryPopup: View, KeyPressHandler {
                 SelectMemoryPopup()
             }
             else {
-                NewMemoryPopup() { tag in
+                NewSymbolPopup() { tag in
                     if let kcOp = keyData.pressedKey {
                         // Send event for memory op
                         _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )

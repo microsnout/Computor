@@ -226,7 +226,8 @@ class RecordingContext : EventContext {
             
             // Start recording the indicated Fn key
             self.kcFn = kcFn
-            model.aux.record(kcFn: kcFn)
+            
+            model.recordFnKey(kcFn)
             
             // Push a new local variable store
             model.currentLVF = LocalVariableFrame( model.currentLVF )
@@ -894,32 +895,52 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
-    func record( _ sTag: SymbolTag = SymbolTag(.null), kcFn: KeyCode? = nil ) {
-        switch aux.recState {
+    func recordFnKey( _ kcFn: KeyCode ) {
+        
+        if let sTag = kstate.keyMap.tagAssignment(kcFn) {
             
-        case .stop, .none:
-            // Start recording, sTag is requireds but can be null, kc is optional
-            aux.macroKey = sTag
-            aux.macroSeq.clear()
-            aux.macroCap = ""
-            aux.kcRecording = kcFn
-            aux.activeView = .macroList
-            aux.modalRecCount = 0
-            aux.recState = .record
+            // TODO: Should eventually find a mr from any module not just current
+            if let mr = macroMod.getMacro(sTag) {
+                
+                aux.record( sTag, kc: kcFn, caption: mr.caption )
+            }
+            else {
+                // A tag assigned to this key but no macro rec - should not happen
+                assert(false)
+                aux.record( sTag, kc: kcFn )
+            }
+        }
+        else {
+            // No tag assigned - must be a blank Fn key - find matching tag
+            if let sTag = SymbolTag.getFnSym(kcFn) {
+                
+                kstate.keyMap.assign( kcFn, tag: sTag )
+                aux.record( sTag, kc: kcFn )
+            }
+            else {
+                // Recording kc key with no possible tag
+                assert(false)
+            }
+        }
             
-            if let kc = kcFn {
-                aux.disableAllFnSubmenu( except: kc )
+    }
+    
+    
+    func changeMacroSymbol( old: SymbolTag, new: SymbolTag ) {
+        
+        if let kc = kstate.keyMap.keyAssignment(old) {
+            
+            // Update key assignment
+            kstate.keyMap.assign(kc, tag: new)
+            
+            if var mr = macroMod.getMacro(old) {
             }
             
-            // Log debug output
-            let auxTxt = aux.getDebugText()
-            logAux.debug( "startRecFn: \(auxTxt)" )
-            
-        default:
-            assert(false)
-            break
         }
+        
+        aux.macroKey = new
     }
+    
 
     // ******************************
     // ******************************

@@ -67,21 +67,43 @@ extension AuxState {
     }
     
     
-    mutating func record( _ sTag: SymbolTag = SymbolTag(.null), kcFn: KeyCode? = nil ) {
+    mutating func record( _ sTag: SymbolTag = SymbolTag(.null), kc: KeyCode? = nil, caption: String? = nil ) {
         switch recState {
             
         case .stop, .none:
             // Start recording, sTag is requireds but can be null, kc is optional
-            macroKey = sTag
+            if let kcFn = kc {
+                
+                kcRecording = kc
+
+                if sTag == SymbolTag(.null) {
+                    
+                    // kc provided but no tag - try to create tag from kc
+                    guard let fnTag = SymbolTag.getFnSym(kcFn) else {
+                        // if a kc is provided it must map to a tag
+                        assert(false)
+                    }
+                    
+                    macroKey = fnTag
+                }
+                else {
+                    // Both tag and kc provided - re-recording a renamed Fn key
+                    macroKey = sTag
+                }
+            }
+            else {
+                // No kc provided - recording macro that is not assigned to a key
+                macroKey = sTag
+                kcRecording = nil
+            }
+            macroCap = caption ?? ""
             macroSeq.clear()
-            macroCap = ""
-            kcRecording = kcFn
-            activeView = .macroList
             modalRecCount = 0
+            activeView = .macroList
             recState = .record
 
-            if let kc = kcFn {
-                disableAllFnSubmenu( except: kc )
+            if let kcFn = kc {
+                disableAllFnSubmenu( except: kcFn )
             }
             
             // Log debug output

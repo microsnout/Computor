@@ -25,6 +25,10 @@ struct KeyMapRec: Codable {
     
     var fnRow: [ KeyCode : SymbolTag ] = [:]
     
+    func tagAssignment( _ kc: KeyCode ) -> SymbolTag? {
+        fnRow[kc]
+    }
+    
     func keyAssignment( _ tag: SymbolTag ) -> KeyCode? {
         if tag.isNull {
             // Null tag, no key
@@ -36,6 +40,11 @@ struct KeyMapRec: Codable {
             return fnRow[index].key
         }
         return nil
+    }
+    
+    mutating func assign( _ kc: KeyCode, tag: SymbolTag ) {
+        // TODO: Eventually add UnRow for unit row keys
+        fnRow[kc] = tag
     }
     
     // Could add unitRow here
