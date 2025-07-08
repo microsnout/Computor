@@ -127,7 +127,7 @@ struct CalculatorView: View {
                 try await model.loadConfig()
                 try await model.loadState()
             } catch {
-                //                fatalError(error.localizedDescription)
+                print( "File load error: \(error.localizedDescription)" )
             }
         }
         .onChange(of: scenePhase) { oldPhase, phase in

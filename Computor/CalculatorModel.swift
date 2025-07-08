@@ -239,7 +239,9 @@ class RecordingContext : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
+#if DEBUG
         print( "RecordingContext event: \(event.keyTag)")
+#endif
 
         switch event.keyTag.kc {
             
@@ -420,7 +422,9 @@ class ModalContext : EventContext {
     func executeFn( _ event: KeyEvent ) -> KeyPressResult {
         guard let model = self.model else { return KeyPressResult.null }
         
+#if DEBUG
         print( "ModalContext executeFn: \(event.keyTag)")
+#endif
         
         switch event.kc {
             
@@ -436,7 +440,9 @@ class ModalContext : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
+#if DEBUG
         print( "ModalContext event: \(event.keyTag)")
+#endif
 
         switch event.kc {
             
@@ -584,7 +590,9 @@ class BlockRecord : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
+#if DEBUG
         print( "BlockRecord event: \(event.keyTag)")
+#endif
         
         switch event.kc {
             

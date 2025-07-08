@@ -95,11 +95,22 @@ extension String {
     }
 }
 
-typealias UnitCode = [(UnitId, Int)]
-typealias TypeCode = [(TypeTag, Int)]
+typealias UnitCode = [(uid: UnitId, exp: Int)]
+typealias TypeCode = [(tid: TypeTag, exp: Int)]
 
 typealias UnitSignature = String
 typealias TypeSignature = String
+
+
+enum UnitCodeKeys: String, CodingKey {
+    case uid
+    case exp
+}
+
+enum TypeCodeKeys: String, CodingKey {
+    case tid
+    case exp
+}
 
 
 func toUnitCode( from: UnitSignature ) -> UnitCode {
@@ -126,7 +137,7 @@ func toUnitCode( from: UnitSignature ) -> UnitCode {
         // Exponent symbol is present if exp is not 1
         let bits = pf.split( separator: "^")
        
-        if let unit = UnitDef.symDict[ String(bits[0]) ] {
+        if let unit = UnitDef.fromSym( String(bits[0]) ) {
             let exp: Int = bits.count > 1 ? Int(bits[1])! : 1
             uc.append( (unit.uid, exp) )
         }
@@ -140,7 +151,7 @@ func toUnitCode( from: UnitSignature ) -> UnitCode {
             let bits = nf.split( separator: "^")
             let sym = String(bits[0])
             
-            if let unit = UnitDef.symDict[sym] {
+            if let unit = UnitDef.fromSym(sym) {
                 let exp: Int = bits.count > 1 ? Int(bits[1])! : 1
                 uc.append( (unit.uid, -exp) )
             }
@@ -288,30 +299,81 @@ func toUnitCode( from: TypeCode ) -> UnitCode {
 }
 
 
-struct UserUnitDef : Codable {
-    var uid:  UnitId
-    var usig: UnitSignature
-    var sym:  String?
+// *************************************** UnitDef ************************************************** //
+
+struct UserUnitData: Codable {
     
-    init( _ uid: UnitId, _ usig: UnitSignature, _ sym: String? = nil) {
-        self.uid = uid
-        self.usig = usig
-        self.sym = sym
-    }
+    /// Data describing user defined UnitDefs
+    /// This struct will be persisted to storage
+    ///
+    
+    var defList: [UnitDef] = []
+    var uidNext: UnitId = userIdBase
 }
 
 
-class UnitDef {
+class UnitDef: Codable {
     var uid:    UnitId
     var sym:    String?
     var uc:     UnitCode
     
-    static var uidNext: UnitId = userIdBase
+    enum CodingKeys : String, CodingKey {
+        case uid, sym, uc
+        
+        enum UnitCodeKeys: String, CodingKey {
+            case uid, exp
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container( keyedBy: CodingKeys.self )
+        try container.encode(uid, forKey: .uid)
+        try container.encode(sym, forKey: .sym)
+        
+        var ucListContainer = container.nestedUnkeyedContainer( forKey: .uc)
+        
+        try uc.forEach { ucF in
+            var ucCont = ucListContainer.nestedContainer( keyedBy: CodingKeys.UnitCodeKeys.self)
+            
+            try ucCont.encode( ucF.uid, forKey: .uid )
+            try ucCont.encode( ucF.exp, forKey: .exp )
+            
+        }
+    }
+    
+    
+    required init( from decoder: Decoder ) throws {
+        let container = try decoder.container( keyedBy: CodingKeys.self)
+        
+        uid = try container.decode( UnitId.self, forKey: .uid)
+        sym = try container.decodeIfPresent( String.self, forKey: .sym)
+        
+        var ucListContainer = try container.nestedUnkeyedContainer( forKey: .uc)
+        
+        var ucList: UnitCode = []
+        
+        while !ucListContainer.isAtEnd {
+            
+            let ucCont = try ucListContainer.nestedContainer( keyedBy: CodingKeys.UnitCodeKeys.self)
+            
+            let uid = try? ucCont.decode( UnitId.self, forKey: .uid)
+            let exp = try? ucCont.decode( Int.self, forKey: .exp)
+            
+            if let u = uid,
+               let e = exp {
+                ucList.append( (u, e) )
+            }
+        }
+        self.uc = ucList
+    }
 
+    
     static func getUserUnitId() -> UnitId {
-        // Allocate new UnitId for type .user
-        let uid = UnitDef.uidNext
-        UnitDef.uidNext += 1
+        
+        /// Allocate new UnitId for type .user
+        
+        let uid = UnitDef.uud.uidNext
+        UnitDef.uud.uidNext += 1
         return uid
     }
     
@@ -340,69 +402,112 @@ class UnitDef {
         self.uc = toUnitCode( from: usig )
     }
     
-    static var unitDict: [UnitId : UnitDef]        = [:]
-    static var symDict:  [String : UnitDef]        = [:]
-    static var sigDict:  [UnitSignature : UnitDef] = [:]
+    // Data and indexes for standard pre-defined units
+    static private var stdDefList:  [UnitDef]                 = []
+    static private var symDict:     [String : UnitDef]        = [:]
+    static private var sigDict:     [UnitSignature : UnitDef] = [:]
+
+    // Persisted data describing user defined units
+    static var uud: UserUnitData = UserUnitData()
     
-    static func clearUnitData() {
-        UnitDef.unitDict = [:]
-        UnitDef.symDict  = [:]
-        UnitDef.sigDict  = [:]
-        UnitDef.uidNext  = userIdBase
+    // Index dictionarys for the unit definitions - not persisted, rebuild on loading
+    static private var symUserDict:  [String : UnitDef]        = [:]
+    static private var sigUserDict:  [UnitSignature : UnitDef] = [:]
+    
+    
+    static func fromSym( _ sym: String ) -> UnitDef? {
+        
+        /// Lookup function for unit definition from symbol
+        /// Searches user defs then pre defined defs
+        
+        if let def = UnitDef.symUserDict[sym] {
+            // User defined Unit def
+            return def
+        }
+        return UnitDef.symDict[sym]
     }
     
-    static var userUnitDefs: [UserUnitDef] = []
-
+    
+    static func fromSig( _ usig: UnitSignature ) -> UnitDef? {
+        
+        /// Lookup function for unit definition from unit signature
+        /// Searches user defs then pre defined defs
+        
+        if let def = UnitDef.sigUserDict[usig] {
+            // User defined Unit def
+            return def
+        }
+        return UnitDef.sigDict[usig]
+    }
+    
+    
     static func defineUnit( _ uid: StdUnitId, _ usig: UnitSignature? = nil ) {
         let sym = String( describing: uid )
         let def = UnitDef( uid, sym: sym, usig: usig)
+        
+        UnitDef.stdDefList.append(def)
 
        // Add def to index by UnitId, Symbol and UnitSignature
-        UnitDef.unitDict[uid.rawValue] = def
         UnitDef.symDict[sym] = def
         UnitDef.sigDict[ getUnitSig(def.uc)] = def
     }
     
-    
-    static func addUserUnit( _ usig: UnitSignature, uid: UnitId, sym: String? = nil ) -> UnitDef {
-        
-        let def = UnitDef(usig, uid: uid, sym: sym)
-        
-        // Add def to index by UnitId, UnitSignature and Symbol if there is one
-        UnitDef.unitDict[def.uid] = def
-        UnitDef.sigDict[usig] = def
-        
-        if let symbol = sym {
-            UnitDef.symDict[symbol] = def
-        }
-        return def
-    }
-
     
     static func defineUserUnit( _ usig: UnitSignature, uid uidProvided: UnitId? = nil, sym: String? = nil ) -> UnitDef {
         
         let uid = uidProvided ?? UnitDef.getUserUnitId()
         
         // Next uid must be greater than provided one
-        UnitDef.uidNext = max( UnitDef.uidNext, uid+1 )
+        UnitDef.uud.uidNext = max( UnitDef.uud.uidNext, uid+1 )
         
-        let def = addUserUnit(usig, uid: uid, sym: sym)
+        let def = UnitDef(usig, uid: uid, sym: sym)
         
-        // Record definition for persistance storage
-        UnitDef.userUnitDefs.append( UserUnitDef(def.uid, usig, def.sym) )
+        UnitDef.uud.defList.append(def)
         
+        // Add def to index by UnitSignature
+        UnitDef.sigUserDict[usig] = def
+        
+        // Add def to index by Symbol if there is one
+        if let symbol = sym {
+            UnitDef.symUserDict[symbol] = def
+        }
+        
+#if DEBUG
+        print( "User UnitDef: '\(uid)' - > \(def)" )
+#endif
+
         return def
     }
     
     
-    static func redefineUserUnits() {
+    static func reIndexUserUnits() {
         
-        for uud in UnitDef.userUnitDefs {
-            _ = UnitDef.addUserUnit(uud.usig, uid: uud.uid, sym: uud.sym)
+        /// Rebuild the two index dictionarys after the User Unit Data has been reloaded
+        
+        UnitDef.symUserDict  = [:]
+        UnitDef.sigUserDict  = [:]
+        
+        for def in UnitDef.uud.defList {
+            
+            if let sym = def.sym {
+                // This definition has a symbol
+                UnitDef.symUserDict[sym] = def
+            }
+            
+            // Unit signature index
+            let usig = getUnitSig(def.uc)
+            UnitDef.sigUserDict[usig] = def
+            
+#if DEBUG
+            print( "reIndexUserUnit: \(def)" )
+#endif
         }
     }
     
     static func buildStdUnitData() {
+        
+        /// Define all the standard units
+        
         UnitDef.defineUnit( .time )
         UnitDef.defineUnit( .mass )
         UnitDef.defineUnit( .temp )
@@ -415,6 +520,14 @@ class UnitDef {
         UnitDef.defineUnit( .velocity,      "length/time" )
         UnitDef.defineUnit( .acceleration,  "length/time^2" )
         UnitDef.defineUnit( .pressure,      "weight/length^2" )
+        
+#if DEBUG
+        // UnitDef
+        print( "Predefined Unit Definitions:")
+        for def in UnitDef.stdDefList {
+            print( "UnitDef: \(def)" )
+        }
+#endif
     }
 }
 
@@ -425,6 +538,8 @@ extension UnitDef: CustomStringConvertible {
     }
 }
 #endif
+
+// ***************************************************************************************** //
 
 
 struct UserTypeDef : Codable {
@@ -531,20 +646,13 @@ class TypeDef {
     
     static func defineStdType( _ uid: StdUnitId, _ kc: KeyCode, _ sym: String, _ ratio: Double, delta: Double = 0.0 ) {
         
-        if let _ = UnitDef.unitDict[uid.rawValue] {
-            
-            let def = TypeDef(uid, kc, sym: sym, ratio, delta: delta)
-            let tag = TypeTag(uid, def.tid)
-            
-            TypeDef.typeDict[tag] = def
-            TypeDef.symDict[sym] = tag
-            TypeDef.sigDict[sym] = tag
-            TypeDef.kcDict[kc] = tag
-        }
-        else {
-            logU.error("Cannot define type \(sym). UnitDef for uid \(uid2Str(uid.rawValue))")
-        }
+        let def = TypeDef(uid, kc, sym: sym, ratio, delta: delta)
+        let tag = TypeTag(uid, def.tid)
         
+        TypeDef.typeDict[tag] = def
+        TypeDef.symDict[sym] = tag
+        TypeDef.sigDict[sym] = tag
+        TypeDef.kcDict[kc] = tag
     }
     
     
@@ -630,11 +738,6 @@ class TypeDef {
         defineStdType( .temp, .degF,    "F",    9.0/5.0, delta: 32)
         
         #if DEBUG
-        // UnitDef
-        print( "Unit Definitions:")
-        for (uid, def) in UnitDef.unitDict {
-            print( "'\(uid)' - > \(def)" )
-        }
         print( "\nType Definitions:")
         for (tt, def) in TypeDef.typeDict {
             print( "\(tt) -> \(def)")
@@ -982,7 +1085,7 @@ func lookupTypeTag( _ tc: TypeCode ) -> TypeTag? {
         let uc = toUnitCode( from: tc )
         let usig = getUnitSig(uc)
         
-        if let unit = UnitDef.sigDict[usig] {
+        if let unit = UnitDef.fromSig(usig) {
             // Unit def already exists, add type def
             TypeDef.defineUserType( uid: unit.uid, tsig)
         }

@@ -446,7 +446,9 @@ class MapFunctionX : ModalContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
+#if DEBUG
         print( "MapFunction keypress: \(event.keyTag)")
+#endif
         
         // Start with empty output list
         let seqCols    = valueList.cols
@@ -510,7 +512,9 @@ class MapFunctionXY : ModalContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
+#if DEBUG
         print( "MapFunctionXY keypress: \(event.keyTag)")
+#endif
         
         // Start with empty output list
         let seqCols    = min( valueListX.cols, valueListY.cols )

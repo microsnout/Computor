@@ -158,7 +158,9 @@ struct PlotMultiPointView: View {
             return (minY, maxY)
         }
         
+#if DEBUG
         print( "XXX MultiPoint" )
+#endif
         
         guard
             tvX.isMatrix && tvY.isMatrix &&

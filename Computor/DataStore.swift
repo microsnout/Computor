@@ -26,12 +26,15 @@ extension CalculatorModel {
     
     struct DataStore : Codable {
         var state:    CalcState
-        var unitDefs: [UserUnitDef]
+        
+        var unitData: UserUnitData
+
         var typeDefs: [UserTypeDef]
         
-        init( _ state: CalcState = CalcState(), _ units: [UserUnitDef] = [], _ types: [UserTypeDef] = [] ) {
+        
+        init( _ state: CalcState = CalcState(), _ uud: UserUnitData = UserUnitData(), _ types: [UserTypeDef] = [] ) {
             self.state = state
-            self.unitDefs = units
+            self.unitData = uud
             self.typeDefs = types
         }
     }
@@ -89,11 +92,11 @@ extension CalculatorModel {
         
         Task { @MainActor in
             // Update the @Published property here
-            UnitDef.userUnitDefs = store.unitDefs
+            UnitDef.uud = store.unitData
             TypeDef.userTypeDefs = store.typeDefs
             self.state = store.state
 
-            UnitDef.redefineUserUnits()
+            UnitDef.reIndexUserUnits()
             TypeDef.redefineUserTypes()
         }
     }
@@ -127,7 +130,7 @@ extension CalculatorModel {
         /// Save calculator state when app terminates
         
         let task = Task {
-            let store = DataStore( state, UnitDef.userUnitDefs, TypeDef.userTypeDefs )
+            let store = DataStore( state, UnitDef.uud, TypeDef.userTypeDefs )
             let data = try JSONEncoder().encode(store)
             let outfile = try Self.stateFileURL()
             try data.write(to: outfile)

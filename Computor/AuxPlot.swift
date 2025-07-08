@@ -54,9 +54,11 @@ struct PlotView : View {
     }
     
     
+#if DEBUG
     func test( _ pt: PlotType ) {
         print( String( describing: pt))
     }
+#endif
 
     
     var body: some View {
@@ -67,8 +69,10 @@ struct PlotView : View {
         
         let plotType = plotList.isEmpty ? PlotType.none : plotList[0]
 
+#if DEBUG
         let _ = test(plotType)
-        
+#endif
+
         switch plotType {
             
         case .vector2D:
