@@ -92,7 +92,7 @@ extension CalculatorModel {
         
         Task { @MainActor in
             // Update the @Published property here
-            UnitDef.uud = store.unitData
+            UserUnitData.uud = store.unitData
             TypeDef.userTypeDefs = store.typeDefs
             self.state = store.state
 
@@ -130,7 +130,7 @@ extension CalculatorModel {
         /// Save calculator state when app terminates
         
         let task = Task {
-            let store = DataStore( state, UnitDef.uud, TypeDef.userTypeDefs )
+            let store = DataStore( state, UserUnitData.uud, TypeDef.userTypeDefs )
             let data = try JSONEncoder().encode(store)
             let outfile = try Self.stateFileURL()
             try data.write(to: outfile)

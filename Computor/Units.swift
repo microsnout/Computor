@@ -309,6 +309,9 @@ struct UserUnitData: Codable {
     
     var defList: [UnitDef] = []
     var uidNext: UnitId = userIdBase
+
+    // Persisted data describing user defined units
+    static var uud: UserUnitData = UserUnitData()
 }
 
 
@@ -372,8 +375,8 @@ class UnitDef: Codable {
         
         /// Allocate new UnitId for type .user
         
-        let uid = UnitDef.uud.uidNext
-        UnitDef.uud.uidNext += 1
+        let uid = UserUnitData.uud.uidNext
+        UserUnitData.uud.uidNext += 1
         return uid
     }
     
@@ -406,9 +409,6 @@ class UnitDef: Codable {
     static private var stdDefList:  [UnitDef]                 = []
     static private var symDict:     [String : UnitDef]        = [:]
     static private var sigDict:     [UnitSignature : UnitDef] = [:]
-
-    // Persisted data describing user defined units
-    static var uud: UserUnitData = UserUnitData()
     
     // Index dictionarys for the unit definitions - not persisted, rebuild on loading
     static private var symUserDict:  [String : UnitDef]        = [:]
@@ -458,11 +458,11 @@ class UnitDef: Codable {
         let uid = uidProvided ?? UnitDef.getUserUnitId()
         
         // Next uid must be greater than provided one
-        UnitDef.uud.uidNext = max( UnitDef.uud.uidNext, uid+1 )
+        UserUnitData.uud.uidNext = max( UserUnitData.uud.uidNext, uid+1 )
         
         let def = UnitDef(usig, uid: uid, sym: sym)
         
-        UnitDef.uud.defList.append(def)
+        UserUnitData.uud.defList.append(def)
         
         // Add def to index by UnitSignature
         UnitDef.sigUserDict[usig] = def
@@ -487,7 +487,7 @@ class UnitDef: Codable {
         UnitDef.symUserDict  = [:]
         UnitDef.sigUserDict  = [:]
         
-        for def in UnitDef.uud.defList {
+        for def in UserUnitData.uud.defList {
             
             if let sym = def.sym {
                 // This definition has a symbol
