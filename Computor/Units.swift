@@ -556,8 +556,7 @@ struct UserTypeDef : Codable {
 
 
 class TypeDef {
-    var uid:   UnitId
-    var tid:   TypeId
+    var tag:   TypeTag
     var tc:    TypeCode
     var kc:    KeyCode?
     var sym:   String?
@@ -583,8 +582,7 @@ class TypeDef {
     }
     
     init() {
-        self.uid = StdUnitId.untyped.rawValue
-        self.tid = 0
+        self.tag = TypeTag(.untyped)
         self.tc  = []
         self.kc  = nil
         self.sym = nil
@@ -593,18 +591,16 @@ class TypeDef {
     }
     
     init( _ uid: StdUnitId, _ kc: KeyCode, sym: String, _ ratio: Double, delta: Double = 0.0 ) {
-        self.uid = uid.rawValue
-        self.tid = TypeDef.getNewTid()
+        self.tag = TypeTag( uid, TypeDef.getNewTid() )
         self.sym = sym
         self.ratio = ratio
         self.delta = delta
-        self.tc = [(TypeTag(uid, tid), 1)]
+        self.tc = [(TypeTag(uid, self.tag.tid), 1)]
         self.kc = kc
     }
 
     init( tid: TypeId, uid: UnitId, tsig: TypeSignature ) {
-        self.tid = tid
-        self.uid = uid
+        self.tag = TypeTag( uid, tid )
         self.ratio = 1.0
         self.delta = 0
         self.tc = toTypeCode( from: tsig)
@@ -647,12 +643,11 @@ class TypeDef {
     static func defineStdType( _ uid: StdUnitId, _ kc: KeyCode, _ sym: String, _ ratio: Double, delta: Double = 0.0 ) {
         
         let def = TypeDef(uid, kc, sym: sym, ratio, delta: delta)
-        let tag = TypeTag(uid, def.tid)
         
-        TypeDef.typeDict[tag] = def
-        TypeDef.symDict[sym] = tag
-        TypeDef.sigDict[sym] = tag
-        TypeDef.kcDict[kc] = tag
+        TypeDef.typeDict[def.tag] = def
+        TypeDef.symDict[sym]      = def.tag
+        TypeDef.sigDict[sym]      = def.tag
+        TypeDef.kcDict[kc]        = def.tag
     }
     
     
@@ -661,10 +656,9 @@ class TypeDef {
         TypeDef.tidUserNext = max( TypeDef.tidUserNext, tid+1 )
         
         let def = TypeDef( tid: tid, uid: uid, tsig: tsig)
-        let tag = TypeTag(def.uid, def.tid)
         
-        TypeDef.typeDict[tag] = def
-        TypeDef.sigDict[tsig] = tag
+        TypeDef.typeDict[def.tag] = def
+        TypeDef.sigDict[tsig]     = def.tag
         
         return def
     }
@@ -750,7 +744,7 @@ class TypeDef {
 #if DEBUG
 extension TypeDef: CustomStringConvertible {
     var description: String {
-        return "<\(String(describing: uid)):\(String( describing: sym)) tid:\(tid)>"
+        return "<\(String(describing: tag.uid)):\(String( describing: sym)) tid:\(tag.tid)>"
     }
 }
 #endif
