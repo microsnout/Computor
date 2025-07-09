@@ -296,7 +296,7 @@ extension AuxState {
                 if value.tv.tag == tagUntyped {
                     
                     // Last macro op is an untyped value
-                    if let tag = TypeDef.kcDict[kc] {
+                    if let tag = TypeDef.tagFromKeyCode(kc) {
                         
                         var tv = value.tv
                         macroSeq.removeLast()

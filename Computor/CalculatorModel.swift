@@ -1297,7 +1297,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             if keyCode.isUnit {
                 // Attempt conversion of X reg to unit type keyCode
-                if let tag = TypeDef.kcDict[keyCode]
+                if let tag = TypeDef.tagFromKeyCode(keyCode)
                 {
                     pushState()
                     

@@ -48,7 +48,7 @@ struct TypeTag: Hashable & Codable {
     }
     
     var symbol: String? {
-        if let def = TypeDef.typeDict[self] {
+        if let def = TypeDef.defFromTag(self) {
             // Get symbol from definition
             return def.symbol
         }
@@ -221,7 +221,7 @@ func toTypeCode( from: TypeSignature ) -> TypeCode {
     for pf in pFactors {
         let bits = pf.split( separator: "^")
        
-        if let tag = TypeDef.symDict[ String(bits[0]) ] {
+        if let tag = TypeDef.tagFromSym( String(bits[0]) ) {
             let exp: Int = bits.count > 1 ? Int(bits[1])! : 1
             tc.append( (tag, exp) )
         }
@@ -234,7 +234,7 @@ func toTypeCode( from: TypeSignature ) -> TypeCode {
             let bits = nf.split( separator: "^")
             let sym = String(bits[0]) 
             
-            if let tag = TypeDef.symDict[sym] {
+            if let tag = TypeDef.tagFromSym(sym) {
                 let exp: Int = bits.count > 1 ? Int(bits[1])! : 1
                 tc.append( (tag, -exp) )
             }
@@ -272,7 +272,7 @@ func getTypeSig( _ tc: TypeCode ) -> TypeSignature {
             }
         }
         
-        if let def = TypeDef.typeDict[tt],
+        if let def = TypeDef.defFromTag(tt),
            let sym = def.sym
         {
             ss.append( sym )
@@ -303,12 +303,14 @@ func toUnitCode( from: TypeCode ) -> UnitCode {
 
 struct UserUnitData: Codable {
     
-    /// Data describing user defined UnitDefs
+    /// Data describing user defined UnitDefs and TypeDefs
     /// This struct will be persisted to storage
     ///
     
-    var defList: [UnitDef] = []
+    var unitDefList: [UnitDef] = []
     var uidNext: UnitId = userIdBase
+    
+//    var typeDefList: [TypeDef] = []
 
     // Persisted data describing user defined units
     static var uud: UserUnitData = UserUnitData()
@@ -462,7 +464,7 @@ class UnitDef: Codable {
         
         let def = UnitDef(usig, uid: uid, sym: sym)
         
-        UserUnitData.uud.defList.append(def)
+        UserUnitData.uud.unitDefList.append(def)
         
         // Add def to index by UnitSignature
         UnitDef.sigUserDict[usig] = def
@@ -487,7 +489,7 @@ class UnitDef: Codable {
         UnitDef.symUserDict  = [:]
         UnitDef.sigUserDict  = [:]
         
-        for def in UserUnitData.uud.defList {
+        for def in UserUnitData.uud.unitDefList {
             
             if let sym = def.sym {
                 // This definition has a symbol
@@ -542,6 +544,7 @@ extension UnitDef: CustomStringConvertible {
 // ***************************************************************************************** //
 
 
+// Delete this
 struct UserTypeDef : Codable {
     var tid:  TypeId
     var uid:  UnitId
@@ -616,10 +619,45 @@ class TypeDef {
         }
     }
     
-    static var typeDict: [TypeTag : TypeDef]       = [tagUntyped : TypeDef()]
-    static var symDict:  [String : TypeTag]        = [:]
-    static var sigDict:  [TypeSignature : TypeTag] = [:]
-    static var kcDict:   [KeyCode : TypeTag]       = [:]
+    static private var stdDefList:  [TypeDef]      = []
+    
+    static private var typeDict: [TypeTag : TypeDef]       = [tagUntyped : TypeDef()]
+    static private var symDict:  [String : TypeTag]        = [:]
+    static private var sigDict:  [TypeSignature : TypeTag] = [:]
+    static private var kcDict:   [KeyCode : TypeTag]       = [:]
+    
+    static private var typeUserDict: [TypeTag : TypeDef]       = [:]
+    static private var symUserDict:  [String : TypeTag]        = [:]
+    static private var sigUserDict:  [TypeSignature : TypeTag] = [:]
+    static private var kcUserDict:   [KeyCode : TypeTag]       = [:]
+    
+    static func defFromTag( _ tag: TypeTag ) -> TypeDef? {
+        if let def = TypeDef.typeUserDict[tag] {
+            return def
+        }
+        return TypeDef.typeDict[tag]
+    }
+    
+    static func tagFromSym( _ sym: String ) -> TypeTag? {
+        if let tag = TypeDef.symUserDict[sym] {
+            return tag
+        }
+        return TypeDef.symDict[sym]
+    }
+    
+    static func tagFromSig( _ tsig: TypeSignature ) -> TypeTag? {
+        if let tag = TypeDef.sigUserDict[tsig] {
+            return tag
+        }
+        return TypeDef.sigDict[tsig]
+    }
+    
+    static func tagFromKeyCode( _ kc: KeyCode ) -> TypeTag? {
+        if let tag = TypeDef.kcUserDict[kc] {
+            return tag
+        }
+        return TypeDef.kcDict[kc]
+    }
     
     static func clearTypeData() {
         TypeDef.typeDict = [tagUntyped : TypeDef()]
@@ -644,6 +682,10 @@ class TypeDef {
         
         let def = TypeDef(uid, kc, sym: sym, ratio, delta: delta)
         
+        // Add to the list of pre-defined type defs
+        TypeDef.stdDefList.append(def)
+        
+        // Create all indexes
         TypeDef.typeDict[def.tag] = def
         TypeDef.symDict[sym]      = def.tag
         TypeDef.sigDict[sym]      = def.tag
@@ -657,8 +699,8 @@ class TypeDef {
         
         let def = TypeDef( tid: tid, uid: uid, tsig: tsig)
         
-        TypeDef.typeDict[def.tag] = def
-        TypeDef.sigDict[tsig]     = def.tag
+        TypeDef.typeUserDict[def.tag]  = def
+        TypeDef.sigUserDict[tsig]      = def.tag
         
         return def
     }
@@ -865,8 +907,8 @@ func unitConvert( from: TypeTag, to: TypeTag ) -> ConversionSeq? {
         return nil
     }
     
-    if let defF = TypeDef.typeDict[from],
-       let defT = TypeDef.typeDict[to]
+    if let defF = TypeDef.defFromTag(from),
+       let defT = TypeDef.defFromTag(to)
     {
         return ConversionSeq( defT.ratio / defF.ratio )
     }
@@ -893,8 +935,8 @@ func typeAddable( _ tagA: TypeTag, _ tagB: TypeTag ) -> Double? {
     }
     
     // Unit signatures must match
-    if let aDef = TypeDef.typeDict[tagA],
-       let bDef = TypeDef.typeDict[tagB]
+    if let aDef = TypeDef.defFromTag(tagA),
+       let bDef = TypeDef.defFromTag(tagB)
     {
         let ucA = toUnitCode(from: aDef.tc)
         let ucB = toUnitCode(from: bDef.tc)
@@ -910,8 +952,8 @@ func typeAddable( _ tagA: TypeTag, _ tagB: TypeTag ) -> Double? {
             let (aTag, aExp) = aFac
             let (bTag, bExp) = bFac
             
-            if let afDef = TypeDef.typeDict[aTag],
-               let bfDef = TypeDef.typeDict[bTag]
+            if let afDef = TypeDef.defFromTag(aTag),
+               let bfDef = TypeDef.defFromTag(bTag)
             {
                 // Convert B value to A units
                 ratio /= pow(bfDef.ratio, Double(bExp))
@@ -951,8 +993,8 @@ func typeProduct( _ tagA: TypeTag, _ tagB: TypeTag, quotient: Bool = false ) -> 
         // quotient of untyped/typed, fall through to compute inverse of type
     }
     
-    if let defA = TypeDef.typeDict[tagA],
-       let defB = TypeDef.typeDict[tagB]
+    if let defA = TypeDef.defFromTag(tagA),
+       let defB = TypeDef.defFromTag(tagB)
     {
         // Obtain type code sequences for both operands
         let tcA = defA.tc
@@ -979,8 +1021,8 @@ func typeProduct( _ tagA: TypeTag, _ tagB: TypeTag, quotient: Bool = false ) -> 
                 // A and B are compatible types like cm and km
                 let (ttB, expB) = tcB.remove(at: y)
                 
-                if let defA = TypeDef.typeDict[ttA],
-                   let defB = TypeDef.typeDict[ttB]
+                if let defA = TypeDef.defFromTag(ttA),
+                   let defB = TypeDef.defFromTag(ttB)
                 {
                     // Compute the ratio of the compatible types cm/km, add to result is nonzero exp
                     let exp = expA + sign*expB
@@ -1018,7 +1060,7 @@ func typeProduct( _ tagA: TypeTag, _ tagB: TypeTag, quotient: Bool = false ) -> 
 
 func typeExponent( _ tagY: TypeTag, x: Int ) -> TypeTag? {
     
-    if let yDef = TypeDef.typeDict[tagY] {
+    if let yDef = TypeDef.defFromTag(tagY) {
         let tcY: TypeCode = yDef.tc
         var tcQ: TypeCode = []
         
@@ -1037,7 +1079,7 @@ func typeExponent( _ tagY: TypeTag, x: Int ) -> TypeTag? {
 
 func typeNthRoot( _ tagY: TypeTag, n: Int ) -> TypeTag? {
     
-    if let yDef = TypeDef.typeDict[tagY] {
+    if let yDef = TypeDef.defFromTag(tagY) {
         let tcY: TypeCode = yDef.tc
         var tcQ: TypeCode = []
         
@@ -1068,7 +1110,7 @@ func lookupTypeTag( _ tc: TypeCode ) -> TypeTag? {
     
     let tsig = getTypeSig(tc)
     
-    if let tag = TypeDef.sigDict[tsig] {
+    if let tag = TypeDef.tagFromSig(tsig) {
         // Matching tag is already defined
         return tag
     }
@@ -1088,7 +1130,7 @@ func lookupTypeTag( _ tc: TypeCode ) -> TypeTag? {
             TypeDef.defineUserType( uid: unit.uid, tsig)
         }
         
-        return TypeDef.sigDict[tsig]
+        return TypeDef.tagFromSig(tsig)
     }
 }
 

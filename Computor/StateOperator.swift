@@ -87,7 +87,7 @@ struct Convert: StateOperator {
     }
     
     init( sym: String, fmt: FormatRec? = nil ) {
-        self.toType = TypeDef.symDict[sym, default: tagUntyped]
+        self.toType = TypeDef.tagFromSym(sym) ?? tagUntyped
         self.toFmt = fmt
     }
     
