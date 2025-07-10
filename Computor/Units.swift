@@ -310,7 +310,8 @@ struct UserUnitData: Codable {
     var unitDefList: [UnitDef] = []
     var uidNext: UnitId = userIdBase
     
-//    var typeDefList: [TypeDef] = []
+    var typeDefList: [TypeDef] = []
+    var tidUserNext: TypeId = 1000
 
     // Persisted data describing user defined units
     static var uud: UserUnitData = UserUnitData()
@@ -544,31 +545,74 @@ extension UnitDef: CustomStringConvertible {
 // ***************************************************************************************** //
 
 
-// Delete this
-struct UserTypeDef : Codable {
-    var tid:  TypeId
-    var uid:  UnitId
-    var tsig: TypeSignature
-    
-    init( _ tid: TypeId, _ uid: UnitId, _ tsig: TypeSignature) {
-        self.tid = tid
-        self.uid = uid
-        self.tsig = tsig
-    }
-}
-
-
-class TypeDef {
+class TypeDef: Codable {
     var tag:   TypeTag
     var tc:    TypeCode
-    var kc:    KeyCode?
-    var sym:   String?
+    
     var ratio: Double
     var delta: Double
     
-    static var tidNext: TypeId = 0
+    var kc:    KeyCode?
+    var sym:   String?
+
+    enum CodingKeys : String, CodingKey {
+        case tag, tc, ratio, delta, kc, sym
+        
+        enum TypeCodeKeys: String, CodingKey {
+            case tid, exp
+        }
+    }
     
-    static var tidUserNext: TypeId = 1000
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container( keyedBy: CodingKeys.self )
+        
+        try container.encode(tag,   forKey: .tag)
+        try container.encode(ratio, forKey: .ratio)
+        try container.encode(delta, forKey: .delta)
+        try container.encode(kc,    forKey: .kc)
+        try container.encode(sym,   forKey: .sym)
+        
+        var tcListContainer = container.nestedUnkeyedContainer( forKey: .tc)
+        
+        try tc.forEach { tcF in
+            var tcCont = tcListContainer.nestedContainer( keyedBy: CodingKeys.TypeCodeKeys.self)
+            
+            try tcCont.encode( tcF.tid, forKey: .tid )
+            try tcCont.encode( tcF.exp, forKey: .exp )
+            
+        }
+    }
+    
+    required init( from decoder: Decoder ) throws {
+        let container = try decoder.container( keyedBy: CodingKeys.self)
+        
+        tag   = try container.decode( TypeTag.self, forKey: .tag)
+        ratio = try container.decode( Double.self,  forKey: .ratio)
+        delta = try container.decode( Double.self,  forKey: .delta)
+        kc    = try container.decodeIfPresent( KeyCode.self,  forKey: .kc)
+        sym   = try container.decodeIfPresent( String.self,  forKey: .sym)
+
+        var tcListContainer = try container.nestedUnkeyedContainer( forKey: .tc)
+        
+        var tcList: TypeCode = []
+        
+        while !tcListContainer.isAtEnd {
+            
+            let tcCont = try tcListContainer.nestedContainer( keyedBy: CodingKeys.TypeCodeKeys.self)
+            
+            let tag = try? tcCont.decode( TypeTag.self, forKey: .tid)
+            let exp = try? tcCont.decode( Int.self, forKey: .exp)
+            
+            if let t = tag,
+               let e = exp {
+                tcList.append( (t, e) )
+            }
+        }
+        self.tc = tcList
+    }
+
+    
+    static var tidNext: TypeId = 0
 
     static func getNewTid() -> TypeId {
         // Allocate next type id
@@ -579,8 +623,8 @@ class TypeDef {
 
     static func getNewUserTid() -> TypeId {
         // Allocate next type id
-        let tid = TypeDef.tidUserNext
-        tidUserNext += 1
+        let tid = UserUnitData.uud.tidUserNext
+        UserUnitData.uud.tidUserNext += 1
         return tid
     }
     
@@ -619,13 +663,16 @@ class TypeDef {
         }
     }
     
+    // Pre-defined type definitions
     static private var stdDefList:  [TypeDef]      = []
     
+    // Pre-defined type indexes
     static private var typeDict: [TypeTag : TypeDef]       = [tagUntyped : TypeDef()]
     static private var symDict:  [String : TypeTag]        = [:]
     static private var sigDict:  [TypeSignature : TypeTag] = [:]
     static private var kcDict:   [KeyCode : TypeTag]       = [:]
     
+    // User defined type data indexes
     static private var typeUserDict: [TypeTag : TypeDef]       = [:]
     static private var symUserDict:  [String : TypeTag]        = [:]
     static private var sigUserDict:  [TypeSignature : TypeTag] = [:]
@@ -667,8 +714,6 @@ class TypeDef {
         TypeDef.tidNext  = 0
     }
     
-    static var userTypeDefs: [UserTypeDef] = []
-    
     static func tagOf( _ sym: String ) -> TypeTag {
         // Required tag lookup or else bug
         guard let tag = TypeDef.symDict[sym] else {
@@ -693,23 +738,32 @@ class TypeDef {
     }
     
     
-    static func addUserType( tid: TypeId,  uid: UnitId, _ tsig: TypeSignature ) -> TypeDef {
+    static func reIndexUserTypes() {
         
-        TypeDef.tidUserNext = max( TypeDef.tidUserNext, tid+1 )
+        /// Rebuild the type index dictionaries after type data has been reloaded
         
-        let def = TypeDef( tid: tid, uid: uid, tsig: tsig)
+        TypeDef.typeUserDict = [:]
+        TypeDef.symUserDict  = [:]
+        TypeDef.sigUserDict  = [:]
+        TypeDef.kcUserDict   = [:]
         
-        TypeDef.typeUserDict[def.tag]  = def
-        TypeDef.sigUserDict[tsig]      = def.tag
-        
-        return def
-    }
-    
-    
-    static func redefineUserTypes() {
-        
-        for utd in TypeDef.userTypeDefs {
-            _ = TypeDef.addUserType( tid: utd.tid, uid: utd.uid, utd.tsig)
+        for def in UserUnitData.uud.typeDefList {
+            
+            TypeDef.typeUserDict[def.tag] = def
+            
+            if let sym = def.sym {
+                TypeDef.symUserDict[sym] = def.tag
+            }
+            
+            TypeDef.sigUserDict[ getTypeSig(def.tc) ] = def.tag
+            
+            if let kc = def.kc {
+                TypeDef.kcUserDict[kc] = def.tag
+            }
+            
+#if DEBUG
+            print( "reIndexUserType: \(def)" )
+#endif
         }
     }
 
@@ -718,11 +772,15 @@ class TypeDef {
         
         let tid = tidProvided ?? TypeDef.getNewUserTid()
         
-        TypeDef.tidUserNext = max( TypeDef.tidUserNext, tid+1 )
+        UserUnitData.uud.tidUserNext = max( UserUnitData.uud.tidUserNext, tid+1 )
         
-        _ = addUserType( tid: tid, uid: uid, tsig)
+        let def = TypeDef( tid: tid, uid: uid, tsig: tsig)
         
-        TypeDef.userTypeDefs.append( UserTypeDef(tid, uid, tsig) )
+        // Add to list of persisted type definitions
+        UserUnitData.uud.typeDefList.append(def)
+        
+        TypeDef.typeUserDict[def.tag]  = def
+        TypeDef.sigUserDict[tsig]      = def.tag
     }
     
     

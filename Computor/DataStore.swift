@@ -29,13 +29,9 @@ extension CalculatorModel {
         
         var unitData: UserUnitData
 
-        var typeDefs: [UserTypeDef]
-        
-        
-        init( _ state: CalcState = CalcState(), _ uud: UserUnitData = UserUnitData(), _ types: [UserTypeDef] = [] ) {
+        init( _ state: CalcState = CalcState(), _ uud: UserUnitData = UserUnitData() ) {
             self.state = state
             self.unitData = uud
-            self.typeDefs = types
         }
     }
     
@@ -93,11 +89,10 @@ extension CalculatorModel {
         Task { @MainActor in
             // Update the @Published property here
             UserUnitData.uud = store.unitData
-            TypeDef.userTypeDefs = store.typeDefs
             self.state = store.state
 
             UnitDef.reIndexUserUnits()
-            TypeDef.redefineUserTypes()
+            TypeDef.reIndexUserTypes()
         }
     }
     
@@ -130,7 +125,7 @@ extension CalculatorModel {
         /// Save calculator state when app terminates
         
         let task = Task {
-            let store = DataStore( state, UserUnitData.uud, TypeDef.userTypeDefs )
+            let store = DataStore( state, UserUnitData.uud )
             let data = try JSONEncoder().encode(store)
             let outfile = try Self.stateFileURL()
             try data.write(to: outfile)
