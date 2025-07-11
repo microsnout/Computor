@@ -14,7 +14,7 @@ struct MacroLibraryView: View {
         
         // if we are recording OR there is a selected symbol, we are in detail view
         
-        if model.aux.macroKey != SymbolTag(.null) || model.aux.recState != .none {
+        if model.aux.macroTag != SymbolTag(.null) || model.aux.recState != .none {
 
             // Detailed view of selected macro
             MacroDetailView(model: model)
@@ -108,7 +108,7 @@ struct MacroListView: View {
                                 }
                                 .onTapGesture {
                                     withAnimation {
-                                        model.aux.macroKey = mr.symTag
+                                        model.aux.macroTag = mr.symTag
                                         model.aux.macroSeq = mr.opSeq
                                     }
                                 }
@@ -134,7 +134,7 @@ struct MacroDetailView: View {
     @State private var symbolSheet = false
 
     var body: some View {
-        var symTag: SymbolTag = model.aux.macroKey
+        var symTag: SymbolTag = model.aux.macroTag
         
         let symName  = symTag.getRichText()
         
@@ -154,7 +154,7 @@ struct MacroDetailView: View {
                         .padding( [.leading], 5 )
                         .onTapGesture {
                             withAnimation {
-                                model.aux.macroKey = SymbolTag(.null)
+                                model.aux.macroTag = SymbolTag(.null)
                                 model.aux.recState = .none
                             }
                         }
@@ -253,26 +253,30 @@ struct MacroDetailView: View {
                         // Detail Edit Controls
                         HStack( spacing: 25 ) {
 
+                            // RECORD
                             Button {
-                                renameSheet = true
+                                _ = model.keyPress( KeyEvent(.macroRecord) )
                             } label: {
-                                Image( systemName: "record.circle.fill").foregroundColor(Color("RedMenuIcon"))
-                                    .frame( minWidth: 0 )
+                                Image( systemName: "record.circle.fill").frame( minWidth: 0 )
                             }
+                            .accentColor( Color("RedMenuIcon") )
+                            .disabled( model.aux.recState != .stop )
 
+                            // PLAY
                             Button {
                                 renameSheet = true
                             } label: {
-                                Image( systemName: "play.fill").foregroundColor(Color("MenuIcon"))
-                                    .frame( minWidth: 0 )
+                                Image( systemName: "play.fill").frame( minWidth: 0 )
                             }
+                            .disabled( model.aux.recState != .stop || model.aux.macroSeq.isEmpty )
 
+                            // STOP
                             Button {
-                                renameSheet = true
+                                _ = model.keyPress( KeyEvent(.macroStop) )
                             } label: {
-                                Image( systemName: "stop.fill").foregroundColor(Color("MenuIcon"))
-                                    .frame( minWidth: 0 )
+                                Image( systemName: "stop.fill").frame( minWidth: 0 )
                             }
+                            .disabled( !model.aux.recState.isRecording  )
 
                         }
                         .frame( maxWidth: .infinity )

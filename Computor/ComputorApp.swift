@@ -24,6 +24,7 @@ struct ComputorApp: App {
         WindowGroup {
             CalculatorView()
                 .preferredColorScheme( darkMode ? .dark : .light)
+                .accentColor( Color("MenuIcon"))
         }
     }
 }

@@ -126,7 +126,7 @@ class NormalContext : EventContext {
             if let kcFn = event.kcTop {
                 if let macroRec = model.macroMod.getMacro( SymbolTag(kcFn) ) {
                     model.aux.macroSeq = macroRec.opSeq
-                    model.aux.macroKey = macroRec.symTag
+                    model.aux.macroTag = macroRec.symTag
                     model.aux.activeView = .macroList
                 }
             }
@@ -228,6 +228,14 @@ class RecordingContext : EventContext {
             self.kcFn = kcFn
             
             model.recordFnKey(kcFn)
+        
+            // Push a new local variable store
+            model.currentLVF = LocalVariableFrame( model.currentLVF )
+        }
+        else if lastEvent.kc == .macroRecord {
+            
+            // Start recording current aux macro
+            model.aux.record( model.aux.macroTag, caption: model.aux.macroCap )
             
             // Push a new local variable store
             model.currentLVF = LocalVariableFrame( model.currentLVF )
@@ -273,7 +281,7 @@ class RecordingContext : EventContext {
                 return model.execute( event )
             }
             
-        case .stopFn:
+        case .stopFn, .macroStop:
             if !model.aux.macroSeq.isEmpty {
                 model.saveMacroFunction( SymbolTag(kcFn), model.aux.macroSeq)
             }
@@ -930,7 +938,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 assert(false)
             }
         }
-            
     }
     
     
@@ -946,7 +953,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
         }
         
-        aux.macroKey = new
+        aux.macroTag = new
     }
     
 

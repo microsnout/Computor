@@ -12,6 +12,16 @@ let logAux = Logger(subsystem: "com.microsnout.calculator", category: "aux")
 
 enum MacroRecState: Int {
     case none = 0, stop, record, recModal, recNestedModal, play, playSlow
+    
+    var isRecording: Bool {
+        switch self {
+        case .record, .recModal, .recNestedModal:
+            return true
+            
+        default:
+            return false
+        }
+    }
 }
 
 
@@ -27,7 +37,7 @@ struct AuxState {
     // MacroListView state
     var recState: MacroRecState = .none
     
-    var macroKey = SymbolTag(.null)
+    var macroTag = SymbolTag(.null)
     var macroSeq = MacroOpSeq()
     var macroCap = ""
     
@@ -59,7 +69,7 @@ extension AuxState {
     
     
     mutating func clearMacroState() {
-        macroKey = SymbolTag(.null)
+        macroTag = SymbolTag(.null)
         macroSeq.clear()
         kcRecording = nil
         pauseCount = 0
@@ -84,16 +94,16 @@ extension AuxState {
                         assert(false)
                     }
                     
-                    macroKey = fnTag
+                    macroTag = fnTag
                 }
                 else {
                     // Both tag and kc provided - re-recording a renamed Fn key
-                    macroKey = sTag
+                    macroTag = sTag
                 }
             }
             else {
                 // No kc provided - recording macro that is not assigned to a key
-                macroKey = sTag
+                macroTag = sTag
                 kcRecording = nil
             }
             macroCap = caption ?? ""
@@ -122,7 +132,7 @@ extension AuxState {
         switch recState {
             
         case .stop, .none:
-            macroKey = SymbolTag(.null)
+            macroTag = SymbolTag(.null)
             macroSeq.clear()
             kcRecording = nil
             activeView = .macroList
@@ -214,7 +224,7 @@ extension AuxState {
         txt += String( describing: activeView )
         txt += ") state:\(recState)"
         txt += " Detail:\(detailItemIndex) MacroKey:"
-        txt += String( describing: macroKey )
+        txt += String( describing: macroTag )
         txt += " OpSeq:\(macroSeq.getDebugText()) Rec:"
         txt += String( describing: kcRecording ?? KeyCode.null )
         txt += " Pause:\(pauseCount)"
