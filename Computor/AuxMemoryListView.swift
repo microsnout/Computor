@@ -95,9 +95,13 @@ struct MemoryListView: View {
                                     
                                     // Button controls at right of rows
                                     HStack( spacing: 20 ) {
+                                        
+                                        // ARROW DOWN
                                         Button( action: { model.memoryOp( key: .rclMem, tag: mr.tag ) } ) {
                                             Image( systemName: "arrowshape.down" )
                                         }
+                                        
+                                        // TRASH CAN
                                         Button( action: { model.delMemoryItems(set: [index]) } ) {
                                             Image( systemName: "trash" )
                                         }
@@ -105,6 +109,7 @@ struct MemoryListView: View {
                                 }
                                 .onTapGesture {
                                     withAnimation {
+                                        // Navigate to selected item
                                         model.aux.detailItemIndex = index
                                     }
                                 }

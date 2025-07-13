@@ -7,22 +7,6 @@
 import SwiftUI
 
 
-let ksMemDetail = KeySpec( width: 36, height: 22,
-                           keyColor: "AuxKey", textColor: "BlackText")
-
-let psMemDetail = PadSpec(
-        keySpec: ksMemDetail,
-        cols: 6,
-        keys: [
-            Key(.mPlus,   "ƒ{0.8}M+"),
-            Key(.mMinus,  "ƒ{0.8}M-"),
-            Key(.rclMem,  "ƒ{0.8}Rcl"),
-            Key(.stoMem,  "ƒ{0.8}Sto"),
-            Key(.mRename, "ƒ{0.8}Caption", size: 2),
-        ]
-    )
-
-
 struct MemoryDetailView: View {
     @StateObject var model: CalculatorModel
     
@@ -32,103 +16,113 @@ struct MemoryDetailView: View {
     
     @State private var position: Int? = 0
 
-    struct MemoryDetailKeypress : KeyPressHandler {
-        var model: CalculatorModel
-        
-        @Binding var renameSheet: Bool
-
-        func keyPress(_ event: KeyEvent ) -> KeyPressResult {
-            let index = model.aux.detailItemIndex
-            let tag = model.state.memory[index].tag
-            
-            switch event.kc {
-            case .rclMem, .stoMem, .mPlus, .mMinus:
-                model.memoryOp(key: event.kc, tag: tag )
-                
-            case .mRename:
-                renameSheet = true
-                
-            default:
-                break
-            }
-            return KeyPressResult.stateChange
-        }
-    }
-    
     var body: some View {
-        VStack {
-            AuxHeaderView( theme: Theme.lightBlue ) {
-                HStack {
-                    Image( systemName: "chevron.left")
-                        .padding( [.leading], 10 )
-                        .onTapGesture {
-                            withAnimation {
-                                model.aux.detailItemIndex = -1
-                            }
-                        }
-                    
-                    Spacer()
-                    RichText( "Memory Detail", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
-                    Spacer()
-                }
-            }
-            
-            Spacer()
-            
-            if model.state.memory.isEmpty {
-                Text("Memory Detail")
-                    .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-            }
-            else {
-                ScrollViewReader { proxy in
-                    ScrollView(.vertical) {
-                        LazyVStack {
-                            let count = model.state.memory.count
-                            
-                            ForEach( 0 ..< count, id: \.self ) { index in
-                                
-                                let mr = model.state.memory[index]
-                                let sym = mr.tag.getRichText()
-                                let caption = mr.caption ?? "-Unnamed-"
-                                let (valueStr, _) = mr.tv.renderRichText()
-                                let color = mr.caption != nil ? "UnitText" : "GrayText"
-
-                                VStack {
-                                    RichText("ƒ{1.5}\(sym)", size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
-                                    
-                                    RichText( "ƒ{1.2}ç{\(color)}\(caption)", size: .large, design: .serif )
-                                    
-                                    TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
+        if model.aux.detailItemIndex != -1 {
+            VStack {
+                AuxHeaderView( theme: Theme.lightBlue ) {
+                    HStack {
+                        Image( systemName: "chevron.left")
+                            .padding( [.leading], 10 )
+                            .onTapGesture {
+                                withAnimation {
+                                    model.aux.detailItemIndex = -1
                                 }
-                                .id( index )
-                                .containerRelativeFrame(.vertical, count: 1, spacing: 0)
                             }
-                        }
-                        .scrollTargetLayout()
-                    }
-                    .scrollTargetBehavior(.viewAligned)
-                    .scrollPosition( id: $position )
-                    .onChange( of: position ) { oldIndex, newIndex in
-                        model.aux.detailItemIndex = newIndex ?? 0
+                        
+                        Spacer()
+                        RichText( "Memory Detail", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                        Spacer()
                     }
                 }
+                
+                Spacer()
+                
+                if model.state.memory.isEmpty {
+                    Text("Memory Detail")
+                        .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                }
+                else {
+                    ScrollViewReader { proxy in
+                        ScrollView(.vertical) {
+                            LazyVStack {
+                                let count = model.state.memory.count
+                                
+                                ForEach( 0 ..< count, id: \.self ) { index in
+                                    
+                                    let mr = model.state.memory[index]
+                                    let sym = mr.tag.getRichText()
+                                    let caption = mr.caption ?? "-Unnamed-"
+                                    let (valueStr, _) = mr.tv.renderRichText()
+                                    let color = mr.caption != nil ? "UnitText" : "GrayText"
+                                    
+                                    VStack {
+                                        RichText("ƒ{1.5}\(sym)", size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
+                                        
+                                        RichText( "ƒ{1.2}ç{\(color)}\(caption)", size: .large, design: .serif )
+                                            .onTapGesture {
+                                                renameSheet = true
+                                            }
+                                        
+                                        TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
+                                    }
+                                    .id( index )
+                                    .containerRelativeFrame(.vertical, count: 1, spacing: 0)
+                                }
+                            }
+                            .scrollTargetLayout()
+                        }
+                        .scrollTargetBehavior(.viewAligned)
+                        .scrollPosition( id: $position )
+                        .onChange( of: position ) { oldIndex, newIndex in
+                            model.aux.detailItemIndex = newIndex ?? 0
+                        }
+                    }
+                }
+                
+                Spacer()
+                
+                // Detail Edit Controls
+                HStack( spacing: 25 ) {
+                    let mr = model.state.memory[model.aux.detailItemIndex]
+                    
+                    Button( action: { model.memoryOp( key: .mPlus, tag: mr.tag ) } ) {
+                        Text( "M+" )
+                    }
+                    
+                    Button( action: { model.memoryOp( key: .mMinus, tag: mr.tag ) } ) {
+                        Text( "M-" )
+                    }
+                    
+                    Button( action: { model.memoryOp( key: .rclMem, tag: mr.tag ) } ) {
+                        Image( systemName: "arrowshape.down" )
+                    }
+                    
+                    Button( action: { model.memoryOp( key: .stoMem, tag: mr.tag ) } ) {
+                        Image( systemName: "arrowshape.up" )
+                    }
+                    
+                    Button( action: {
+                        model.delMemoryItems(set: [model.aux.detailItemIndex])
+                        model.aux.detailItemIndex = -1
+                    } ) {
+                        Image( systemName: "trash" )
+                    }
+                }
+                .frame( maxWidth: .infinity )
+                .padding( [.bottom], 5 )
             }
-
-            Spacer()
-            KeypadView( padSpec: psMemDetail,
-                        keyPressHandler: MemoryDetailKeypress( model: model, renameSheet: $renameSheet))
-        }
-        .padding( [.top], 0 )
-        .padding( [.bottom], 10 )
-        .onChange( of: itemIndex ) { oldIndex, newIndex in
-            position = newIndex
-        }
-        .sheet(isPresented: $renameSheet) {
-            ZStack {
-                Color("ListBack").edgesIgnoringSafeArea(.all)
-                MemoryRenameView( model: model )
-                .presentationDetents([.fraction(0.4)])
-                .presentationBackground( Color("ListBack") )
+            .padding( [.top], 0 )
+            .padding( [.bottom], 10 )
+            .onChange( of: itemIndex ) { oldIndex, newIndex in
+                position = newIndex
+            }
+            .sheet(isPresented: $renameSheet) {
+                ZStack {
+                    Color("ListBack").edgesIgnoringSafeArea(.all)
+                    MemoryRenameView( model: model )
+                        .presentationDetents([.fraction(0.4)])
+                        .presentationBackground( Color("ListBack") )
+                }
             }
         }
     }
