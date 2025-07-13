@@ -65,7 +65,7 @@ struct DisplayView: View {
     
     @AppStorage(.settingsPriDispTextSize)
     private var priDispTextSize = TextSize.normal
-
+    
     let rowHeightTable: [TextSize : Double] = [.small : 29, .normal : 32, .large : 35]
     
     var body: some View {

@@ -43,11 +43,12 @@ struct MacroListView: View {
                     Spacer()
                     
                     // Macro List Header Title
-                    RichText("Macro Library: ƒ{0.9}ç{ModText}\(modSymStr)", size: .small, weight: .bold )
+                    RichText("Macro Library: ƒ{0.9}ç{ModText}\(modSymStr)", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                     Spacer()
                     
                     // New macro creation button
                     Image( systemName: "plus")
+                        .foregroundColor( Color("AuxHeaderText") )
                         .padding( [.trailing], 5 )
                         .onTapGesture {
                             model.aux.recState = .stop
@@ -160,7 +161,7 @@ struct MacroDetailView: View {
                         }
                     
                     Spacer()
-                    RichText(captionTxt, size: .small, weight: .bold )
+                    RichText(captionTxt, size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                     Spacer()
                 }
             }
@@ -308,14 +309,11 @@ struct MacroDetailView: View {
                 NewSymbolPopup( tag: symTag ) { tag in
                     model.changeMacroSymbol(old: symTag, new: tag)
                     symTag = tag
-                }
-                
-                Button( "Close" ) {
                     symbolSheet = false
                 }
             }
-            .presentationDetents([.fraction(0.7)])
-            .presentationBackground( Color("PopBack") )
+            .presentationBackground( Color("SheetBackground") )
+            .presentationDetents([.fraction(0.5)])
         }
     }
 }

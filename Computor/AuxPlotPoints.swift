@@ -54,7 +54,7 @@ struct PlotPointsView: View {
         else {
             VStack {
                 AuxHeaderView( theme: Theme.lightPurple ) {
-                    RichText( "Vector Plot", size: .small, weight: .bold )
+                    RichText( "Vector Plot", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                 }
                 
                 if !plotableValue( model.state.Xtv ) {
@@ -208,7 +208,7 @@ struct PlotMultiPointView: View {
         else {
             VStack {
                 AuxHeaderView( theme: Theme.lightPurple ) {
-                    RichText( "Multi Plot", size: .small )
+                    RichText( "Multi Plot", size: .small, defaultColor: "AuxHeaderText" )
                 }
                 
                 Canvas { context, size in

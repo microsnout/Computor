@@ -38,7 +38,7 @@ struct MemoryListView: View {
                 
                 HStack {
                     Spacer()
-                    RichText( "Memory List", size: .small, weight: .bold )
+                    RichText( "Memory List", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                     Spacer()
                 }
             }

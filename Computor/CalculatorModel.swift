@@ -729,8 +729,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     var macroMod = ModuleFile()
 
     // Display window into register stack
-    @AppStorage(.settingsDisplayRows)
-    var displayRows = 3
+    let displayRows = 3
     
     // Current event handling context - Normal, Recording, Entry, ModalFunction, Block
     var eventContext: EventContext?  = nil
@@ -757,7 +756,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         self.status = StatusState()
         
         self.undoStack   = UndoStack()
-        self.displayRows = 3
         
         pushContext( NormalContext() )
         

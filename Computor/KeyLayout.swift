@@ -26,7 +26,7 @@ let ksUnits = KeySpec( width: 60, height: 25,
                        keyColor: "KeyColor", textColor: "KeyText")
 
 let ksModalPop = KeySpec( width: 30, height: 30,
-                          keyColor: "KeyColor", textColor: "KeyText")
+                          keyColor: "ModalKeyColor", textColor: "ModalKeyText")
 
 let psUnits = PadSpec (
     keySpec: ksUnits,

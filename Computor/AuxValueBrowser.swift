@@ -33,7 +33,7 @@ struct ValueBrowserView: View {
 
         VStack {
             AuxHeaderView( theme: Theme.lightRed ) {
-                RichText( "\(nameStr) Register  \(shapeStr(rows, cols))", size: .small, weight: .bold )
+                RichText( "\(nameStr) Register  \(shapeStr(rows, cols))", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
             }
             
             Spacer()

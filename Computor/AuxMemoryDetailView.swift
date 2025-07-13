@@ -68,7 +68,7 @@ struct MemoryDetailView: View {
                         }
                     
                     Spacer()
-                    RichText( "Memory Detail", size: .small, weight: .bold )
+                    RichText( "Memory Detail", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                     Spacer()
                 }
             }
