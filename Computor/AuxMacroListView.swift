@@ -265,7 +265,34 @@ struct MacroDetailView: View {
 
                             // PLAY
                             Button {
-                                renameSheet = true
+                                model.acceptTextEntry()
+                                
+                                // Macro playback - save inital state just in case
+                                model.pushState()
+                                
+                                model.pushContext( PlaybackContext(), lastEvent: KeyEvent(.macroPlay) )
+                                
+                                // Push a new local variable store
+                                model.currentLVF = LocalVariableFrame( model.currentLVF )
+                                
+                                // Don't maintain undo stack during playback ops
+                                model.pauseUndoStack()
+                                
+                                for op in model.aux.macroSeq {
+                                    
+                                    if op.execute(model) == KeyPressResult.stateError {
+                                        model.resumeUndoStack()
+                                        model.currentLVF = model.currentLVF?.prevLVF
+                                        model.popContext()
+                                        model.popState()
+                                    }
+                                }
+                                model.resumeUndoStack()
+                                
+                                // Pop the local variable storage, restoring prev
+                                model.currentLVF = model.currentLVF?.prevLVF
+                                
+                                model.popContext( KeyEvent(.macroPlay) )
                             } label: {
                                 Image( systemName: "play.fill").frame( minWidth: 0 )
                             }
