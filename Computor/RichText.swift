@@ -29,7 +29,7 @@ struct RichText: View {
     let inputStr: String
     let bodyFont: Font
     let subScriptFont: Font
-    let baseLine: CGFloat
+    var baseLine: CGFloat
     let defaultColor: String
     
     let textSize: TextSize
@@ -59,6 +59,7 @@ struct RichText: View {
         var color  = defaultColor
         var bodyFont: Font = self.bodyFont
         var subScriptFont: Font = self.subScriptFont
+        var baseLine = self.baseLine
 
         let opCodeSet:Set<Character> = ["^", "_", "=", "ç", "ƒ"]
         
@@ -124,15 +125,18 @@ struct RichText: View {
                     // Restore default fonts
                     bodyFont = self.bodyFont
                     subScriptFont = self.subScriptFont
+                    baseLine = self.baseLine
                 }
                 else {
                     // Create scaled fonts
-                    var (body, sub, _ ) = getTextSpec(textSize)
+                    var (body, sub, base ) = getTextSpec(textSize)
                     let scale = Double(opStr) ?? 1.0
                     body *= scale
                     sub  *= scale
+                    base *= scale
                     bodyFont = .system( size: body, weight: textWeight, design: textDesign)
                     subScriptFont = .system( size: sub, weight: textWeight, design: textDesign)
+                    baseLine = base
                 }
                 
             default:
