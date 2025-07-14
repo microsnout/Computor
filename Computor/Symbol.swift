@@ -154,6 +154,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
                 }.padding( [.bottom], 12)
                 
                 HStack( spacing: 20 ) {
+                    
+                    // CLEAR X
                     Button( action: {
                         reset()
                     })
@@ -161,6 +163,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
                         Image( systemName: "clear" )
                             .foregroundStyle( symN > 0 ? Color.accentColor : Color.gray )
                     }
+                    
+                    // SUBSCRIPT DOWN
                     Button( action: {
                         if symN >= 2 && subPt == 0 {
                             
@@ -178,6 +182,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
                         Image( systemName: "arrowshape.down" )
                             .foregroundStyle( symN >= 2 && subPt == 0 ? Color.accentColor : Color.gray )
                     }
+                    
+                    // SUPERSCRIPT UP
                     Button( action: {
                         if symN >= 2 && superPt == 0 {
                             
@@ -195,11 +201,19 @@ struct NewSymbolPopup: View, KeyPressHandler {
                         Image( systemName: "arrowshape.up" )
                             .foregroundStyle( symN >= 2 && superPt == 0 ? Color.accentColor : Color.gray )
                     }
+                    
+                    // DELETE LEFT
                     Button( action: {
                         if symN > 0 {
                             symN -= 1
                             symName.removeLast()
                             symArray.removeLast()
+                            
+                            if subPt+superPt == 3 {
+                                // BugFix
+                                subPt = 0
+                                superPt = 0
+                            }
                         }
                     })
                     {
