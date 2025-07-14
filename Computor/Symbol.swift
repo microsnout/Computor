@@ -161,8 +161,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
                     })
                     {
                         Image( systemName: "clear" )
-                            .foregroundStyle( symN > 0 ? Color.accentColor : Color.gray )
                     }
+                    .disabled( symN == 0 )
                     
                     // SUBSCRIPT DOWN
                     Button( action: {
@@ -180,8 +180,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
                     })
                     {
                         Image( systemName: "arrowshape.down" )
-                            .foregroundStyle( symN >= 2 && subPt == 0 ? Color.accentColor : Color.gray )
                     }
+                    .disabled( symN < 2 || subPt > 0 )
                     
                     // SUPERSCRIPT UP
                     Button( action: {
@@ -199,8 +199,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
                     })
                     {
                         Image( systemName: "arrowshape.up" )
-                            .foregroundStyle( symN >= 2 && superPt == 0 ? Color.accentColor : Color.gray )
                     }
+                    .disabled( symN < 2 || superPt != 0 )
                     
                     // DELETE LEFT
                     Button( action: {
@@ -218,8 +218,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
                     })
                     {
                         Image( systemName: "delete.left" )
-                            .foregroundStyle( symN > 0 ? Color.accentColor : Color.gray )
                     }
+                    .disabled( symN == 0 )
                     
                     // OK  button, symbol selected
                     Button( action: {
@@ -236,8 +236,10 @@ struct NewSymbolPopup: View, KeyPressHandler {
                     })
                     {
                         Image( systemName: "checkmark.diamond.fill" )
-                            .foregroundStyle( symN > 0 ? Color.green : Color.gray )
                     }
+                    .accentColor( Color.green )
+                    .disabled( symN == 0 )
+                    
                 }.padding( [.bottom], 20)
             }
         }
