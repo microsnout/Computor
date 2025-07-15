@@ -954,6 +954,42 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         aux.macroTag = new
     }
     
+    
+    func playMacroSeq( _ seq: MacroOpSeq ) -> KeyPressResult {
+        
+        acceptTextEntry()
+        
+        // Macro playback - save inital state just in case
+        pushState()
+        
+        pushContext( PlaybackContext(), lastEvent: KeyEvent(.macroPlay) )
+        
+        // Push a new local variable store
+        currentLVF = LocalVariableFrame( currentLVF )
+        
+        // Don't maintain undo stack during playback ops
+        pauseUndoStack()
+        
+        for op in seq {
+            
+            if op.execute(self) == KeyPressResult.stateError {
+                resumeUndoStack()
+                currentLVF = currentLVF?.prevLVF
+                popContext()
+                popState()
+                return KeyPressResult.stateError
+            }
+        }
+        resumeUndoStack()
+        
+        // Pop the local variable storage, restoring prev
+        currentLVF = currentLVF?.prevLVF
+        
+        popContext( KeyEvent(.macroPlay) )
+        
+        return KeyPressResult.stateChange
+    }
+    
 
     // ******************************
     // ******************************
