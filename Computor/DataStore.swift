@@ -63,8 +63,9 @@ extension CalculatorModel {
             return config
         }
         
+//        let store = ConfigStore()
         let store = try await task.value
-        
+
         Task { @MainActor in
             // Update the @Published property here
             self.macroMod = store.macroLib
@@ -84,8 +85,9 @@ extension CalculatorModel {
             return state
         }
         
+//        let store = DataStore()
         let store = try await task.value
-        
+
         Task { @MainActor in
             // Update the @Published property here
             UserUnitData.uud = store.unitData
