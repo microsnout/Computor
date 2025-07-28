@@ -19,7 +19,7 @@ class MacroRec: Codable {
     var caption:    String? = nil
     var opSeq:      MacroOpSeq
     
-    init(symTag: SymbolTag, caption: String? = nil, opSeq: MacroOpSeq) {
+    init(tag symTag: SymbolTag, caption: String? = nil, seq opSeq: MacroOpSeq) {
         self.symTag = symTag
         self.caption = caption
         self.opSeq = opSeq
@@ -68,13 +68,13 @@ class ModuleFile: Codable {
     /// One of these files per macro  module file
     
     // Unique ID for this module/file
-    var id:         UUID = UUID()
+    var id: UUID = UUID()
     
     // Short name of module - displayed as prefix to symbol
     var modSym: String = "STAT"
     
     // Descriptive caption for this module
-    var caption:    String? = nil
+    var caption: String? = nil
     
     // Table of IDs of external referenced modules - array index is encoded in symbols
     var groupTable: [UUID] = []

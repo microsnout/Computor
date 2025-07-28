@@ -56,8 +56,10 @@ struct MemoryDetailView: View {
                                     let color = mr.caption != nil ? "UnitText" : "GrayText"
                                     
                                     VStack {
+                                        //  SYMBOL
                                         RichText("ƒ{1.5}\(sym)", size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
                                         
+                                        // CAPTION
                                         RichText( "ƒ{1.2}ç{\(color)}\(caption)", size: .large, design: .serif )
                                             .onTapGesture {
                                                 renameSheet = true

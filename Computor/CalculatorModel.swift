@@ -891,7 +891,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // **** Macro Recording Stuff ***
     
     func saveMacroFunction( _ sTag: SymbolTag, _ list: MacroOpSeq ) {
-        let mr = MacroRec( symTag: sTag, opSeq: list)
+        let mr = MacroRec( tag: sTag, seq: list)
         macroMod.setMacro(sTag, mr)
         saveConfiguration()
     }
@@ -939,6 +939,15 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
+    func setMacroCaption( _ cap: String, for tag: SymbolTag ) {
+        
+        if let mr = macroMod.getMacro(tag) {
+            
+            mr.caption = cap
+        }
+    }
+    
+    
     func changeMacroSymbol( old: SymbolTag, new: SymbolTag ) {
         
         if let kc = kstate.keyMap.keyAssignment(old) {
@@ -947,11 +956,31 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             kstate.keyMap.assign(kc, tag: new)
             
             if var mr = macroMod.getMacro(old) {
+                mr.symTag = new
+            }
+            else {
+                
+                let mr = MacroRec( tag: new, caption: aux.macroCap, seq: aux.macroSeq )
+                
+                macroMod.setMacro(new, mr)
+            }
+
+            aux.macroTag = new
+        }
+        else {
+            if var mr = macroMod.getMacro(old) {
+                
+                mr.symTag = new
+            }
+            else {
+                
+                let mr = MacroRec( tag: new, caption: aux.macroCap, seq: aux.macroSeq )
+                
+                macroMod.setMacro(new, mr)
             }
             
+            aux.macroTag = new
         }
-        
-        aux.macroTag = new
     }
     
     

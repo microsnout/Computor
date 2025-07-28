@@ -51,15 +51,17 @@ struct MacroListView: View {
                         .foregroundColor( Color("AuxHeaderText") )
                         .padding( [.trailing], 5 )
                         .onTapGesture {
-                            model.aux.recState = .stop
+                            withAnimation {
+                                model.aux.recState = .stop
+                            }
                         }
                 }
             }
 
-            if model.state.memory.isEmpty {
+            if model.macroMod.macroTable.isEmpty {
                 Spacer()
                 VStack {
-                    // Placeholder for empty memory list
+                    // Placeholder for empty macro list
                     Text("Macro List")
                         .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
                 }
@@ -75,7 +77,8 @@ struct MacroListView: View {
                             
                             let sym = mr.symTag.getRichText()
                             let caption = mr.caption ?? "ç{GrayText}-caption-"
-                            
+                            let color = mr.caption != nil ? "UnitText" : "GrayText"
+
                             VStack {
                                 HStack {
                                     
@@ -83,10 +86,10 @@ struct MacroListView: View {
                                         
                                         HStack {
                                             // Tag Symbol
-                                            RichText( sym, size: .small, weight: .bold, design: .serif )
-                                            
+                                            RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
+
                                             // Caption text
-                                            RichText( caption, size: .small, weight: .bold )
+                                            RichText( caption, size: .normal, weight: .regular, design: .serif, defaultColor: color )
                                         }
                                         
                                         // Second line of row
@@ -298,6 +301,8 @@ struct MacroDetailView: View {
                 AuxRenameView( name: model.aux.macroCap )
                 {
                     model.aux.macroCap = $0
+                    
+                    model.setMacroCaption($0, for: symTag)
                 }
                     .presentationDetents([.fraction(0.4)])
                     .presentationBackground( Color("ListBack") )
