@@ -16,11 +16,8 @@ extension CalculatorModel {
         
         var macroLib: ModuleFile
         
-        var keyMap: KeyMapRec
-        
-        init( _ appC: ModuleFile = ModuleFile(), _ keyM: KeyMapRec = KeyMapRec() ) {
+        init( _ appC: ModuleFile = ModuleFile() ) {
             self.macroLib = appC
-            self.keyMap   = keyM
         }
     }
     
@@ -28,10 +25,13 @@ extension CalculatorModel {
         var state:    CalcState
         
         var unitData: UserUnitData
+        
+        var keyMap: KeyMapRec
 
-        init( _ state: CalcState = CalcState(), _ uud: UserUnitData = UserUnitData() ) {
+        init( _ state: CalcState = CalcState(), _ uud: UserUnitData = UserUnitData(), _ keyM: KeyMapRec = KeyMapRec() ) {
             self.state = state
             self.unitData = uud
+            self.keyMap   = keyM
         }
     }
     
@@ -69,7 +69,6 @@ extension CalculatorModel {
         Task { @MainActor in
             // Update the @Published property here
             self.macroMod = store.macroLib
-            self.kstate.keyMap = store.keyMap
         }
     }
 
@@ -92,6 +91,7 @@ extension CalculatorModel {
             // Update the @Published property here
             UserUnitData.uud = store.unitData
             self.state = store.state
+            self.kstate.keyMap = store.keyMap
 
             UnitDef.reIndexUserUnits()
             TypeDef.reIndexUserTypes()
@@ -103,7 +103,7 @@ extension CalculatorModel {
         /// Don't wait for app termination
         
         let task = Task {
-            let store = ConfigStore( macroMod, kstate.keyMap )
+            let store = ConfigStore( macroMod )
             let data = try JSONEncoder().encode(store)
             let outfile = try Self.configFileURL()
             try data.write(to: outfile)
@@ -127,7 +127,7 @@ extension CalculatorModel {
         /// Save calculator state when app terminates
         
         let task = Task {
-            let store = DataStore( state, UserUnitData.uud )
+            let store = DataStore( state, UserUnitData.uud, kstate.keyMap )
             let data = try JSONEncoder().encode(store)
             let outfile = try Self.stateFileURL()
             try data.write(to: outfile)
