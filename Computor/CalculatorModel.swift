@@ -124,9 +124,8 @@ class NormalContext : EventContext {
             
         case .showFn:
             if let kcFn = event.kcTop {
-                if let macroRec = model.macroMod.getMacro( SymbolTag(kcFn) ) {
-                    model.aux.macroSeq = macroRec.opSeq
-                    model.aux.macroTag = macroRec.symTag
+                if let mr = model.macroMod.getMacro( SymbolTag(kcFn) ) {
+                    model.aux.macroRec = mr
                     model.aux.activeView = .macroList
                 }
             }
@@ -234,8 +233,19 @@ class RecordingContext : EventContext {
         }
         else if lastEvent.kc == .macroRecord {
             
-            // Start recording current aux macro
-            model.aux.record( model.aux.macroTag, caption: model.aux.macroCap )
+            // Get unnamed macro if there is one
+            if let mr = model.macroMod.getMacro( SymbolTag(.null) ) {
+                
+                // Start recording unnamed macro
+                model.aux.record(mr)
+            }
+            else {
+                // Create new macro rec
+                let mr = MacroRec()
+                model.macroMod.saveMacro(mr)
+                model.aux.record(mr)
+            }
+                
             
             // Push a new local variable store
             model.currentLVF = LocalVariableFrame( model.currentLVF )
@@ -266,7 +276,7 @@ class RecordingContext : EventContext {
             return KeyPressResult.noOp
             
         case .F1, .F2, .F3, . F4, .F5, .F6:
-            if model.aux.isRecordingKey(event.keyTag.kc) {
+            if model.isRecordingKey(event.keyTag.kc) {
                 
                 // Consider this fn key a stopFn command
                 fallthrough
@@ -282,9 +292,7 @@ class RecordingContext : EventContext {
             }
             
         case .stopFn, .macroStop:
-            if !model.aux.macroSeq.isEmpty {
-                model.saveMacroFunction( SymbolTag(kcFn), model.aux.macroSeq)
-            }
+            model.saveConfiguration()
             model.aux.recordStop()
             model.popContext( event )
             
@@ -293,7 +301,12 @@ class RecordingContext : EventContext {
             return KeyPressResult.macroOp
 
         case .back:
-            if model.aux.macroSeq.isEmpty {
+            guard let mr = model.aux.macroRec else {
+                assert(false)
+                break
+            }
+            
+            if mr.opSeq.isEmpty {
                 
                 // Cancel the recording
                 model.aux.recordStop()
@@ -307,7 +320,8 @@ class RecordingContext : EventContext {
                 // First remove last key
                 model.aux.recordKeyFn( event )
                 
-                if let ctx = model.getRollback(to: model.aux.macroSeq.count) {
+                if let ctx = model.getRollback( to: mr.opSeq.count ) {
+                    
                     // Rollback, put modal function context and block record back
                     model.rollback(ctx)
                 }
@@ -448,6 +462,11 @@ class ModalContext : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
+        guard let mr = model.aux.macroRec else {
+            assert(false)
+            return KeyPressResult.null
+        }
+        
 #if DEBUG
         print( "ModalContext event: \(event.keyTag)")
 #endif
@@ -472,7 +491,7 @@ class ModalContext : EventContext {
                     }
                     else {
                         // Before recording closing brace, extract the macro
-                        self.macroFn = MacroOpSeq( [any MacroOp](model.aux.macroSeq[from...]) )
+                        self.macroFn = MacroOpSeq( [any MacroOp](mr.opSeq[from...]) )
                         
                         // Now record the closing brace of the block
                         model.aux.recordKeyFn( endEvent )
@@ -492,7 +511,7 @@ class ModalContext : EventContext {
                     model.aux.modalRecStop()
                     
                     // Capture the block macro
-                    self.macroFn = model.aux.macroSeq
+                    self.macroFn = mr.opSeq
                     
                     // Queue a .macro event to execute it
                     model.queueEvent( KeyEvent(.macro) )
@@ -519,7 +538,7 @@ class ModalContext : EventContext {
             if event.kc != .macro && model.eventContext?.previousContext is RecordingContext {
                 
                 // Save rollback point in case the single key func is backspaced
-                model.saveRollback( to: model.aux.macroSeq.count )
+                model.saveRollback( to: mr.opSeq.count )
                 
                 // Record the key
                 model.aux.recordKeyFn( event )
@@ -598,6 +617,11 @@ class BlockRecord : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
+        guard let mr = model.aux.macroRec else {
+            assert(false)
+            return KeyPressResult.null
+        }
+
 #if DEBUG
         print( "BlockRecord event: \(event.keyTag)")
 #endif
@@ -618,7 +642,7 @@ class BlockRecord : EventContext {
 
             if openCount == 0 {
                 // Restore the modal context and pass the .macro event
-                model.saveRollback( to: model.aux.macroSeq.count )
+                model.saveRollback( to: mr.opSeq.count )
                 
                 // Pop back to the modal function state
                 model.popContext( event )
@@ -632,7 +656,7 @@ class BlockRecord : EventContext {
             return KeyPressResult.recordOnly
             
         case .back:
-            if model.aux.macroSeq.isEmpty {
+            if mr.opSeq.isEmpty {
                 model.kstate.func2R = psFunctions2R
                 
                 // Cancel both BlockRecord context and the ModalContext that spawned it
@@ -892,12 +916,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func saveMacroFunction( _ sTag: SymbolTag, _ list: MacroOpSeq ) {
         let mr = MacroRec( tag: sTag, seq: list)
-        macroMod.setMacro(sTag, mr)
+        macroMod.saveMacro(mr)
         saveConfiguration()
     }
     
     func clearMacroFunction( _ sTag: SymbolTag) {
-        macroMod.clearMacro(sTag)
+        macroMod.deleteMacro(sTag)
         saveConfiguration()
     }
     
@@ -909,6 +933,27 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
+    func isRecordingKey( _ kc: KeyCode ) -> Bool {
+        
+        /// Return true if kc key is currently recording
+        
+        if let mr = aux.macroRec {
+            
+            if let kcFn = kstate.keyMap.keyAssignment( mr.symTag ) {
+                
+                // We are recording a sym that is assigned to key kcFn
+                return kcFn == kc
+            }
+
+            // recording but no key assignment
+            return false
+        }
+        
+        // Not recording anything
+        return false
+    }
+    
+    
     func recordFnKey( _ kcFn: KeyCode ) {
         
         if let sTag = kstate.keyMap.tagAssignment(kcFn) {
@@ -916,12 +961,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             // TODO: Should eventually find a mr from any module not just current
             if let mr = macroMod.getMacro(sTag) {
                 
-                aux.record( sTag, kc: kcFn, caption: mr.caption )
+                aux.record(mr)
             }
             else {
                 // A tag assigned to this key but no macro rec - should not happen
                 assert(false)
-                aux.record( sTag, kc: kcFn )
             }
         }
         else {
@@ -929,7 +973,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             if let sTag = SymbolTag.getFnSym(kcFn) {
                 
                 kstate.keyMap.assign( kcFn, tag: sTag )
-                aux.record( sTag, kc: kcFn )
+                let mr = MacroRec( tag: sTag )
+                macroMod.saveMacro(mr)
+                aux.record(mr)
             }
             else {
                 // Recording kc key with no possible tag
@@ -939,12 +985,43 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
-    func setMacroCaption( _ cap: String, for tag: SymbolTag ) {
+    func record( _ tag: SymbolTag = SymbolTag(.null) ) {
         
         if let mr = macroMod.getMacro(tag) {
             
-            mr.caption = cap
+            // Start recording symbol tag - which could be null
+            aux.record(mr)
         }
+        else if tag == SymbolTag(.null) {
+            
+            // Null tag was not found - create the null rec
+            let mr = MacroRec()
+            macroMod.saveMacro(mr)
+            aux.record(mr)
+        }
+        else {
+            // A non null tag with no record
+            assert(false)
+        }
+    }
+    
+    
+    func createNewMacro() {
+        
+        // A blank macro record
+        let mr = MacroRec()
+        
+        // Bind to null symbol for now - replacing any currently bound
+        macroMod.saveMacro(mr )
+        
+        // Load into recorder
+        aux.loadMacro(mr)
+    }
+    
+    
+    func setMacroCaption( _ caption: String, for tag: SymbolTag ) {
+        
+        macroMod.setMacroCaption(tag, caption)
     }
     
     
@@ -954,33 +1031,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             // Update key assignment
             kstate.keyMap.assign(kc, tag: new)
-            
-            if var mr = macroMod.getMacro(old) {
-                mr.symTag = new
-            }
-            else {
-                
-                let mr = MacroRec( tag: new, caption: aux.macroCap, seq: aux.macroSeq )
-                
-                macroMod.setMacro(new, mr)
-            }
-
-            aux.macroTag = new
         }
-        else {
-            if var mr = macroMod.getMacro(old) {
-                
-                mr.symTag = new
-            }
-            else {
-                
-                let mr = MacroRec( tag: new, caption: aux.macroCap, seq: aux.macroSeq )
-                
-                macroMod.setMacro(new, mr)
-            }
-            
-            aux.macroTag = new
-        }
+        
+        macroMod.changeMacroTag(from: old, to: new)
     }
     
     

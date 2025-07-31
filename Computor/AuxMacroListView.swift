@@ -14,7 +14,7 @@ struct MacroLibraryView: View {
         
         // if we are recording OR there is a selected symbol, we are in detail view
         
-        if model.aux.macroTag != SymbolTag(.null) || model.aux.recState != .none {
+        if model.aux.recState != .none {
 
             // Detailed view of selected macro
             MacroDetailView(model: model)
@@ -31,6 +31,10 @@ struct MacroLibraryView: View {
 
 struct MacroListView: View {
     @StateObject var model: CalculatorModel
+    
+    @State private var deleteDialog = false
+    
+    @State private var dialogRec: MacroRec? = nil
 
     var body: some View {
         
@@ -52,7 +56,7 @@ struct MacroListView: View {
                         .padding( [.trailing], 5 )
                         .onTapGesture {
                             withAnimation {
-                                model.aux.recState = .stop
+                                model.createNewMacro()
                             }
                         }
                 }
@@ -72,8 +76,7 @@ struct MacroListView: View {
                     
                     LazyVStack {
                         
-                        ForEach ( model.macroMod.macroTable, id: \.symTag ) { mr in
-                            
+                        ForEach ( model.macroMod.macroTable ) { mr in
                             
                             let sym = mr.symTag.getRichText()
                             let caption = mr.caption ?? "ç{GrayText}-caption-"
@@ -102,18 +105,37 @@ struct MacroListView: View {
                                     
                                     // Button controls at right of rows
                                     HStack( spacing: 20 ) {
+                                        
+                                        // PLAY
                                         Button( action: {  } ) {
-                                            Image( systemName: "arrowshape.down" )
+                                            Image( systemName: "play" )
                                         }
-                                        Button( action: {  } ) {
+                                        
+                                        // DELETE
+                                        Button( action: {
+                                            deleteDialog = true
+                                            dialogRec = mr
+                                        } ) {
                                             Image( systemName: "trash" )
                                         }
+                                        .confirmationDialog("Confirm Deletion", isPresented: $deleteDialog, presenting: dialogRec) { mr in
+                                            
+                                            Button("Delete", role: .destructive) {
+                                                dialogRec = nil
+                                                model.macroMod.deleteMacro( mr.symTag )
+                                            }
+                                            
+                                            Button("Cancel", role: .cancel) {
+                                                // User cancelled, do nothing
+                                                dialogRec = nil
+                                            }
+                                        }
+                                        
                                     }.padding( [.trailing], 20 )
                                 }
                                 .onTapGesture {
                                     withAnimation {
-                                        model.aux.macroTag = mr.symTag
-                                        model.aux.macroSeq = mr.opSeq
+                                        model.aux.loadMacro(mr)
                                     }
                                 }
                             }
@@ -136,9 +158,11 @@ struct MacroDetailView: View {
     @State private var renameSheet = false
     
     @State private var symbolSheet = false
+    
+    @State private var refreshView = false
 
     var body: some View {
-        var symTag: SymbolTag = model.aux.macroTag
+        var symTag: SymbolTag = model.aux.macroRec?.symTag ?? SymbolTag(.null)
         
         let symName  = symTag.getRichText()
         
@@ -157,9 +181,14 @@ struct MacroDetailView: View {
                     Image( systemName: "chevron.left")
                         .padding( [.leading], 5 )
                         .onTapGesture {
+                            if let mr = model.aux.macroRec {
+                                if mr.isEmpty {
+                                    model.macroMod.deleteMacro()
+                                }
+                            }
+                            
                             withAnimation {
-                                model.aux.macroTag = SymbolTag(.null)
-                                model.aux.recState = .none
+                                model.aux.clearMacroState()
                             }
                         }
                     
@@ -177,7 +206,7 @@ struct MacroDetailView: View {
                     
                     ScrollView {
                         ScrollViewReader { proxy in
-                            let list = model.aux.macroSeq
+                            let list = model.aux.macroRec?.opSeq ?? MacroOpSeq()
                             
                             VStack(spacing: 1) {
                                 ForEach (list.indices, id: \.self) { x in
@@ -215,7 +244,7 @@ struct MacroDetailView: View {
 
                 // Right panel fields
                 HStack {
-                    let caption = model.aux.macroCap.isEmpty ? "ç{GrayText}-caption-" : model.aux.macroCap
+                    let caption = model.aux.macroRec?.caption ?? "ç{GrayText}-caption-"
                     
                     let modSymStr = model.macroMod.symStr
 
@@ -268,11 +297,13 @@ struct MacroDetailView: View {
 
                             // PLAY
                             Button {
-                                _ = model.playMacroSeq( model.aux.macroSeq )
+                                if let mr = model.aux.macroRec {
+                                    _ = model.playMacroSeq( mr.opSeq )
+                                }
                             } label: {
                                 Image( systemName: "play.fill").frame( minWidth: 0 )
                             }
-                            .disabled( model.aux.recState != .stop || model.aux.macroSeq.isEmpty )
+                            .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
 
                             // STOP
                             Button {
@@ -288,6 +319,7 @@ struct MacroDetailView: View {
                     }
                     Spacer()
                 }
+                .id(refreshView)
                 .padding( [.leading], 10)
                 // .border(.red)
                 // .showSizes([.current])
@@ -298,15 +330,16 @@ struct MacroDetailView: View {
             ZStack {
                 Color("ListBack").edgesIgnoringSafeArea(.all)
                 
-                AuxRenameView( name: model.aux.macroCap )
+                AuxRenameView( name: model.aux.macroRec?.caption ?? "" )
                 {
-                    model.aux.macroCap = $0
-                    
-                    model.setMacroCaption($0, for: symTag)
+                    if let mr = model.aux.macroRec {
+                        mr.caption = $0 == "" ? nil : $0
+                        refreshView.toggle()
+                    }
                 }
-                    .presentationDetents([.fraction(0.4)])
-                    .presentationBackground( Color("ListBack") )
             }
+            .presentationDetents([.fraction(0.4)])
+            .presentationBackground( Color("ListBack") )
         }
         .sheet( isPresented: $symbolSheet ) {
             
@@ -315,10 +348,11 @@ struct MacroDetailView: View {
                     model.changeMacroSymbol(old: symTag, new: tag)
                     symTag = tag
                     symbolSheet = false
+                    refreshView.toggle()
                 }
             }
-            .presentationBackground( Color("SheetBackground") )
             .presentationDetents([.fraction(0.5)])
+            .presentationBackground( Color("SheetBackground") )
         }
     }
 }

@@ -102,7 +102,9 @@ struct MemoryListView: View {
                                         }
                                         
                                         // TRASH CAN
-                                        Button( action: { model.delMemoryItems(set: [index]) } ) {
+                                        Button( action: {
+                                            model.delMemoryItems(set: [index])
+                                        } ) {
                                             Image( systemName: "trash" )
                                         }
                                     }.padding( [.trailing], 20 )

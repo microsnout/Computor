@@ -14,12 +14,16 @@ struct MemoryRec: Codable {
 }
 
 
-class MacroRec: Codable {
+class MacroRec: Codable, Identifiable {
     var symTag:     SymbolTag
     var caption:    String? = nil
     var opSeq:      MacroOpSeq
     
-    init(tag symTag: SymbolTag, caption: String? = nil, seq opSeq: MacroOpSeq) {
+    var id: SymbolTag { symTag }
+    
+    var isEmpty: Bool { symTag == SymbolTag(.null) && caption == nil && opSeq.isEmpty }
+    
+    init(tag symTag: SymbolTag = SymbolTag(.null) , caption: String? = nil, seq opSeq: MacroOpSeq = MacroOpSeq() ) {
         self.symTag = symTag
         self.caption = caption
         self.opSeq = opSeq
@@ -79,7 +83,7 @@ class ModuleFile: Codable {
     // Table of IDs of external referenced modules - array index is encoded in symbols
     var groupTable: [UUID] = []
     
-    // List of macro definitions in this module
+    // List of macro definitions in this module - a macro must have a SymbolTag to be in this list, other fields optional
     var macroTable: [MacroRec] = []
 }
 
@@ -88,6 +92,9 @@ extension ModuleFile {
     var symStr: String { "{\(self.modSym)}" }
     
     func getMacro( _ sTag: SymbolTag ) -> MacroRec? {
+        
+        /// Find a macro in this module from it's symbol tag
+        
         for mr in self.macroTable {
             if mr.symTag == sTag {
                 return mr
@@ -96,19 +103,56 @@ extension ModuleFile {
         return nil
     }
     
-    func clearMacro( _ sTag: SymbolTag ) {
+    
+    func deleteMacro( _ sTag: SymbolTag = SymbolTag(.null) ) {
+        
+        /// Delete a macro from module with given tag
+        /// The null tag is a valid tag for the one allowed Unnamed macro
+        
         self.macroTable.removeAll( where: { $0.symTag == sTag } )
     }
     
-    func setMacro( _ sTag: SymbolTag, _ mr: MacroRec ) {
+    
+    func saveMacro( _ mr: MacroRec ) {
         
-        if let x = self.macroTable.firstIndex( where: { $0.symTag == sTag } ) {
+        /// Save macro in module
+        
+        if let x = self.macroTable.firstIndex( where: { $0.symTag == mr.symTag } ) {
+            
             // Replace existing macro
             self.macroTable[x] = mr
         }
         else {
             // Add new macro to the end
             self.macroTable.append(mr)
+        }
+    }
+    
+    
+    func setMacroCaption( _ tag: SymbolTag, _ caption: String ) {
+        
+        if let mr = getMacro(tag) {
+            
+            mr.caption = caption
+        }
+        else {
+            // Non-existant macro
+            assert(false)
+        }
+    }
+    
+    
+    func changeMacroTag( from oldTag: SymbolTag, to newTag: SymbolTag ) {
+        
+        if let mr = getMacro(oldTag) {
+            
+            // TODO: check for newTag already in use
+            
+            mr.symTag = newTag
+        }
+        else {
+            // Non-existant macro
+            assert(false)
         }
     }
 }

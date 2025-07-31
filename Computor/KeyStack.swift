@@ -793,7 +793,7 @@ struct KeyView: View {
                                 }
                             }
                         })
-                    .if( keyText != nil && !model.aux.isRecordingKey(key.kc) ) { view in
+                    .if( keyText != nil && !model.isRecordingKey(key.kc) ) { view in
                         // Add rich text label to key
                         view.overlay(
                             RichText( keyText!, size: .normal, weight: .bold,
@@ -816,7 +816,7 @@ struct KeyView: View {
                                 .alignmentGuide(.trailing) { $0[.trailing] + 3 }
                         }
                     }
-                    .if( model.aux.isRecordingKey(key.kc) ) { view in
+                    .if( model.isRecordingKey(key.kc) ) { view in
                         // Add red recording dot to macro key
                         view.overlay {
                             redCircle
