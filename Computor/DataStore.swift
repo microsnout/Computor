@@ -50,8 +50,67 @@ extension CalculatorModel {
                                     create: false)
         .appendingPathComponent("computor.state")
     }
+
+    private static func moduleDirectoryURL() throws -> URL {
+        try FileManager.default.url(for: .documentDirectory,
+                                    in: .userDomainMask,
+                                    appropriateFor: nil,
+                                    create: false)
+        .appendingPathComponent("Module3")
+    }
+
     
-    func loadConfig() async throws {
+    func getDocumentsDirectory() -> URL {
+        FileManager.default.urls( for: .documentDirectory, in: .userDomainMask)[0]
+    }
+    
+    func createModuleDirectory() async throws {
+        
+        let modDirURL = try Self.moduleDirectoryURL()
+        
+        do {
+            try FileManager.default.createDirectory( at: modDirURL, withIntermediateDirectories: false, attributes: nil)
+            
+            print("Directory created successfully at: \(modDirURL.path)")
+        }
+        catch CocoaError.fileWriteFileExists {
+            print( "File Already Exists" )
+        }
+        catch {
+            print("Error creating directory: \(error.localizedDescription)")
+        }
+    }
+    
+    
+    func listFiles( inDirectory path: String, withPrefix pattern: String ) -> [String] {
+        
+        let fileManager = FileManager.default
+        
+        do {
+            let contents = try fileManager.contentsOfDirectory(atPath: path)
+            let filteredFiles = contents.filter { $0.hasPrefix(pattern) }
+            return filteredFiles
+        }
+        catch {
+            print("Error listing directory contents: \(error)")
+            return []
+        }
+    }
+    
+    
+    func listDocuments() {
+        
+        let url   = getDocumentsDirectory()
+        let files = listFiles( inDirectory: url.path(), withPrefix: "Module" )
+        
+        for f in files {
+            print("DocFile: \(f)")
+        }
+    }
+    
+    
+    func loadModules() async throws {
+        
         let task = Task<ConfigStore, Error> {
             let fileURL = try Self.configFileURL()
             
@@ -72,7 +131,9 @@ extension CalculatorModel {
         }
     }
 
+    
     func loadState() async throws {
+        
         let task = Task<DataStore, Error> {
             let fileURL = try Self.stateFileURL()
             

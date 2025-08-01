@@ -124,8 +124,13 @@ struct CalculatorView: View {
         .environmentObject(model)
         .task {
             do {
-                try await model.loadConfig()
+                try await model.createModuleDirectory()
+
+                try await model.loadModules()
+                
                 try await model.loadState()
+                
+                model.listDocuments()
             } catch {
                 print( "File load error: \(error.localizedDescription)" )
             }
