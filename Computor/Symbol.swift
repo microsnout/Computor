@@ -15,11 +15,13 @@ struct SymbolTag: Hashable, Codable, Equatable {
 
 
 extension SymbolTag {
-    var kc: KeyCode { KeyCode(rawValue: tag) ?? KeyCode.noop }
+    var kc: KeyCode { KeyCode(rawValue: (tag % 1000000000)) ?? KeyCode.noop }
     
     var isNull: Bool { self.kc == .null }
     
-    var isSingleChar: Bool { tag < 1000 }
+    var isSingleChar: Bool { (tag % 1000000000) < 1000 }
+    
+    var mod: Int { tag / 100000000000 }
     
     func getSymbolText( symName: String, subPt: Int, superPt: Int ) -> String {
         
@@ -60,18 +62,19 @@ extension SymbolTag {
         return ""
     }
     
-    func getSymSpecs() -> ( String, [KeyCode], Int, Int ) {
+    func getSymSpecs() -> ( String, [KeyCode], Int, Int, Int ) {
         
         if isNull {
-            return ( "", [], 0, 0 )
+            return ( "", [], 0, 0, mod )
         }
         
         if isSingleChar {
             let s = kc.str
-            return ( String(s), [kc], 0, 0 )
+            return ( String(s), [kc], 0, 0, mod )
         }
         else {
-            var code = tag
+            // Eliminate mod from tag
+            var code = (tag % 100000000000)
             var symS = ""
             var kcA: [KeyCode] = []
             
@@ -90,7 +93,7 @@ extension SymbolTag {
             let superPt: Int = code % 10
             let subPt: Int   = code / 10
             
-            return (symS, kcA, subPt, superPt)
+            return (symS, kcA, subPt, superPt, mod)
         }
     }
     
@@ -105,7 +108,8 @@ extension SymbolTag {
             return s
         }
         else {
-            var code = tag
+            // Eliminate mod value from tag
+            var code = (tag % 100000000000)
             var symS = ""
             
             for _ in 1...3 {
@@ -126,20 +130,36 @@ extension SymbolTag {
         }
     }
     
+    
     init( _ kc: KeyCode = .null ) {
         
         if let fnTag = SymbolTag.getFnSym(kc) {
             
+            // Split .F1 KeyCode to [.F, .d1]
             self.tag = fnTag.tag
         }
         else {
-            
+            // Store raw KeyCode as tag
             self.tag = kc.rawValue
         }
     }
+   
     
-    init( _ symA: [KeyCode], subPt: Int = 0, superPt: Int = 0 ) {
+    init( _ symA: [KeyCode], subPt: Int = 0, superPt: Int = 0, mod: Int = 0 ) {
+        
+        /// Create SymbolTag
+        
+        // Symbol Format - decimal digits in an Int
+        //   mm s S aaa bbb ccc
+        //   mm  - mod, module index
+        //   s   - subPt
+        //   S   - superPt
+        //   aaa - rightmost sym KeyCode
+        //   bbb - middle sym
+        //   ccc - first sym
+        
         assert( symA.count > 0 && symA.count <= 3 && subPt*superPt == 0 && subPt+superPt <= 3 && subPt+superPt != 1 )
+        assert( mod >= 0 && mod < 100 )
         
         var tag: Int = 0
         var mul: Int = 1
@@ -150,12 +170,12 @@ extension SymbolTag {
             mul *= 1000
         }
         
-        tag += (subPt*10 + superPt) * 1000000000
+        tag += (mod*100 + subPt*10 + superPt) * 1000000000
         
         self.tag = tag
     }
     
-    // ******
+    // ****** Static Fields
     
     static var fnSym: [ KeyCode : SymbolTag ] = [
         .F1 : SymbolTag( [.F, .d1]),
@@ -172,10 +192,10 @@ extension SymbolTag {
 }
 
 
+// *** SYMBOL EDIT POPUP ***
+
 typealias SymbolContinuationClosure = ( _ symTag: SymbolTag ) -> Void
 
-
-// *** SYMBOL EDIT POPUP ***
 
 struct NewSymbolPopup: View, KeyPressHandler {
     
@@ -411,7 +431,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
         }
         .onAppear() {
             // Initialize provided tag specs
-            let (str, arr, subPt, superPt) = tag.getSymSpecs()
+            let (str, arr, subPt, superPt, _) = tag.getSymSpecs()
             self.symName = str
             self.symArray = arr
             self.subPt = subPt
