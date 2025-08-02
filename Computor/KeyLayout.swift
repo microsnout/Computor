@@ -195,7 +195,7 @@ func initKeyLayout() {
                        ]
     )
     
-    SubPadSpec.copySpec(from: .F0, list: [.F1, .F2, .F4, . F4, .F5, .F6])
+    SubPadSpec.copySpec(from: .F0, list: [.F1, .F2, .F3, .F4, .F5, .F6])
     
     SubPadSpec.define( .sin,
                        keySpec: ksSubpad,
