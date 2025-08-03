@@ -133,6 +133,7 @@ struct MacroListView: View {
                                         
                                     }.padding( [.trailing], 20 )
                                 }
+                                .contentShape(Rectangle()) 
                                 .onTapGesture {
                                     withAnimation {
                                         model.aux.loadMacro(mr)

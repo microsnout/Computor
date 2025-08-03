@@ -109,6 +109,7 @@ struct MemoryListView: View {
                                         }
                                     }.padding( [.trailing], 20 )
                                 }
+                                .contentShape(Rectangle()) 
                                 .onTapGesture {
                                     withAnimation {
                                         // Navigate to selected item
