@@ -462,11 +462,6 @@ class ModalContext : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        guard let mr = model.aux.macroRec else {
-            assert(false)
-            return KeyPressResult.null
-        }
-        
 #if DEBUG
         print( "ModalContext event: \(event.keyTag)")
 #endif
@@ -490,6 +485,9 @@ class ModalContext : EventContext {
                         // Stay in this context and wait for another function
                     }
                     else {
+                        // There must be an active macro rec if withinRecContext is true
+                        guard let mr = model.aux.macroRec else { assert(false) }
+                        
                         // Before recording closing brace, extract the macro
                         self.macroFn = MacroOpSeq( [any MacroOp](mr.opSeq[from...]) )
                         
@@ -503,15 +501,19 @@ class ModalContext : EventContext {
                     }
                 }
                 return KeyPressResult.recordOnly
-            } else {
+            }
+            else {
+                // Recording block {..} from normal context
                 
                 model.pushContext( BlockRecord(), lastEvent: event ) { _ in
                     
-                    // Stop recording the Block {}
-                    model.aux.modalRecStop()
+                    guard let mr = model.aux.macroRec else { assert(false) }
                     
                     // Capture the block macro
                     self.macroFn = mr.opSeq
+
+                    // Stop recording the Block {}
+                    model.aux.modalRecStop()
                     
                     // Queue a .macro event to execute it
                     model.queueEvent( KeyEvent(.macro) )
@@ -535,8 +537,12 @@ class ModalContext : EventContext {
             // Disable braces
             model.kstate.func2R = psFunctions2R
             
+            // Check for single key function (not a block) within a recording context
             if event.kc != .macro && model.eventContext?.previousContext is RecordingContext {
                 
+                // We are recording so the macro rec must exist
+                guard let mr = model.aux.macroRec else { assert(false) }
+
                 // Save rollback point in case the single key func is backspaced
                 model.saveRollback( to: mr.opSeq.count )
                 
@@ -589,10 +595,7 @@ class BlockRecord : EventContext {
     var fnRecording = false
     
     override func onActivate(lastEvent: KeyEvent) {
-        guard let model = self.model else {
-            assert(false)
-            return
-        }
+        guard let model = self.model else { assert(false); return }
         
         if model.aux.isRec {
             // Already recording an Fn key
