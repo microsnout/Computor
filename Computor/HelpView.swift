@@ -83,7 +83,7 @@ struct HelpView: View {
                 .padding()
                 .frame( maxWidth: .infinity, maxHeight: .infinity)
             }
-            .background( Color("Display") )
+            .background( Color("veryLightGreen") )
             .border( Color("Frame"), width: 3)
         }
         .frame( maxWidth: .infinity, maxHeight: .infinity)
