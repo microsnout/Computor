@@ -404,7 +404,7 @@ class ModalContext : EventContext {
     override func onActivate( lastEvent: KeyEvent) {
         if let model = self.model {
             // We could be used within a recording context or a normal context
-            withinRecContext = model.eventContext?.previousContext is RecordingContext
+            withinRecContext = model.previousContext is RecordingContext
             
             // Enable the open brace key on keyboard
             model.kstate.func2R = psFunctions2Ro
@@ -538,7 +538,7 @@ class ModalContext : EventContext {
             model.kstate.func2R = psFunctions2R
             
             // Check for single key function (not a block) within a recording context
-            if event.kc != .macro && model.eventContext?.previousContext is RecordingContext {
+            if event.kc != .macro && model.previousContext is RecordingContext {
                 
                 // We are recording so the macro rec must exist
                 guard let mr = model.aux.macroRec else { assert(false) }
@@ -761,6 +761,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // Current event handling context - Normal, Recording, Entry, ModalFunction, Block
     var eventContext: EventContext?  = nil
     
+    var previousContext: EventContext? { eventContext?.previousContext }
+    
     // Storage of memories local to a block {..}
     var currentLVF: LocalVariableFrame? = nil
     
@@ -811,7 +813,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     func popContext( _ event: KeyEvent = KeyEvent(.null), runCCC: Bool = true ) {
         
         // Restore previous context
-        if let oldContext = eventContext?.previousContext {
+        if let oldContext = previousContext {
             
             eventContext?.onDeactivate( lastEvent: event )
             self.eventContext = oldContext
