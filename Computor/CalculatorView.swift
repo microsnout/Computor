@@ -117,7 +117,8 @@ struct CalculatorView: View {
                     .ignoresSafeArea(.keyboard)
                 }
                 .sheet( isPresented: $presentSettings ) {
-                    ControlView()
+                    ControlView( model: model )
+                        .presentationDetents([.fraction(0.8)])
                 }
             }
         }

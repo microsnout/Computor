@@ -9,16 +9,27 @@ import SwiftUI
 
 struct LibraryView: View {
     
+    @StateObject var model: CalculatorModel
+
     var body: some View {
         
-        List {
-            Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        
+        VStack {
+            VStack {
+                Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+            }
+            .frame( height: 80 )
+            .frame( maxWidth: .infinity )
+            .background(Color("SheetBack"))
+            .cornerRadius( 12 , corners: UIRectCorner.bottomLeft.union(UIRectCorner.bottomRight) )
+
+            Spacer()
         }
-        .background(Color("ListBack"))
+        .background(Color("PopBack"))
         .scrollContentBackground(.hidden)
     }
 }
 
-#Preview {
-    LibraryView()
-}
+//#Preview {
+//    LibraryView()
+//}

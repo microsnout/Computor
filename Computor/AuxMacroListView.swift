@@ -327,12 +327,13 @@ struct MacroDetailView: View {
             }
         }
         .padding( [.bottom, .leading, .trailing], 5 )
+        
+        // Macro Rename Sheet
         .sheet(isPresented: $renameSheet) {
             ZStack {
                 Color("ListBack").edgesIgnoringSafeArea(.all)
                 
-                AuxRenameView( name: model.aux.macroRec?.caption ?? "" )
-                {
+                AuxRenameView( name: model.aux.macroRec?.caption ?? "" ) {
                     if let mr = model.aux.macroRec {
                         mr.caption = $0 == "" ? nil : $0
                         refreshView.toggle()
@@ -340,8 +341,10 @@ struct MacroDetailView: View {
                 }
             }
             .presentationDetents([.fraction(0.4)])
-            .presentationBackground( Color("ListBack") )
+            .presentationBackground( Color("SheetBack") )
         }
+        
+        // Macro Change Symbol
         .sheet( isPresented: $symbolSheet ) {
             
             VStack {
@@ -353,7 +356,7 @@ struct MacroDetailView: View {
                 }
             }
             .presentationDetents([.fraction(0.5)])
-            .presentationBackground( Color("SheetBackground") )
+            .presentationBackground( Color("SheetBack") )
         }
     }
 }
