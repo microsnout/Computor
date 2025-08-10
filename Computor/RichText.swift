@@ -61,7 +61,7 @@ struct RichText: View {
         var subScriptFont: Font = self.subScriptFont
         var baseLine = self.baseLine
 
-        let opCodeSet:Set<Character> = ["^", "_", "=", "ç", "ƒ"]
+        let opCodeSet:Set<Character> = ["^", "_", "=", "ç", "ƒ", "ß"]
         
         while let validIndex = string.firstIndex( where: { (ch) -> Bool in  return opCodeSet.contains(ch) }) {
             
@@ -116,6 +116,11 @@ struct RichText: View {
                 text = text + Text(opStr)
                     .font(bodyFont).monospaced()
                     .foregroundColor( Color(color))
+
+            case "ß":
+                text = text + Text(opStr)
+                    .font(bodyFont)
+                    .foregroundColor( Color("ModText") )
                 
             case "ç":
                 color = opStr.isEmpty ? defaultColor : opStr

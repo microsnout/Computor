@@ -331,7 +331,7 @@ struct MacroDetailView: View {
         // Macro Rename Sheet
         .sheet(isPresented: $renameSheet) {
             ZStack {
-                Color("ListBack").edgesIgnoringSafeArea(.all)
+                Color("ControlBack").edgesIgnoringSafeArea(.all)
                 
                 AuxRenameView( name: model.aux.macroRec?.caption ?? "" ) {
                     if let mr = model.aux.macroRec {
@@ -356,7 +356,7 @@ struct MacroDetailView: View {
                 }
             }
             .presentationDetents([.fraction(0.5)])
-            .presentationBackground( Color("SheetBack") )
+            .presentationBackground( Color("ControlBack") )
         }
     }
 }

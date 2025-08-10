@@ -30,9 +30,18 @@ struct CalculatorView: View {
             }
             else {
                 ZStack {
+                    Color( Color("SafeBack") )
+                        .edgesIgnoringSafeArea( .all )
+                    
                     Rectangle()
                         .fill(Color("Background"))
-                        .edgesIgnoringSafeArea( .all )
+                        .cornerRadius(15)
+                        .padding( [.leading, .trailing], 15 )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(Color.black, lineWidth: 1)
+                                .padding( [.leading, .trailing], 15 )
+                        )
                     
                     KeyStack( keyPressHandler: model ) {
                         VStack( spacing: 5 ) {
@@ -118,7 +127,7 @@ struct CalculatorView: View {
                 }
                 .sheet( isPresented: $presentSettings ) {
                     ControlView( model: model )
-                        .presentationDetents([.fraction(0.8)])
+                        .presentationDetents( [.fraction(0.7), .fraction(1.0)] )
                 }
             }
         }

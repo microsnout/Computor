@@ -118,12 +118,15 @@ struct MemoryDetailView: View {
             .onChange( of: itemIndex ) { oldIndex, newIndex in
                 position = newIndex
             }
+            
+            // Rename Memory
             .sheet(isPresented: $renameSheet) {
                 ZStack {
-                    Color("ListBack").edgesIgnoringSafeArea(.all)
+                    Color("ControlBack").edgesIgnoringSafeArea(.all)
+                    
                     MemoryRenameView( model: model )
                         .presentationDetents([.fraction(0.4)])
-                        .presentationBackground( Color("ListBack") )
+                        .presentationBackground( Color("ControlBack") )
                 }
             }
         }

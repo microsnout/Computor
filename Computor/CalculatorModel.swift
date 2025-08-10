@@ -485,7 +485,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         if entry.entryMode && stkIndex == regX {
             
             // We are in data entry mode and looking for the X reg
-            var text = "ƒ{0.8}ç{Frame}={X  }ç{}ƒ{}"
+            var text = "ƒ{0.8}ç{RegLetterText}={X  }ç{}ƒ{}"
             
             text.append( "={\(entry.entryText)}" )
             
@@ -501,7 +501,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         let tv = state.stack[stkIndex]
-        var text = "ƒ{0.8}ç{Frame}={\(CalculatorModel.stackRegNames[stkIndex])  }ç{}ƒ{}"
+        var text = "ƒ{0.8}ç{RegLetterText}={\(CalculatorModel.stackRegNames[stkIndex])  }ç{}ƒ{}"
         let (valueStr, _) = tv.renderRichText()
         text += valueStr
         return text

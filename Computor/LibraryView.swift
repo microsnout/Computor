@@ -14,18 +14,16 @@ struct LibraryView: View {
     var body: some View {
         
         
-        VStack {
-            VStack {
-                Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        List {
+            Section ( header: SectionHeaderText( text: "MODULES" ) ) {
+                
             }
-            .frame( height: 80 )
-            .frame( maxWidth: .infinity )
-            .background(Color("SheetBack"))
-            .cornerRadius( 12 , corners: UIRectCorner.bottomLeft.union(UIRectCorner.bottomRight) )
+            .listSectionSeparator(.hidden, edges: .top)
+            .listSectionSeparatorTint( Color("AccentText"))
 
-            Spacer()
         }
-        .background(Color("PopBack"))
+        .listStyle( .grouped )
+        .background(Color("ControlBack"))
         .scrollContentBackground(.hidden)
     }
 }

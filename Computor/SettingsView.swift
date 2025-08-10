@@ -21,6 +21,19 @@ enum SoftkeyUnits: Int, Hashable {
 }
 
 
+struct SectionHeaderText: View {
+    let text: String
+    
+    var body: some View {
+        Text(text)
+            .font(.system( .title3, design: .monospaced ))
+            .bold()
+            .foregroundColor( Color("AccentText") )
+            .padding(.vertical, 0)
+    }
+}
+
+
 struct SettingsView: View {
     @AppStorage(.settingsDarkModeKey)
     private var darkMode = false
@@ -41,14 +54,17 @@ struct SettingsView: View {
     private var keyCaptions = true
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
-                Section( header: Text("Colors").foregroundColor(Color("DisplayText"))  ) {
+                // SECTION COLORS
+                Section( header: SectionHeaderText( text: "Colors")  ) {
                     Toggle("Display Dark Mode", isOn: $darkMode)
                 }
-                .listRowBackground(Color("Display"))
-                
-                Section( header: Text("Primary Display").foregroundColor(Color("DisplayText"))  ) {
+                .listSectionSeparator(.hidden, edges: .top)
+                .listSectionSeparatorTint( Color("AccentText"))
+
+                // SECTION PRI DISPLAY
+                Section( header: SectionHeaderText( text: "Primary Display").foregroundColor(Color("DisplayText"))  ) {
                     Picker( selection: $priDispTextSize, label: Text("Text Size")) {
                         Text("Small").tag(TextSize.small)
                         Text("Medium").tag(TextSize.normal)
@@ -56,21 +72,29 @@ struct SettingsView: View {
                     }
                     
                 }
+                .listSectionSeparator(.hidden, edges: .top)
+                .listSectionSeparatorTint( Color("AccentText"))
 
-                Section( header: Text("Auxiliary Display").foregroundColor(Color("DisplayText"))  ) {
+                // SECTION AUX DISPLAY
+                Section( header: SectionHeaderText( text: "Auxiliary Display").foregroundColor(Color("DisplayText"))  ) {
                     Picker( selection: $auxDispTextSize, label: Text("Text Size")) {
                         Text("Small").tag(TextSize.small)
                         Text("Medium").tag(TextSize.normal)
                         Text("Large").tag(TextSize.large)
                     }
                 }
-                
-                Section( header: Text("Keyboard").foregroundColor(Color("DisplayText")) ) {
+                .listSectionSeparator(.hidden, edges: .top)
+                .listSectionSeparatorTint( Color("AccentText"))
+
+                // SECTION KEYBOARD
+                Section( header: SectionHeaderText( text: "Keyboard").foregroundColor(Color("DisplayText")) ) {
                     
                     Toggle("Serif Font", isOn: $serifFont)
+                        .listRowSeparator(.hidden)
 
                     Toggle("Key help captions", isOn: $keyCaptions)
-                    
+                        .listRowSeparator(.hidden)
+
                     Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
                         Text("Default").tag(SoftkeyUnits.mixed)
                         Text("Metric").tag(SoftkeyUnits.metric)
@@ -80,11 +104,13 @@ struct SettingsView: View {
                         Text("Navigation").tag(SoftkeyUnits.navigation)
                     }
                 }
+                .listSectionSeparator(.hidden, edges: .top)
+                .listSectionSeparatorTint( Color("AccentText"))
             }
-            .background(Color("ListBack"))
+            .listStyle( .grouped )
+            .background(Color("ControlBack"))
             .scrollContentBackground(.hidden)
         }
-        .navigationBarTitle("Settings")
     }
 }
 

@@ -19,21 +19,21 @@ struct ControlView: View {
                 .tabItem {
                     Label( "Modules", systemImage: "book.pages" )
                 }
-                .toolbarBackground( Color("ListBack"), for: .tabBar)
+                .toolbarBackground( Color("Background"), for: .tabBar)
                 .toolbarBackgroundVisibility(.visible, for: .tabBar)
             
             SettingsView()
                 .tabItem {
                     Label( "Settings", systemImage: "slider.horizontal.3" )
                 }
-                .toolbarBackground( Color("ListBack"), for: .tabBar)
+                .toolbarBackground( Color("Background"), for: .tabBar)
                 .toolbarBackgroundVisibility(.visible, for: .tabBar)
 
             HelpView()
                 .tabItem {
                     Label( "Help", systemImage: "books.vertical" )
                 }
-                .toolbarBackground( Color("ListBack"), for: .tabBar)
+                .toolbarBackground( Color("Background"), for: .tabBar)
                 .toolbarBackgroundVisibility(.visible, for: .tabBar)
         }
     }
