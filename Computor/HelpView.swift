@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HelpView: View {
     
-    @State private var page = "seq"
+    @State private var page = "keyhelp"
     
     @State private var pageText: String = ""
     
@@ -22,18 +22,31 @@ struct HelpView: View {
             List {
                 ForEach( 0..<blocks.count, id:\.self ) { x in
                     let txt = blocks[x]
+                    let letter = txt.hasPrefix("@@")
                     
-                    ZStack {
-                        Rectangle()
-                            .fill(Color("ControlBack"))
-                            .cornerRadius(15)
-                            .overlay(
-                                RoundedRectangle( cornerRadius: 15)
-                                    .stroke( Color("Frame"), lineWidth: 3)
-                            )
+                    if letter {
+                        let lines = txt.split( separator: "\n")
+                        let line  = String( lines[0].dropFirst(2) )
+
+                        ZStack( alignment: .leading ) {
+                            RichText( line, size: .large, weight: .bold, design: .default, defaultColor: "AccentText")
+                        }
+                    }
+                    else {
+                        let line = String( txt.dropLast(1) )
                         
-                        RichText( txt, size: .normal, weight: .medium, design: .default)
-                            .padding(10)
+                        ZStack( alignment: .leading ) {
+                            Rectangle()
+                                .fill(Color("ControlBack"))
+                                .cornerRadius(15)
+                                .overlay(
+                                    RoundedRectangle( cornerRadius: 15)
+                                        .stroke( Color("Frame"), lineWidth: 3)
+                                )
+                            
+                            RichText( line, size: .normal, weight: .medium, design: .default)
+                                .padding(10)
+                        }
                     }
                 }
             }

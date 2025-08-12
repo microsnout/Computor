@@ -1,0 +1,87 @@
+@@M
+####
+ç{AccentText}ƒ{1.3}Map-x ƒ{}ç{}
+Maps a function ƒ(x) to each element of a sequence
+
+ß{Parameters:}
+    X: [1 x N] matrix of any type
+    
+ß{Example:}
+    4 <Range>
+        x: [1 2 3 4]
+    Map-x x^{2}
+        x: [1 4 9 16]
+
+ß{Notes:}
+Function is entered after invoking Map fn and can be a single key like x^{2} or a compound function {...}
+####
+ç{AccentText}ƒ{1.3}Map-xy ƒ{}ç{}
+Maps a function ƒ(x,y) to each element of 2 sequences
+
+ß{Parameters:}
+    Y: [1 x N] row matrix
+    X: [1 x N] row matrix
+    
+ß{Example:}
+    4 <Range> <Enter>
+        y: [1, 2, 3, 4]
+        x: [1, 2, 3, 4]
+    100 X
+        y: [1, 2, 3, 4]
+        x: [100, 200, 300, 400]
+    Map-xy +
+        x: [101, 201, 301, 401]
+
+ß{Notes:}
+Function ƒ(x,y) is entered after invoking Map fn and can be a single key like '+' or a compound function {...}
+####
+ç{AccentText}ƒ{1.3}Map-xyz ƒ{}ç{}
+    - Not yet implemented
+####
+ç{AccentText}ƒ{1.3}Range ƒ{}ç{}
+Generates a range of integers from 1 to N
+
+ß{Parameters:}
+    X: N
+    
+ß{Example:}
+    6 <Seq>
+        x: [1, 2, 3, 4, 5, 6]
+####
+@@R
+####
+ç{AccentText}ƒ{1.3}Reduce ƒ{}ç{}
+Combine all elements of a sequence into a single value. Applies ƒ(x, y) to succesive elements of X
+
+ß{Parameters:}
+    Y: Initial scalar value
+    X: [1 x N] Sequence of values
+    
+ß{Example:}
+    5 <Range>
+        x: [1, 2, 3, 4, 5]
+    <CLRy>
+    <Reduce> '+'
+        x: 15
+        
+ß{Notes:}
+Value returned by ƒ is passed in Y to next iteration. Final return value of ƒ is left in X
+####
+@@S
+####
+ç{AccentText}ƒ{1.3}Seq: Sequence ƒ{}ç{}
+Generates a sequence of values in a Row matrix
+
+ß{Parameters:}
+    Z: Initial value
+    Y: Increment value
+    X: Number of iterations
+    
+ß{Example:}
+    10 <Enter>
+    2 <Enter>
+    6 <Seq>
+        x: [10, 12, 14, 16, 18, 20]
+    
+ß{Notes:}
+- Any type that supports addition '+' is supported

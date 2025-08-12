@@ -59,6 +59,7 @@ struct SettingsView: View {
                 // SECTION COLORS
                 Section( header: SectionHeaderText( text: "Colors")  ) {
                     Toggle("Display Dark Mode", isOn: $darkMode)
+                        .tint( Color("Frame"))
                 }
                 .listSectionSeparator(.hidden, edges: .top)
                 .listSectionSeparatorTint( Color("AccentText"))
@@ -90,9 +91,11 @@ struct SettingsView: View {
                 Section( header: SectionHeaderText( text: "Keyboard").foregroundColor(Color("DisplayText")) ) {
                     
                     Toggle("Serif Font", isOn: $serifFont)
+                        .tint( Color("Frame"))
                         .listRowSeparator(.hidden)
 
                     Toggle("Key help captions", isOn: $keyCaptions)
+                        .tint( Color("Frame"))
                         .listRowSeparator(.hidden)
 
                     Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
