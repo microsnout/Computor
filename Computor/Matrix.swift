@@ -305,6 +305,23 @@ func installMatrix( _ model: CalculatorModel ) {
                        }
                        return s1
                    },
+        
+        
+        OpPattern( [.X([.real]), .Y([.real], .matrix)] ) { s0 in
+            
+            /// Multiply any matrix by a real scalar
+            
+            // Scalar value X
+            let x = s0.X
+            
+            var s1 = s0
+            s1.stackDrop()
+            
+            s1.Xtv.transformValues() { value, _, _, _ in
+                return x*value
+            }
+            return s1
+        }
     ])
     
     
