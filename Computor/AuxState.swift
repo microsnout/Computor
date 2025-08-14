@@ -38,12 +38,6 @@ struct AuxState {
     var recState: MacroRecState = .none
     
     var macroRec: MacroRec? = nil
-    
-    // Pause recording when value greater than 0
-    var pauseCount: Int = 0
-    
-    // Number of active modal recording blocks {..}
-    var modalRecCount: Int = 0
 }
 
 
@@ -66,8 +60,6 @@ extension AuxState {
     mutating func clearMacroState() {
         
         macroRec = nil
-        pauseCount = 0
-        modalRecCount = 0
         recState = .none
     }
     
@@ -100,14 +92,13 @@ extension AuxState {
             assert( macroRec != nil )
             macroRec = mr
             mr.opSeq.clear()
-            modalRecCount = 0
             activeView = .macroList
             recState = .record
-
+            
             // Log debug output
             let auxTxt = getDebugText()
             logAux.debug( "startRecFn: \(auxTxt)" )
-
+            
         default:
             assert(false)
             break
@@ -124,19 +115,14 @@ extension AuxState {
             macroRec = MacroRec()
             activeView = .macroList
             disableAllFnSubmenu()
-            modalRecCount = 1
             recState = .recModal
-
+            
         case .record:
-            modalRecCount = 1
             recState = .recNestedModal
             
-        case .recModal:
-            modalRecCount += 1
-
-        case .recNestedModal:
-            modalRecCount += 1
-
+        case .recModal, .recNestedModal:
+            break
+            
         default:
             // Should not happen
             assert(false)
@@ -152,9 +138,6 @@ extension AuxState {
         case .record:
             recState = .stop
             
-            // Re-enable all recording keys
-            SubPadSpec.disableList.removeAll()
-            
         case .recNestedModal:
             // Cancel recording as modal rec is incomplete
             clearMacroState()
@@ -162,8 +145,7 @@ extension AuxState {
             
             // Re-enable all recording keys
             SubPadSpec.disableList.removeAll()
-
-
+            
         default:
             // Should not happen
             assert(false)
@@ -174,22 +156,15 @@ extension AuxState {
         let auxTxt = getDebugText()
         logAux.debug( "stopRecFn: \(auxTxt)" )
     }
-
+    
     
     mutating func modalRecStop() {
         
         switch recState {
             
         case .recModal, .recNestedModal:
-            modalRecCount -= 1
-           
-            if modalRecCount == 0 {
-                // Re-enable all recording keys
-                SubPadSpec.disableList.removeAll()
-            }
-            
             recState = recState == .recNestedModal ? .record : .none
-
+            
         default:
             // Should not happen
             assert(false)
@@ -211,134 +186,7 @@ extension AuxState {
             txt += String( describing: mr.symTag )
             txt += " OpSeq:\(mr.opSeq.getDebugText()) Rec:"
         }
-        txt += " Pause:\(pauseCount)"
         return txt
-    }
-    
-    mutating func pauseRecording() {
-        pauseCount += 1
-    }
-
-    mutating func resumeRecording() {
-        pauseCount -= 1
-    }
-    
-    
-    func markMacroIndex() -> Int {
-        guard let mr = macroRec else {
-            assert(false)
-            return 0
-        }
-        
-        // The index of the next element to be added will be...
-        return mr.opSeq.count
-    }
-    
-    
-    mutating func recordKeyFn( _ event: KeyEvent ) {
-        if pauseCount > 0 {
-            logAux.debug( "recordKeyFn: Paused" )
-            return
-        }
-        
-        if !isRec
-        {
-            logAux.debug( "recordKeyFn: Not Recording" )
-            return
-        }
-        
-        guard let mr = macroRec else {
-            // No macro record despite isRec is true
-            assert(false)
-            return
-        }
-        
-        switch event.kc {
-            
-        case .enter:
-            if let last = mr.opSeq.last,
-               let value = last as? MacroValue
-            {
-                if value.tv.tag == tagUntyped {
-                    
-                    // An enter is not needed in recording if preceeded by an untyped value
-                    break
-                }
-            }
-            // Otherwise record the key
-            mr.opSeq.append( MacroKey( event ) )
-
-        case .back:
-            // Backspace, need to remove last op or possibly undo a unit tag
-            if let last = mr.opSeq.last {
-                
-                if let value = last as? MacroValue
-                {
-                    // Last op is a value op
-                    if value.tv.tag == tagUntyped {
-                        
-                        // No unit tag, just remove the value
-                        mr.opSeq.removeLast()
-                    }
-                    else {
-                        // A tagged value, remove the tag
-                        mr.opSeq.removeLast()
-                        var tv = value.tv
-                        tv.tag = tagUntyped
-                        mr.opSeq.append( MacroValue( tv: tv))
-                    }
-                }
-                else {
-                    // Last op id just a key op
-                    mr.opSeq.removeLast()
-                }
-            }
-            
-        case let kc where kc.isUnit:
-            if let last = mr.opSeq.last,
-               let value = last as? MacroValue
-            {
-                if value.tv.tag == tagUntyped {
-                    
-                    // Last macro op is an untyped value
-                    if let tag = TypeDef.tagFromKeyCode(kc) {
-                        
-                        var tv = value.tv
-                        mr.opSeq.removeLast()
-                        tv.tag = tag
-                        mr.opSeq.append( MacroValue( tv: tv))
-                        break
-                    }
-                }
-            }
-            fallthrough
-            
-        default:
-            // Just record the key
-            mr.opSeq.append( MacroKey( event ) )
-        }
-        
-        // Log debug output
-        let auxTxt = getDebugText()
-        logAux.debug( "recordKeyFn: \(auxTxt)" )
-    }
-    
-    
-    mutating func recordValueFn( _ tv: TaggedValue ) {
-        if isRec
-        {
-            guard let mr = macroRec else {
-                // No macro record despite isRec is true
-                assert(false)
-                return
-            }
-
-            mr.opSeq.append( MacroValue( tv: tv) )
-            
-            // Log debug output
-            let auxTxt = getDebugText()
-            logAux.debug( "recordValueFn: \(auxTxt)" )
-        }
     }
     
 }

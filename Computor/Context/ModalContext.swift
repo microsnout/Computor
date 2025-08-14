@@ -91,10 +91,10 @@ class ModalContext : EventContext {
             if withinRecContext {
                 
                 // Record the open brace of the block
-                model.aux.recordKeyFn(event)
+                model.recordKeyEvent(event)
                 
                 // Save start index to recording for extracting block {..}
-                let from = model.aux.markMacroIndex()
+                let from = model.markMacroIndex()
                 
                 model.pushContext( BlockRecord(), lastEvent: event ) { endEvent in
                     
@@ -110,7 +110,7 @@ class ModalContext : EventContext {
                         self.macroFn = MacroOpSeq( [any MacroOp](mr.opSeq[from...]) )
                         
                         // Now record the closing brace of the block
-                        model.aux.recordKeyFn( endEvent )
+                        model.recordKeyEvent( endEvent )
                         
                         model.aux.modalRecStop()
                         
@@ -165,7 +165,7 @@ class ModalContext : EventContext {
                 model.saveRollback( to: mr.opSeq.count )
                 
                 // Record the key
-                model.aux.recordKeyFn( event )
+                model.recordKeyEvent( event )
             }
             
             // Restore either the Normal context before executing the function
@@ -175,7 +175,7 @@ class ModalContext : EventContext {
             model.pushState()
             
             model.pauseUndoStack()
-            model.aux.pauseRecording()
+            model.pauseRecording()
             
             // ModalExecute runs with Undo stack paused
             let result =  modalExecute( event )
@@ -184,7 +184,7 @@ class ModalContext : EventContext {
                 model.popState()
             }
             
-            model.aux.resumeRecording()
+            model.resumeRecording()
             model.resumeUndoStack()
             return result
         }

@@ -23,7 +23,7 @@ class RecordingContext : EventContext {
             // Start recording the indicated Fn key
             self.kcFn = kcFn
             
-            model.recordFnKey(kcFn)
+            model.startRecordingFnKey(kcFn)
             
             // Push a new local variable store
             model.currentLVF = LocalVariableFrame( model.currentLVF )
@@ -84,7 +84,7 @@ class RecordingContext : EventContext {
                 return KeyPressResult.noOp
             } else {
                 
-                model.aux.recordKeyFn( event )
+                model.recordKeyEvent( event )
                 return model.execute( event )
             }
             
@@ -115,7 +115,7 @@ class RecordingContext : EventContext {
             }
             else {
                 // First remove last key
-                model.aux.recordKeyFn( event )
+                model.recordKeyEvent( event )
                 
                 if let ctx = model.getRollback( to: mr.opSeq.count ) {
                     
@@ -147,7 +147,7 @@ class RecordingContext : EventContext {
                         model.acceptTextEntry()
                         
                         // Record the value and key when returning to a recording context
-                        model.aux.recordValueFn( model.state.Xtv )
+                        model.recordValueEvent( model.state.Xtv )
                     }
                 }
                 return KeyPressResult.dataEntry
@@ -156,7 +156,7 @@ class RecordingContext : EventContext {
             // Record key and execute it
             let result = model.execute( event )
             if result != .stateError {
-                model.aux.recordKeyFn( event )
+                model.recordKeyEvent( event )
             }
             return result
         }

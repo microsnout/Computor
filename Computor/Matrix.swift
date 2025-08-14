@@ -111,7 +111,7 @@ func installMatrix( _ model: CalculatorModel ) {
             model.state.stackDrop()
             
             model.pauseUndoStack()
-            model.aux.pauseRecording()
+            model.pauseRecording()
             
             for c in seq {
                 // Copy current result value to result array
@@ -122,13 +122,13 @@ func installMatrix( _ model: CalculatorModel ) {
                 
                 if model.keyPress( KeyEvent(.plus)) != .stateChange {
                     // Addition error
-                    model.aux.resumeRecording()
+                    model.resumeRecording()
                     model.resumeUndoStack()
                     return nil
                 }
                 
             }
-            model.aux.resumeRecording()
+            model.resumeRecording()
             model.resumeUndoStack()
             
             // Copy state, remove parameters and put result in X

@@ -33,7 +33,7 @@ class BlockRecord : EventContext {
         }
         
         // Save the starting macro index
-        macroIndex = model.aux.markMacroIndex()
+        macroIndex = model.markMacroIndex()
         
         // Enable the close brace key on keyboard
         model.kstate.func2R = psFunctions2Rc
@@ -59,7 +59,7 @@ class BlockRecord : EventContext {
             
         case .openBrace:
             openCount += 1
-            model.aux.recordKeyFn(event)
+            model.recordKeyEvent(event)
             return KeyPressResult.recordOnly
             
         case .closeBrace:
@@ -78,7 +78,7 @@ class BlockRecord : EventContext {
             openCount -= 1
             
             // Record the close brace and continue
-            model.aux.recordKeyFn(event)
+            model.recordKeyEvent(event)
             return KeyPressResult.recordOnly
             
         case .back:
@@ -92,10 +92,10 @@ class BlockRecord : EventContext {
                 return KeyPressResult.stateUndo
             }
             else {
-                if macroIndex == model.aux.markMacroIndex() {
+                if macroIndex == model.markMacroIndex() {
                     
                     // Remove last key event from recording
-                    model.aux.recordKeyFn( event )
+                    model.recordKeyEvent( event )
                     
                     // We have deleted the opening brace, return to modal function context
                     model.popContext( event )
@@ -104,7 +104,7 @@ class BlockRecord : EventContext {
                 }
                 else {
                     // Remove last key event from recording
-                    model.aux.recordKeyFn( event )
+                    model.recordKeyEvent( event )
                     
                     return KeyPressResult.stateUndo
                 }
@@ -119,14 +119,14 @@ class BlockRecord : EventContext {
                         
                         // Grab the entered data value and record it
                         let tv = model.grabTextEntry()
-                        model.aux.recordValueFn( tv )
+                        model.recordValueEvent( tv )
                     }
                 }
                 return KeyPressResult.dataEntry
             }
             
             // Record the key event
-            model.aux.recordKeyFn(event)
+            model.recordKeyEvent(event)
             return KeyPressResult.recordOnly
         }
     }
@@ -136,7 +136,7 @@ class BlockRecord : EventContext {
         
         guard let model = self.model else { return }
         
-        model.aux.recordValueFn(tv)
+        model.recordValueEvent(tv)
         model.pushValue(tv)
     }
 }

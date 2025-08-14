@@ -169,10 +169,18 @@ struct MacroFileRec: Codable {
 }
 
 
-struct MacroFileTable: Codable {
+struct StateFileRec: Codable {
+    
+    var id: UUID
+    var caption: String?
+}
+
+
+struct ComputorIndexFile: Codable {
     
     /// Only one of these tables per app
     /// Contains a record of each macro library file
     
-    var fileTable:  [MacroFileRec]
+    var stateTable: [StateFileRec]
+    var macroTable: [MacroFileRec]
 }

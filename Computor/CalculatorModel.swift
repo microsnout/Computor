@@ -138,6 +138,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // Current selected macro module file
     var macroMod = ModuleFile()
+    
+    // Pause recording when value greater than 0
+    var pauseRecCount: Int = 0
 
     // Display window into register stack
     let displayRows = 3
@@ -343,7 +346,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
-    func recordFnKey( _ kcFn: KeyCode ) {
+    func startRecordingFnKey( _ kcFn: KeyCode ) {
         
         if let sTag = kstate.keyMap.tagAssignment(kcFn) {
             
@@ -374,6 +377,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
+    // *** NOT USED ***
     func record( _ tag: SymbolTag = SymbolTag(.null) ) {
         
         if let mr = macroMod.getMacro(tag) {
@@ -396,6 +400,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     
     func createNewMacro() {
+        
+        /// Called from MacroListView 'plus' button
         
         // A blank macro record
         let mr = MacroRec()
@@ -459,6 +465,134 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         popContext( KeyEvent(.macroPlay) )
         
         return KeyPressResult.stateChange
+    }
+    
+    // *** *** ***
+    
+    func pauseRecording() {
+        pauseRecCount += 1
+    }
+    
+    func resumeRecording() {
+        pauseRecCount -= 1
+    }
+    
+    
+    func markMacroIndex() -> Int {
+        guard let mr = aux.macroRec else {
+            assert(false)
+            return 0
+        }
+        
+        // The index of the next element to be added will be...
+        return mr.opSeq.count
+    }
+    
+    
+    func recordKeyEvent( _ event: KeyEvent ) {
+        if pauseRecCount > 0 {
+            logAux.debug( "recordKeyFn: Paused" )
+            return
+        }
+        
+        if !aux.isRec
+        {
+            logAux.debug( "recordKeyFn: Not Recording" )
+            return
+        }
+        
+        guard let mr = aux.macroRec else {
+            // No macro record despite isRec is true
+            assert(false)
+            return
+        }
+        
+        switch event.kc {
+            
+        case .enter:
+            if let last = mr.opSeq.last,
+               let value = last as? MacroValue
+            {
+                if value.tv.tag == tagUntyped {
+                    
+                    // An enter is not needed in recording if preceeded by an untyped value
+                    break
+                }
+            }
+            // Otherwise record the key
+            mr.opSeq.append( MacroKey( event ) )
+            
+        case .back:
+            // Backspace, need to remove last op or possibly undo a unit tag
+            if let last = mr.opSeq.last {
+                
+                if let value = last as? MacroValue
+                {
+                    // Last op is a value op
+                    if value.tv.tag == tagUntyped {
+                        
+                        // No unit tag, just remove the value
+                        mr.opSeq.removeLast()
+                    }
+                    else {
+                        // A tagged value, remove the tag
+                        mr.opSeq.removeLast()
+                        var tv = value.tv
+                        tv.tag = tagUntyped
+                        mr.opSeq.append( MacroValue( tv: tv))
+                    }
+                }
+                else {
+                    // Last op id just a key op
+                    mr.opSeq.removeLast()
+                }
+            }
+            
+        case let kc where kc.isUnit:
+            if let last = mr.opSeq.last,
+               let value = last as? MacroValue
+            {
+                if value.tv.tag == tagUntyped {
+                    
+                    // Last macro op is an untyped value
+                    if let tag = TypeDef.tagFromKeyCode(kc) {
+                        
+                        var tv = value.tv
+                        mr.opSeq.removeLast()
+                        tv.tag = tag
+                        mr.opSeq.append( MacroValue( tv: tv))
+                        break
+                    }
+                }
+            }
+            fallthrough
+            
+        default:
+            // Just record the key
+            mr.opSeq.append( MacroKey( event ) )
+        }
+        
+        // Log debug output
+        let auxTxt = aux.getDebugText()
+        logAux.debug( "recordKeyFn: \(auxTxt)" )
+    }
+    
+    
+    func recordValueEvent( _ tv: TaggedValue ) {
+        if aux.isRec
+        {
+            guard let mr = aux.macroRec else {
+                // No macro record despite isRec is true
+                assert(false)
+                return
+            }
+            
+            mr.opSeq.append( MacroValue( tv: tv) )
+            
+            // Log debug output
+            let auxTxt = aux.getDebugText()
+            logAux.debug( "recordValueFn: \(auxTxt)" )
+        }
     }
     
 
