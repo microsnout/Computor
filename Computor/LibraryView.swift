@@ -13,18 +13,36 @@ struct LibraryView: View {
 
     var body: some View {
         
-        
-        List {
-            Section ( header: SectionHeaderText( text: "MODULES" ) ) {
+        NavigationStack {
+            List {
+                
+                ForEach ( model.libRec.index.macroTable ) { modFileRec in
+                    let caption = modFileRec.caption ?? "-caption"
+                    
+                    VStack( alignment: .leading ) {
+                        Text( modFileRec.symbol )
+                        Text( caption )
+                    }
+                }
+                
+                HStack {
+                    Image( systemName: "plus.circle" )
+                        .foregroundColor( .blue )
+                    
+                    Text( "Add Macro Module")
+                    Spacer()
+                }
                 
             }
-            .listSectionSeparator(.hidden, edges: .top)
-            .listSectionSeparatorTint( Color("AccentText"))
-
+            .listStyle( .grouped )
+            .navigationTitle("Macro Modules")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .listStyle( .grouped )
+        .frame( maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
         .background(Color("ControlBack"))
         .scrollContentBackground(.hidden)
+
     }
 }
 

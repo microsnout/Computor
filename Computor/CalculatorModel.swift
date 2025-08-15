@@ -136,6 +136,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var status = StatusState()
     @Published var kstate = KeyState()
     
+    var libRec = LibraryRec()
+    
     // Current selected macro module file
     var macroMod = ModuleFile()
     

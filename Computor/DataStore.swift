@@ -9,6 +9,37 @@ import SwiftUI
 
 extension CalculatorModel {
     
+    func loadLibrary() async {
+        
+        do {
+            try await createModuleDirectory()
+            
+            await loadIndex()
+            await syncModules()
+            
+            try await loadModules()
+            
+            try await loadState()
+            
+            listDocuments()
+        }
+        catch {
+            print( "File load error: \(error.localizedDescription)" )
+        }
+    }
+    
+    struct IndexStore : Codable {
+        /// IndexStore
+        /// List of other data files, macro and state files
+        ///
+        
+        var indexFile: ComputorIndexFile
+        
+        init( _ iFile: ComputorIndexFile = ComputorIndexFile() ) {
+            self.indexFile = iFile
+        }
+    }
+
     struct ConfigStore : Codable {
         /// ConfigStore
         /// Long term configuration data such as Fn key definitions
@@ -35,6 +66,14 @@ extension CalculatorModel {
         }
     }
     
+    private static func indexFileURL() throws -> URL {
+        try FileManager.default.url(for: .documentDirectory,
+                                    in: .userDomainMask,
+                                    appropriateFor: nil,
+                                    create: false)
+        .appendingPathComponent("computor.index")
+    }
+
     private static func configFileURL() throws -> URL {
         try FileManager.default.url(for: .documentDirectory,
                                     in: .userDomainMask,
@@ -56,13 +95,14 @@ extension CalculatorModel {
                                     in: .userDomainMask,
                                     appropriateFor: nil,
                                     create: false)
-        .appendingPathComponent("Module3")
+        .appendingPathComponent("Module")
     }
 
     
     func getDocumentsDirectory() -> URL {
         FileManager.default.urls( for: .documentDirectory, in: .userDomainMask)[0]
     }
+    
     
     func createModuleDirectory() async throws {
         
@@ -108,6 +148,54 @@ extension CalculatorModel {
         }
     }
     
+    
+    func loadIndex() async {
+        
+        let task = Task<IndexStore, Error> {
+            let fileURL = try Self.indexFileURL()
+            let data    = try Data( contentsOf: fileURL)
+            let index   = try JSONDecoder().decode( IndexStore.self, from: data)
+            return index
+        }
+        
+        var iFile: ComputorIndexFile
+        
+        do {
+            // Try to load file Computor.Index
+            let store = try await task.value
+            iFile = store.indexFile
+        }
+        catch {
+            // File not found - Return an empty Index
+            iFile = ComputorIndexFile()
+            print( "Index file not found - using empty file" )
+        }
+
+        Task { @MainActor in
+            self.libRec.index = iFile
+        }
+    }
+    
+    
+    func syncModules() async {
+        
+        do {
+            let modDir = try Self.moduleDirectoryURL()
+            
+            let modFiles = listFiles(inDirectory: modDir.path(), withPrefix: "Module")
+            
+            print( "syncModules:" )
+            for f in modFiles {
+                print( "  file: \(f)" )
+            }
+            print("")
+        }
+        catch {
+            print("Error listing module directory contents: \(error)")
+        }
+        
+    }
+
     
     func loadModules() async throws {
         

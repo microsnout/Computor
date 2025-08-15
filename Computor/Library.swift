@@ -158,29 +158,72 @@ extension ModuleFile {
 }
 
 
-struct MacroFileRec: Codable {
+/// ** State File **
+
+class StateFile: Codable {
+    
+    /// One of these files per calculator state
+    
+    var state:     CalcState
+    var unitData:  UserUnitData
+    var keyMap:    KeyMapRec
+}
+
+
+/// ** Macro File Record **
+
+struct MacroFileRec: Codable, Identifiable {
     
     /// Description of one macro library file
     /// Contains a list of all symbols defined in file
     
     var id: UUID
-    var caption: String?
-    var symList: [SymbolTag]
+    var symbol: String
+    var caption: String? = nil
+    
+    // Not stored in Index file - nil if file not loaded
+    var mfile: ModuleFile? = nil
+    
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case symbol
+        case caption
+        // Ignore mfile for Codable
+    }
 }
 
+
+/// ** State File Record **
 
 struct StateFileRec: Codable {
     
     var id: UUID
     var caption: String?
+    
+    // Not stored in state file - nil if file not loaded
+    var sfile: StateFile?
+    
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case caption
+        // Ignore sfile for Codable
+    }
 }
 
 
-struct ComputorIndexFile: Codable {
+class ComputorIndexFile: Codable {
     
     /// Only one of these tables per app
     /// Contains a record of each macro library file
     
-    var stateTable: [StateFileRec]
-    var macroTable: [MacroFileRec]
+    var stateTable: [StateFileRec] = []
+    var macroTable: [MacroFileRec] = []
+}
+
+
+struct LibraryRec {
+    
+    var index: ComputorIndexFile = ComputorIndexFile()
+    
+    var modList: [ModuleFile] = []
 }
