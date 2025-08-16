@@ -10,7 +10,11 @@ import SwiftUI
 struct LibraryView: View {
     
     @StateObject var model: CalculatorModel
-
+    
+    @State private var addItem: Bool = false
+    @State private var editName: String = ""
+    @State private var editCaption: String = ""
+    
     var body: some View {
         
         NavigationStack {
@@ -25,12 +29,14 @@ struct LibraryView: View {
                     }
                 }
                 
-                HStack {
-                    Image( systemName: "plus.circle" )
-                        .foregroundColor( .blue )
-                    
-                    Text( "Add Macro Module")
-                    Spacer()
+                Button( action: { addItem.toggle() } ) {
+                    HStack {
+                        Image( systemName: "plus.circle" )
+                            .foregroundColor( Color("ModText") )
+                        
+                        Text( "Add Macro Module")
+                        Spacer()
+                    }
                 }
                 
             }
@@ -42,6 +48,89 @@ struct LibraryView: View {
         .padding()
         .background(Color("ControlBack"))
         .scrollContentBackground(.hidden)
+        .sheet( isPresented: $addItem ) {
+            
+            VStack( alignment: .leading, spacing: 0 ) {
+                
+                Text("Name:")
+                    .foregroundColor(.white)
+                    .background( Color.clear )
+                    .padding( [.leading, .top], 20 )
+                
+                
+                TextField( "-Name-", text: $editName )
+                    .font(.system(size: 18).monospaced())
+                    .textInputAutocapitalization(.characters)
+                    .textCase(.uppercase)
+                    .disableAutocorrection(true)
+                    .onAppear {
+                        // if let name = value.caption {
+                        //     editName = name
+                        // }
+                    }
+                    .onChange(of: editName) { oldValue, newValue in
+                        let list = Array(newValue)
+                        
+                        if list.count == 1 && list[0].isNumber {
+                            // Don't allow names beginning with digits
+                            editName = ""
+                        }
+                        else {
+                            // Filter out all chars except letters and digits, limit length to 6
+                            editName = String( list.filter( { $0.isLetter || $0.isNumber } ).prefix(6) ).uppercased()
+                        }
+                    }
+                    .frame( maxWidth: 100 )
+                    .textFieldStyle(.roundedBorder)
+                    .padding( [.leading, .trailing], 20 )
+                    .padding( [.top], 10)
+                    .foregroundColor(.black)
+
+                Text("Caption:")
+                    .foregroundColor(.white)
+                    .background( Color.clear )
+                    .padding( [.leading, .top], 20 )
+                
+                    
+                TextField( "-Caption-", text: $editCaption )
+                    .textFieldStyle(.roundedBorder)
+                    .padding( [.leading, .trailing], 20 )
+                    .padding( [.top], 10)
+                    .foregroundColor(.black)
+                
+                Text( "Enter module name, up to 6 characters, letters or numbers. Caption is an optional description of module." )
+                    .foregroundColor(.white)
+                    .background( Color.clear )
+                    .padding( [.top], 30 )
+                    .padding( [.leading, .trailing], 40 )
+
+                HStack {
+                    Spacer()
+                    
+                    // CANCEL
+                    Button( action: { editName = ""; editCaption = ""; addItem = false } ) {
+                        Text("Cancel")
+                            .foregroundColor(.white)
+                            .background( Color.clear )
+                    }
+                    Spacer()
+                    
+                    // CREATE
+                    Button( action: { addItem = false } ) {
+                        Text("Create")
+                            .foregroundColor( editName.count > 0 ? .white : Color("GrayText"))
+                            .background( Color.clear )
+                    }
+                    .disabled( editName.count == 0 )
+                    Spacer()
+                }
+                .padding( [.top], 30 )
+
+                Spacer()
+            }
+            .presentationBackground( Color.black.opacity(0.7) )
+            .presentationDetents( [.fraction(0.5)] )
+        }
 
     }
 }
