@@ -231,6 +231,12 @@ struct EntryState {
                 // Append a digit
                 appendTextEntry( String(keyCode.rawValue - KeyCode.d0.rawValue))
                 
+            case .d000:
+                // Append 3 zeros
+                appendTextEntry( String("0") )
+                appendTextEntry( String("0") )
+                appendTextEntry( String("0") )
+
             case .dot:
                 appendTextEntry(".")
                 

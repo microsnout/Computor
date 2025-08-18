@@ -395,6 +395,13 @@ func initKeyLayout() {
                        ]
     )
 
+    SubPadSpec.define( .d0,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.d000,    "000"),
+                       ]
+    )
+
     SubPadSpec.define( .sqrt,
                        keySpec: ksSubFn,
                        keys: [

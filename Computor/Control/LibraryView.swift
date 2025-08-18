@@ -20,7 +20,7 @@ struct LibraryView: View {
         NavigationStack {
             List {
                 
-                ForEach ( model.libRec.index.macroTable ) { modFileRec in
+                ForEach ( model.libRec.indexFile.macroTable ) { modFileRec in
                     let caption = modFileRec.caption ?? "-caption"
                     
                     VStack( alignment: .leading ) {

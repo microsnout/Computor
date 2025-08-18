@@ -172,7 +172,7 @@ extension CalculatorModel {
         }
 
         Task { @MainActor in
-            self.libRec.index = iFile
+            self.libRec.indexFile = iFile
         }
     }
     

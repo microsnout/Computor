@@ -718,7 +718,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     static let entryStartKeys = KeyCode.digitSet.union( Set<KeyCode>([.dot]) )
     
     // Set of keys valid in data entry mode, all of above plus sign, back and enter exp
-    static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.sign, .back, .eex]) )
+    static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.sign, .back, .eex, .d000]) )
     
     
     func storeRegister( _ event: KeyEvent, _ tv: TaggedValue ) {

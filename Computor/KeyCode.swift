@@ -11,7 +11,7 @@ enum KeyCode: Int, Codable {
     
     case plus = 15, minus, times, divide
     
-    case dot = 20, enter, clX, clY, clZ, clReg, back, sign, eex
+    case dot = 20, enter, clX, clY, clZ, clReg, back, sign, eex, d000
     
     case fixL = 30, fixR, roll, xy, xz, yz, lastx, percent
     

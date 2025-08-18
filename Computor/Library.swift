@@ -223,7 +223,6 @@ class ComputorIndexFile: Codable {
 
 struct LibraryRec {
     
-    var index: ComputorIndexFile = ComputorIndexFile()
+    var indexFile: ComputorIndexFile = ComputorIndexFile()
     
-    var modList: [ModuleFile] = []
 }
