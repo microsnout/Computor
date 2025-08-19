@@ -441,7 +441,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         // Macro playback - save inital state just in case
         pushState()
         
-        pushContext( PlaybackContext(), lastEvent: KeyEvent(.macroPlay) )
+        pushContext( PlaybackContext() )
         
         // Push a new local variable store
         currentLVF = LocalVariableFrame( currentLVF )
@@ -456,6 +456,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 currentLVF = currentLVF?.prevLVF
                 popContext()
                 popState()
+                
+                logM.debug( "playMacroSeq: ERROR \(String( describing: op.getRichText(self) ))")
                 return KeyPressResult.stateError
             }
         }
@@ -522,7 +524,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
             }
             // Otherwise record the key
-            mr.opSeq.append( MacroKey( event ) )
+            mr.opSeq.append( MacroEvent( event ) )
             
         case .back:
             // Backspace, need to remove last op or possibly undo a unit tag
@@ -571,7 +573,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
         default:
             // Just record the key
-            mr.opSeq.append( MacroKey( event ) )
+            mr.opSeq.append( MacroEvent( event ) )
         }
         
         // Log debug output
@@ -857,35 +859,29 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 state.Xtv = tv
             }
             
-        case .F1, .F2, .F3, .F4, .F5, .F6:
-            if let macro = getMacroFunction( SymbolTag(keyCode) ) {
-                // Macro playback - save inital state just in case
-                pushState()
-                
-                pushContext( PlaybackContext(), lastEvent: event )
-                
-                // Push a new local variable store
-               currentLVF = LocalVariableFrame( currentLVF )
-
-                // Don't maintain undo stack during playback ops
-                pauseUndoStack()
-                for op in macro {
-                    if op.execute(self) == KeyPressResult.stateError {
-                        resumeUndoStack()
-                        currentLVF = currentLVF?.prevLVF
-                        popContext()
-                        popState()
-                        
-                        logM.debug( "Execute \(String( describing: keyCode)): ERROR \(String( describing: op.getRichText(self) ))")
-                        return KeyPressResult.stateError
-                    }
+        case .F1, .F2, .F3, .F4, .F5, .F6, .lib:
+            // Macro function execution
+            var result = KeyPressResult.noOp
+            
+            if keyCode == .lib {
+                if let tag = event.mTag,
+                   let seq = getMacroFunction(tag) {
+                    
+                    // Macro tag selected from popup
+                    result = playMacroSeq(seq)
                 }
-                resumeUndoStack()
-
-                // Pop the local variable storage, restoring prev
-                currentLVF = currentLVF?.prevLVF
-                
-                popContext( KeyEvent(keyCode) )
+            }
+            else {
+                if let tag = kstate.keyMap.tagAssignment(keyCode),
+                   let seq = getMacroFunction(tag) {
+                    
+                    // Macro tag assigned to Fn key
+                    result = playMacroSeq(seq)
+                }
+            }
+            
+            if result == KeyPressResult.stateError {
+                return KeyPressResult.stateError
             }
             
         default:

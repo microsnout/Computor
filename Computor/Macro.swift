@@ -23,7 +23,7 @@ protocol MacroOp {
 typealias CodableMacroOp = MacroOp & Codable
 
 
-struct MacroKey: CodableMacroOp {
+struct MacroEvent: CodableMacroOp {
     var event: KeyEvent
     
     func execute( _ model: CalculatorModel ) -> KeyPressResult {
@@ -126,7 +126,7 @@ struct MacroOpSeq: Codable, Sequence {
         
         for op in opList {
             
-            if let key = op as? MacroKey {
+            if let key = op as? MacroEvent {
                 try opC.encode(key)
             }
             else if let value = op as? MacroValue {
@@ -161,7 +161,7 @@ struct MacroOpSeq: Codable, Sequence {
         
         while !opC.isAtEnd {
             
-            if let key = try? opC.decode( MacroKey.self) {
+            if let key = try? opC.decode( MacroEvent.self) {
                 opList.append(key)
             }
             else if let value = try? opC.decode( MacroValue.self) {
