@@ -69,7 +69,7 @@ class RecordingContext : EventContext {
             model.currentLVF = model.currentLVF?.prevLVF
             return KeyPressResult.cancelRecording
             
-        case .showFn, .recFn, .openBrace, .closeBrace:
+        case .editFn, .recFn, .openBrace, .closeBrace:
             return KeyPressResult.noOp
             
         case .F1, .F2, .F3, . F4, .F5, .F6:

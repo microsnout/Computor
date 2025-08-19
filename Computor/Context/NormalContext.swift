@@ -25,11 +25,20 @@ class NormalContext : EventContext {
             }
             return KeyPressResult.macroOp
             
-        case .showFn:
+        case .editFn:
             if let kcFn = event.kcTop {
-                if let mr = model.macroMod.getMacro( SymbolTag(kcFn) ) {
-                    model.aux.macroRec = mr
-                    model.aux.activeView = .macroList
+                
+                if let tag = model.kstate.keyMap.tagAssignment(kcFn),
+                   let mr = model.macroMod.getMacro(tag) {
+                    
+                    // This key has a macro sym assigned
+                    model.aux.loadMacro(mr)
+                }
+                
+                else if let mr = model.macroMod.getMacro( SymbolTag(kcFn) ) {
+                    
+                    // This key has no sym
+                    model.aux.loadMacro(mr)
                 }
             }
             return KeyPressResult.macroOp

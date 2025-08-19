@@ -71,6 +71,7 @@ extension AuxState {
         case .none, .stop:
             macroRec = mr
             recState = .stop
+            activeView = .macroList
             
         default:
             assert(false)

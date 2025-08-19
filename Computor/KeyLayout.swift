@@ -191,7 +191,7 @@ func initKeyLayout() {
                         Key(.clrFn, "Clear"),
                         Key(.recFn, "Rec"),
                         Key(.stopFn, "Stop"),
-                        Key(.showFn, "Show"),
+                        Key(.editFn, "Edit"),
                        ]
     )
     

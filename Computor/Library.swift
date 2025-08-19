@@ -180,6 +180,7 @@ struct MacroFileRec: Codable, Identifiable {
     var id: UUID
     var symbol: String
     var caption: String? = nil
+    var symbols: [SymbolTag] = []
     
     // Not stored in Index file - nil if file not loaded
     var mfile: ModuleFile? = nil

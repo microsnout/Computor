@@ -33,7 +33,7 @@ enum KeyCode: Int, Codable {
     case F0 = 160, F1, F2, F3, F4, F5, F6, U1, U2, U3, U4, U5, U6
     
     // Macro Op
-    case macroOp = 180, clrFn, recFn, stopFn, showFn, braceKey, openBrace, closeBrace, macro
+    case macroOp = 180, clrFn, recFn, stopFn, editFn, braceKey, openBrace, closeBrace, macro
     
     // Multi valued types
     case multiValue = 190, rational, vector, polar, complex, vector3D, spherical
@@ -136,7 +136,7 @@ enum KeyCode: Int, Codable {
     
     static let specialSymSet:Set<KeyCode> = [.period, .asterisk, .prime, .doublePrime, .dash]
 
-    static let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .showFn, .openBrace]
+    static let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .editFn, .openBrace]
 
     static let lowerAlpha = Array( "abcdefghijklmnopqrstuvwxyz" )
     static let upperAlpha = Array( "ABCDEFGHIJKLMNOPQRSTUVWXYZ" )

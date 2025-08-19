@@ -54,7 +54,7 @@ class BlockRecord : EventContext {
         
         switch event.kc {
             
-        case .clrFn, .stopFn, .recFn, .showFn:
+        case .clrFn, .stopFn, .recFn, .editFn:
             return KeyPressResult.noOp
             
         case .openBrace:
