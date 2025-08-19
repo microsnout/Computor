@@ -177,7 +177,7 @@ struct PadSpec {
 // ****************************************************
 
 enum ModalKey: Int {
-    case none = 0, selectMemory, newMemory, localMemory, globalMemory
+    case none = 0, selectMemory, newMemory, localMemory, globalMemory, selectMacro
 }
 
 class KeyData : ObservableObject {
@@ -416,12 +416,47 @@ struct GlobalMemoryPopup: View, KeyPressHandler {
         return KeyPressResult.modalPopupContinue
     }
     
+    
+    func getTagList() -> [SymbolTag] {
+        
+        if let lvf = model.currentLVF {
+            
+            // Local variable frame list
+            return Array( lvf.local.keys )
+        }
+        else {
+            return model.state.memory.map( { $0.tag } )
+        }
+    }
+    
+    
     var body: some View {
         
         CustomModalPopup( keyPressHandler: self, myModalKey: .globalMemory ) {
             
             if keyData.pressedKey?.kc == .rcl || !model.state.memory.isEmpty {
-                SelectMemoryPopup()
+                
+                let tags = getTagList()
+                
+                SelectSymbolPopup( tagList: tags, title: "Select Memory" ) {
+                    
+                    // Footer content that goes below the tag list box
+                    if keyData.pressedKey?.kc != .rcl {
+                        HStack( spacing: 20 ) {
+                            
+                            // New Memory Button
+                            Button( "New..." )
+                            {
+                                keyData.modalKey = .newMemory
+                            }
+                        }
+                        .padding( [.top, .bottom], 10)
+                    }
+                    else {
+                        // Recall op has no New memory button
+                        Spacer().frame( height: 20 ).padding([.top, .bottom], 0)
+                    }
+                }
             }
             else {
                 NewSymbolPopup() { tag in
@@ -440,35 +475,65 @@ struct GlobalMemoryPopup: View, KeyPressHandler {
 }
 
 
-struct SelectMemoryPopup: View {
+struct MacroLibraryPopup: View, KeyPressHandler {
     
-    /// Select from list of existing memories
-    
-    let keySpec: KeySpec = ksSoftkey
+    /// Select an existing memory if there are any or go directly to new memory popup
     
     @EnvironmentObject var model: CalculatorModel
     @EnvironmentObject var keyData: KeyData
     
-    let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
+    func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+        return KeyPressResult.modalPopupContinue
+    }
 
+    
     func getTagList() -> [SymbolTag] {
         
-        if let lvf = model.currentLVF {
-            
-            // Local variable frame list
-            return Array( lvf.local.keys )
-        }
-        else {
-            return model.state.memory.map( { $0.tag } )
-        }
+        let tags = model.macroMod.macroTable.map { $0.symTag }
+        
+        return tags.filter { $0 != SymbolTag(.null) }
     }
+
     
     var body: some View {
         
-        let tagRowList: [[SymbolTag]] = getTagList().chunked(into: 4)
+        CustomModalPopup( keyPressHandler: self, myModalKey: .selectMacro ) {
+            
+            let tags = getTagList()
+            
+            SelectSymbolPopup( tagList: tags, title: "Macro Library" ) {
+                
+                // No footer
+                Spacer().frame( height: 20 ).padding([.top, .bottom], 0)
+            }
+        }
+    }
+}
+
+
+struct SelectSymbolPopup<Content: View>: View {
+    
+    /// Select from list of existing symbol tags, could be memories or macros
+    
+    @EnvironmentObject var model: CalculatorModel
+    @EnvironmentObject var keyData: KeyData
+    
+    let keySpec: KeySpec = ksSoftkey
+
+    let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
+    
+    // Parameters
+    var tagList: [SymbolTag]
+    var title: String
+    
+    @ViewBuilder let footer: Content
+
+    var body: some View {
+        
+        let tagRowList: [[SymbolTag]] = tagList.chunked(into: 4)
         
         VStack( spacing: 0) {
-            Text( "Select Memory" ).padding( [.top, .bottom], 10 )
+            Text( title ).padding( [.top, .bottom], 10 )
             
             ScrollView( [.vertical] ) {
                 
@@ -517,21 +582,8 @@ struct SelectMemoryPopup: View {
             .background( Color("Display") )
             .border(Color("Frame"), width: 2)
             
-            if keyData.pressedKey?.kc != .rcl {
-                HStack( spacing: 20 ) {
-                    
-                    // New Memory Button
-                    Button( "New..." )
-                    {
-                        keyData.modalKey = .newMemory
-                    }
-                }
-                .padding( [.top, .bottom], 10)
-            }
-            else {
-                // Recall op has no New memory button
-                Spacer().frame( height: 20 ).padding([.top, .bottom], 0)
-            }
+            // New.. Button for global memory popup
+            footer
         }
         .frame( maxHeight: 340 )
         .padding( [.leading, .trailing], 20 )
@@ -918,6 +970,7 @@ struct KeyStack<Content: View>: View {
             SubPopMenu()
             GlobalMemoryPopup()
             NewMemoryCustomPopup()
+            MacroLibraryPopup()
         }
         .onGeometryChange( for: CGRect.self, of: {proxy in proxy.frame(in: .global)} ) { newValue in
             keyData.zFrame = newValue

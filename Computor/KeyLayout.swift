@@ -455,6 +455,7 @@ func initKeyLayout() {
     Key.defineModalKey( .stoY, .globalMemory )
     Key.defineModalKey( .stoZ, .globalMemory )
     Key.defineModalKey( .rcl,  .globalMemory )
+    Key.defineModalKey( .lib,  .selectMacro  )
 }
 
 
