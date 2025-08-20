@@ -7,7 +7,7 @@
 import SwiftUI
 
 
-struct ValueBrowserView: View {
+struct AuxRegisterView: View {
     
     @StateObject var model: CalculatorModel
     

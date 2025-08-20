@@ -7,7 +7,7 @@
 import SwiftUI
 
 enum AuxDispView: String, CaseIterable, Identifiable {
-    case memoryList, macroList, valueBrowser, valuePlot
+    case memoryView, macroView, registerView, plotView
     
     var id: String {
         rawValue
@@ -18,10 +18,10 @@ enum AuxDispView: String, CaseIterable, Identifiable {
     }
     
     static let themeMap: [AuxDispView : Theme] = [
-        .memoryList : Theme.lightBlue,
-        .macroList : Theme.lightYellow,
-        .valueBrowser: Theme.lightRed,
-        .valuePlot: Theme.lightPurple,
+        .memoryView  : Theme.lightBlue,
+        .macroView   : Theme.lightYellow,
+        .registerView: Theme.lightRed,
+        .plotView    : Theme.lightPurple,
     ]
     
     var theme: Theme {
@@ -31,35 +31,35 @@ enum AuxDispView: String, CaseIterable, Identifiable {
 
 
 struct AuxiliaryDisplayView: View {
+    
+    /// Auxiliary Display - above the primary display
+    ///  Horizontal scroll view of 4 panes: memorys, macros, registers and plots
+    
     @StateObject var model: CalculatorModel
     
     @Binding var auxView: AuxDispView
     
-    @State private var scrollPos: AuxDispView? = AuxDispView.memoryList
+    @State private var scrollPos: AuxDispView? = AuxDispView.memoryView
     
     var body: some View {
         ScrollView(.horizontal) {
+            
             LazyHStack {
-                
-                AuxMemoryView( model: model )
-                    .id( AuxDispView.memoryList )
-                    .frame( maxWidth: .infinity, maxHeight: .infinity)
-                    .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
-
-                MacroLibraryView( model: model )
-                    .id( AuxDispView.macroList )
-                    .frame( maxWidth: .infinity, maxHeight: .infinity)
-                    .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
-
-                ValueBrowserView( model: model )
-                    .id( AuxDispView.valueBrowser )
-                    .frame( maxWidth: .infinity, maxHeight: .infinity)
-                    .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
-
-                PlotView( model: model )
-                    .id( AuxDispView.valuePlot )
-                    .frame( maxWidth: .infinity, maxHeight: .infinity)
-                    .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+                Group {
+                    AuxMemoryView( model: model )
+                        .id( AuxDispView.memoryView )
+                    
+                    AuxMacroView( model: model )
+                        .id( AuxDispView.macroView )
+                    
+                    AuxRegisterView( model: model )
+                        .id( AuxDispView.registerView )
+                    
+                    AuxPlotView( model: model )
+                        .id( AuxDispView.plotView )
+                }
+                .frame( maxHeight: .infinity)
+                .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
             }
             .scrollTargetLayout()
         }
@@ -74,7 +74,7 @@ struct AuxiliaryDisplayView: View {
             }
         }
         .onChange( of: scrollPos ) { oldPos, newPos in
-            auxView = scrollPos ?? AuxDispView.memoryList
+            auxView = scrollPos ?? AuxDispView.memoryView
         }
         .padding([.leading, .trailing, .top, .bottom], 0)
         .background( Color("Display") )

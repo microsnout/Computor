@@ -11,7 +11,7 @@ let logAux = Logger(subsystem: "com.microsnout.calculator", category: "aux")
 
 
 enum MacroRecState: Int {
-    case none = 0, stop, record, recModal, recNestedModal, play, playSlow
+    case stop = 0, record, recModal, recNestedModal, play, playSlow
     
     var isRecording: Bool {
         switch self {
@@ -29,15 +29,16 @@ enum MacroRecState: Int {
 
 struct AuxState {
     // Active view of the Auxiliary display
-    var activeView = AuxDispView.memoryList
+    var activeView = AuxDispView.memoryView
     
     // Memory Detail Item - current focused memory item in detail view
     var detailItemIndex: Int = -1
     
-    // MacroListView state
-    var recState: MacroRecState = .none
-    
+    // Currently selected macro record - if non-nil displays macro detail view
     var macroRec: MacroRec? = nil
+    
+    // State of macro detail view - only significant if macroRec is not nil
+    var recState: MacroRecState = .stop
 }
 
 
@@ -60,7 +61,7 @@ extension AuxState {
     mutating func clearMacroState() {
         
         macroRec = nil
-        recState = .none
+        recState = .stop
     }
     
     
@@ -68,10 +69,10 @@ extension AuxState {
         
         switch recState {
             
-        case .none, .stop:
+        case .stop:
             macroRec = mr
             recState = .stop
-            activeView = .macroList
+            activeView = .macroView
             
         default:
             assert(false)
@@ -83,17 +84,10 @@ extension AuxState {
         
         switch recState {
             
-        case .none:
-            assert( macroRec == nil )
-            macroRec = mr
-            recState = .stop
-            fallthrough
-            
         case .stop:
-            assert( macroRec != nil )
             macroRec = mr
             mr.opSeq.clear()
-            activeView = .macroList
+            activeView = .macroView
             recState = .record
             
             // Log debug output
@@ -111,10 +105,10 @@ extension AuxState {
         
         switch recState {
             
-        case .stop, .none:
+        case .stop:
             // Create new macro rec for modal func
             macroRec = MacroRec()
-            activeView = .macroList
+            activeView = .macroView
             disableAllFnSubmenu()
             recState = .recModal
             
@@ -164,7 +158,7 @@ extension AuxState {
         switch recState {
             
         case .recModal, .recNestedModal:
-            recState = recState == .recNestedModal ? .record : .none
+            recState = recState == .recNestedModal ? .record : .stop
             
         default:
             // Should not happen
@@ -173,9 +167,6 @@ extension AuxState {
         }
     }
     
-    
-    
-    // Old Code below
     
     func getDebugText() -> String {
         var txt = "AuxState("

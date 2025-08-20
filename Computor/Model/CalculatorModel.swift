@@ -453,7 +453,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
                 
                 // Scroll aux display to memory list
-                aux.activeView = .memoryList
+                aux.activeView = .memoryView
             }
         }
         else {
