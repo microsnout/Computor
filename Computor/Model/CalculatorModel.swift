@@ -385,17 +385,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
     }
     
-    func delMemoryItems( set: IndexSet) {
+    func deleteMemoryRecords( set: SymbolSet ) {
         pushState()
         entry.clearEntry()
-        state.memory.remove( atOffsets: set )
+        state.deleteMemoryRecords( tags: set )
     }
     
-    func renameMemoryItem( index: Int, newName: String ) {
-        pushState()
-        entry.clearEntry()
-        state.memory[index].caption = newName
-    }
     
     static var patternTable: [KeyCode : [OpPattern]] = [:]
     

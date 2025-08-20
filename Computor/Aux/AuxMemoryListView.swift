@@ -12,7 +12,7 @@ struct AuxMemoryView: View {
     
     var body: some View {
         
-        if model.aux.detailItemIndex == -1 {
+        if model.aux.memRec == nil {
             
             // List of all available macros
             MemoryListView(model: model)
@@ -20,7 +20,7 @@ struct AuxMemoryView: View {
         }
         else {
             // Detailed view of selected macro
-            MemoryDetailView(model: model, itemIndex: $model.aux.detailItemIndex)
+            MemoryDetailView( model: model, memRec: $model.aux.memRec )
                 .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
         }
     }
@@ -53,14 +53,9 @@ struct MemoryListView: View {
                 Spacer()
             }
             else {
-                let memList = model.state.memory
-                let count   = memList.count
-                
                 ScrollView {
                     LazyVStack {
-                        ForEach ( 0 ..< count, id: \.self ) { index in
-                            
-                            let mr  = model.state.memory[index]
+                        ForEach ( model.state.memory ) { mr in
                             
                             let (txt, _) = mr.tv.renderRichText()
                             
@@ -103,17 +98,17 @@ struct MemoryListView: View {
                                         
                                         // TRASH CAN
                                         Button( action: {
-                                            model.delMemoryItems(set: [index])
+                                            model.deleteMemoryRecords( set: [mr.tag] )
                                         } ) {
                                             Image( systemName: "trash" )
                                         }
                                     }.padding( [.trailing], 20 )
                                 }
-                                .contentShape(Rectangle()) 
+                                .contentShape(Rectangle())
                                 .onTapGesture {
                                     withAnimation {
                                         // Navigate to selected item
-                                        model.aux.detailItemIndex = index
+                                        model.aux.memRec = mr
                                     }
                                 }
                                 

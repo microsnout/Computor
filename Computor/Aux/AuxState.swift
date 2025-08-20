@@ -32,7 +32,7 @@ struct AuxState {
     var activeView = AuxDispView.memoryView
     
     // Memory Detail Item - current focused memory item in detail view
-    var detailItemIndex: Int = -1
+    var memRec: MemoryRec? = nil
     
     // Currently selected macro record - if non-nil displays macro detail view
     var macroRec: MacroRec? = nil
@@ -172,7 +172,7 @@ extension AuxState {
         var txt = "AuxState("
         txt += String( describing: activeView )
         txt += ") state:\(recState)"
-        txt += " Detail:\(detailItemIndex) MacroKey:"
+        txt += " Detail:\(memRec.debugDescription) MacroKey:"
         
         if let mr = macroRec {
             txt += String( describing: mr.symTag )

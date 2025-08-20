@@ -7,10 +7,26 @@
 import SwiftUI
 
 
-struct MemoryRec: Codable {
+class MemoryRec: Codable, Identifiable, Hashable, Equatable {
     var tag:     SymbolTag
     var caption: String? = nil
     var tv:      TaggedValue
+    
+    var id: SymbolTag { tag }
+    
+    init( tag: SymbolTag, caption: String? = nil, tv: TaggedValue) {
+        self.tag = tag
+        self.caption = caption
+        self.tv = tv
+    }
+    
+    func hash( into hasher: inout Hasher) {
+        hasher.combine(tag)
+    }
+    
+    static func == ( lhs: MemoryRec, rhs: MemoryRec ) -> Bool {
+        return lhs.tag == rhs.tag
+    }
 }
 
 

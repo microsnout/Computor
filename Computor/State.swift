@@ -78,6 +78,10 @@ extension CalcState {
         }
     }
     
+    mutating func deleteMemoryRecords( tags: SymbolSet ) {
+        memory.removeAll( where: { tags.contains($0.tag) } )
+    }
+    
     mutating func setRealValue( reg index: Int = regX, _ value: Double,
                                 tag: TypeTag = tagUntyped,
                                 fmt: FormatRec = CalcState.defaultDecFormat ) {

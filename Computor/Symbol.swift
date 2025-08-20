@@ -14,6 +14,9 @@ struct SymbolTag: Hashable, Codable, Equatable {
 }
 
 
+typealias SymbolSet = Set<SymbolTag>
+
+
 extension SymbolTag {
     var kc: KeyCode { KeyCode(rawValue: (tag % 1000000000)) ?? KeyCode.noop }
     

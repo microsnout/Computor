@@ -10,22 +10,24 @@ import SwiftUI
 struct MemoryDetailView: View {
     @StateObject var model: CalculatorModel
     
-    @Binding var itemIndex: Int
+    @Binding var memRec: MemoryRec?
     
     @State private var renameSheet = false
     
-    @State private var position: Int? = 0
+    @State private var position: MemoryRec? = nil
 
     var body: some View {
-        if model.aux.detailItemIndex != -1 {
+        if let mr = model.aux.memRec {
             VStack {
                 AuxHeaderView( theme: Theme.lightBlue ) {
                     HStack {
+                        
+                        // Back to Memory List
                         Image( systemName: "chevron.left")
                             .padding( [.leading], 10 )
                             .onTapGesture {
                                 withAnimation {
-                                    model.aux.detailItemIndex = -1
+                                    model.aux.memRec = nil
                                 }
                             }
                         
@@ -75,8 +77,8 @@ struct MemoryDetailView: View {
                         }
                         .scrollTargetBehavior(.viewAligned)
                         .scrollPosition( id: $position )
-                        .onChange( of: position ) { oldIndex, newIndex in
-                            model.aux.detailItemIndex = newIndex ?? 0
+                        .onChange( of: position ) { oldRec, newRec in
+                            model.aux.memRec = newRec
                         }
                     }
                 }
@@ -85,7 +87,6 @@ struct MemoryDetailView: View {
                 
                 // Detail Edit Controls
                 HStack( spacing: 25 ) {
-                    let mr = model.state.memory[model.aux.detailItemIndex]
                     
                     Button( action: { model.memoryOp( key: .mPlus, tag: mr.tag ) } ) {
                         Text( "M+" )
@@ -103,9 +104,10 @@ struct MemoryDetailView: View {
                         Image( systemName: "arrowshape.up" )
                     }
                     
+                    // DELETE
                     Button( action: {
-                        model.delMemoryItems(set: [model.aux.detailItemIndex])
-                        model.aux.detailItemIndex = -1
+                        model.deleteMemoryRecords( set: [mr.tag])
+                        model.aux.memRec = nil
                     } ) {
                         Image( systemName: "trash" )
                     }
@@ -115,8 +117,8 @@ struct MemoryDetailView: View {
             }
             .padding( [.top], 0 )
             .padding( [.bottom], 10 )
-            .onChange( of: itemIndex ) { oldIndex, newIndex in
-                position = newIndex
+            .onChange( of: mr ) { oldRec, newRec in
+                position = newRec
             }
             
             // Rename Memory
@@ -124,7 +126,9 @@ struct MemoryDetailView: View {
                 ZStack {
                     Color("ControlBack").edgesIgnoringSafeArea(.all)
                     
-                    MemoryRenameView( model: model )
+                    AuxRenameView( name: mr.caption ?? "" ) { newName in
+                        mr.caption = newName
+                    }
                         .presentationDetents([.fraction(0.4)])
                         .presentationBackground( Color("ControlBack") )
                 }

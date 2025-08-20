@@ -1,5 +1,5 @@
 //
-//  AuxMemoryRenameView.swift
+//  AuxRenameView.swift
 //  Computor
 //
 //  Created by Barry Hall on 2025-02-28.
@@ -36,40 +36,6 @@ struct AuxRenameView: View {
                     scc( editName )
                     dismiss()
                 }
-        }
-        .scrollContentBackground(.hidden) // iOS 16+
-    }
-}
-
-
-struct MemoryRenameView: View {
-    @StateObject var model: CalculatorModel
-    
-    @FocusState private var nameFocused: Bool
-    
-    @Environment(\.dismiss) var dismiss
-    
-    @State private var editName = ""
-
-    var body: some View {
-        let index = model.aux.detailItemIndex
-        let value = model.state.memory[index]
-        
-        Form {
-            TextField( "-Caption-", text: $editName )
-            .focused($nameFocused)
-            .disableAutocorrection(true)
-            .autocapitalization(.none)
-            .onAppear {
-                if let name = value.caption {
-                    editName = name
-                }
-                nameFocused = true
-            }
-            .onSubmit {
-                model.renameMemoryItem(index: index, newName: editName)
-                dismiss()
-            }
         }
         .scrollContentBackground(.hidden) // iOS 16+
     }
