@@ -741,7 +741,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             }
             
             if let _ = self.macroMod.getMacro( SymbolTag(kc) ) {
-                // Macro assigned to key but no symbol
+                // Macro assigned to key but no symbol - not allowed anymore
+//                assert(false)
                 return "F\(kc.rawValue % 10)"
             }
             

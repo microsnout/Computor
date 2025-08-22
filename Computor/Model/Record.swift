@@ -17,10 +17,24 @@ extension CalculatorModel {
         saveConfiguration()
     }
     
+    
     func clearMacroFunction( _ sTag: SymbolTag) {
+        
+        // Delete macro bound to sTag and save config
+        
+        // Test if we are deleting the macro currently being viewed in Aux dispaly
+        if let mr = macroMod.getMacro(sTag) {
+            if mr === aux.macroRec {
+                // Yes, clear Aux display state
+                aux.clearMacroState()
+            }
+        }
+        
+        // Now delete the macro and save file
         macroMod.deleteMacro(sTag)
         saveConfiguration()
     }
+    
     
     func getMacroFunction( _ sTag: SymbolTag ) -> MacroOpSeq? {
         if let mr = macroMod.getMacro(sTag) {

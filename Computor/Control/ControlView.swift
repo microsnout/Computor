@@ -15,26 +15,32 @@ struct ControlView: View {
         
         TabView {
             
-            LibraryView( model: model )
-                .tabItem {
-                    Label( "Modules", systemImage: "book.pages" )
-                }
-                .toolbarBackground( Color("Background"), for: .tabBar)
-                .toolbarBackgroundVisibility(.visible, for: .tabBar)
-            
-            SettingsView()
-                .tabItem {
-                    Label( "Settings", systemImage: "slider.horizontal.3" )
-                }
-                .toolbarBackground( Color("Background"), for: .tabBar)
-                .toolbarBackgroundVisibility(.visible, for: .tabBar)
-
-            HelpView()
-                .tabItem {
-                    Label( "Help", systemImage: "books.vertical" )
-                }
-                .toolbarBackground( Color("Background"), for: .tabBar)
-                .toolbarBackgroundVisibility(.visible, for: .tabBar)
+            Group {
+                LibraryView( model: model )
+                    .tabItem {
+                        Label( "Modules", systemImage: "book.pages" )
+                    }
+                
+                SettingsView()
+                    .tabItem {
+                        Label( "Settings", systemImage: "slider.horizontal.3" )
+                    }
+                
+                HelpView()
+                    .tabItem {
+                        Label( "Help", systemImage: "books.vertical" )
+                    }
+                
+#if DEBUG
+                DebugView( model: model )
+                    .tabItem {
+                        Label( "Debug", systemImage: "wrench.and.screwdriver" )
+                    }
+#endif
+                
+            }
+            .toolbarBackground( Color("Background"), for: .tabBar)
+            .toolbarBackgroundVisibility(.visible, for: .tabBar)
         }
     }
 }

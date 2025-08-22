@@ -19,9 +19,29 @@ class NormalContext : EventContext {
         switch event.keyTag.kc {
             
         case .clrFn:
+            // Clear macro assigned to this Fn key
+            // Delete macro if symbol tag matches key code
+            
             if let kcFn = event.kcTop {
-                model.clearMacroFunction( SymbolTag(kcFn) )
-                model.aux.clearMacroState()
+                
+                // Lookup macro assigned to this key
+                if let tag = model.kstate.keyMap.tagAssignment(kcFn) {
+                    
+                    guard let fnTag = SymbolTag.getFnSym(kcFn) else {
+                        // There must be a tag representing this kc because we only get here by pressing F1..F6
+                        assert(false)
+                        return KeyPressResult.macroOp
+                    }
+                    
+                    if tag == fnTag {
+                        
+                        // Macro assigned to this key has symbol matching key - delete it
+                        model.clearMacroFunction(tag)
+                    }
+                    
+                    // Remove the key mapping for this key
+                    model.kstate.keyMap.clearKeyAssignment(kcFn)
+                }
             }
             return KeyPressResult.macroOp
             
@@ -32,12 +52,6 @@ class NormalContext : EventContext {
                    let mr = model.macroMod.getMacro(tag) {
                     
                     // This key has a macro sym assigned
-                    model.aux.loadMacro(mr)
-                }
-                
-                else if let mr = model.macroMod.getMacro( SymbolTag(kcFn) ) {
-                    
-                    // This key has no sym
                     model.aux.loadMacro(mr)
                 }
             }

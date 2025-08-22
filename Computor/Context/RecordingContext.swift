@@ -24,29 +24,23 @@ class RecordingContext : EventContext {
             self.kcFn = kcFn
             
             model.startRecordingFnKey(kcFn)
-            
-            // Push a new local variable store
-            model.currentLVF = LocalVariableFrame( model.currentLVF )
         }
         else if lastEvent.kc == .macroRecord {
             
-            // Get unnamed macro if there is one
-            if let mr = model.macroMod.getMacro( SymbolTag(.null) ) {
+            // Get current macro from macro detail view
+            if let mr = model.aux.macroRec {
                 
-                // Start recording unnamed macro
+                // Start recording
                 model.aux.record(mr)
             }
             else {
-                // Create new macro rec
-                let mr = MacroRec()
-                model.macroMod.saveMacro(mr)
-                model.aux.record(mr)
+                // There must be a valid macroRec when the .macroRecord event is received
+                assert(false)
             }
-            
-            
-            // Push a new local variable store
-            model.currentLVF = LocalVariableFrame( model.currentLVF )
         }
+        
+        // Push a new local variable store
+        model.currentLVF = LocalVariableFrame( model.currentLVF )
     }
     
     

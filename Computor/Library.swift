@@ -68,6 +68,10 @@ struct KeyMapRec: Codable {
         return nil
     }
     
+    mutating func clearKeyAssignment( _ kc: KeyCode ) {
+        fnRow.removeValue( forKey: kc)
+    }
+    
     mutating func assign( _ kc: KeyCode, tag: SymbolTag ) {
         // TODO: Eventually add UnRow for unit row keys
         fnRow[kc] = tag

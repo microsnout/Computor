@@ -133,13 +133,12 @@ extension AuxState {
         case .record:
             recState = .stop
             
+            // Re-enable all recording keys
+            SubPadSpec.disableList.removeAll()
+            
         case .recNestedModal:
             // Cancel recording as modal rec is incomplete
             clearMacroState()
-            recState = .stop
-            
-            // Re-enable all recording keys
-            SubPadSpec.disableList.removeAll()
             
         default:
             // Should not happen

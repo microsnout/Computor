@@ -136,6 +136,10 @@ extension SymbolTag {
     
     init( _ kc: KeyCode = .null ) {
         
+        /// Create a SymbolTag from a KeyCode
+        /// If kc is F1..F6, lookup encoded symbol version
+        /// if other kc, just store the kd rawValue
+        
         if let fnTag = SymbolTag.getFnSym(kc) {
             
             // Split .F1 KeyCode to [.F, .d1]
