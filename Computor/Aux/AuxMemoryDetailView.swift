@@ -19,6 +19,8 @@ struct MemoryDetailView: View {
     var body: some View {
         if let mr = model.aux.memRec {
             VStack {
+                
+                // HEADER
                 AuxHeaderView( theme: Theme.lightBlue ) {
                     HStack {
                         
@@ -40,18 +42,20 @@ struct MemoryDetailView: View {
                 Spacer()
                 
                 if model.state.memory.isEmpty {
+                    
+                    // PLACEHOLDER VIEW
                     Text("Memory Detail")
                         .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
                 }
                 else {
+                    
+                    // DETAIL VIEW
                     ScrollViewReader { proxy in
                         ScrollView(.vertical) {
                             LazyVStack {
-                                let count = model.state.memory.count
                                 
-                                ForEach( 0 ..< count, id: \.self ) { index in
+                                ForEach( model.state.memory ) { mr in
                                     
-                                    let mr = model.state.memory[index]
                                     let sym = mr.tag.getRichText()
                                     let caption = mr.caption ?? "-Unnamed-"
                                     let (valueStr, _) = mr.tv.renderRichText()
@@ -69,7 +73,7 @@ struct MemoryDetailView: View {
                                         
                                         TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
                                     }
-                                    .id( index )
+                                    .id( mr.tag )
                                     .containerRelativeFrame(.vertical, count: 1, spacing: 0)
                                 }
                             }
@@ -78,7 +82,15 @@ struct MemoryDetailView: View {
                         .scrollTargetBehavior(.viewAligned)
                         .scrollPosition( id: $position )
                         .onChange( of: position ) { oldRec, newRec in
-                            model.aux.memRec = newRec
+                            if newRec != nil  {
+                                model.aux.memRec = newRec
+                            }
+                        }
+                        .onChange(  of: memRec, initial: true ) {
+                            if let mr = memRec {
+                                print( "scrollto \(mr.tag.getRichText())" )
+                                proxy.scrollTo( mr.id )
+                            }
                         }
                     }
                 }
