@@ -96,6 +96,28 @@ extension CalculatorModel {
     }
     
     
+    func clearRecordingFnKey( _ kcFn: KeyCode ) {
+        
+        // Lookup macro assigned to this key
+        if let tag = kstate.keyMap.tagAssignment(kcFn) {
+            
+            guard let fnTag = SymbolTag.getFnSym(kcFn) else {
+                // There must be a tag representing this kc because we only get here by pressing F1..F6
+                assert(false)
+            }
+            
+            if tag == fnTag {
+                
+                // Macro assigned to this key has symbol matching key - delete it
+                clearMacroFunction(tag)
+            }
+            
+            // Remove the key mapping for this key
+            kstate.keyMap.clearKeyAssignment(kcFn)
+        }
+    }
+    
+    
     /// ** NOT USED **
     ///
     func record( _ tag: SymbolTag = SymbolTag(.null) ) {

@@ -55,8 +55,8 @@ class RecordingContext : EventContext {
         switch event.keyTag.kc {
             
         case .clrFn:
-            model.clearMacroFunction( SymbolTag(kcFn) )
             model.aux.recordStop()
+            model.clearRecordingFnKey(kcFn)
             model.popContext( event )
             
             // Pop the local variable storage, restoring prev
