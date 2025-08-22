@@ -81,6 +81,8 @@ struct MacroListView: View {
                             let sym = mr.symTag.getRichText()
                             let caption = mr.caption ?? "ç{GrayText}-caption-"
                             let color = mr.caption != nil ? "UnitText" : "GrayText"
+                            let kcKey = model.kstate.keyMap.keyAssignment(mr.symTag)
+                            let key   = kcKey == nil ? "" : "F\(kcKey!.rawValue % 10)"
 
                             VStack {
                                 HStack {
@@ -96,7 +98,7 @@ struct MacroListView: View {
                                         }
                                         
                                         // Second line of row
-                                        RichText( "2nd Line", size: .small, weight: .bold ).padding( [.leading], 20 )
+                                        RichText( "ƒ{0.9}Key: ç{BlackText}\(key)", size: .small, weight: .heavy, design: .serif, defaultColor: "GrayText" ).padding([.leading], 10)
                                     }
                                     .padding( [.leading ], 20)
                                     .frame( height: 30 )
