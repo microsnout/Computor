@@ -49,10 +49,10 @@ class RecordingContext : EventContext {
         guard let model = self.model else { return KeyPressResult.null }
         
 #if DEBUG
-        print( "RecordingContext event: \(event.keyTag)")
+        print( "RecordingContext event: \(event.keyCode)")
 #endif
         
-        switch event.keyTag.kc {
+        switch event.keyCode {
             
         case .clrFn:
             model.aux.recordStop()
@@ -67,12 +67,12 @@ class RecordingContext : EventContext {
             return KeyPressResult.noOp
             
         case .F1, .F2, .F3, . F4, .F5, .F6:
-            if model.isRecordingKey(event.keyTag.kc) {
+            if model.isRecordingKey(event.keyCode) {
                 
                 // Consider this fn key a stopFn command
                 fallthrough
             }
-            else if model.macroMod.getMacro( event.keyTag ) == nil {
+            else if model.macroMod.getMacro( SymbolTag(event.keyCode) ) == nil {
                 
                 // No op any undefined keys
                 return KeyPressResult.noOp
@@ -123,7 +123,7 @@ class RecordingContext : EventContext {
             
         default:
             
-            if CalculatorModel.entryStartKeys.contains(event.keyTag.kc) {
+            if CalculatorModel.entryStartKeys.contains(event.keyCode) {
                 
                 // Start data entry mode, save current state and lift stack to make room for new data
                 model.pushState()
@@ -131,7 +131,7 @@ class RecordingContext : EventContext {
                 
                 model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
                     
-                    if exitEvent.keyTag.kc ==  .back {
+                    if exitEvent.keyCode ==  .back {
                         
                         // Data entry was cancelled by back/undo key
                         model.popState()

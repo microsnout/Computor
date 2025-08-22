@@ -53,7 +53,7 @@ struct MacroEvent: CodableMacroOp {
     }
     
     func getPlainText() -> String {
-        return String( describing: event.keyTag )
+        return String( describing: event.keyCode )
     }
     
     init( _ event: KeyEvent ) {

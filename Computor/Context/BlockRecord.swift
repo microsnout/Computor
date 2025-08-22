@@ -49,7 +49,7 @@ class BlockRecord : EventContext {
         }
         
 #if DEBUG
-        print( "BlockRecord event: \(event.keyTag)")
+        print( "BlockRecord event: \(event.keyCode)")
 #endif
         
         switch event.kc {

@@ -13,14 +13,14 @@ class EntryContext : EventContext {
     
     override func onActivate( lastEvent: KeyEvent ) {
         // Start data entry with a digit or a dot determined by the key that got us here
-        model?.entry.startTextEntry( lastEvent.keyTag.kc )
+        model?.entry.startTextEntry( lastEvent.keyCode )
     }
     
     override func event( _ event: KeyEvent ) -> KeyPressResult {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        if !CalculatorModel.entryKeys.contains(event.keyTag.kc) {
+        if !CalculatorModel.entryKeys.contains(event.keyCode) {
             
             // Return to invoking context, either Normal or Recording
             model.popContext( event )
@@ -30,7 +30,7 @@ class EntryContext : EventContext {
         }
         
         // Process data entry key event
-        let keyRes = model.entry.entryModeKeypress(event.keyTag.kc)
+        let keyRes = model.entry.entryModeKeypress(event.keyCode)
         
         if keyRes == .cancelEntry {
             // Exited entry mode

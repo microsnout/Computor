@@ -16,7 +16,7 @@ class NormalContext : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        switch event.keyTag.kc {
+        switch event.keyCode {
             
         case .clrFn:
             // Clear macro assigned to this Fn key
@@ -49,7 +49,7 @@ class NormalContext : EventContext {
             
         default:
             
-            if CalculatorModel.entryStartKeys.contains(event.keyTag.kc) {
+            if CalculatorModel.entryStartKeys.contains(event.keyCode) {
                 
                 // Start data entry mode, save current state and lift stack to make room for new data
                 model.pushState()
@@ -57,7 +57,7 @@ class NormalContext : EventContext {
                 
                 model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
                     
-                    if exitEvent.keyTag.kc ==  .back {
+                    if exitEvent.keyCode ==  .back {
                         
                         // Data entry was cancelled by back/undo key
                         model.popState()

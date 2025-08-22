@@ -13,7 +13,7 @@ typealias KeyID = Int
 typealias  KeyEvent0 = KeyCode
 
 struct KeyEvent : Codable {
-    var keyTag: SymbolTag
+    var keyCode: KeyCode
     
     // Top level key like .fn4 when kc is an opcode from a sub popup menu like .rec
     var kcTop: KeyCode?
@@ -21,19 +21,19 @@ struct KeyEvent : Codable {
     // Code representing a symbol for a memory or macro
     var mTag: SymbolTag?
     
-    var kc: KeyCode { keyTag.kc }
+    var kc: KeyCode { keyCode }
     
     init( _ kc: KeyCode ) {
-        keyTag = SymbolTag(kc)
+        keyCode = kc
     }
     
     init( _ kc: KeyCode, mTag: SymbolTag ) {
-        keyTag = SymbolTag(kc)
+        keyCode = kc
         self.mTag = mTag
     }
     
     init( _ kc: KeyCode, kcTop: KeyCode? ) {
-        keyTag = SymbolTag(kc)
+        keyCode = kc
         self.kcTop = kcTop
     }
 }
@@ -607,7 +607,7 @@ struct localMemoryPopup: View {
         
         func keyPress(_ event: KeyEvent ) -> KeyPressResult {
             
-            let evt = KeyEvent( kcMem, mTag: event.keyTag )
+            let evt = KeyEvent( kcMem, mTag: SymbolTag(event.keyCode) )
             
             return model.keyPress(evt)
         }

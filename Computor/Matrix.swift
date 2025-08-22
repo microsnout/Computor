@@ -464,7 +464,7 @@ class MapFunctionX : ModalContext {
         guard let model = self.model else { return KeyPressResult.null }
         
 #if DEBUG
-        print( "MapFunction keypress: \(event.keyTag)")
+        print( "MapFunction keypress: \(event.keyCode)")
 #endif
         
         // Start with empty output list
@@ -530,7 +530,7 @@ class MapFunctionXY : ModalContext {
         guard let model = self.model else { return KeyPressResult.null }
         
 #if DEBUG
-        print( "MapFunctionXY keypress: \(event.keyTag)")
+        print( "MapFunctionXY keypress: \(event.keyCode)")
 #endif
         
         // Start with empty output list
