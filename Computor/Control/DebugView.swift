@@ -51,6 +51,15 @@ struct DebugView: View {
                 model.macroMod.macroTable.removeAll()
                 model.saveConfiguration()
             }
+            
+            DebugButton( label: "Print Key Maps" ) {
+                
+                print("Key Map:")
+                for (key, tag) in model.kstate.keyMap.fnRow {
+                    print( "   \(key.str) -> \(tag.getRichText())" )
+                }
+                print("")
+            }
         }
     }
 }

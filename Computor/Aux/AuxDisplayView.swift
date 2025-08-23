@@ -78,7 +78,9 @@ struct AuxiliaryDisplayView: View {
         }
         .padding([.leading, .trailing, .top, .bottom], 0)
         .background( Color("Display") )
-        .border(Color("Frame"), width: 3)
+        .overlay(
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(Color("Frame"), lineWidth: 3))
     }
 }
 

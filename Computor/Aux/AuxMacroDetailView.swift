@@ -7,6 +7,45 @@
 import SwiftUI
 
 
+struct FnKeyItem: Identifiable {
+    let id = UUID()
+    let kcFn: KeyCode
+}
+
+
+struct AssignedKeyPicker: View {
+
+    @StateObject var model: CalculatorModel
+    
+    @State private var kcSelected: KeyCode = .null
+    
+    
+    func getKeyList( _ map: KeyMapRec ) -> [FnKeyItem] {
+        
+        let kcAll: [KeyCode] = [.F1, .F2, .F3, .F4, .F5, .F6]
+        
+        return kcAll.map { kc in
+            FnKeyItem( kcFn: kc )
+        }
+    }
+
+    
+    var body: some View {
+        
+        let keyList: [FnKeyItem] = getKeyList( model.kstate.keyMap )
+        
+        Picker( selection: $kcSelected, label: Text("Key:").font(.footnote) ) {
+            
+            ForEach( keyList ) { key in
+                Text(key.kcFn.str).font(.footnote).tag(key.kcFn)
+            }
+        }
+        .pickerStyle(.menu)
+        .font(.footnote)
+    }
+}
+
+
 struct MacroDetailView: View {
     @StateObject var model: CalculatorModel
     
@@ -124,8 +163,9 @@ struct MacroDetailView: View {
                         
                         // Assigned Key
                         HStack( spacing: 0 ) {
-                            RichText("ç{GrayText}Assigned key:", size: .small, weight: .regular).padding( [.trailing], 5 )
+                            RichText("ç{GrayText}Key:", size: .small, weight: .regular).padding( [.trailing], 5 )
                             RichText( fnText, size: .small, weight: .bold )
+//                            AssignedKeyPicker( model: model )
                             Spacer()
                         }
                         

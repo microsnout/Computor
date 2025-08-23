@@ -431,7 +431,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
                         Image( systemName: "checkmark.diamond.fill" )
                     }
                     .accentColor( Color.green )
-                    .disabled( symN == 0 )
+                    .disabled( symN == 0 || (subPt+superPt == 0) && (symName == "F1" || symName == "F2" || symName == "F3" || symName == "F4" || symName == "F5" || symName == "F6") )
                     
                 }.padding( [.bottom], 20)
             }

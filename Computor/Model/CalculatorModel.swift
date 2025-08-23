@@ -735,15 +735,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         if KeyCode.fnSet.contains(kc) {
             // F1 to F6
             
-            if let fTag = kstate.keyMap.fnRow[kc] {
+            if let fTag = kstate.keyMap.tagAssignment(kc) {
                 // A SymbolTag is assigned to this key
                 return fTag.getRichText()
-            }
-            
-            if let _ = self.macroMod.getMacro( SymbolTag(kc) ) {
-                // Macro assigned to key but no symbol - not allowed anymore
-//                assert(false)
-                return "F\(kc.rawValue % 10)"
             }
             
             // Disabled key, no macro
