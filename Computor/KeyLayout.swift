@@ -28,6 +28,9 @@ let ksUnits = KeySpec( width: 60, height: 25,
 let ksModalPop = KeySpec( width: 30, height: 30,
                           keyColor: "ModalKeyColor", textColor: "ModalKeyText")
 
+let ksSheetPop = KeySpec( width: 30, height: 30,
+                          keyColor: "SheetKeyColor", textColor: "BlackText")
+
 let psUnits = PadSpec (
     keySpec: ksUnits,
     cols: 5,
@@ -461,7 +464,7 @@ func initKeyLayout() {
 
 let psAlpha =
 PadSpec(
-    keySpec: ksModalPop,
+    keySpec: ksSheetPop,
     cols: 6,
     keys: [
         Key(.A, "A"), Key(.B, "B"), Key(.C, "C"), Key(.D, "D"), Key(.E, "E"), Key(.F, "F"),
@@ -476,7 +479,7 @@ PadSpec(
 
 let psAlphaLower =
     PadSpec(
-        keySpec: ksModalPop,
+        keySpec: ksSheetPop,
         cols: 6,
         keys: [
             Key(.a, "a"), Key(.b, "b"), Key(.c, "c"), Key(.d, "d"), Key(.e, "e"), Key(.f, "f"),
@@ -490,7 +493,7 @@ let psAlphaLower =
 
 let psGreek =
     PadSpec(
-        keySpec: ksModalPop,
+        keySpec: ksSheetPop,
         cols: 6,
         keys: [
             Key(.alpha,   "\u{03b1}"), Key(.beta,    "\u{03b2}"), Key(.gamma,   "\u{03b3}"), Key(.delta,   "\u{03b4}"), Key(.epsilon, "\u{03b5}"), Key(.zeta,    "\u{03b6}"),
@@ -505,7 +508,7 @@ let psGreek =
 
 let psDigits =
     PadSpec(
-        keySpec: ksModalPop,
+        keySpec: ksSheetPop,
         cols: 6,
         keys: [
             Key(.d1, "1"), Key(.d2, "2"), Key(.d3, "3"), Key(.d4, "4"), Key(.d5, "5"), Key(.d6, "6"),

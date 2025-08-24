@@ -319,7 +319,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
         VStack {
             
             VStack {
-                RichText( getSymbolText(), size: .normal, defaultColor: "BlackText").padding( [.top], 20 )
+                RichText( getSymbolText(), size: .normal, defaultColor: "WhiteText").padding( [.top], 20 )
                 
                 KeypadView( padSpec: padList[charSet.rawValue], keyPressHandler: self )
                     .padding( [.leading, .trailing, .bottom] )

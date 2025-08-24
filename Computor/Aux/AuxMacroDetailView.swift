@@ -47,16 +47,19 @@ struct AssignedKeyPicker: View {
 
 
 struct MacroDetailView: View {
+    
+    var mr: MacroRec
+    
     @StateObject var model: CalculatorModel
     
-    @State private var renameSheet = false
+    @State private var editSheet   = false
     
     @State private var symbolSheet = false
     
     @State private var refreshView = false
     
     var body: some View {
-        var symTag: SymbolTag = model.aux.macroRec?.symTag ?? SymbolTag(.null)
+        var symTag: SymbolTag = mr.symTag
         
         let symName  = symTag.getRichText()
         
@@ -75,10 +78,8 @@ struct MacroDetailView: View {
                     Image( systemName: "chevron.left")
                         .padding( [.leading], 5 )
                         .onTapGesture {
-                            if let mr = model.aux.macroRec {
-                                if mr.isEmpty {
-                                    model.macroMod.deleteMacro()
-                                }
+                            if mr.isEmpty {
+                                model.macroMod.deleteMacro()
                             }
                             
                             withAnimation {
@@ -100,7 +101,7 @@ struct MacroDetailView: View {
                     
                     ScrollView {
                         ScrollViewReader { proxy in
-                            let list = model.aux.macroRec?.opSeq ?? MacroOpSeq()
+                            let list = mr.opSeq
                             
                             VStack(spacing: 1) {
                                 ForEach (list.indices, id: \.self) { x in
@@ -138,7 +139,7 @@ struct MacroDetailView: View {
                 
                 // Right panel fields
                 HStack {
-                    let caption = model.aux.macroRec?.caption ?? "ç{GrayText}-caption-"
+                    let caption = mr.caption ?? "ç{GrayText}-caption-"
                     
                     let modSymStr = model.macroMod.symStr
                     
@@ -146,21 +147,28 @@ struct MacroDetailView: View {
                         
                         Spacer().frame( height: 5 )
                         
-                        // CAPTION
-                        RichText( "ƒ{1.2}ç{UnitText}\(caption)", size: .small, weight: .bold )
-                            .onTapGesture {
-                                renameSheet = true
-                            }
-                        
                         // SYMBOL
                         HStack( spacing: 0 ) {
                             RichText("ç{GrayText}Symbol:", size: .small, weight: .regular).padding( [.trailing], 5 )
                             RichText( symName, size: .small, weight: .bold )
                             Spacer()
+                            
+                            // PENCIL EDIT BUTTON
+                            Button {
+                                editSheet = true
+                            } label: {
+                                Image( systemName: "square.and.pencil")
+                            }
                         }.onTapGesture {
                             symbolSheet = true
                         }
                         
+                        // CAPTION
+                        RichText( "ƒ{1.2}ç{UnitText}\(caption)", size: .small, weight: .bold )
+                            .onTapGesture {
+                                editSheet = true
+                            }
+
                         // Assigned Key
                         HStack( spacing: 0 ) {
                             RichText("ç{GrayText}Key:", size: .small, weight: .regular).padding( [.trailing], 5 )
@@ -178,7 +186,7 @@ struct MacroDetailView: View {
                         
                         Spacer()
                         
-                        // Detail Edit Controls
+                        // RECORDING EDIT CONTROLS
                         HStack( spacing: 25 ) {
                             
                             // RECORD
@@ -192,9 +200,7 @@ struct MacroDetailView: View {
                             
                             // PLAY
                             Button {
-                                if let mr = model.aux.macroRec {
-                                    _ = model.playMacroSeq( mr.opSeq )
-                                }
+                                _ = model.playMacroSeq( mr.opSeq )
                             } label: {
                                 Image( systemName: "play.fill").frame( minWidth: 0 )
                             }
@@ -223,19 +229,12 @@ struct MacroDetailView: View {
         .padding( [.bottom, .leading, .trailing], 5 )
         
         // Macro Rename Sheet
-        .sheet(isPresented: $renameSheet) {
-            ZStack {
-                Color("ControlBack").edgesIgnoringSafeArea(.all)
-                
-                AuxRenameView( name: model.aux.macroRec?.caption ?? "" ) {
-                    if let mr = model.aux.macroRec {
-                        mr.caption = $0 == "" ? nil : $0
-                        refreshView.toggle()
-                    }
-                }
+        .sheet(isPresented: $editSheet) {
+            
+            MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) { newtxt in
+                mr.caption = newtxt
+                refreshView.toggle()
             }
-            .presentationDetents([.fraction(0.4)])
-            .presentationBackground( Color("SheetBack") )
         }
         
         // Macro Change Symbol
@@ -251,6 +250,122 @@ struct MacroDetailView: View {
             }
             .presentationDetents([.fraction(0.5)])
             .presentationBackground( Color("ControlBack") )
+        }
+    }
+}
+
+
+struct SheetHeaderText: View {
+    
+    var txt: String
+    
+    var body: some View {
+        
+        RichText( "ƒ{1.2}\(txt)", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
+            .padding( [.top], 10 )
+    }
+}
+
+
+struct SheetTextField: View {
+    
+    var label: String
+    
+    var placeholder: String
+    
+    @Binding var text: String
+    
+    var body: some View {
+        
+        VStack( alignment: .leading, spacing: 5 ) {
+            SheetHeaderText( txt: label )
+            
+            TextField( placeholder, text: $text )
+                .textFieldStyle(.roundedBorder)
+                .padding( [.top], 0)
+                .foregroundColor(.black)
+        }
+    }
+}
+
+
+typealias SheetContinuationClosure = ( _ str: String ) -> Void
+
+
+struct SheetCollapsibleView<Content: View>: View {
+    
+    var label: String
+    
+    @ViewBuilder var content: Content
+    
+    @State private var isCollapsed = true
+    
+    var body: some View {
+        
+        VStack( alignment: .leading ) {
+            
+            HStack {
+                RichText( "ƒ{1.2}\(label)", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
+                
+                Spacer()
+                
+                Button( "", systemImage: isCollapsed ? "chevron.down" : "chevron.up" ) {
+                    
+                    withAnimation {
+                        isCollapsed.toggle()
+                    }
+                }
+            }
+            .padding(0)
+            
+            if !isCollapsed {
+                content
+                    .transition( .asymmetric( insertion: .push(from: .top), removal: .push( from: .bottom)) )
+            }
+            
+            Divider()
+                .overlay( Color(.white))
+        }
+        .accentColor( Color("WhiteText") )
+        .padding([.top], 10)
+    }
+}
+
+
+struct MacroEditSheet: View {
+    
+    @Environment(\.dismiss) var dismiss
+    
+    var mr: MacroRec
+
+    @State var caption: String
+
+    @StateObject var model: CalculatorModel
+    
+    var scc: SheetContinuationClosure
+    
+    var body: some View {
+        
+        VStack( alignment: .leading ) {
+            
+            SheetCollapsibleView( label: "={Symbol: }V_{cc}" ) {
+                
+                NewSymbolPopup( tag: mr.symTag ) { tag in
+                    model.changeMacroSymbol(old: mr.symTag, new: tag)
+                    mr.symTag = tag
+                }
+            }
+
+            SheetTextField( label: "Caption:", placeholder: "-caption-", text: $caption )
+
+            Spacer()
+        }
+        .padding( [.leading, .trailing], 40 )
+        .presentationBackground( Color.black.opacity(0.7) )
+        .presentationDetents( [.fraction(0.7), .fraction(0.9)] )
+        .onSubmit {
+            scc( caption )
+            dismiss()
         }
     }
 }

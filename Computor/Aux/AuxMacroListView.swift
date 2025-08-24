@@ -14,10 +14,10 @@ struct AuxMacroView: View {
         
         // if we are recording OR there is a selected symbol, we are in detail view
         
-        if let _ = model.aux.macroRec {
+        if let mr = model.aux.macroRec {
 
             // Detailed view of selected macro
-            MacroDetailView(model: model)
+            MacroDetailView( mr: mr, model: model )
                 .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
         }
         else {
