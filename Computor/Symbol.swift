@@ -316,10 +316,13 @@ struct NewSymbolPopup: View, KeyPressHandler {
     
     var body: some View {
         
-        VStack {
+        ZStack {
+            Color( "SuperLightGray")
+                .cornerRadius(10)
+                .padding( 20 )
             
-            VStack {
-                RichText( getSymbolText(), size: .normal, defaultColor: "WhiteText").padding( [.top], 20 )
+            VStack( alignment: .center ) {
+                RichText( getSymbolText(), size: .normal, defaultColor: "BlackText").padding( [.top], 20 )
                 
                 KeypadView( padSpec: padList[charSet.rawValue], keyPressHandler: self )
                     .padding( [.leading, .trailing, .bottom] )
@@ -435,6 +438,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
                     
                 }.padding( [.bottom], 20)
             }
+            .frame( maxWidth: .infinity )
+            .accentColor( .black )
         }
         .onAppear() {
             // Initialize provided tag specs
