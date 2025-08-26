@@ -344,15 +344,18 @@ struct MacroEditSheet: View {
     
     var scc: SheetContinuationClosure
     
+    @State private var symName: String = ""
+    
     var body: some View {
         
         VStack( alignment: .leading ) {
             
-            SheetCollapsibleView( label: "={Symbol: }V_{cc}" ) {
+            SheetCollapsibleView( label: "={Symbol: }\(symName)" ) {
                 
                 NewSymbolPopup( tag: mr.symTag ) { tag in
                     model.changeMacroSymbol(old: mr.symTag, new: tag)
                     mr.symTag = tag
+                    symName = mr.symTag.getRichText()
                 }
             }
 
@@ -363,6 +366,9 @@ struct MacroEditSheet: View {
         .padding( [.leading, .trailing], 40 )
         .presentationBackground( Color.black.opacity(0.7) )
         .presentationDetents( [.fraction(0.7), .fraction(0.9)] )
+        .onAppear() {
+            symName = mr.symTag.getRichText()
+        }
         .onSubmit {
             scc( caption )
             dismiss()

@@ -424,8 +424,6 @@ struct NewSymbolPopup: View, KeyPressHandler {
                             // Create symbol Tag
                             let tag = SymbolTag( symArray, subPt: subPt, superPt: superPt )
                             
-                            reset()
-                            
                             // Process tag in parent view
                             scc( tag )
                         }
