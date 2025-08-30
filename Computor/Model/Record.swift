@@ -174,6 +174,31 @@ extension CalculatorModel {
     }
     
     
+    func assignKeyTo( _ kc: KeyCode, tag: SymbolTag ) {
+        
+        if let oldKey = kstate.keyMap.keyAssignment(tag) {
+            
+            // This tag is already assinged to a key
+            // Clear that assignment
+            kstate.keyMap.clearKeyAssignment(oldKey)
+        }
+        
+        if let oldTag = kstate.keyMap.tagAssignment(kc) {
+            
+            if tag != oldTag {
+                
+                // Existing assignment for this key
+                // Overwrite with new tag
+                kstate.keyMap.assign(kc, tag: tag )
+            }
+        }
+        else {
+            // New assignment
+            kstate.keyMap.assign(kc, tag: tag )
+        }
+    }
+    
+    
     func playMacroSeq( _ seq: MacroOpSeq ) -> KeyPressResult {
         
         acceptTextEntry()

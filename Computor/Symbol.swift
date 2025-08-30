@@ -316,128 +316,129 @@ struct NewSymbolPopup: View, KeyPressHandler {
     
     var body: some View {
         
-        ZStack {
-            Color( "SuperLightGray")
-                .cornerRadius(10)
-                .padding( 20 )
+        VStack( alignment: .center ) {
+            RichText( getSymbolText(), size: .normal, defaultColor: "BlackText").padding( [.top], 20 )
             
-            VStack( alignment: .center ) {
-                RichText( getSymbolText(), size: .normal, defaultColor: "BlackText").padding( [.top], 20 )
-                
-                KeypadView( padSpec: padList[charSet.rawValue], keyPressHandler: self )
-                    .padding( [.leading, .trailing, .bottom] )
+            KeypadView( padSpec: padList[charSet.rawValue], keyPressHandler: self )
+                .padding( [.leading, .trailing, .bottom] )
+            
+            HStack {
+                Button( "", systemImage: "arrowshape.left.arrowshape.right" ) {
+                    // Don't include digits for the first letter
+                    charSet = symN == 0 ? charSet.nextSetZero : charSet.nextSet
+                }
                 
                 HStack {
-                    Button( "", systemImage: "arrowshape.left.arrowshape.right" ) {
-                        // Don't include digits for the first letter
-                        charSet = symN == 0 ? charSet.nextSetZero : charSet.nextSet
+                    ForEach ( setList, id: \.self ) { cs in
+                        Text( setLabels[cs.rawValue] )
+                            .if ( cs == charSet ) { txt in
+                                // Add border around selected char set
+                                txt.overlay(
+                                    RoundedRectangle( cornerRadius: 5).inset(by: -1).stroke(.blue, lineWidth: 1) )
+                            }
+                            .if ( symN == 0 && cs == CharSet.digit ) { txt in
+                                // Digits not allowed for first char
+                                txt.foregroundColor(.gray)
+                            }
                     }
-                    
-                    HStack {
-                        ForEach ( setList, id: \.self ) { cs in
-                            Text( setLabels[cs.rawValue] )
-                                .if ( cs == charSet ) { txt in
-                                    // Add border around selected char set
-                                    txt.overlay(
-                                        RoundedRectangle( cornerRadius: 5).inset(by: -1).stroke(.blue, lineWidth: 1) )
-                                }
-                                .if ( symN == 0 && cs == CharSet.digit ) { txt in
-                                    // Digits not allowed for first char
-                                    txt.foregroundColor(.gray)
-                                }
-                        }
-                    }
-                }.padding( [.bottom], 12)
+                }
+            }.padding( [.bottom], 12)
+            
+            HStack( spacing: 20 ) {
                 
-                HStack( spacing: 20 ) {
-                    
-                    // CLEAR X
-                    Button( action: {
-                        reset()
-                    })
-                    {
-                        Image( systemName: "clear" )
-                    }
-                    .disabled( symN == 0 )
-                    
-                    // SUBSCRIPT DOWN
-                    Button( action: {
-                        if symN >= 2 && subPt == 0 {
-                            
-                            if superPt != 0 {
-                                // Return to flat text
-                                superPt = 0
-                            }
-                            else {
-                                // Add subscript point
-                                subPt = symN
-                            }
-                        }
-                    })
-                    {
-                        Image( systemName: "arrowshape.down" )
-                    }
-                    .disabled( symN < 2 || subPt > 0 )
-                    
-                    // SUPERSCRIPT UP
-                    Button( action: {
-                        if symN >= 2 && superPt == 0 {
-                            
-                            if subPt != 0 {
-                                // Return to flat text
-                                subPt = 0
-                            }
-                            else {
-                                // Add superscript point
-                                superPt = symN
-                            }
-                        }
-                    })
-                    {
-                        Image( systemName: "arrowshape.up" )
-                    }
-                    .disabled( symN < 2 || superPt != 0 )
-                    
-                    // DELETE LEFT
-                    Button( action: {
-                        if symN > 0 {
-                            symN -= 1
-                            symName.removeLast()
-                            symArray.removeLast()
-                            
-                            if subPt+superPt == 3 {
-                                // BugFix
-                                subPt = 0
-                                superPt = 0
-                            }
-                        }
-                    })
-                    {
-                        Image( systemName: "delete.left" )
-                    }
-                    .disabled( symN == 0 )
-                    
-                    // OK  button, symbol selected
-                    Button( action: {
+                // CLEAR X
+                Button( action: {
+                    reset()
+                })
+                {
+                    Image( systemName: "clear" )
+                }
+                .disabled( symN == 0 )
+                
+                // SUBSCRIPT DOWN
+                Button( action: {
+                    if symN >= 2 && subPt == 0 {
                         
-                        if symN > 0 {
-                            // Create symbol Tag
-                            let tag = SymbolTag( symArray, subPt: subPt, superPt: superPt )
-                            
-                            // Process tag in parent view
-                            scc( tag )
+                        if superPt != 0 {
+                            // Return to flat text
+                            superPt = 0
                         }
-                    })
-                    {
-                        Image( systemName: "checkmark.diamond.fill" )
+                        else {
+                            // Add subscript point
+                            subPt = symN
+                        }
                     }
-                    .accentColor( Color.green )
-                    .disabled( symN == 0 || (subPt+superPt == 0) && (symName == "F1" || symName == "F2" || symName == "F3" || symName == "F4" || symName == "F5" || symName == "F6") )
+                })
+                {
+                    Image( systemName: "arrowshape.down" )
+                }
+                .disabled( symN < 2 || subPt > 0 )
+                
+                // SUPERSCRIPT UP
+                Button( action: {
+                    if symN >= 2 && superPt == 0 {
+                        
+                        if subPt != 0 {
+                            // Return to flat text
+                            subPt = 0
+                        }
+                        else {
+                            // Add superscript point
+                            superPt = symN
+                        }
+                    }
+                })
+                {
+                    Image( systemName: "arrowshape.up" )
+                }
+                .disabled( symN < 2 || superPt != 0 )
+                
+                // DELETE LEFT
+                Button( action: {
+                    if symN > 0 {
+                        symN -= 1
+                        symName.removeLast()
+                        symArray.removeLast()
+                        
+                        if subPt+superPt == 3 {
+                            // BugFix
+                            subPt = 0
+                            superPt = 0
+                        }
+                    }
+                })
+                {
+                    Image( systemName: "delete.left" )
+                }
+                .disabled( symN == 0 )
+                
+                // OK  button, symbol selected
+                Button( action: {
                     
-                }.padding( [.bottom], 20)
-            }
-            .frame( maxWidth: .infinity )
-            .accentColor( .black )
+                    if symN > 0 {
+                        // Create symbol Tag
+                        let tag = SymbolTag( symArray, subPt: subPt, superPt: superPt )
+                        
+                        // Process tag in parent view
+                        scc( tag )
+                    }
+                })
+                {
+                    Image( systemName: "checkmark.diamond.fill" )
+                }
+                .accentColor( Color.green )
+                .disabled( symN == 0 || (subPt+superPt == 0) && (symName == "F1" || symName == "F2" || symName == "F3" || symName == "F4" || symName == "F5" || symName == "F6") )
+                
+            }.padding( [.bottom], 20)
+        }
+        .frame( maxWidth: .infinity )
+        .accentColor( .black )
+        .background() {
+            
+            Color( "SuperLightGray")
+                .cornerRadius(10)
+                .padding( [.leading, .trailing], 20 )
+                .padding( [.top, .bottom], 5 )
         }
         .onAppear() {
             // Initialize provided tag specs

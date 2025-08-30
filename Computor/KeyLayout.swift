@@ -521,3 +521,15 @@ let psDigits =
     )
 
 // ******************
+
+let psFnUn =
+PadSpec(
+    keySpec: ksSheetPop,
+    cols: 6,
+    keys: [
+        Key(.F1), Key(.F2), Key(.F3), Key(.F4), Key(.F5), Key(.F6),
+        Key(.U1), Key(.U2), Key(.U3), Key(.U4), Key(.U5), Key(.U6),
+    ],
+    caption: "Fn Keys"
+)
+

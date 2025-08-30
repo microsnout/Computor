@@ -332,6 +332,48 @@ struct SheetCollapsibleView<Content: View>: View {
 }
 
 
+typealias KeyCodeContinuationClosure = ( _ kc: KeyCode ) -> Void
+
+
+struct KeyAssignPopup: View, KeyPressHandler {
+    
+    var tag: SymbolTag
+    var kccc: KeyCodeContinuationClosure
+    
+    @State private var kcAssigned: KeyCode = .null
+
+    
+    func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+        
+        kcAssigned = event.kc
+        kccc( event.kc )
+        return KeyPressResult.noOp
+    }
+    
+    var body: some View {
+        
+        VStack( alignment: .center ) {
+            
+            KeypadView( padSpec: psFnUn, keyPressHandler: self )
+                .padding( [.leading, .trailing, .bottom, .top] )
+        }
+        .frame( maxWidth: .infinity )
+        .accentColor( .black )
+        .onAppear() {
+            kcAssigned = tag.kc
+        }
+        .background() {
+            
+            Color( "SuperLightGray")
+                .cornerRadius(10)
+                .padding( [.leading, .trailing], 20 )
+                .padding( [.top], 5 )
+                .padding( [.bottom], 0 )
+        }
+    }
+}
+
+
 struct MacroEditSheet: View {
     
     @Environment(\.dismiss) var dismiss
@@ -346,9 +388,20 @@ struct MacroEditSheet: View {
     
     @State private var symName: String = ""
     
+    @State private var kcAssigned: KeyCode? = nil
+    
     var body: some View {
         
+        let kcStr: String = kcAssigned?.str ?? ""
+        
         VStack( alignment: .leading ) {
+            
+            HStack {
+                Spacer()
+                
+                RichText( "Done", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
+            }
+            .padding( [.top], 5 )
             
             SheetCollapsibleView( label: "={Symbol: }\(symName)" ) {
                 
@@ -358,16 +411,26 @@ struct MacroEditSheet: View {
                     symName = mr.symTag.getRichText()
                 }
             }
-
+            
             SheetTextField( label: "Caption:", placeholder: "-caption-", text: $caption )
-
+            
+            SheetCollapsibleView( label: "={Assigned Key: }\(kcStr)" ) {
+                
+                KeyAssignPopup( tag: mr.symTag ) { kc in
+                    
+                    kcAssigned = kc
+                    model.assignKeyTo( kc, tag: mr.symTag )
+                }
+            }
+            
             Spacer()
         }
         .padding( [.leading, .trailing], 40 )
         .presentationBackground( Color.black.opacity(0.7) )
-        .presentationDetents( [.fraction(0.7), .fraction(0.9)] )
+        .presentationDetents( [.fraction(0.8), .large] )
         .onAppear() {
             symName = mr.symTag.getRichText()
+            kcAssigned = model.kstate.keyMap.keyAssignment(mr.symTag)
         }
         .onSubmit {
             scc( caption )
