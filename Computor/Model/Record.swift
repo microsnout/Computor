@@ -13,7 +13,7 @@ extension CalculatorModel {
     
     func saveMacroFunction( _ sTag: SymbolTag, _ list: MacroOpSeq ) {
         let mr = MacroRec( tag: sTag, seq: list)
-        macroMod.saveMacro(mr)
+        aux.macroMod.saveMacro(mr)
         saveConfiguration()
     }
     
@@ -23,7 +23,7 @@ extension CalculatorModel {
         // Delete macro bound to sTag and save config
         
         // Test if we are deleting the macro currently being viewed in Aux dispaly
-        if let mr = macroMod.getMacro(sTag) {
+        if let mr = aux.macroMod.getMacro(sTag) {
             if mr === aux.macroRec {
                 // Yes, clear Aux display state
                 aux.clearMacroState()
@@ -31,13 +31,13 @@ extension CalculatorModel {
         }
         
         // Now delete the macro and save file
-        macroMod.deleteMacro(sTag)
+        aux.macroMod.deleteMacro(sTag)
         saveConfiguration()
     }
     
     
     func getMacroFunction( _ sTag: SymbolTag ) -> MacroOpSeq? {
-        if let mr = macroMod.getMacro(sTag) {
+        if let mr = aux.macroMod.getMacro(sTag) {
             return mr.opSeq
         }
         return nil
@@ -70,7 +70,7 @@ extension CalculatorModel {
         if let sTag = kstate.keyMap.tagAssignment(kcFn) {
             
             // TODO: Should eventually find a mr from any module not just current
-            if let mr = macroMod.getMacro(sTag) {
+            if let mr = aux.macroMod.getMacro(sTag) {
                 
                 aux.record(mr)
             }
@@ -85,7 +85,7 @@ extension CalculatorModel {
                 
                 kstate.keyMap.assign( kcFn, tag: sTag )
                 let mr = MacroRec( tag: sTag )
-                macroMod.saveMacro(mr)
+                aux.macroMod.saveMacro(mr)
                 aux.record(mr)
             }
             else {
@@ -122,7 +122,7 @@ extension CalculatorModel {
     ///
     func record( _ tag: SymbolTag = SymbolTag(.null) ) {
         
-        if let mr = macroMod.getMacro(tag) {
+        if let mr = aux.macroMod.getMacro(tag) {
             
             // Start recording symbol tag - which could be null
             aux.record(mr)
@@ -131,7 +131,7 @@ extension CalculatorModel {
             
             // Null tag was not found - create the null rec
             let mr = MacroRec()
-            macroMod.saveMacro(mr)
+            aux.macroMod.saveMacro(mr)
             aux.record(mr)
         }
         else {
@@ -149,7 +149,7 @@ extension CalculatorModel {
         let mr = MacroRec()
         
         // Bind to null symbol for now - replacing any currently bound
-        macroMod.saveMacro(mr )
+        aux.macroMod.saveMacro(mr )
         
         // Load into recorder
         aux.loadMacro(mr)
@@ -158,7 +158,7 @@ extension CalculatorModel {
     
     func setMacroCaption( _ caption: String, for tag: SymbolTag ) {
         
-        macroMod.setMacroCaption(tag, caption)
+        aux.macroMod.setMacroCaption(tag, caption)
     }
     
     
@@ -170,7 +170,7 @@ extension CalculatorModel {
             kstate.keyMap.assign(kc, tag: new)
         }
         
-        macroMod.changeMacroTag(from: old, to: new)
+        aux.macroMod.changeMacroTag(from: old, to: new)
     }
     
     

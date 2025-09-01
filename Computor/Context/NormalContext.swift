@@ -31,7 +31,7 @@ class NormalContext : EventContext {
             if let kcFn = event.kcTop {
                 
                 if let tag = model.kstate.keyMap.tagAssignment(kcFn),
-                   let mr = model.macroMod.getMacro(tag) {
+                   let mr = model.aux.macroMod.getMacro(tag) {
                     
                     // This key has a macro sym assigned
                     model.aux.loadMacro(mr)

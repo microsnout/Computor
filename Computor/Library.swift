@@ -95,7 +95,7 @@ class ModuleFile: Codable {
     var id: UUID = UUID()
     
     // Short name of module - displayed as prefix to symbol
-    var modSym: String = "STAT"
+    var modSym: String = "_mod0"
     
     // Descriptive caption for this module
     var caption: String? = nil
@@ -105,11 +105,37 @@ class ModuleFile: Codable {
     
     // List of macro definitions in this module - a macro must have a SymbolTag to be in this list, other fields optional
     var macroTable: [MacroRec] = []
+    
+    
+    init( _ mfr: MacroFileRec ) {
+        self.id = mfr.id
+        self.modSym = mfr.symbol
+        self.caption = mfr.caption
+        self.groupTable = []
+        self.macroTable = []
+    }
+    
+    init() {
+        self.id = UUID()
+        self.modSym = ""
+        self.caption = ""
+        self.groupTable = []
+        self.macroTable = []
+    }
 }
 
 extension ModuleFile {
     
     var symStr: String { "{\(self.modSym)}" }
+    
+    
+    // File Ops
+    
+    var filename: String {
+        "Module.\(modSym).\(id.uuidString)"
+    }
+    
+    // Macro Ops
     
     func getMacro( _ sTag: SymbolTag ) -> MacroRec? {
         
@@ -192,7 +218,7 @@ class StateFile: Codable {
 
 /// ** Macro File Record **
 
-struct MacroFileRec: Codable, Identifiable {
+class MacroFileRec: Codable, Identifiable {
     
     /// Description of one macro library file
     /// Contains a list of all symbols defined in file
@@ -211,12 +237,20 @@ struct MacroFileRec: Codable, Identifiable {
         case caption
         // Ignore mfile for Codable
     }
+    
+    init( sym: String ) {
+        self.id      = UUID()
+        self.symbol  = sym
+        self.caption = nil
+        self.symbols = []
+        self.mfile   = nil
+    }
 }
 
 
 /// ** State File Record **
 
-struct StateFileRec: Codable {
+class StateFileRec: Codable {
     
     var id: UUID
     var caption: String?
@@ -242,8 +276,42 @@ class ComputorIndexFile: Codable {
 }
 
 
-struct LibraryRec {
+let modZeroSym = "_mod0"
+
+
+class Library {
     
     var indexFile: ComputorIndexFile = ComputorIndexFile()
+}
+
+
+extension Library {
     
+    func getMacroFileRec( sym: String ) -> MacroFileRec? {
+        indexFile.macroTable.first( where: { $0.symbol == sym } )
+    }
+    
+    func getMacroFileRec( id: UUID ) -> MacroFileRec? {
+        indexFile.macroTable.first( where: { $0.id == id } )
+    }
+    
+    
+    func createNewMacroFile( symbol: String ) -> MacroFileRec? {
+        
+        /// Create a new module file with unique symbol and a new UUID
+        
+        if let mfr = getMacroFileRec(sym: symbol) {
+            // Already exists with this symbol
+            return nil
+        }
+            
+        let mfr = MacroFileRec( sym: symbol)
+        indexFile.macroTable.append(mfr)
+        indexFile.macroTable.sort( by: { $0.symbol < $1.symbol } )
+        
+        let modFile = ModuleFile(mfr)
+        mfr.mfile = modFile
+
+        return mfr
+    }
 }

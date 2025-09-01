@@ -39,7 +39,7 @@ struct MacroListView: View {
     var body: some View {
         
         // Symbol for currently selected macro module
-        let modSymStr = model.macroMod.symStr
+        let modSymStr = model.aux.macroMod.symStr
         
         VStack {
             AuxHeaderView( theme: Theme.lightYellow ) {
@@ -62,7 +62,7 @@ struct MacroListView: View {
                 }
             }
 
-            if model.macroMod.macroTable.isEmpty {
+            if model.aux.macroMod.macroTable.isEmpty {
                 Spacer()
                 VStack {
                     // Placeholder for empty macro list
@@ -76,7 +76,7 @@ struct MacroListView: View {
                     
                     LazyVStack {
                         
-                        ForEach ( model.macroMod.macroTable ) { mr in
+                        ForEach ( model.aux.macroMod.macroTable ) { mr in
                             
                             let sym = mr.symTag.getRichText()
                             let caption = mr.caption ?? "ç{GrayText}-caption-"
@@ -124,7 +124,7 @@ struct MacroListView: View {
                                             
                                             Button("Delete", role: .destructive) {
                                                 dialogRec = nil
-                                                model.macroMod.deleteMacro( mr.symTag )
+                                                model.aux.macroMod.deleteMacro( mr.symTag )
                                             }
                                             
                                             Button("Cancel", role: .cancel) {

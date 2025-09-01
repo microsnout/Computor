@@ -79,7 +79,7 @@ struct MacroDetailView: View {
                         .padding( [.leading], 5 )
                         .onTapGesture {
                             if mr.isEmpty {
-                                model.macroMod.deleteMacro()
+                                model.aux.macroMod.deleteMacro()
                             }
                             
                             withAnimation {
@@ -141,7 +141,7 @@ struct MacroDetailView: View {
                 HStack {
                     let caption = mr.caption ?? "ç{GrayText}-caption-"
                     
-                    let modSymStr = model.macroMod.symStr
+                    let modSymStr = model.aux.macroMod.symStr
                     
                     VStack( alignment: .leading, spacing: 10 ) {
                         
@@ -423,6 +423,11 @@ struct MacroEditSheet: View {
                 }
             }
             
+            SheetCollapsibleView( label: "={Module: }" ) {
+                
+                EditModulePopup( lib: model.libRec, title: "Macro Modules" )
+            }
+            
             Spacer()
         }
         .padding( [.leading, .trailing], 40 )
@@ -438,3 +443,107 @@ struct MacroEditSheet: View {
         }
     }
 }
+
+
+// **************
+
+
+struct ModuleKeyView: View {
+    
+    /// A view of a single module key
+    
+    @AppStorage(.settingsSerifFontKey)
+    private var serifFont = false
+    
+    let modSym: String
+    let keySpec: KeySpec
+    
+    var body: some View {
+        
+        let keyW = keySpec.width
+        
+        VStack {
+            
+            Rectangle()
+                .foregroundColor( Color(keySpec.keyColor) )
+                .frame( width: keyW, height: keySpec.height )
+                .cornerRadius( keySpec.radius )
+                .shadow( radius: 2 )
+                .overlay(
+                    RichText( modSym, size: .small, weight: .thin, defaultColor: keySpec.textColor)
+                )
+        }
+        .frame( width: keyW, height: keySpec.height )
+    }
+}
+
+
+struct EditModulePopup: View {
+    
+    /// Select from list of existing symbol tags, could be memories or macros
+    
+    @EnvironmentObject var model: CalculatorModel
+    @EnvironmentObject var keyData: KeyData
+    
+    let keySpec: KeySpec = ksSoftkey
+    
+    let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
+    
+    // Parameters
+    var lib: Library
+    var title: String
+    
+    var body: some View {
+        
+        let modRowList: [[MacroFileRec]] = lib.indexFile.macroTable.chunked(into: 4)
+        
+        VStack( spacing: 0) {
+            Text( title ).padding( [.top, .bottom], 10 )
+            
+            ScrollView( [.vertical] ) {
+                
+                Grid {
+                    
+                    ForEach ( modRowList.indices, id: \.self ) { r in
+                        
+                        let row = modRowList[r]
+                        
+                        GridRow {
+                            
+                            let n = row.count
+                            
+                            ForEach ( row.indices, id: \.self ) { c in
+                                
+                                ModuleKeyView( modSym: row[c].symbol, keySpec: keySpec )
+                                    .onTapGesture {
+                                        hapticFeedback.impactOccurred()
+                                        
+                                        // Close modal popup
+                                        keyData.pressedKey = nil
+                                        keyData.modalKey = .none
+                                    }
+                            }
+                            
+                            // Pad the row to 4 col so the frame doesn't shrink
+                            if n < 4 {
+                                ForEach ( 1 ... 4-n, id: \.self ) { _ in
+                                    Color.clear
+                                        .frame( width: keySpec.width, height: keySpec.height )
+                                }
+                            }
+                        }
+                        .padding( [.top], 5 )
+                    }
+                }
+            }
+            .frame( minWidth: 212, maxWidth: 212 )
+            .padding( [.top, .bottom], 5 )
+            .padding( [.leading, .trailing], 10 )
+            .background( Color("Display") )
+            .border(Color("Frame"), width: 2)
+        }
+        .frame( maxHeight: 340 )
+        .padding( [.leading, .trailing], 20 )
+    }
+}
+

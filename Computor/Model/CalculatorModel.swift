@@ -136,10 +136,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var status = StatusState()
     @Published var kstate = KeyState()
     
-    var libRec = LibraryRec()
-    
-    // Current selected macro module file
-    var macroMod = ModuleFile()
+    var libRec = Library()
     
     // Pause recording when value greater than 0
     var pauseRecCount: Int = 0

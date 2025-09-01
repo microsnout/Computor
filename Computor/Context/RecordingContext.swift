@@ -72,7 +72,7 @@ class RecordingContext : EventContext {
                 // Consider this fn key a stopFn command
                 fallthrough
             }
-            else if model.macroMod.getMacro( SymbolTag(event.keyCode) ) == nil {
+            else if model.aux.macroMod.getMacro( SymbolTag(event.keyCode) ) == nil {
                 
                 // No op any undefined keys
                 return KeyPressResult.noOp

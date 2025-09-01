@@ -17,7 +17,7 @@ extension CalculatorModel {
             await loadIndex()
             await syncModules()
             
-            try await loadModules()
+            try await loadZeroModule()
             
             try await loadState()
             
@@ -164,6 +164,8 @@ extension CalculatorModel {
             // Try to load file Computor.Index
             let store = try await task.value
             iFile = store.indexFile
+            
+            print( "Load Index Successful" )
         }
         catch {
             // File not found - Return an empty Index
@@ -173,6 +175,8 @@ extension CalculatorModel {
 
         Task { @MainActor in
             self.libRec.indexFile = iFile
+            
+            print( "Index File \(iFile.stateTable.count) State Records, \(iFile.macroTable.count) MacroModules" )
         }
     }
     
@@ -182,12 +186,14 @@ extension CalculatorModel {
         do {
             let modDir = try Self.moduleDirectoryURL()
             
-            let modFiles = listFiles(inDirectory: modDir.path(), withPrefix: "Module")
+            let modFiles = listFiles(inDirectory: modDir.path(), withPrefix: "Module.")
             
             print( "syncModules:" )
+            
             for f in modFiles {
                 print( "  file: \(f)" )
             }
+            
             print("")
         }
         catch {
@@ -197,7 +203,7 @@ extension CalculatorModel {
     }
 
     
-    func loadModules() async throws {
+    func loadZeroModule() async throws {
         
         let task = Task<ConfigStore, Error> {
             let fileURL = try Self.configFileURL()
@@ -210,12 +216,26 @@ extension CalculatorModel {
             return config
         }
         
-//        let store = ConfigStore()
         let store = try await task.value
 
         Task { @MainActor in
             // Update the @Published property here
-            self.macroMod = store.macroLib
+            self.aux.macroMod = store.macroLib
+        }
+    }
+    
+    
+    func createModZero() {
+        
+        if let mod0 = libRec.getMacroFileRec( sym: modZeroSym ) {
+            // It must not already exist
+            assert(false)
+            return
+        }
+        
+        guard let mod0 = libRec.createNewMacroFile( symbol: modZeroSym) else {
+            assert(false)
+            return
         }
     }
 
@@ -233,7 +253,6 @@ extension CalculatorModel {
             return state
         }
         
-//        let store = DataStore()
         let store = try await task.value
 
         Task { @MainActor in
@@ -247,12 +266,12 @@ extension CalculatorModel {
         }
     }
     
-    func saveConfig() async throws {
+    func saveConfigTask() async throws {
         /// Save configuration immediately after a change
         /// Don't wait for app termination
         
         let task = Task {
-            let store = ConfigStore( macroMod )
+            let store = ConfigStore( aux.macroMod )
             let data = try JSONEncoder().encode(store)
             let outfile = try Self.configFileURL()
             try data.write(to: outfile)
@@ -264,7 +283,7 @@ extension CalculatorModel {
         
         Task {
             do {
-                try await saveConfig()
+                try await saveConfigTask()
             }
             catch {
                 fatalError(error.localizedDescription)
