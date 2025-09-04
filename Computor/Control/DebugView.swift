@@ -52,6 +52,20 @@ struct DebugView: View {
                 model.saveConfiguration()
             }
             
+            DebugButton( label: "Delete ALL Module files") {
+                
+                
+                let modDir = CalculatorModel.moduleDirectoryURL()
+                
+                deleteAllFiles(in: modDir)
+                
+                model.kstate.keyMap.fnRow.removeAll()
+                model.aux.macroRec = nil
+                model.aux.macroMod.macroTable.removeAll()
+
+            }
+
+
             DebugButton( label: "Print Key Maps" ) {
                 
                 print("Key Map:")

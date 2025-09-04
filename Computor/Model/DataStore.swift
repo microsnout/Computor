@@ -9,104 +9,39 @@ import SwiftUI
 
 extension CalculatorModel {
     
-    func loadLibrary() async {
+    // *** File system paths ***
+    
+    private static func documentDirectoryURL() -> URL {
         
-        do {
-            try await createModuleDirectory()
-            
-            await loadIndex()
-            await syncModules()
-            
-            try await loadZeroModule()
-            
-            try await loadState()
-            
-            listDocuments()
-        }
-        catch {
-            print( "File load error: \(error.localizedDescription)" )
-        }
+        try! FileManager.default.url(for: .documentDirectory,
+                                     in: .userDomainMask,
+                                     appropriateFor: nil,
+                                     create: false)
     }
     
-    struct IndexStore : Codable {
-        /// IndexStore
-        /// List of other data files, macro and state files
-        ///
-        
-        var indexFile: ComputorIndexFile
-        
-        init( _ iFile: ComputorIndexFile = ComputorIndexFile() ) {
-            self.indexFile = iFile
-        }
-    }
-
-    struct ConfigStore : Codable {
-        /// ConfigStore
-        /// Long term configuration data such as Fn key definitions
-        /// File updated immediately when calculator configuration is changed
-        
-        var macroLib: ModuleFile
-        
-        init( _ appC: ModuleFile = ModuleFile() ) {
-            self.macroLib = appC
-        }
+    private static func indexFileURL() -> URL {
+        documentDirectoryURL().appendingPathComponent("computor.index")
     }
     
-    struct DataStore : Codable {
-        var state:    CalcState
-        
-        var unitData: UserUnitData
-        
-        var keyMap: KeyMapRec
-
-        init( _ state: CalcState = CalcState(), _ uud: UserUnitData = UserUnitData(), _ keyM: KeyMapRec = KeyMapRec() ) {
-            self.state = state
-            self.unitData = uud
-            self.keyMap   = keyM
-        }
+    private static func configFileURL() -> URL {
+        documentDirectoryURL().appendingPathComponent("computor.config")
     }
     
-    private static func indexFileURL() throws -> URL {
-        try FileManager.default.url(for: .documentDirectory,
-                                    in: .userDomainMask,
-                                    appropriateFor: nil,
-                                    create: false)
-        .appendingPathComponent("computor.index")
+    private static func stateFileURL() -> URL {
+        documentDirectoryURL().appendingPathComponent("computor.state")
     }
-
-    private static func configFileURL() throws -> URL {
-        try FileManager.default.url(for: .documentDirectory,
-                                    in: .userDomainMask,
-                                    appropriateFor: nil,
-                                    create: false)
-        .appendingPathComponent("computor.config")
-    }
-
-    private static func stateFileURL() throws -> URL {
-        try FileManager.default.url(for: .documentDirectory,
-                                    in: .userDomainMask,
-                                    appropriateFor: nil,
-                                    create: false)
-        .appendingPathComponent("computor.state")
-    }
-
-    private static func moduleDirectoryURL() throws -> URL {
-        try FileManager.default.url(for: .documentDirectory,
-                                    in: .userDomainMask,
-                                    appropriateFor: nil,
-                                    create: false)
-        .appendingPathComponent("Module")
-    }
-
     
-    func getDocumentsDirectory() -> URL {
-        FileManager.default.urls( for: .documentDirectory, in: .userDomainMask)[0]
+    static func moduleDirectoryURL() -> URL {
+        documentDirectoryURL().appendingPathComponent("Module")
     }
     
     
-    func createModuleDirectory() async throws {
+    func createModuleDirectory() {
         
-        let modDirURL = try Self.moduleDirectoryURL()
+        /// ** Create Module Directory **
+        /// Create the 'Module' subdir under the document directory
+        
+        let modDirURL = Self.moduleDirectoryURL()
         
         do {
             try FileManager.default.createDirectory( at: modDirURL, withIntermediateDirectories: false, attributes: nil)
@@ -114,45 +49,21 @@ extension CalculatorModel {
             print("Directory created successfully at: \(modDirURL.path)")
         }
         catch CocoaError.fileWriteFileExists {
-            print( "File Already Exists" )
+            print( "Module directory already exists - no problem" )
         }
         catch {
             print("Error creating directory: \(error.localizedDescription)")
-        }
-    }
-    
-    
-    func listFiles( inDirectory path: String, withPrefix pattern: String ) -> [String] {
-        
-        let fileManager = FileManager.default
-        
-        do {
-            let contents = try fileManager.contentsOfDirectory(atPath: path)
-            let filteredFiles = contents.filter { $0.hasPrefix(pattern) }
-            return filteredFiles
-        }
-        catch {
-            print("Error listing directory contents: \(error)")
-            return []
-        }
-    }
-    
-    
-    func listDocuments() {
-        
-        let url   = getDocumentsDirectory()
-        let files = listFiles( inDirectory: url.path(), withPrefix: "Module" )
-        
-        for f in files {
-            print("DocFile: \(f)")
+            assert(false)
         }
     }
     
     
     func loadIndex() async {
         
+        /// ** Load Index File **
+        
         let task = Task<IndexStore, Error> {
-            let fileURL = try Self.indexFileURL()
+            let fileURL = Self.indexFileURL()
             let data    = try Data( contentsOf: fileURL)
             let index   = try JSONDecoder().decode( IndexStore.self, from: data)
             return index
@@ -170,9 +81,10 @@ extension CalculatorModel {
         catch {
             // File not found - Return an empty Index
             iFile = ComputorIndexFile()
+            
             print( "Index file not found - using empty file" )
         }
-
+        
         Task { @MainActor in
             self.libRec.indexFile = iFile
             
@@ -181,69 +93,242 @@ extension CalculatorModel {
     }
     
     
-    func syncModules() async {
+    func listFiles( inDirectory path: String, withPrefix pattern: String ) -> [String] {
+        
+        /// ** List Files in Path **
+        
+        let fileManager = FileManager.default
         
         do {
-            let modDir = try Self.moduleDirectoryURL()
-            
-            let modFiles = listFiles(inDirectory: modDir.path(), withPrefix: "Module.")
-            
-            print( "syncModules:" )
-            
-            for f in modFiles {
-                print( "  file: \(f)" )
-            }
-            
-            print("")
+            let contents = try fileManager.contentsOfDirectory( atPath: path)
+            let filteredFiles = contents.filter { $0.hasPrefix(pattern) }
+            return filteredFiles
         }
         catch {
-            print("Error listing module directory contents: \(error)")
+            print("Error listing path \(path) Error: \(error) - return []")
+            return []
         }
-        
     }
 
     
-    func loadZeroModule() async throws {
+    func syncModules() {
         
-        let task = Task<ConfigStore, Error> {
-            let fileURL = try Self.configFileURL()
+        /// ** Sync Modules **
+        /// Make Index file consistent with actual module files present
+        
+        print( "Sync Modules:" )
+        
+        let modDir = Self.moduleDirectoryURL()
+        
+        let modFilenameList = listFiles( inDirectory: modDir.path(), withPrefix: "Module.")
+        
+        var validModFiles: [(String, UUID)] = modFilenameList.compactMap { fname in splitModFilename(fname) }
+        
+        var missingFiles: [UUID] = []
+        
+        // For each record in the index file
+        for mfr in libRec.indexFile.macroTable {
             
-            guard let data = try? Data( contentsOf: fileURL) else {
-                return ConfigStore()
+            if let (modName, modUUID) = validModFiles.first( where: { (name, uuid) in uuid == mfr.id } ) {
+                
+                // The file exists
+                
+                if modName != mfr.symbol {
+                    // Should not happen - correct index
+                    assert(false)
+                    mfr.symbol = modName
+                }
+                
+                print( "   Module: \(modName) - \(modUUID.uuidString)" )
+                
+                validModFiles.removeAll( where: { (name, uuid) in uuid == mfr.id } )
             }
-            
-            let config = try JSONDecoder().decode(ConfigStore.self, from: data)
-            return config
+            else {
+                // No file matching this index entry
+                missingFiles.append(mfr.id)
+            }
         }
         
-        let store = try await task.value
-
-        Task { @MainActor in
-            // Update the @Published property here
-            self.aux.macroMod = store.macroLib
+        // Eliminate index file entries where the file is missing
+        libRec.indexFile.macroTable.removeAll( where: { missingFiles.contains( $0.id ) } )
+        
+        // Add index entries for remaining valid files
+        for (modName, modUUID) in validModFiles {
+            
+            print("   Adding ModFileRec for: \(modName)")
+            
+            guard let _ = libRec.addExistingMacroFile( symbol: modName, uuid: modUUID) else {
+                assert(false)
+                print( "   Mod: \(modName) - \(modUUID) conflict with existing module with same name" )
+            }
         }
     }
+
     
-    
-    func createModZero() {
+    func createModZero() -> MacroFileRec {
+        
+        /// ** Create the Zero Module **
         
         if let mod0 = libRec.getMacroFileRec( sym: modZeroSym ) {
-            // It must not already exist
-            assert(false)
-            return
+            
+            // Module zero already exists
+            print( "createModZero: Already exists" )
+            return mod0
         }
         
         guard let mod0 = libRec.createNewMacroFile( symbol: modZeroSym) else {
+            print( "createModZero: Failed to create Mod zero" )
             assert(false)
+        }
+        
+        print( "createModZero: Created" )
+        return mod0
+    }
+
+    
+    typealias LoadContinuationClosure = ( ModuleFile ) -> Void
+    
+    func loadModule( _ mfr: MacroFileRec, lcc: @escaping LoadContinuationClosure ) async {
+        
+        /// ** Load Module **
+        
+        if let mf = mfr.mfile {
+            // Module already loaded
+            print( "loadModule: \(mfr.symbol) already loaded" )
+            lcc(mf)
             return
         }
+        
+        let task = Task<ModuleStore, Error> {
+            
+            let fileURL = Self.moduleDirectoryURL().appendingPathComponent( mfr.filename )
+            
+            guard let data = try? Data( contentsOf: fileURL) else {
+                
+                print("LoadModule - Failed: return empty ModuleStore")
+                return ModuleStore()
+            }
+            
+            let modS = try JSONDecoder().decode(ModuleStore.self, from: data)
+            return modS
+        }
+        
+        var store = ModuleStore()
+
+        do {
+            store = try await task.value
+        }
+        catch {
+            print("loadModule - JSON Decode Failed:" )
+            print("   symbol: \(mfr.symbol)")
+            print("       id: \(mfr.id)")
+            print("    Error: \(error)")
+            
+            let md = ModuleFile(mfr)
+            store = ModuleStore(md)
+        }
+        
+        mfr.mfile = store.modFile
+        print( "loadModule: sym:\(mfr.symbol) Loaded" )
+        print( "loadModule - ModuleFile: \(mfr.mfile?.modSym ?? "-")" )
+        
+        Task { @MainActor in
+            lcc(store.modFile)
+        }
+    }
+
+
+    func loadLibrary() async {
+        
+        do {
+            createModuleDirectory()
+            
+            await loadIndex()
+            
+            syncModules()
+            
+            // Create Module zero if it doesn't exist and load it
+            let mod0 = createModZero()
+            
+            await loadModule(mod0) { mf in
+                self.aux.macroMod = mf
+                print("Assign aux.macroMod = \(mf.modSym)")
+            }
+
+            try await loadState()
+        }
+        catch {
+            print( "Library load error: \(error.localizedDescription)" )
+        }
+    }
+    
+    
+    struct IndexStore : Codable {
+        /// IndexStore
+        /// List of other data files, macro and state files
+        ///
+        
+        var indexFile: ComputorIndexFile
+        
+        init( _ iFile: ComputorIndexFile = ComputorIndexFile() ) {
+            self.indexFile = iFile
+        }
+    }
+    
+    
+    struct ModuleStore : Codable {
+        
+        /// ModuleStore
+        
+        var modFile: ModuleFile
+        
+        init( _ mFile: ModuleFile = ModuleFile() ) {
+            self.modFile = mFile
+        }
+    }
+
+
+    struct DataStore : Codable {
+        var state:    CalcState
+        
+        var unitData: UserUnitData
+        
+        var keyMap: KeyMapRec
+
+        init( _ state: CalcState = CalcState(), _ uud: UserUnitData = UserUnitData(), _ keyM: KeyMapRec = KeyMapRec() ) {
+            self.state = state
+            self.unitData = uud
+            self.keyMap   = keyM
+        }
+    }
+    
+    
+    func splitModFilename( _ fname: String ) -> ( String, UUID )? {
+        
+        /// Break down a module filename of form 'Module.modName.UUID'
+        
+        if !fname.hasPrefix("Module.") {
+            return nil
+        }
+        
+        let parts = fname.split( separator: ".")
+        
+        if parts.count < 3 || parts[1].count > 6 {
+            return nil
+        }
+        
+        if let uuid = UUID( uuidString: String(parts[2]) ) {
+            return (String(parts[1]), uuid)
+        }
+        
+        return nil
     }
 
     
     func loadState() async throws {
         
         let task = Task<DataStore, Error> {
-            let fileURL = try Self.stateFileURL()
+            let fileURL = Self.stateFileURL()
             
             guard let data = try? Data( contentsOf: fileURL) else {
                 return DataStore()
@@ -271,12 +356,14 @@ extension CalculatorModel {
         /// Don't wait for app termination
         
         let task = Task {
-            let store = ConfigStore( aux.macroMod )
+            let store = ModuleStore( aux.macroMod )
             let data = try JSONEncoder().encode(store)
-            let outfile = try Self.configFileURL()
+            let outfile = Self.moduleDirectoryURL().appendingPathComponent( aux.macroMod.filename )
             try data.write(to: outfile)
         }
         _ = try await task.value
+        
+        print( "saveConfigTask: wrote out: \(aux.macroMod.filename)")
     }
     
     func saveConfiguration() {
@@ -286,7 +373,9 @@ extension CalculatorModel {
                 try await saveConfigTask()
             }
             catch {
-                fatalError(error.localizedDescription)
+                print( "saveConfiguration: error: \(error.localizedDescription)")
+                
+//                fatalError(error.localizedDescription)
             }
         }
     }
@@ -297,10 +386,31 @@ extension CalculatorModel {
         let task = Task {
             let store = DataStore( state, UserUnitData.uud, kstate.keyMap )
             let data = try JSONEncoder().encode(store)
-            let outfile = try Self.stateFileURL()
+            let outfile = Self.stateFileURL()
             try data.write(to: outfile)
         }
         _ = try await task.value
     }
 
+}
+
+
+/// ** Functions for Debug control sheet **
+
+func deleteAllFiles(in directoryURL: URL) {
+    let fileManager = FileManager.default
+    
+    do {
+        // Get the contents of the directory
+        let fileURLs = try fileManager.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+        
+        // Iterate through the files and remove each one
+        for fileURL in fileURLs {
+            try fileManager.removeItem(at: fileURL)
+        }
+        print("Successfully deleted all files in: \(directoryURL.lastPathComponent)")
+    }
+    catch {
+        print("Error deleting files in directory: \(error)")
+    }
 }
