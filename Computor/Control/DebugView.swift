@@ -81,7 +81,7 @@ struct DebugView: View {
                 print("Macro Table:")
                 for mfr in model.libRec.indexFile.macroTable {
                     let caption = mfr.caption ?? "-caption-"
-                    print( "   \(mfr.symbol)  \(caption)" )
+                    print( "   \(mfr.modSym)  \(caption)" )
                 }
                 print("")
             }

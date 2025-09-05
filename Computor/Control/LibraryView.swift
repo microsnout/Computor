@@ -24,7 +24,7 @@ struct LibraryView: View {
                     
                     VStack {
                         ZStack( alignment: .leadingFirstTextBaseline ) {
-                            RichText( mfr.symbol, size: .normal, weight: .bold, design: .monospaced, defaultColor: "BlackText" )
+                            RichText( mfr.modSym, size: .normal, weight: .bold, design: .monospaced, defaultColor: "BlackText" )
                             RichText( caption, size: .normal, weight: .thin, design: .serif, defaultColor: "ModText" ).padding( [.leading], 60)
                         }
                     }

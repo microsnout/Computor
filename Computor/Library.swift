@@ -109,7 +109,7 @@ class ModuleFile: Codable {
     
     init( _ mfr: MacroFileRec ) {
         self.id = mfr.id
-        self.modSym = mfr.symbol
+        self.modSym = mfr.modSym
         self.caption = mfr.caption
         self.groupTable = []
         self.macroTable = []
@@ -224,7 +224,7 @@ final class MacroFileRec: Codable, Identifiable {
     /// Contains a list of all symbols defined in file
     
     var id: UUID
-    var symbol: String
+    var modSym: String
     var caption: String? = nil
     var symList: [SymbolTag] = []
     
@@ -232,12 +232,12 @@ final class MacroFileRec: Codable, Identifiable {
     var mfile: ModuleFile? = nil
     
     var filename: String {
-        "Module.\(symbol).\(id.uuidString)"
+        "Module.\(modSym).\(id.uuidString)"
     }
 
     private enum CodingKeys: String, CodingKey {
         case id
-        case symbol
+        case modSym
         case caption
         case symList
         // Ignore mfile for Codable
@@ -246,7 +246,7 @@ final class MacroFileRec: Codable, Identifiable {
     init( sym: String ) {
         /// Constuction of a New Module file with newly created UUID
         self.id      = UUID()
-        self.symbol  = sym
+        self.modSym  = sym
         self.caption = nil
         self.symList = []
         self.mfile   = nil
@@ -255,7 +255,7 @@ final class MacroFileRec: Codable, Identifiable {
     init( sym: String, uuid: UUID ) {
         /// Constuction of an existing Module file with provided UUID
         self.id      = uuid
-        self.symbol  = sym
+        self.modSym  = sym
         self.caption = nil
         self.symList = []
         self.mfile   = nil
@@ -264,7 +264,7 @@ final class MacroFileRec: Codable, Identifiable {
     init( from decoder: any Decoder) throws {
         let container = try decoder.container( keyedBy: CodingKeys.self)
         self.id = try container.decode( UUID.self, forKey: .id)
-        self.symbol = try container.decode( String.self, forKey: .symbol)
+        self.modSym = try container.decode( String.self, forKey: .modSym)
         self.caption = try container.decodeIfPresent( String.self, forKey: .caption)
         self.symList = try container.decode( [SymbolTag].self, forKey: .symList)
     }
@@ -312,7 +312,7 @@ class Library {
 extension Library {
     
     func getMacroFileRec( sym: String ) -> MacroFileRec? {
-        indexFile.macroTable.first( where: { $0.symbol == sym } )
+        indexFile.macroTable.first( where: { $0.modSym == sym } )
     }
     
     func getMacroFileRec( id: UUID ) -> MacroFileRec? {
@@ -331,7 +331,7 @@ extension Library {
         
         let mfr = MacroFileRec( sym: symbol)
         indexFile.macroTable.append(mfr)
-        indexFile.macroTable.sort( by: { $0.symbol < $1.symbol } )
+        indexFile.macroTable.sort( by: { $0.modSym < $1.modSym } )
         
         let modFile = ModuleFile(mfr)
         mfr.mfile = modFile
@@ -351,7 +351,7 @@ extension Library {
             
         let mfr = MacroFileRec( sym: symbol, uuid: uuid )
         indexFile.macroTable.append(mfr)
-        indexFile.macroTable.sort( by: { $0.symbol < $1.symbol } )
+        indexFile.macroTable.sort( by: { $0.modSym < $1.modSym } )
         return mfr
     }
 }

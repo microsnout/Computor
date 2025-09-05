@@ -518,7 +518,7 @@ struct EditModulePopup: View {
                             
                             ForEach ( row.indices, id: \.self ) { c in
                                 
-                                ModuleKeyView( modSym: row[c].symbol, keySpec: keySpec )
+                                ModuleKeyView( modSym: row[c].modSym, keySpec: keySpec )
                                     .onTapGesture {
                                         hapticFeedback.impactOccurred()
                                         

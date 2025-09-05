@@ -130,10 +130,10 @@ extension CalculatorModel {
                 
                 // The file exists
                 
-                if modName != mfr.symbol {
+                if modName != mfr.modSym {
                     // Should not happen - correct index
                     assert(false)
-                    mfr.symbol = modName
+                    mfr.modSym = modName
                 }
                 
                 print( "   Module: \(modName) - \(modUUID.uuidString)" )
@@ -191,7 +191,7 @@ extension CalculatorModel {
         
         if let mf = mfr.mfile {
             // Module already loaded
-            print( "loadModule: \(mfr.symbol) already loaded" )
+            print( "loadModule: \(mfr.modSym) already loaded" )
             lcc(mf)
             return
         }
@@ -217,7 +217,7 @@ extension CalculatorModel {
         }
         catch {
             print("loadModule - JSON Decode Failed:" )
-            print("   symbol: \(mfr.symbol)")
+            print("   symbol: \(mfr.modSym)")
             print("       id: \(mfr.id)")
             print("    Error: \(error)")
             
@@ -226,7 +226,7 @@ extension CalculatorModel {
         }
         
         mfr.mfile = store.modFile
-        print( "loadModule: sym:\(mfr.symbol) Loaded" )
+        print( "loadModule: sym:\(mfr.modSym) Loaded" )
         print( "loadModule - ModuleFile: \(mfr.mfile?.modSym ?? "-")" )
         
         Task { @MainActor in
