@@ -18,7 +18,7 @@ struct LibraryView: View {
         NavigationStack {
             List {
                 
-                ForEach ( model.libRec.indexFile.macroTable ) { mfr in
+                ForEach ( model.db.indexFile.macroTable ) { mfr in
                     
                     let caption = mfr.caption ?? "ç{GrayText}-caption-ç{}"
                     
@@ -61,7 +61,7 @@ struct LibraryView: View {
             
             CreateModuleSheet() { name, caption in
                 
-                if let mfr = model.libRec.createNewMacroFile(symbol: name) {
+                if let mfr = model.db.createNewMacroFile(symbol: name) {
                     
                     
                 }

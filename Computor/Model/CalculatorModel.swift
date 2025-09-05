@@ -136,7 +136,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var status = StatusState()
     @Published var kstate = KeyState()
     
-    var libRec = Library()
+    var db = Database()
     
     // Pause recording when value greater than 0
     var pauseRecCount: Int = 0

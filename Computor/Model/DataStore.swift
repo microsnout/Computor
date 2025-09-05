@@ -85,7 +85,7 @@ extension CalculatorModel {
             print( "Index file not found - using empty file" )
         }
         
-        self.libRec.indexFile = iFile
+        self.db.indexFile = iFile
         print( "Index File \(iFile.stateTable.count) State Records, \(iFile.macroTable.count) MacroModules" )
     }
     
@@ -124,7 +124,7 @@ extension CalculatorModel {
         var missingFiles: [UUID] = []
         
         // For each record in the index file
-        for mfr in libRec.indexFile.macroTable {
+        for mfr in db.indexFile.macroTable {
             
             if let (modName, modUUID) = validModFiles.first( where: { (name, uuid) in uuid == mfr.id } ) {
                 
@@ -147,14 +147,14 @@ extension CalculatorModel {
         }
         
         // Eliminate index file entries where the file is missing
-        libRec.indexFile.macroTable.removeAll( where: { missingFiles.contains( $0.id ) } )
+        db.indexFile.macroTable.removeAll( where: { missingFiles.contains( $0.id ) } )
         
         // Add index entries for remaining valid files
         for (modName, modUUID) in validModFiles {
             
             print("   Adding ModFileRec for: \(modName)")
             
-            guard let _ = libRec.addExistingMacroFile( symbol: modName, uuid: modUUID) else {
+            guard let _ = db.addExistingMacroFile( symbol: modName, uuid: modUUID) else {
                 assert(false)
                 print( "   Mod: \(modName) - \(modUUID) conflict with existing module with same name" )
             }
@@ -166,14 +166,14 @@ extension CalculatorModel {
         
         /// ** Create the Zero Module **
         
-        if let mod0 = libRec.getMacroFileRec( sym: modZeroSym ) {
+        if let mod0 = db.getMacroFileRec( sym: modZeroSym ) {
             
             // Module zero already exists
             print( "createModZero: Already exists" )
             return mod0
         }
         
-        guard let mod0 = libRec.createNewMacroFile( symbol: modZeroSym) else {
+        guard let mod0 = db.createNewMacroFile( symbol: modZeroSym) else {
             print( "createModZero: Failed to create Mod zero" )
             assert(false)
         }

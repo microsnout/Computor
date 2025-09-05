@@ -79,7 +79,7 @@ struct DebugView: View {
             DebugButton( label: "Print Macro Table" ) {
                 
                 print("Macro Table:")
-                for mfr in model.libRec.indexFile.macroTable {
+                for mfr in model.db.indexFile.macroTable {
                     let caption = mfr.caption ?? "-caption-"
                     print( "   \(mfr.modSym)  \(caption)" )
                 }

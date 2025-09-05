@@ -1,5 +1,5 @@
 //
-//  Library.swift
+//  Database.swift
 //  Computor
 //
 //  Created by Barry Hall on 2025-06-07.
@@ -303,13 +303,13 @@ class ComputorIndexFile: Codable {
 let modZeroSym = "_mod0"
 
 
-class Library {
+class Database {
     
     var indexFile: ComputorIndexFile = ComputorIndexFile()
 }
 
 
-extension Library {
+extension Database {
     
     func getMacroFileRec( sym: String ) -> MacroFileRec? {
         indexFile.macroTable.first( where: { $0.modSym == sym } )

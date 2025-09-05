@@ -429,7 +429,7 @@ struct MacroEditSheet: View {
             
             SheetCollapsibleView( label: "={Module: }" ) {
                 
-                EditModulePopup( lib: model.libRec, title: "Macro Modules" )
+                EditModulePopup( db: model.db, title: "Macro Modules" )
             }
             
             Spacer()
@@ -494,12 +494,12 @@ struct EditModulePopup: View {
     let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
     
     // Parameters
-    var lib: Library
+    var db: Database
     var title: String
     
     var body: some View {
         
-        let modRowList: [[MacroFileRec]] = lib.indexFile.macroTable.chunked(into: 4)
+        let modRowList: [[MacroFileRec]] = db.indexFile.macroTable.chunked(into: 4)
         
         VStack( spacing: 0) {
             Text( title ).padding( [.top, .bottom], 10 )
