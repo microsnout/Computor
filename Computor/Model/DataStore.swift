@@ -85,11 +85,8 @@ extension CalculatorModel {
             print( "Index file not found - using empty file" )
         }
         
-        Task { @MainActor in
-            self.libRec.indexFile = iFile
-            
-            print( "Index File \(iFile.stateTable.count) State Records, \(iFile.macroTable.count) MacroModules" )
-        }
+        self.libRec.indexFile = iFile
+        print( "Index File \(iFile.stateTable.count) State Records, \(iFile.macroTable.count) MacroModules" )
     }
     
     
@@ -239,6 +236,8 @@ extension CalculatorModel {
 
 
     func loadLibrary() async {
+        
+        /// ** Load Library **
         
         do {
             createModuleDirectory()

@@ -63,12 +63,16 @@ struct MacroDetailView: View {
         
         let symName  = symTag.getRichText()
         
+        let modSymName = model.aux.macroMod.modSym
+        
+        let modZero = modSymName != modZeroSym
+        
         let kcFn: KeyCode? = model.kstate.keyMap.keyAssignment(symTag)
         
         let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
         
         VStack( spacing: 0 ) {
-            let captionTxt = "Macro " + symName
+            let captionTxt = modZero ? "\(symName)" : "\(modSymName)ç{ModText}/ç{}\(symName)"
             
             AuxHeaderView( theme: Theme.lightYellow ) {
                 
@@ -141,7 +145,7 @@ struct MacroDetailView: View {
                 HStack {
                     let caption = mr.caption ?? "ç{GrayText}-caption-"
                     
-                    let modSymStr = model.aux.macroMod.symStr
+                    let modSymStr = model.aux.macroMod.modSym
                     
                     VStack( alignment: .leading, spacing: 10 ) {
                         
@@ -180,7 +184,7 @@ struct MacroDetailView: View {
                         // Module name
                         HStack( spacing: 0 ) {
                             RichText("ç{GrayText}Module:", size: .small, weight: .regular).padding( [.trailing], 5 )
-                            RichText( "ƒ{0.9}ç{ModText}\(modSymStr)", size: .small, weight: .bold )
+                            RichText( "ƒ{0.9} \(modSymStr)", size: .small, weight: .bold )
                             Spacer()
                         }
                         

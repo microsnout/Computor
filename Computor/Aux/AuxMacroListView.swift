@@ -39,7 +39,7 @@ struct MacroListView: View {
     var body: some View {
         
         // Symbol for currently selected macro module
-        let modSymStr = model.aux.macroMod.symStr
+        let modSymStr = model.aux.macroMod.modSym
         
         VStack {
             AuxHeaderView( theme: Theme.lightYellow ) {
@@ -47,7 +47,7 @@ struct MacroListView: View {
                     Spacer()
                     
                     // Macro List Header Title
-                    RichText("Macro Library: ƒ{0.9}ç{ModText}\(modSymStr)", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                    RichText("ç{GrayText}Macro Module:ç{} ƒ{0.9}\(modSymStr)", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                     Spacer()
                     
                     // New macro creation button

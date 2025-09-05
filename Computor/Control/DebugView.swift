@@ -65,12 +65,23 @@ struct DebugView: View {
 
             }
 
-
+            
             DebugButton( label: "Print Key Maps" ) {
                 
                 print("Key Map:")
                 for (key, tag) in model.kstate.keyMap.fnRow {
                     print( "   \(key.str) -> \(tag.getRichText())" )
+                }
+                print("")
+            }
+
+
+            DebugButton( label: "Print Macro Table" ) {
+                
+                print("Macro Table:")
+                for mfr in model.libRec.indexFile.macroTable {
+                    let caption = mfr.caption ?? "-caption-"
+                    print( "   \(mfr.symbol)  \(caption)" )
                 }
                 print("")
             }
