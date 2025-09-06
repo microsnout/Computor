@@ -296,7 +296,7 @@ class ComputorIndexFile: Codable {
     /// Contains a record of each macro library file
     
     var stateTable: [StateFileRec] = []
-    var macroTable: [MacroFileRec] = []
+    var mfileTable: [MacroFileRec] = []
 }
 
 
@@ -312,11 +312,11 @@ class Database {
 extension Database {
     
     func getMacroFileRec( sym: String ) -> MacroFileRec? {
-        indexFile.macroTable.first( where: { $0.modSym == sym } )
+        indexFile.mfileTable.first( where: { $0.modSym == sym } )
     }
     
     func getMacroFileRec( id: UUID ) -> MacroFileRec? {
-        indexFile.macroTable.first( where: { $0.id == id } )
+        indexFile.mfileTable.first( where: { $0.id == id } )
     }
     
     
@@ -330,8 +330,8 @@ extension Database {
         }
         
         let mfr = MacroFileRec( sym: symbol)
-        indexFile.macroTable.append(mfr)
-        indexFile.macroTable.sort( by: { $0.modSym < $1.modSym } )
+        indexFile.mfileTable.append(mfr)
+        indexFile.mfileTable.sort( by: { $0.modSym < $1.modSym } )
         
         let modFile = ModuleFile(mfr)
         mfr.mfile = modFile
@@ -350,8 +350,15 @@ extension Database {
         }
             
         let mfr = MacroFileRec( sym: symbol, uuid: uuid )
-        indexFile.macroTable.append(mfr)
-        indexFile.macroTable.sort( by: { $0.modSym < $1.modSym } )
+        indexFile.mfileTable.append(mfr)
+        indexFile.mfileTable.sort( by: { $0.modSym < $1.modSym } )
         return mfr
+    }
+    
+    
+    func setSymbol( _ mfr: MacroFileRec, to newSym: String ) {
+        assert( newSym.count <= 6 && newSym.count > 0 )
+        
+        
     }
 }

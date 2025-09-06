@@ -499,7 +499,7 @@ struct EditModulePopup: View {
     
     var body: some View {
         
-        let modRowList: [[MacroFileRec]] = db.indexFile.macroTable.chunked(into: 4)
+        let modRowList: [[MacroFileRec]] = db.indexFile.mfileTable.chunked(into: 4)
         
         VStack( spacing: 0) {
             Text( title ).padding( [.top, .bottom], 10 )

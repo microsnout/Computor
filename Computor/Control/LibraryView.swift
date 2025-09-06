@@ -13,12 +13,14 @@ struct LibraryView: View {
     
     @State private var addItem: Bool = false
     
+    @State private var refresh: Bool = false
+    
     var body: some View {
         
         NavigationStack {
             List {
                 
-                ForEach ( model.db.indexFile.macroTable ) { mfr in
+                ForEach ( model.db.indexFile.mfileTable ) { mfr in
                     
                     let caption = mfr.caption ?? "ç{GrayText}-caption-ç{}"
                     
@@ -63,7 +65,8 @@ struct LibraryView: View {
                 
                 if let mfr = model.db.createNewMacroFile(symbol: name) {
                     
-                    
+                    mfr.caption = caption
+                    refresh.toggle()
                 }
             }
         }

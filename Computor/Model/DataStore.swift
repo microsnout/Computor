@@ -86,7 +86,7 @@ extension CalculatorModel {
         }
         
         self.db.indexFile = iFile
-        print( "Index File \(iFile.stateTable.count) State Records, \(iFile.macroTable.count) MacroModules" )
+        print( "Index File \(iFile.stateTable.count) State Records, \(iFile.mfileTable.count) MacroModules" )
     }
     
     
@@ -124,7 +124,7 @@ extension CalculatorModel {
         var missingFiles: [UUID] = []
         
         // For each record in the index file
-        for mfr in db.indexFile.macroTable {
+        for mfr in db.indexFile.mfileTable {
             
             if let (modName, modUUID) = validModFiles.first( where: { (name, uuid) in uuid == mfr.id } ) {
                 
@@ -147,7 +147,7 @@ extension CalculatorModel {
         }
         
         // Eliminate index file entries where the file is missing
-        db.indexFile.macroTable.removeAll( where: { missingFiles.contains( $0.id ) } )
+        db.indexFile.mfileTable.removeAll( where: { missingFiles.contains( $0.id ) } )
         
         // Add index entries for remaining valid files
         for (modName, modUUID) in validModFiles {
