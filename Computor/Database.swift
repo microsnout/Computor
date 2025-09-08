@@ -232,8 +232,10 @@ final class MacroFileRec: Codable, Identifiable {
     var mfile: ModuleFile? = nil
     
     var filename: String {
-        "Module.\(modSym).\(id.uuidString)"
-    }
+        "Module.\(modSym).\(id.uuidString)" }
+    
+    var isModZero: Bool {
+        self.modSym == modZeroSym }
 
     private enum CodingKeys: String, CodingKey {
         case id
@@ -300,7 +302,7 @@ class ComputorIndexFile: Codable {
 }
 
 
-let modZeroSym = "_mod0"
+let modZeroSym = "mod0"
 
 
 class Database {
@@ -331,7 +333,6 @@ extension Database {
         
         let mfr = MacroFileRec( sym: symbol)
         indexFile.mfileTable.append(mfr)
-        indexFile.mfileTable.sort( by: { $0.modSym < $1.modSym } )
         
         let modFile = ModuleFile(mfr)
         mfr.mfile = modFile
@@ -351,7 +352,6 @@ extension Database {
             
         let mfr = MacroFileRec( sym: symbol, uuid: uuid )
         indexFile.mfileTable.append(mfr)
-        indexFile.mfileTable.sort( by: { $0.modSym < $1.modSym } )
         return mfr
     }
     

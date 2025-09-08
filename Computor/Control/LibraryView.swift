@@ -12,38 +12,56 @@ struct LibraryView: View {
     @StateObject var model: CalculatorModel
     
     @State private var addItem: Bool = false
-    
     @State private var refresh: Bool = false
+    
+    @Binding var list: [MacroFileRec]
+    
+    func deleteItems( at offsets: IndexSet) {
+        list.remove( atOffsets: offsets)
+    }
     
     var body: some View {
         
         NavigationStack {
-            List {
-                
-                ForEach ( model.db.indexFile.mfileTable ) { mfr in
+            VStack {
+                List {
                     
-                    let caption = mfr.caption ?? "ç{GrayText}-caption-ç{}"
-                    
-                    VStack {
-                        ZStack( alignment: .leadingFirstTextBaseline ) {
-                            RichText( mfr.modSym, size: .normal, weight: .bold, design: .monospaced, defaultColor: "BlackText" )
-                            RichText( caption, size: .normal, weight: .thin, design: .serif, defaultColor: "ModText" ).padding( [.leading], 60)
+                    // ForEach ( model.db.indexFile.mfileTable ) { mfr in
+                    ForEach ( list ) { mfr in
+
+                        let caption = mfr.caption ?? "ç{GrayText}-caption-ç{}"
+                        
+                        HStack {
+                            ZStack( alignment: .leadingFirstTextBaseline ) {
+                                RichText( mfr.modSym, size: .normal, weight: .bold, design: .monospaced, defaultColor: "BlackText" )
+                                RichText( caption, size: .normal, weight: .thin, design: .serif, defaultColor: "ModText" ).padding( [.leading], 60)
+                            }
+                            
+                            Spacer()
+                            
+                            Image( systemName: "ellipsis")
+                        }
+                        .deleteDisabled( mfr.isModZero )
+                    }
+                    .onMove { fromOffsets, toOffset in
+                        list.move(fromOffsets: fromOffsets, toOffset: toOffset)
+                    }
+                    .onDelete( perform: deleteItems)
+
+                    Button( action: { addItem = true } ) {
+                        HStack {
+                            Image( systemName: "plus.circle" )
+                                .foregroundColor( Color("ModText") )
+                            
+                            RichText( "Add Macro Module", size: .small, weight: .bold, design: .monospaced, defaultColor: "ModText" )
+                            Spacer()
                         }
                     }
+                    
                 }
-                
-                Button( action: { addItem.toggle() } ) {
-                    HStack {
-                        Image( systemName: "plus.circle" )
-                            .foregroundColor( Color("ModText") )
-                        
-                        RichText( "Add Macro Module", size: .small, weight: .bold, design: .monospaced, defaultColor: "ModText" )
-                        Spacer()
-                    }
-                }
+                .listStyle(.grouped)
                 
             }
-            .listStyle( .grouped )
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Macro Modules")
@@ -51,6 +69,11 @@ struct LibraryView: View {
                         .bold()
                         .foregroundColor( Color("AccentText") )
                         .padding(.vertical, 0)
+                }
+                
+                ToolbarItem( placement: .topBarTrailing ) {
+                    
+                    EditButton()
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -81,6 +104,8 @@ struct CreateModuleSheet: View {
     @State private var editName: String = ""
     @State private var editCaption: String = ""
     
+    @FocusState private var nameFocus: Bool
+    
     var cc: ( String, String ) -> Void
     
     var body: some View {
@@ -88,6 +113,7 @@ struct CreateModuleSheet: View {
         VStack( alignment: .leading, spacing: 0 ) {
             
             Text("Name:")
+                .focused( $nameFocus )
                 .foregroundColor(.white)
                 .background( Color.clear )
                 .padding( [.leading, .top], 20 )
@@ -102,6 +128,9 @@ struct CreateModuleSheet: View {
                     // if let name = value.caption {
                     //     editName = name
                     // }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25 ) {
+                        nameFocus = true
+                    }
                 }
                 .onChange(of: editName) { oldValue, newValue in
                     let list = Array(newValue)
