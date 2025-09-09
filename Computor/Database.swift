@@ -218,7 +218,7 @@ class StateFile: Codable {
 
 /// ** Macro File Record **
 
-final class MacroFileRec: Codable, Identifiable {
+final class MacroFileRec: Codable, Identifiable, Equatable {
     
     /// Description of one macro library file
     /// Contains a list of all symbols defined in file
@@ -269,6 +269,10 @@ final class MacroFileRec: Codable, Identifiable {
         self.modSym = try container.decode( String.self, forKey: .modSym)
         self.caption = try container.decodeIfPresent( String.self, forKey: .caption)
         self.symList = try container.decode( [SymbolTag].self, forKey: .symList)
+    }
+    
+    static func == ( lhs: MacroFileRec, rhs: MacroFileRec ) -> Bool {
+        return lhs.id == rhs.id
     }
 }
 

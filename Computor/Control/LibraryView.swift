@@ -7,12 +7,14 @@
 
 import SwiftUI
 
+
 struct LibraryView: View {
     
     @StateObject var model: CalculatorModel
     
-    @State private var addItem: Bool = false
-    @State private var refresh: Bool = false
+    // Open macro module edit sheet for adding or creating new modules
+    @State private var addItem:    Bool = false
+    @State private var editItem:   MacroFileRec? = nil
     
     @Binding var list: [MacroFileRec]
     
@@ -26,10 +28,9 @@ struct LibraryView: View {
             VStack {
                 List {
                     
-                    // ForEach ( model.db.indexFile.mfileTable ) { mfr in
                     ForEach ( list ) { mfr in
 
-                        let caption = mfr.caption ?? "ç{GrayText}-caption-ç{}"
+                        let caption =  mfr.isModZero ? "" : (mfr.caption ?? "ç{GrayText}-caption-ç{}")
                         
                         HStack {
                             ZStack( alignment: .leadingFirstTextBaseline ) {
@@ -39,15 +40,18 @@ struct LibraryView: View {
                             
                             Spacer()
                             
-                            Image( systemName: "ellipsis")
+                            // DOT DOT DOT ellipsis menu
+                            ActionMenu( editItem: $editItem, mfr: mfr )
                         }
                         .deleteDisabled( mfr.isModZero )
                     }
                     .onMove { fromOffsets, toOffset in
+                        // Re-arrange macro module list
                         list.move(fromOffsets: fromOffsets, toOffset: toOffset)
                     }
                     .onDelete( perform: deleteItems)
 
+                    // Add new module button is part of list
                     Button( action: { addItem = true } ) {
                         HStack {
                             Image( systemName: "plus.circle" )
@@ -64,11 +68,7 @@ struct LibraryView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text("Macro Modules")
-                        .font(.system( .title3, design: .monospaced ))
-                        .bold()
-                        .foregroundColor( Color("AccentText") )
-                        .padding(.vertical, 0)
+                    SectionHeaderText( text: "Macro Modules" )
                 }
                 
                 ToolbarItem( placement: .topBarTrailing ) {
@@ -82,27 +82,78 @@ struct LibraryView: View {
         .padding()
         .background(Color("ControlBack"))
         .scrollContentBackground(.hidden)
+        
+        // Add a new macro module
         .sheet( isPresented: $addItem ) {
             
-            CreateModuleSheet() { name, caption in
+            EditModuleSheet( submitLabel: "Create" ) { (name: String, caption: String) in
                 
                 if let mfr = model.db.createNewMacroFile(symbol: name) {
                     
-                    mfr.caption = caption
-                    refresh.toggle()
+                    mfr.caption = caption.isEmpty ? nil : caption
                 }
+            }
+        }
+        
+        // Edit name and caption of macro module
+        .sheet( item: $editItem ) { (mfr: MacroFileRec) in
+            
+            EditModuleSheet( editName: mfr.modSym , editCaption: mfr.caption ?? "", submitLabel: "Save" ) { (newName: String, newCaption: String) in
+                
+                mfr.modSym  = newName
+                mfr.caption = newCaption.isEmpty ? nil : newCaption
+            }
+        }
+        
+        .onChange( of: list ) { oldList, newList in
+            
+            for mfr in newList {
+                print( "   \(mfr.modSym)")
             }
         }
     }
 }
 
 
-struct CreateModuleSheet: View {
+struct ActionMenu: View {
+    
+    @Binding var editItem: MacroFileRec?
+    
+    var mfr: MacroFileRec
+    
+    var body: some View {
+        Menu {
+            Button {
+                // Open module edit sheet
+                editItem = mfr
+            }
+            label: {
+                Label( "Edit symbol and caption", systemImage: "pencil")
+            }
+            
+            Button {
+                // No implementation yet
+            }
+            label: {
+                Label( "Share module", systemImage: "rectangle.portrait.and.arrow.right")
+            }
+        }
+        label: {
+            Label("", systemImage: "ellipsis")
+        }
+        .disabled( mfr.isModZero )
+    }
+}
+
+
+struct EditModuleSheet: View {
     
     @Environment(\.dismiss) var dismiss
     
-    @State private var editName: String = ""
-    @State private var editCaption: String = ""
+    @State var editName: String = ""
+    @State var editCaption: String = ""
+    
+    var submitLabel: String
     
     @FocusState private var nameFocus: Bool
     
@@ -181,7 +232,7 @@ struct CreateModuleSheet: View {
                 
                 // CREATE
                 Button( action: { cc(editName, editCaption); dismiss() } ) {
-                    Text("Create")
+                    Text(submitLabel)
                         .foregroundColor( editName.count > 0 ? .white : Color("GrayText"))
                         .background( Color.clear )
                 }
@@ -196,7 +247,3 @@ struct CreateModuleSheet: View {
         .presentationDetents( [.fraction(0.5)] )
     }
 }
-
-//#Preview {
-//    LibraryView()
-//}
