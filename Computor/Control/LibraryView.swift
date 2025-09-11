@@ -18,10 +18,6 @@ struct LibraryView: View {
     
     @Binding var list: [MacroFileRec]
     
-    func deleteItems( at offsets: IndexSet) {
-        list.remove( atOffsets: offsets)
-    }
-    
     var body: some View {
         
         NavigationStack {
@@ -72,7 +68,6 @@ struct LibraryView: View {
                 }
                 
                 ToolbarItem( placement: .topBarTrailing ) {
-                    
                     EditButton()
                 }
             }
@@ -91,6 +86,10 @@ struct LibraryView: View {
                 if let mfr = model.db.createNewMacroFile(symbol: name) {
                     
                     mfr.caption = caption.isEmpty ? nil : caption
+                    mfr.mfile = ModuleFile(mfr)
+                    
+                    // Save new mod file - index will be saved by on change handler
+                    model.saveModule(mfr)
                 }
             }
         }
@@ -100,17 +99,36 @@ struct LibraryView: View {
             
             EditModuleSheet( editName: mfr.modSym , editCaption: mfr.caption ?? "", submitLabel: "Save" ) { (newName: String, newCaption: String) in
                 
-                mfr.modSym  = newName
-                mfr.caption = newCaption.isEmpty ? nil : newCaption
+                model.setModuleSymbolandCaption( mfr, newSym: newName, newCaption: newCaption.isEmpty ? nil : newCaption )
             }
         }
         
         .onChange( of: list ) { oldList, newList in
             
+            // Module file index has changed
+            model.saveIndexFile()
+            
+#if DEBUG
+            print("   Wrote index file:")
             for mfr in newList {
                 print( "   \(mfr.modSym)")
             }
+#endif
         }
+    }
+    
+    
+    func deleteItems( at offsets: IndexSet) {
+        
+        for index in offsets {
+            
+            // Delete the Mod file
+            let mfr = list[index]
+            model.deleteModule(mfr)
+        }
+        
+        // Then remove the mfr rec from index file
+        list.remove( atOffsets: offsets)
     }
 }
 

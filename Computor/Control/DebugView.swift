@@ -61,8 +61,16 @@ struct DebugView: View {
                 
                 model.kstate.keyMap.fnRow.removeAll()
                 model.aux.macroRec = nil
-                model.aux.macroMod.macroTable.removeAll()
-
+                
+                if let mfr0 = model.db.indexFile.mfileTable.first(where: { $0.isModZero }) {
+                    
+                    mfr0.mfile = ModuleFile(mfr0)
+                    model.aux.macroMod = mfr0.mfile ?? ModuleFile()
+                    model.saveModule(mfr0)
+                }
+                
+                model.db.indexFile.mfileTable.removeAll( where: { !$0.isModZero } )
+                model.saveIndexFile()
             }
 
             

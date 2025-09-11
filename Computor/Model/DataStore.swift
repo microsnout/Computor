@@ -58,23 +58,18 @@ extension CalculatorModel {
     }
     
     
-    func loadIndex() async {
+    func loadIndex() {
         
         /// ** Load Index File **
-        
-        let task = Task<IndexStore, Error> {
-            let fileURL = Self.indexFileURL()
-            let data    = try Data( contentsOf: fileURL)
-            let index   = try JSONDecoder().decode( IndexStore.self, from: data)
-            return index
-        }
         
         var iFile: ComputorIndexFile
         
         do {
             // Try to load file Computor.Index
-            let store = try await task.value
-            iFile = store.indexFile
+            let fileURL = Self.indexFileURL()
+            let data    = try Data( contentsOf: fileURL)
+            let index   = try JSONDecoder().decode( IndexStore.self, from: data)
+            iFile = index.indexFile
             
             print( "Load Index Successful" )
         }
@@ -86,7 +81,13 @@ extension CalculatorModel {
         }
         
         self.db.indexFile = iFile
+        
+#if DEBUG
         print( "Index File \(iFile.stateTable.count) State Records, \(iFile.mfileTable.count) MacroModules" )
+        for mfr in db.indexFile.mfileTable {
+            print( "   Index mfr: \(mfr.modSym) - \(mfr.id.uuidString)" )
+        }
+#endif
     }
     
     
@@ -119,9 +120,25 @@ extension CalculatorModel {
         
         let modFilenameList = listFiles( inDirectory: modDir.path(), withPrefix: "Module.")
         
+        print("#1 mod filename list:")
+        for fn in modFilenameList {
+            print( "   found: \(fn)" )
+        }
+        print("")
+
         var validModFiles: [(String, UUID)] = modFilenameList.compactMap { fname in splitModFilename(fname) }
         
         var missingFiles: [UUID] = []
+        
+#if DEBUG
+        print("#2 Valid files found:")
+        for (name, uuid) in validModFiles {
+            print( "   \(name) - \(uuid.uuidString)" )
+        }
+        print("")
+#endif
+        
+        var numMatched = 0
         
         // For each record in the index file
         for mfr in db.indexFile.mfileTable {
@@ -136,28 +153,40 @@ extension CalculatorModel {
                     mfr.modSym = modName
                 }
                 
-                print( "   Module: \(modName) - \(modUUID.uuidString)" )
+                print( "   Mod file match: \(modName) - \(modUUID.uuidString)" )
+                numMatched += 1
                 
                 validModFiles.removeAll( where: { (name, uuid) in uuid == mfr.id } )
             }
             else {
                 // No file matching this index entry
                 missingFiles.append(mfr.id)
+                
+                print( "   Missing mod file for index entry: \(mfr.modSym) - \(mfr.id.uuidString)")
             }
         }
+        
+        print( "   Number of matched files(\(numMatched)), remaining valid(\(validModFiles.count)), index entries(\(db.indexFile.mfileTable.count))" )
         
         // Eliminate index file entries where the file is missing
         db.indexFile.mfileTable.removeAll( where: { missingFiles.contains( $0.id ) } )
         
+        print( "   Remaining index entries after removing missing files(\(db.indexFile.mfileTable.count))")
+        
         // Add index entries for remaining valid files
         for (modName, modUUID) in validModFiles {
             
-            print("   Adding ModFileRec for: \(modName)")
+            print("   Adding ModFileRec to index for: \(modName) - \(modUUID.uuidString)")
             
             guard let _ = db.addExistingMacroFile( symbol: modName, uuid: modUUID) else {
                 assert(false)
                 print( "   Mod: \(modName) - \(modUUID) conflict with existing module with same name" )
             }
+        }
+        
+        if !validModFiles.isEmpty || !missingFiles.isEmpty {
+            // Write out index file since we added or removed entries to it
+            saveIndexFile()
         }
     }
 
@@ -181,80 +210,64 @@ extension CalculatorModel {
         print( "createModZero: Created" )
         return mod0
     }
-
     
-    typealias LoadContinuationClosure = ( ModuleFile ) -> Void
     
-    func loadModule( _ mfr: MacroFileRec, lcc: @escaping LoadContinuationClosure ) async {
+    func loadModule( _ mfr: MacroFileRec ) -> ModuleFile {
         
         /// ** Load Module **
         
         if let mf = mfr.mfile {
             // Module already loaded
             print( "loadModule: \(mfr.modSym) already loaded" )
-            lcc(mf)
-            return
+            return mf
         }
         
-        let task = Task<ModuleStore, Error> {
-            
-            let fileURL = Self.moduleDirectoryURL().appendingPathComponent( mfr.filename )
-            
-            guard let data = try? Data( contentsOf: fileURL) else {
-                
-                print("LoadModule - Failed: return empty ModuleStore")
-                return ModuleStore()
-            }
-            
-            let modS = try JSONDecoder().decode(ModuleStore.self, from: data)
-            return modS
-        }
-        
-        var store = ModuleStore()
-
         do {
-            store = try await task.value
+            let fileURL = Self.moduleDirectoryURL().appendingPathComponent( mfr.filename )
+            let data = try Data( contentsOf: fileURL)
+            let store = try JSONDecoder().decode(ModuleStore.self, from: data)
+            let mod = store.modFile
+            
+            print( "loadModule: \(mfr.modSym) - \(mfr.id.uuidString) Loaded" )
+            
+            // Successful load
+            mfr.mfile = mod
+            return mod
         }
         catch {
-            print("loadModule - JSON Decode Failed:" )
-            print("   symbol: \(mfr.modSym)")
-            print("       id: \(mfr.id)")
-            print("    Error: \(error)")
+            // Missing file or bad file
             
-            let md = ModuleFile(mfr)
-            store = ModuleStore(md)
-        }
-        
-        mfr.mfile = store.modFile
-        print( "loadModule: sym:\(mfr.modSym) Loaded" )
-        print( "loadModule - ModuleFile: \(mfr.mfile?.modSym ?? "-")" )
-        
-        Task { @MainActor in
-            lcc(store.modFile)
+            print( "Creating Mod file for index: \(mfr.modSym) - \(mfr.id.uuidString)")
+            
+            // Create new module file for mfr rec and save it
+            let mod = ModuleFile(mfr)
+            mfr.mfile = mod
+            saveModule(mfr)
+            return mod
         }
     }
 
 
-    func loadLibrary() async {
+    func loadLibrary() {
         
         /// ** Load Library **
         
         do {
             createModuleDirectory()
             
-            await loadIndex()
+            loadIndex()
             
             syncModules()
             
             // Create Module zero if it doesn't exist and load it
             let mod0 = createModZero()
+            let mf = loadModule(mod0)
             
-            await loadModule(mod0) { mf in
-                self.aux.macroMod = mf
-                print("Assign aux.macroMod = \(mf.modSym)")
-            }
+            // Set aux display view to mod zero
+            self.aux.macroMod = mf
+            print("Display aux.macroMod = \(mf.modSym) - \(mf.id.uuidString)")
 
-            try await loadState()
+            try loadState()
         }
         catch {
             print( "Library load error: \(error.localizedDescription)" )
@@ -324,79 +337,171 @@ extension CalculatorModel {
     }
 
     
-    func loadState() async throws {
+    func loadState() throws {
         
-        let task = Task<DataStore, Error> {
-            let fileURL = Self.stateFileURL()
-            
-            guard let data = try? Data( contentsOf: fileURL) else {
-                return DataStore()
-            }
-            
-            let state = try JSONDecoder().decode(DataStore.self, from: data)
-            return state
-        }
+        let fileURL = Self.stateFileURL()
         
-        let store = try await task.value
+        let data  = try Data( contentsOf: fileURL)
+        let store = try JSONDecoder().decode(DataStore.self, from: data)
 
-        Task { @MainActor in
-            // Update the @Published property here
-            UserUnitData.uud = store.unitData
-            self.state = store.state
-            self.kstate.keyMap = store.keyMap
-
-            UnitDef.reIndexUserUnits()
-            TypeDef.reIndexUserTypes()
-        }
+        // Update the @Published property here
+        UserUnitData.uud = store.unitData
+        self.state = store.state
+        self.kstate.keyMap = store.keyMap
+        
+        UnitDef.reIndexUserUnits()
+        TypeDef.reIndexUserTypes()
     }
     
-    func saveConfigTask() async throws {
+    
+    func saveConfigTask() throws {
         /// Save configuration immediately after a change
         /// Don't wait for app termination
         
-        let task = Task {
-            let store = ModuleStore( aux.macroMod )
-            let data = try JSONEncoder().encode(store)
-            let outfile = Self.moduleDirectoryURL().appendingPathComponent( aux.macroMod.filename )
-            try data.write(to: outfile)
-        }
-        _ = try await task.value
-        
+        let store = ModuleStore( aux.macroMod )
+        let data = try JSONEncoder().encode(store)
+        let outfile = Self.moduleDirectoryURL().appendingPathComponent( aux.macroMod.filename )
+        try data.write(to: outfile)
+
         print( "saveConfigTask: wrote out: \(aux.macroMod.filename)")
     }
     
+    
     func saveConfiguration() {
         
-        Task {
-            do {
-                try await saveConfigTask()
-            }
-            catch {
-                print( "saveConfiguration: error: \(error.localizedDescription)")
-                
-//                fatalError(error.localizedDescription)
-            }
+        /// ** saveConfiguration **
+        
+        do {
+            try saveConfigTask()
+        }
+        catch {
+            print( "saveConfiguration: error: \(error.localizedDescription)")
         }
     }
 
-    func saveState() async throws {
+    
+    func saveModule( _ mfr: MacroFileRec ) {
+        
+        if let mod = mfr.mfile {
+            
+            // Mod file is loaded
+            do {
+                let store = ModuleStore( mod )
+                let data = try JSONEncoder().encode(store)
+                let outfile = Self.moduleDirectoryURL().appendingPathComponent( mod.filename )
+                try data.write(to: outfile)
+                
+                print( "saveModule: wrote out: \(mod.filename)")
+            }
+            catch {
+                print( "saveModule: file: \(mod.filename) error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    
+    func deleteModule( _ mfr: MacroFileRec ) {
+        
+        // Delete the Mod file associated with this mfr rec if it exists
+        if let mod = mfr.mfile {
+            
+            // Mod file is loaded
+            let modDirURL = Self.moduleDirectoryURL()
+            deleteFile( fileName: mod.filename, inDirectory: modDirURL )
+            mfr.mfile = nil
+        }
+        else {
+            
+            // Mod file is not loaded - delete it anyway
+            let modDirURL = Self.moduleDirectoryURL()
+            deleteFile( fileName: mfr.filename, inDirectory: modDirURL )
+        }
+    }
+    
+    
+    func setModuleSymbolandCaption( _ mfr: MacroFileRec, newSym: String, newCaption: String? = nil ) {
+        
+        // Load the module file
+        let mod = loadModule(mfr)
+        
+        let symChanged = newSym != mfr.modSym
+        
+        // Original mod URL
+        let modURL = Self.moduleDirectoryURL().appendingPathComponent( mod.filename )
+        
+        if symChanged {
+            
+            mfr.modSym = newSym
+            mod.modSym = newSym
+            
+            renameFile( originalURL: modURL, newName: mod.filename)
+        }
+        
+        mfr.caption = newCaption
+        mod.caption = newCaption
+        
+        saveModule(mfr)
+        saveIndexFile()
+    }
+    
+    
+    
+    func saveIndexFileTask() throws {
+        
+        let store = IndexStore( db.indexFile )
+        let data = try JSONEncoder().encode(store)
+        let outfile = Self.indexFileURL()
+        try data.write(to: outfile)
+
+        print( "saveIndexFileTask: wrote out IndexFile")
+    }
+
+    
+    func saveIndexFile() {
+        
+        do {
+            try saveIndexFileTask()
+        }
+        catch {
+            print( "saveIndexFile: error: \(error.localizedDescription)")
+        }
+    }
+
+    
+    func saveState() throws {
         /// Save calculator state when app terminates
         
-        let task = Task {
-            let store = DataStore( state, UserUnitData.uud, kstate.keyMap )
-            let data = try JSONEncoder().encode(store)
-            let outfile = Self.stateFileURL()
-            try data.write(to: outfile)
-        }
-        _ = try await task.value
+        let store = DataStore( state, UserUnitData.uud, kstate.keyMap )
+        let data = try JSONEncoder().encode(store)
+        let outfile = Self.stateFileURL()
+        try data.write(to: outfile)
     }
 
 }
 
 
-/// ** Functions for Debug control sheet **
+/// ** Utility File Functions **
 
-func deleteAllFiles(in directoryURL: URL) {
+func deleteFile( fileName: String, inDirectory directoryURL: URL) {
+    
+    let fileManager = FileManager.default
+    let fileURL = directoryURL.appendingPathComponent(fileName)
+    
+    do {
+        try fileManager.removeItem(at: fileURL)
+        
+#if DEBUG
+        print("File '\(fileName)' successfully deleted from '\(directoryURL.lastPathComponent)' directory.")
+#endif
+    }
+    catch {
+        print("Error deleting file '\(fileName)': \(error.localizedDescription)")
+    }
+}
+
+
+func deleteAllFiles( in directoryURL: URL) {
+    
     let fileManager = FileManager.default
     
     do {
@@ -407,9 +512,33 @@ func deleteAllFiles(in directoryURL: URL) {
         for fileURL in fileURLs {
             try fileManager.removeItem(at: fileURL)
         }
+        
+#if DEBUG
         print("Successfully deleted all files in: \(directoryURL.lastPathComponent)")
+#endif
     }
     catch {
         print("Error deleting files in directory: \(error)")
+    }
+}
+
+
+func renameFile( originalURL: URL, newName: String) {
+    
+    let fileManager = FileManager.default
+    
+    // Get the directory of the original file
+    let directoryURL = originalURL.deletingLastPathComponent()
+    
+    // Create the new URL with the desired new name
+    let newURL = directoryURL.appendingPathComponent(newName)
+    
+    do {
+        try fileManager.moveItem(at: originalURL, to: newURL)
+        
+        print("File successfully renamed from \(originalURL.lastPathComponent) to \(newURL.lastPathComponent)")
+    }
+    catch {
+        print("Error renaming file: \(error.localizedDescription)")
     }
 }
