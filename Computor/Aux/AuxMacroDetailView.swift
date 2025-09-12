@@ -59,13 +59,13 @@ struct MacroDetailView: View {
     @State private var refreshView = false
     
     var body: some View {
-        var symTag: SymbolTag = mr.symTag
+        let symTag: SymbolTag = mr.symTag
         
         let symName  = symTag.getRichText()
         
         let modSymName = model.aux.macroMod.modSym
         
-        let modZero = modSymName != modZeroSym
+        let modZero = modSymName == modZeroSym
         
         let kcFn: KeyCode? = model.kstate.keyMap.keyAssignment(symTag)
         
@@ -247,7 +247,6 @@ struct MacroDetailView: View {
             VStack {
                 NewSymbolPopup( tag: symTag ) { tag in
                     model.changeMacroSymbol(old: symTag, new: tag)
-                    symTag = tag
                     symbolSheet = false
                     refreshView.toggle()
                 }
@@ -400,6 +399,7 @@ struct MacroEditSheet: View {
         
         VStack( alignment: .leading ) {
             
+            // DONE Button
             HStack {
                 Spacer()
                 
@@ -407,17 +407,19 @@ struct MacroEditSheet: View {
             }
             .padding( [.top], 5 )
             
+            // Symbol Editor
             SheetCollapsibleView( label: "={Symbol: }\(symName)" ) {
                 
                 NewSymbolPopup( tag: mr.symTag ) { tag in
                     model.changeMacroSymbol(old: mr.symTag, new: tag)
-                    mr.symTag = tag
                     symName = mr.symTag.getRichText()
                 }
             }
             
+            // Caption Editor
             SheetTextField( label: "Caption:", placeholder: "-caption-", text: $caption )
             
+            // Assigned Key Editor
             SheetCollapsibleView( label: "={Assigned Key: }\(kcStr)" ) {
                 
                 KeyAssignPopup( tag: mr.symTag ) { kc in
@@ -427,9 +429,10 @@ struct MacroEditSheet: View {
                 }
             }
             
+            // Module Editor
             SheetCollapsibleView( label: "={Module: }" ) {
                 
-                EditModulePopup( db: model.db, title: "Macro Modules" )
+                SelectModulePopup( db: model.db )
             }
             
             Spacer()
@@ -472,9 +475,8 @@ struct ModuleKeyView: View {
                 .foregroundColor( Color(keySpec.keyColor) )
                 .frame( width: keyW, height: keySpec.height )
                 .cornerRadius( keySpec.radius )
-                .shadow( radius: 2 )
                 .overlay(
-                    RichText( modSym, size: .small, weight: .thin, defaultColor: keySpec.textColor)
+                    RichText( modSym, size: .normal, weight: .regular, defaultColor: keySpec.textColor)
                 )
         }
         .frame( width: keyW, height: keySpec.height )
@@ -482,72 +484,103 @@ struct ModuleKeyView: View {
 }
 
 
-struct EditModulePopup: View {
+struct MacroMoveRec {
+    
+    var targetMod: String
+}
+
+
+struct SelectModulePopup: View {
     
     /// Select from list of existing symbol tags, could be memories or macros
     
     @EnvironmentObject var model: CalculatorModel
     @EnvironmentObject var keyData: KeyData
     
-    let keySpec: KeySpec = ksSoftkey
+    @State private var moveDialog = false
+    @State private var moveRec = MacroMoveRec( targetMod: "")
+
+    let keySpec: KeySpec = ksModuleKey
     
     let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
     
     // Parameters
     var db: Database
-    var title: String
     
     var body: some View {
         
-        let modRowList: [[MacroFileRec]] = db.indexFile.mfileTable.chunked(into: 4)
+        let modRowList: [[MacroFileRec]] = db.indexFile.mfileTable.chunked(into: 3)
         
-        VStack( spacing: 0) {
-            Text( title ).padding( [.top, .bottom], 10 )
+        VStack( alignment: .center, spacing: 0) {
             
             ScrollView( [.vertical] ) {
                 
-                Grid {
-                    
-                    ForEach ( modRowList.indices, id: \.self ) { r in
+                VStack( alignment: .center ) {
+                    Grid {
                         
-                        let row = modRowList[r]
-                        
-                        GridRow {
+                        ForEach ( modRowList.indices, id: \.self ) { r in
                             
-                            let n = row.count
+                            let row = modRowList[r]
                             
-                            ForEach ( row.indices, id: \.self ) { c in
+                            GridRow {
                                 
-                                ModuleKeyView( modSym: row[c].modSym, keySpec: keySpec )
-                                    .onTapGesture {
-                                        hapticFeedback.impactOccurred()
-                                        
-                                        // Close modal popup
-                                        keyData.pressedKey = nil
-                                        keyData.modalKey = .none
+                                let n = row.count
+                                
+                                ForEach ( row.indices, id: \.self ) { c in
+                                    
+                                    let sym = row[c].modSym
+                                    
+                                    ModuleKeyView( modSym: sym, keySpec: keySpec )
+                                        .onTapGesture {
+                                            hapticFeedback.impactOccurred()
+                                            
+                                            moveDialog = true
+                                            moveRec = MacroMoveRec( targetMod: sym )
+                                        }
+                                        .confirmationDialog("Confirm Deletion", isPresented: $moveDialog, presenting: moveRec ) { mmr in
+                                            
+                                            Button("Move to Module: \(mmr.targetMod)") {
+                                                //moveDialog = false
+                                            }
+                                            
+                                            Button("Copy to Module: \(mmr.targetMod)") {
+                                                //moveDialog = false
+                                            }
+                                            
+
+                                            Button("Cancel", role: .cancel) {
+                                                //moveDialog = false
+                                            }
+                                        }
+                                }
+                                
+                                // Pad the row to 4 col so the frame doesn't shrink
+                                if n < 3 {
+                                    ForEach ( 1 ... 3-n, id: \.self ) { _ in
+                                        Color.clear
+                                            .frame( width: keySpec.width, height: keySpec.height )
                                     }
-                            }
-                            
-                            // Pad the row to 4 col so the frame doesn't shrink
-                            if n < 4 {
-                                ForEach ( 1 ... 4-n, id: \.self ) { _ in
-                                    Color.clear
-                                        .frame( width: keySpec.width, height: keySpec.height )
                                 }
                             }
+                            .padding( .top, 5 )
                         }
-                        .padding( [.top], 5 )
                     }
                 }
+                .padding( 15)
             }
-            .frame( minWidth: 212, maxWidth: 212 )
-            .padding( [.top, .bottom], 5 )
-            .padding( [.leading, .trailing], 10 )
-            .background( Color("Display") )
-            .border(Color("Frame"), width: 2)
+            .accentColor( .black )
+            .background() {
+                
+                Color( "SuperLightGray")
+                    .cornerRadius(10)
+                    .padding( [.leading, .trailing], 0 )
+                    .padding( [.top, .bottom], 5 )
+            }
         }
-        .frame( maxHeight: 340 )
+        .frame( maxWidth: .infinity )
         .padding( [.leading, .trailing], 20 )
+
+//        .frame( maxHeight: 340 )
     }
 }
 

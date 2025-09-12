@@ -134,14 +134,14 @@ struct CalculatorView: View {
         .environmentObject(model)
         .task {
             // Load calculator instance states and macro modules
-            await model.loadLibrary()
+            model.loadLibrary()
         }
         .onChange(of: scenePhase) { oldPhase, phase in
             if phase == .inactive {
                 Task {
                     do {
-                        try await model.saveState()
-                        try await model.saveConfigTask()
+                        try model.saveState()
+                        try model.saveConfigTask()
                     }
                     catch {
                         fatalError(error.localizedDescription)

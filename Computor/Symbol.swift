@@ -103,7 +103,7 @@ extension SymbolTag {
     func getRichText() -> String {
         
         if isNull {
-            return ""
+            return "ç{GrayText}<null>ç{}"
         }
         
         if isSingleChar {

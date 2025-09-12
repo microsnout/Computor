@@ -31,6 +31,9 @@ let ksModalPop = KeySpec( width: 30, height: 30,
 let ksSheetPop = KeySpec( width: 30, height: 30,
                           keyColor: "SheetKeyColor", textColor: "BlackText")
 
+let ksModuleKey = KeySpec( width: 70, height: 30,
+                          keyColor: "SheetKeyColor", textColor: "BlackText")
+
 let psUnits = PadSpec (
     keySpec: ksUnits,
     cols: 5,
