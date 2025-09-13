@@ -89,24 +89,6 @@ extension CalculatorModel {
         }
 #endif
     }
-    
-    
-    func listFiles( inDirectory path: String, withPrefix pattern: String ) -> [String] {
-        
-        /// ** List Files in Path **
-        
-        let fileManager = FileManager.default
-        
-        do {
-            let contents = try fileManager.contentsOfDirectory( atPath: path)
-            let filteredFiles = contents.filter { $0.hasPrefix(pattern) }
-            return filteredFiles
-        }
-        catch {
-            print("Error listing path \(path) Error: \(error) - return []")
-            return []
-        }
-    }
 
     
     func syncModules() {
@@ -481,6 +463,25 @@ extension CalculatorModel {
 
 
 /// ** Utility File Functions **
+
+
+func listFiles( inDirectory path: String, withPrefix pattern: String ) -> [String] {
+    
+    /// ** List Files in Path **
+    
+    let fileManager = FileManager.default
+    
+    do {
+        let contents = try fileManager.contentsOfDirectory( atPath: path)
+        let filteredFiles = contents.filter { $0.hasPrefix(pattern) }
+        return filteredFiles
+    }
+    catch {
+        print("Error listing path \(path) Error: \(error) - return []")
+        return []
+    }
+}
+
 
 func deleteFile( fileName: String, inDirectory directoryURL: URL) {
     
