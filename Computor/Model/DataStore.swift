@@ -57,6 +57,22 @@ extension CalculatorModel {
         }
     }
     
+    // ***************
+    
+
+    struct IndexStore : Codable {
+        
+        /// ** IndexStore **
+        /// List of other data files, macro and state files
+        ///
+        
+        var indexFile: IndexFile
+        
+        init( _ iFile: IndexFile = IndexFile() ) {
+            self.indexFile = iFile
+        }
+    }
+
     
     func loadIndex() {
         
@@ -109,6 +125,8 @@ extension CalculatorModel {
         }
     }
 
+    // ***************
+    
     
     func syncModules() {
         
@@ -272,19 +290,6 @@ extension CalculatorModel {
         }
         catch {
             print( "Library load error: \(error.localizedDescription)" )
-        }
-    }
-    
-    
-    struct IndexStore : Codable {
-        /// IndexStore
-        /// List of other data files, macro and state files
-        ///
-        
-        var indexFile: IndexFile
-        
-        init( _ iFile: IndexFile = IndexFile() ) {
-            self.indexFile = iFile
         }
     }
     
