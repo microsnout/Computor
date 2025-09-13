@@ -106,7 +106,7 @@ struct LibraryView: View {
         .onChange( of: list ) { oldList, newList in
             
             // Module file index has changed
-            model.saveIndexFile()
+            model.saveIndex()
             
 #if DEBUG
             print("   Wrote index file:")

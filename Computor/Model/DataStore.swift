@@ -60,9 +60,9 @@ extension CalculatorModel {
     
     func loadIndex() {
         
-        /// ** Load Index File **
+        /// ** Load Index **
         
-        var iFile: ComputorIndexFile
+        var iFile: IndexFile
         
         do {
             // Try to load file Computor.Index
@@ -75,7 +75,7 @@ extension CalculatorModel {
         }
         catch {
             // File not found - Return an empty Index
-            iFile = ComputorIndexFile()
+            iFile = IndexFile()
             
             print( "Index file not found - using empty file" )
         }
@@ -88,6 +88,25 @@ extension CalculatorModel {
             print( "   Index mfr: \(mfr.modSym) - \(mfr.id.uuidString)" )
         }
 #endif
+    }
+    
+    
+    
+    func saveIndex() {
+        
+        /// ** Save Index **
+        
+        do {
+            let store = IndexStore( db.indexFile )
+            let data = try JSONEncoder().encode(store)
+            let outfile = Self.indexFileURL()
+            try data.write(to: outfile)
+            
+            print( "saveIndexFileTask: wrote out IndexFile")
+        }
+        catch {
+            print( "saveIndexFile: error: \(error.localizedDescription)")
+        }
     }
 
     
@@ -168,7 +187,7 @@ extension CalculatorModel {
         
         if !validModFiles.isEmpty || !missingFiles.isEmpty {
             // Write out index file since we added or removed entries to it
-            saveIndexFile()
+            saveIndex()
         }
     }
 
@@ -262,9 +281,9 @@ extension CalculatorModel {
         /// List of other data files, macro and state files
         ///
         
-        var indexFile: ComputorIndexFile
+        var indexFile: IndexFile
         
-        init( _ iFile: ComputorIndexFile = ComputorIndexFile() ) {
+        init( _ iFile: IndexFile = IndexFile() ) {
             self.indexFile = iFile
         }
     }
@@ -423,30 +442,7 @@ extension CalculatorModel {
         mod.caption = newCaption
         
         saveModule(mfr)
-        saveIndexFile()
-    }
-    
-    
-    
-    func saveIndexFileTask() throws {
-        
-        let store = IndexStore( db.indexFile )
-        let data = try JSONEncoder().encode(store)
-        let outfile = Self.indexFileURL()
-        try data.write(to: outfile)
-
-        print( "saveIndexFileTask: wrote out IndexFile")
-    }
-
-    
-    func saveIndexFile() {
-        
-        do {
-            try saveIndexFileTask()
-        }
-        catch {
-            print( "saveIndexFile: error: \(error.localizedDescription)")
-        }
+        saveIndex()
     }
 
     

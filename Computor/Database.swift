@@ -296,7 +296,7 @@ final class StateFileRec: Codable {
 }
 
 
-class ComputorIndexFile: Codable {
+class IndexFile: Codable {
     
     /// Only one of these tables per app
     /// Contains a record of each macro library file
@@ -311,7 +311,7 @@ let modZeroSym = "mod0"
 
 class Database {
     
-    var indexFile: ComputorIndexFile = ComputorIndexFile()
+    var indexFile: IndexFile = IndexFile()
 }
 
 

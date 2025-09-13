@@ -70,7 +70,7 @@ struct DebugView: View {
                 }
                 
                 model.db.indexFile.mfileTable.removeAll( where: { !$0.isModZero } )
-                model.saveIndexFile()
+                model.saveIndex()
             }
 
             
