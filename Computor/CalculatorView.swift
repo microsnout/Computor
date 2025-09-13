@@ -134,7 +134,13 @@ struct CalculatorView: View {
         .environmentObject(model)
         .task {
             // Load calculator instance states and macro modules
-            model.loadLibrary()
+            model.db.loadLibrary()
+            model.loadState()
+            
+            // TODO: Fix this up!
+            
+            // Set aux display view to mod zero
+            model.aux.macroMod = model.db.getMacroFileRec(sym: modZeroSym)?.mfile ?? ModuleFile()
         }
         .onChange(of: scenePhase) { oldPhase, phase in
             if phase == .inactive {

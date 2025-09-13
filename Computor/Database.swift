@@ -325,12 +325,23 @@ extension Database {
         indexFile.mfileTable.first( where: { $0.id == id } )
     }
     
+    
+    // *** File system paths ***
+    
+    static func documentDirectoryURL() -> URL {
+        
+        try! FileManager.default.url(for: .documentDirectory,
+                                     in: .userDomainMask,
+                                     appropriateFor: nil,
+                                     create: false)
+    }
+
     private static func indexFileURL() -> URL {
-        CalculatorModel.documentDirectoryURL().appendingPathComponent("computor.index")
+        Database.documentDirectoryURL().appendingPathComponent("computor.index")
     }
     
     static func moduleDirectoryURL() -> URL {
-        CalculatorModel.documentDirectoryURL().appendingPathComponent("Module")
+        Database.documentDirectoryURL().appendingPathComponent("Module")
     }
 
     // ***************
@@ -617,6 +628,21 @@ extension Database {
         }
     }
 
+    
+    func loadLibrary() {
+        
+        /// ** Load Library **
+        
+        createModuleDirectory()
+        loadIndex()
+        syncModules()
+        
+        // Create Module zero if it doesn't exist and load it
+        let mod0 = createModZero()
+        let _ = loadModule(mod0)
+    }
+    
+
     // **************
 
     
@@ -658,5 +684,87 @@ extension Database {
         assert( newSym.count <= 6 && newSym.count > 0 )
         
         
+    }
+}
+
+
+/// ** Utility File Functions **
+
+func listFiles( inDirectory path: String, withPrefix pattern: String ) -> [String] {
+    
+    /// ** List Files in Path **
+    
+    let fileManager = FileManager.default
+    
+    do {
+        let contents = try fileManager.contentsOfDirectory( atPath: path)
+        let filteredFiles = contents.filter { $0.hasPrefix(pattern) }
+        return filteredFiles
+    }
+    catch {
+        print("Error listing path \(path) Error: \(error) - return []")
+        return []
+    }
+}
+
+
+func deleteFile( fileName: String, inDirectory directoryURL: URL) {
+    
+    let fileManager = FileManager.default
+    let fileURL = directoryURL.appendingPathComponent(fileName)
+    
+    do {
+        try fileManager.removeItem(at: fileURL)
+        
+#if DEBUG
+        print("File '\(fileName)' successfully deleted from '\(directoryURL.lastPathComponent)' directory.")
+#endif
+    }
+    catch {
+        print("Error deleting file '\(fileName)': \(error.localizedDescription)")
+    }
+}
+
+
+func deleteAllFiles( in directoryURL: URL) {
+    
+    let fileManager = FileManager.default
+    
+    do {
+        // Get the contents of the directory
+        let fileURLs = try fileManager.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+        
+        // Iterate through the files and remove each one
+        for fileURL in fileURLs {
+            try fileManager.removeItem(at: fileURL)
+        }
+        
+#if DEBUG
+        print("Successfully deleted all files in: \(directoryURL.lastPathComponent)")
+#endif
+    }
+    catch {
+        print("Error deleting files in directory: \(error)")
+    }
+}
+
+
+func renameFile( originalURL: URL, newName: String) {
+    
+    let fileManager = FileManager.default
+    
+    // Get the directory of the original file
+    let directoryURL = originalURL.deletingLastPathComponent()
+    
+    // Create the new URL with the desired new name
+    let newURL = directoryURL.appendingPathComponent(newName)
+    
+    do {
+        try fileManager.moveItem(at: originalURL, to: newURL)
+        
+        print("File successfully renamed from \(originalURL.lastPathComponent) to \(newURL.lastPathComponent)")
+    }
+    catch {
+        print("Error renaming file: \(error.localizedDescription)")
     }
 }
