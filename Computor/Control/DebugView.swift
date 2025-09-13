@@ -55,7 +55,7 @@ struct DebugView: View {
             DebugButton( label: "Delete ALL Module files") {
                 
                 
-                let modDir = CalculatorModel.moduleDirectoryURL()
+                let modDir = Database.moduleDirectoryURL()
                 
                 deleteAllFiles(in: modDir)
                 
@@ -66,11 +66,11 @@ struct DebugView: View {
                     
                     mfr0.mfile = ModuleFile(mfr0)
                     model.aux.macroMod = mfr0.mfile ?? ModuleFile()
-                    model.saveModule(mfr0)
+                    model.db.saveModule(mfr0)
                 }
                 
                 model.db.indexFile.mfileTable.removeAll( where: { !$0.isModZero } )
-                model.saveIndex()
+                model.db.saveIndex()
             }
 
             

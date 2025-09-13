@@ -89,7 +89,7 @@ struct LibraryView: View {
                     mfr.mfile = ModuleFile(mfr)
                     
                     // Save new mod file - index will be saved by on change handler
-                    model.saveModule(mfr)
+                    model.db.saveModule(mfr)
                 }
             }
         }
@@ -106,7 +106,7 @@ struct LibraryView: View {
         .onChange( of: list ) { oldList, newList in
             
             // Module file index has changed
-            model.saveIndex()
+            model.db.saveIndex()
             
 #if DEBUG
             print("   Wrote index file:")
