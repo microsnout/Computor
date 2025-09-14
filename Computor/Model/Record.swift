@@ -11,13 +11,6 @@ extension CalculatorModel {
     
     /// ** Macro Recording Stuff **
     
-    func saveMacroFunction( _ sTag: SymbolTag, _ list: MacroOpSeq ) {
-        let mr = MacroRec( tag: sTag, seq: list)
-        aux.macroMod.addMacro(mr)
-        saveConfiguration()
-    }
-    
-    
     func clearMacroFunction( _ sTag: SymbolTag) {
         
         // Delete macro bound to sTag and save config
