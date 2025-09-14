@@ -195,6 +195,8 @@ extension ModuleFile {
             // TODO: check for newTag already in use
             
             mr.symTag = newTag
+            
+            // TODO: Save module here!
         }
         else {
             // Non-existant macro

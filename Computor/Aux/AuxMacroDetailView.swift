@@ -241,7 +241,7 @@ struct MacroDetailView: View {
             }
         }
         
-        // Macro Change Symbol
+        // Symbol Change Symbol
         .sheet( isPresented: $symbolSheet ) {
             
             VStack {
