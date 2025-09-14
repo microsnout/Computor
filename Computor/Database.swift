@@ -721,7 +721,8 @@ extension Database {
     
     func createNewMacroFile( symbol: String ) -> MacroFileRec? {
         
-        /// Create a new module file with unique symbol and a new UUID
+        /// ** Create New Macro File **
+        ///     Create a new module file with unique symbol and a new UUID
         
         if let _ = getMacroFileRec(sym: symbol) {
             // Already exists with this symbol
@@ -740,7 +741,8 @@ extension Database {
     
     func addExistingMacroFile( symbol: String, uuid: UUID ) -> MacroFileRec? {
         
-        /// Create a new module file with unique symbol and a new UUID
+        /// ** Add Existing Macro File **
+        ///     Create a new module file with unique symbol and a new UUID
         
         if let _ = getMacroFileRec(sym: symbol) {
             // Already exists with this symbol
@@ -761,6 +763,8 @@ extension Database {
     
     
     func deleteModule( _ mfr: MacroFileRec ) {
+        
+        /// ** Delete Module **
         
         // Delete the Mod file associated with this mfr rec if it exists
         if let mod = mfr.mfile {
@@ -783,6 +787,8 @@ extension Database {
     
     
     func setModuleSymbolandCaption( _ mfr: MacroFileRec, newSym: String, newCaption: String? = nil ) {
+        
+        /// ** Set Module Symbol and Caption **
         
         // Load the module file
         let mod = loadModule(mfr)

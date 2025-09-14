@@ -35,6 +35,7 @@ struct MacroListView: View {
     @State private var deleteDialog = false
     
     @State private var dialogRec: MacroRec? = nil
+    @State private var modSelSheet: Bool = false
 
     var body: some View {
         
@@ -47,7 +48,9 @@ struct MacroListView: View {
                     Spacer()
                     
                     // Macro List Header Title
-                    RichText("ç{GrayText}Macro Module:ç{} ƒ{0.9}\(modSymStr)", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                    Button( action: { modSelSheet = true } ) {
+                        RichText("ç{GrayText}Macro Module:ç{} ƒ{0.9}\(modSymStr)", size: .small, weight: .bold, defaultColor: "ModText" )
+                    }
                     Spacer()
                     
                     // New macro creation button
@@ -150,6 +153,41 @@ struct MacroListView: View {
                     .padding( [.top], 0 )
                 }
             }
+        }
+        .sheet( isPresented: $modSelSheet ) {
+            
+            ModuleSelectSheet( model: model ) { x in
+                
+                
+            }
+        }
+    }
+}
+
+
+struct ModuleSelectSheet: View {
+    
+    @Environment(\.dismiss) var dismiss
+    
+    @StateObject var model: CalculatorModel
+    
+    var scc: SheetContinuationClosure
+    
+    var body: some View {
+        
+        VStack( alignment: .leading ) {
+            
+            SheetHeaderText( txt: "Select Module:" )
+            SelectModulePopup( db: model.db )
+            
+            Spacer()
+        }
+        .padding( [.leading, .trailing], 40 )
+        .presentationBackground( Color.black.opacity(0.7) )
+        .presentationDetents( [.fraction(0.5), .large] )
+        .onSubmit {
+            // scc( caption )
+            dismiss()
         }
     }
 }
