@@ -62,7 +62,7 @@ struct MacroListView: View {
                 }
             }
 
-            if model.aux.macroMod.macroList.isEmpty {
+            if model.aux.macroMod.symList.isEmpty {
                 Spacer()
                 VStack {
                     // Placeholder for empty macro list

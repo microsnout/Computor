@@ -99,7 +99,7 @@ struct LibraryView: View {
             
             EditModuleSheet( editName: mfr.modSym , editCaption: mfr.caption ?? "", submitLabel: "Save" ) { (newName: String, newCaption: String) in
                 
-                model.setModuleSymbolandCaption( mfr, newSym: newName, newCaption: newCaption.isEmpty ? nil : newCaption )
+                model.db.setModuleSymbolandCaption( mfr, newSym: newName, newCaption: newCaption.isEmpty ? nil : newCaption )
             }
         }
         
@@ -124,11 +124,8 @@ struct LibraryView: View {
             
             // Delete the Mod file
             let mfr = list[index]
-            model.deleteModule(mfr)
+            model.db.deleteModule(mfr)
         }
-        
-        // Then remove the mfr rec from index file
-        list.remove( atOffsets: offsets)
     }
 }
 

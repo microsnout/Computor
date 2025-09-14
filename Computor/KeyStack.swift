@@ -489,7 +489,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
     
     func getTagList() -> [SymbolTag] {
         
-        let tags = model.aux.macroMod.macroList.map { $0.symTag }
+        let tags = model.aux.macroMod.symList
         
         return tags.filter { $0 != SymbolTag(.null) }
     }

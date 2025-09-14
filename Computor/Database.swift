@@ -254,6 +254,10 @@ extension MacroFileRec {
         
         if let mod = self.mfile {
             
+            if self.modSym == "_" {
+                assert(false)
+            }
+            
             // Mod file is loaded
             do {
                 let store = ModuleStore( mod )
@@ -754,86 +758,53 @@ extension Database {
         
         
     }
-}
-
-
-/// ** Utility File Functions **
-
-func listFiles( inDirectory path: String, withPrefix pattern: String ) -> [String] {
     
-    /// ** List Files in Path **
     
-    let fileManager = FileManager.default
-    
-    do {
-        let contents = try fileManager.contentsOfDirectory( atPath: path)
-        let filteredFiles = contents.filter { $0.hasPrefix(pattern) }
-        return filteredFiles
-    }
-    catch {
-        print("Error listing path \(path) Error: \(error) - return []")
-        return []
-    }
-}
-
-
-func deleteFile( fileName: String, inDirectory directoryURL: URL) {
-    
-    let fileManager = FileManager.default
-    let fileURL = directoryURL.appendingPathComponent(fileName)
-    
-    do {
-        try fileManager.removeItem(at: fileURL)
+    func deleteModule( _ mfr: MacroFileRec ) {
         
-#if DEBUG
-        print("File '\(fileName)' successfully deleted from '\(directoryURL.lastPathComponent)' directory.")
-#endif
-    }
-    catch {
-        print("Error deleting file '\(fileName)': \(error.localizedDescription)")
-    }
-}
-
-
-func deleteAllFiles( in directoryURL: URL) {
-    
-    let fileManager = FileManager.default
-    
-    do {
-        // Get the contents of the directory
-        let fileURLs = try fileManager.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
-        
-        // Iterate through the files and remove each one
-        for fileURL in fileURLs {
-            try fileManager.removeItem(at: fileURL)
+        // Delete the Mod file associated with this mfr rec if it exists
+        if let mod = mfr.mfile {
+            
+            // Mod file is loaded
+            let modDirURL = Database.moduleDirectoryURL()
+            deleteFile( fileName: mod.filename, inDirectory: modDirURL )
+            mfr.mfile = nil
+        }
+        else {
+            
+            // Mod file is not loaded - delete it anyway
+            let modDirURL = Database.moduleDirectoryURL()
+            deleteFile( fileName: mfr.filename, inDirectory: modDirURL )
         }
         
-#if DEBUG
-        print("Successfully deleted all files in: \(directoryURL.lastPathComponent)")
-#endif
+        // Remove this module from the index
+        indexFile.mfileTable.removeAll( where: { $0.modSym == mfr.modSym })
     }
-    catch {
-        print("Error deleting files in directory: \(error)")
-    }
-}
-
-
-func renameFile( originalURL: URL, newName: String) {
     
-    let fileManager = FileManager.default
     
-    // Get the directory of the original file
-    let directoryURL = originalURL.deletingLastPathComponent()
-    
-    // Create the new URL with the desired new name
-    let newURL = directoryURL.appendingPathComponent(newName)
-    
-    do {
-        try fileManager.moveItem(at: originalURL, to: newURL)
+    func setModuleSymbolandCaption( _ mfr: MacroFileRec, newSym: String, newCaption: String? = nil ) {
         
-        print("File successfully renamed from \(originalURL.lastPathComponent) to \(newURL.lastPathComponent)")
-    }
-    catch {
-        print("Error renaming file: \(error.localizedDescription)")
+        // Load the module file
+        let mod = loadModule(mfr)
+        
+        let symChanged = newSym != mfr.modSym
+        
+        // Original mod URL
+        let modURL = Database.moduleDirectoryURL().appendingPathComponent( mod.filename )
+        
+        if symChanged {
+            
+            mfr.modSym = newSym
+            mod.modSym = newSym
+            
+            renameFile( originalURL: modURL, newName: mod.filename)
+        }
+        
+        mfr.caption = newCaption
+        mod.caption = newCaption
+        
+        saveModule(mfr)
+        saveIndex()
     }
 }
+

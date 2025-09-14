@@ -73,66 +73,8 @@ extension CalculatorModel {
     func saveConfiguration() {
         
         /// ** saveConfiguration **
-        
-        do {
-            let mod = aux.macroMod.loadModule()
-            let store = ModuleStore( mod )
-            let data = try JSONEncoder().encode(store)
-            let outfile = Database.moduleDirectoryURL().appendingPathComponent( aux.macroMod.filename )
-            try data.write(to: outfile)
-            
-            print( "saveConfigTask: wrote out: \(aux.macroMod.filename)")
-        }
-        catch {
-            print( "saveConfiguration: error: \(error.localizedDescription)")
-        }
-    }
-    
-    
-    // Lib Functions
-    
-    func deleteModule( _ mfr: MacroFileRec ) {
-        
-        // Delete the Mod file associated with this mfr rec if it exists
-        if let mod = mfr.mfile {
-            
-            // Mod file is loaded
-            let modDirURL = Database.moduleDirectoryURL()
-            deleteFile( fileName: mod.filename, inDirectory: modDirURL )
-            mfr.mfile = nil
-        }
-        else {
-            
-            // Mod file is not loaded - delete it anyway
-            let modDirURL = Database.moduleDirectoryURL()
-            deleteFile( fileName: mfr.filename, inDirectory: modDirURL )
-        }
-    }
-    
-    
-    func setModuleSymbolandCaption( _ mfr: MacroFileRec, newSym: String, newCaption: String? = nil ) {
-        
-        // Load the module file
-        let mod = db.loadModule(mfr)
-        
-        let symChanged = newSym != mfr.modSym
-        
-        // Original mod URL
-        let modURL = Database.moduleDirectoryURL().appendingPathComponent( mod.filename )
-        
-        if symChanged {
-            
-            mfr.modSym = newSym
-            mod.modSym = newSym
-            
-            renameFile( originalURL: modURL, newName: mod.filename)
-        }
-        
-        mfr.caption = newCaption
-        mod.caption = newCaption
-        
-        db.saveModule(mfr)
-        db.saveIndex()
+         
+        aux.macroMod.saveModule()
     }
 
 }
