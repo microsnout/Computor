@@ -128,43 +128,8 @@ extension ModuleFile {
     
     var symStr: String { "{\(self.modSym)}" }
     
-    
-    // File Ops
-    
     var filename: String {
         "Module.\(modSym).\(id.uuidString)"
-    }
-    
-    // Macro Ops
-    
-    func getMacro( _ sTag: SymbolTag ) -> MacroRec? {
-        
-        /// Find a macro in this module from it's symbol tag
-        
-        for mr in self.macroTable {
-            if mr.symTag == sTag {
-                return mr
-            }
-        }
-        return nil
-    }
-    
-    
-    func saveMacro( _ mr: MacroRec ) {
-        
-        /// Save macro in module
-        
-        // TODO: Eliminate func
-        
-        if let x = self.macroTable.firstIndex( where: { $0.symTag == mr.symTag } ) {
-            
-            // Replace existing macro
-            self.macroTable[x] = mr
-        }
-        else {
-            // Add new macro to the end
-            self.macroTable.append(mr)
-        }
     }
 }
 
@@ -357,6 +322,9 @@ extension MacroFileRec {
         else {
             // Add new macro to the end
             mf.macroTable.append(mr)
+            
+            // Add the symbol to the mfr rec list
+            symList.append(mr.symTag)
         }
         
         saveModule()
@@ -676,8 +644,9 @@ extension Database {
             print("   Adding ModFileRec to index for: \(modName) - \(modUUID.uuidString)")
             
             guard let _ = addExistingMacroFile( symbol: modName, uuid: modUUID) else {
-                assert(false)
+                // assert(false)
                 print( "   Mod: \(modName) - \(modUUID) conflict with existing module with same name" )
+                return
             }
         }
         
