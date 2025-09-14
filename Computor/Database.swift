@@ -150,18 +150,11 @@ extension ModuleFile {
     }
     
     
-    func deleteMacro( _ sTag: SymbolTag = SymbolTag(.null) ) {
-        
-        /// Delete a macro from module with given tag
-        /// The null tag is a valid tag for the one allowed Unnamed macro
-        
-        self.macroTable.removeAll( where: { $0.symTag == sTag } )
-    }
-    
-    
     func saveMacro( _ mr: MacroRec ) {
         
         /// Save macro in module
+        
+        // TODO: Eliminate func
         
         if let x = self.macroTable.firstIndex( where: { $0.symTag == mr.symTag } ) {
             
@@ -173,50 +166,22 @@ extension ModuleFile {
             self.macroTable.append(mr)
         }
     }
+}
+
+
+struct ModuleStore : Codable {
     
+    /// ModuleStore
     
-    func setMacroCaption( _ tag: SymbolTag, _ caption: String ) {
-        
-        if let mr = getMacro(tag) {
-            
-            mr.caption = caption
-        }
-        else {
-            // Non-existant macro
-            assert(false)
-        }
-    }
+    var modFile: ModuleFile
     
-    
-    func changeMacroTag( from oldTag: SymbolTag, to newTag: SymbolTag ) {
-        
-        if let mr = getMacro(oldTag) {
-            
-            // TODO: check for newTag already in use
-            
-            mr.symTag = newTag
-            
-            // TODO: Save module here!
-        }
-        else {
-            // Non-existant macro
-            assert(false)
-        }
+    init( _ mFile: ModuleFile = ModuleFile() ) {
+        self.modFile = mFile
     }
 }
 
 
-/// ** State File **
-
-class StateFile: Codable {
-    
-    /// One of these files per calculator state
-    
-    var state:     CalcState
-    var unitData:  UserUnitData
-    var keyMap:    KeyMapRec
-}
-
+// ********************************************************* //
 
 /// ** Macro File Record **
 
@@ -232,12 +197,6 @@ final class MacroFileRec: Codable, Identifiable, Equatable {
     
     // Not stored in Index file - nil if file not loaded
     var mfile: ModuleFile? = nil
-    
-    var filename: String {
-        "Module.\(modSym).\(id.uuidString)" }
-    
-    var isModZero: Bool {
-        self.modSym == modZeroSym }
 
     private enum CodingKeys: String, CodingKey {
         case id
@@ -279,6 +238,192 @@ final class MacroFileRec: Codable, Identifiable, Equatable {
 }
 
 
+extension MacroFileRec {
+    
+    var filename: String {
+        "Module.\(modSym).\(id.uuidString)" }
+    
+    var isModZero: Bool {
+        self.modSym == modZeroSym }
+
+    
+    func loadModule() -> ModuleFile {
+        
+        /// ** Load Module **
+        
+        if let mf = self.mfile {
+            
+            // Module already loaded
+            print( "loadModule: \(mf.modSym) already loaded" )
+            return mf
+        }
+        
+        do {
+            let fileURL = Database.moduleDirectoryURL().appendingPathComponent( self.filename )
+            let data = try Data( contentsOf: fileURL)
+            let store = try JSONDecoder().decode(ModuleStore.self, from: data)
+            let mod = store.modFile
+            
+            print( "loadModule: \(self.modSym) - \(self.id.uuidString) Loaded" )
+            
+            // Successful load
+            self.mfile = mod
+            return mod
+        }
+        catch {
+            // Missing file or bad file - create empty file
+            print( "Creating Mod file for index: \(self.modSym) - \(self.id.uuidString)")
+            
+            // Create new module file for mfr rec and save it
+            let mod = ModuleFile(self)
+            self.mfile = mod
+            saveModule()
+            return mod
+        }
+    }
+
+    
+    func saveModule() {
+        
+        /// ** Save Module **
+        
+        if let mod = self.mfile {
+            
+            // Mod file is loaded
+            do {
+                let store = ModuleStore( mod )
+                let data = try JSONEncoder().encode(store)
+                let outfile = Database.moduleDirectoryURL().appendingPathComponent( mod.filename )
+                try data.write(to: outfile)
+                
+                print( "saveModule: wrote out: \(mod.filename)")
+            }
+            catch {
+                print( "saveModule: file: \(mod.filename) error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    
+    var macroList: [MacroRec] {
+        
+        /// ** Macro List **
+        
+        let mf = loadModule()
+        return mf.macroTable
+    }
+    
+    
+    func deleteAll() {
+        
+        // Debug use only
+        let mf = loadModule()
+        self.symList = []
+        mf.macroTable = []
+        mf.groupTable = []
+        saveModule()
+    }
+
+    
+    func getMacro( _ sTag: SymbolTag ) -> MacroRec? {
+        
+        /// ** Get Macro **
+        
+        let mf = loadModule()
+        return mf.macroTable.first( where: { $0.symTag == sTag } )
+    }
+    
+    
+    func deleteMacro( _ sTag: SymbolTag = SymbolTag(.null) ) {
+        
+        /// Delete a macro from module with given tag
+        /// The null tag is a valid tag for the one allowed Unnamed macro
+
+        let mf = loadModule()
+        mf.macroTable.removeAll( where: { $0.symTag == sTag } )
+    }
+    
+    
+    func addMacro( _ mr: MacroRec ) {
+        
+        /// Save macro in module
+        let mf = loadModule()
+
+        if let x = mf.macroTable.firstIndex( where: { $0.symTag == mr.symTag } ) {
+            
+            // Replace existing macro
+            mf.macroTable[x] = mr
+        }
+        else {
+            // Add new macro to the end
+            mf.macroTable.append(mr)
+        }
+        
+        saveModule()
+    }
+
+    
+    func setMacroCaption( _ tag: SymbolTag, _ caption: String ) {
+        
+        /// ** Set Macro Caption **
+        
+        if let mr = getMacro(tag) {
+            
+            // Change caption and save
+            mr.caption = caption
+            saveModule()
+        }
+        else {
+            // Non-existant macro
+            assert(false)
+        }
+    }
+    
+    
+    func changeMacroTag( from oldTag: SymbolTag, to newTag: SymbolTag ) {
+        
+        if let mr = getMacro(oldTag) {
+            
+            // TODO: check for newTag already in use
+            
+            // Macro exists - change tag
+            mr.symTag = newTag
+            
+            if let x = self.symList.firstIndex( of: oldTag ) {
+                
+                // Update symbol list in mfr rec
+                self.symList[x] = newTag
+            }
+            else {
+                // Sym is missing, add it
+                self.symList.append(newTag)
+                assert(false)
+            }
+                
+            saveModule()
+        }
+        else {
+            // Non-existant macro
+            assert(false)
+        }
+    }
+}
+
+
+// ********************************************************* //
+
+/// ** State File **
+
+class StateFile: Codable {
+    
+    /// One of these files per calculator state
+    
+    var state:     CalcState
+    var unitData:  UserUnitData
+    var keyMap:    KeyMapRec
+}
+
+
 /// ** State File Record **
 
 final class StateFileRec: Codable {
@@ -297,6 +442,8 @@ final class StateFileRec: Codable {
     
 }
 
+
+// ********************************************************* //
 
 class IndexFile: Codable {
     
@@ -562,72 +709,23 @@ extension Database {
     }
     
     // **********
-    
-    struct ModuleStore : Codable {
-        
-        /// ModuleStore
-        
-        var modFile: ModuleFile
-        
-        init( _ mFile: ModuleFile = ModuleFile() ) {
-            self.modFile = mFile
-        }
-    }
 
     
     func loadModule( _ mfr: MacroFileRec ) -> ModuleFile {
         
+        // TODO: Should we eliminate this func
+        
         /// ** Load Module **
-        
-        if let mf = mfr.mfile {
-            // Module already loaded
-            print( "loadModule: \(mfr.modSym) already loaded" )
-            return mf
-        }
-        
-        do {
-            let fileURL = Database.moduleDirectoryURL().appendingPathComponent( mfr.filename )
-            let data = try Data( contentsOf: fileURL)
-            let store = try JSONDecoder().decode(ModuleStore.self, from: data)
-            let mod = store.modFile
-            
-            print( "loadModule: \(mfr.modSym) - \(mfr.id.uuidString) Loaded" )
-            
-            // Successful load
-            mfr.mfile = mod
-            return mod
-        }
-        catch {
-            // Missing file or bad file
-            
-            print( "Creating Mod file for index: \(mfr.modSym) - \(mfr.id.uuidString)")
-            
-            // Create new module file for mfr rec and save it
-            let mod = ModuleFile(mfr)
-            mfr.mfile = mod
-            saveModule(mfr)
-            return mod
-        }
+        return mfr.loadModule()
     }
 
     
     func saveModule( _ mfr: MacroFileRec ) {
         
-        if let mod = mfr.mfile {
-            
-            // Mod file is loaded
-            do {
-                let store = ModuleStore( mod )
-                let data = try JSONEncoder().encode(store)
-                let outfile = Database.moduleDirectoryURL().appendingPathComponent( mod.filename )
-                try data.write(to: outfile)
-                
-                print( "saveModule: wrote out: \(mod.filename)")
-            }
-            catch {
-                print( "saveModule: file: \(mod.filename) error: \(error.localizedDescription)")
-            }
-        }
+        // TODO: Should we eliminate this func
+
+        /// ** Save Module **
+        mfr.saveModule()
     }
 
     

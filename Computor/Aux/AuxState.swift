@@ -35,7 +35,7 @@ struct AuxState {
     var memRec: MemoryRec? = nil
     
     // Currently viewed macro module file
-    var macroMod: ModuleFile = ModuleFile()
+    var macroMod: MacroFileRec = MacroFileRec( sym: "_" )
 
     // Currently selected macro record - if non-nil displays macro detail view
     var macroRec: MacroRec? = nil

@@ -75,7 +75,8 @@ extension CalculatorModel {
         /// ** saveConfiguration **
         
         do {
-            let store = Database.ModuleStore( aux.macroMod )
+            let mod = aux.macroMod.loadModule()
+            let store = ModuleStore( mod )
             let data = try JSONEncoder().encode(store)
             let outfile = Database.moduleDirectoryURL().appendingPathComponent( aux.macroMod.filename )
             try data.write(to: outfile)

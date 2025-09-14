@@ -83,7 +83,7 @@ struct MacroDetailView: View {
                         .padding( [.leading], 5 )
                         .onTapGesture {
                             if mr.isEmpty {
-                                model.aux.macroMod.deleteMacro()
+                                model.aux.macroMod.deleteMacro( /* null macro */ )
                             }
                             
                             withAnimation {

@@ -13,7 +13,7 @@ extension CalculatorModel {
     
     func saveMacroFunction( _ sTag: SymbolTag, _ list: MacroOpSeq ) {
         let mr = MacroRec( tag: sTag, seq: list)
-        aux.macroMod.saveMacro(mr)
+        aux.macroMod.addMacro(mr)
         saveConfiguration()
     }
     
@@ -85,7 +85,7 @@ extension CalculatorModel {
                 
                 kstate.keyMap.assign( kcFn, tag: sTag )
                 let mr = MacroRec( tag: sTag )
-                aux.macroMod.saveMacro(mr)
+                aux.macroMod.addMacro(mr)
                 aux.record(mr)
             }
             else {
@@ -131,7 +131,7 @@ extension CalculatorModel {
             
             // Null tag was not found - create the null rec
             let mr = MacroRec()
-            aux.macroMod.saveMacro(mr)
+            aux.macroMod.addMacro(mr)
             aux.record(mr)
         }
         else {
@@ -149,7 +149,7 @@ extension CalculatorModel {
         let mr = MacroRec()
         
         // Bind to null symbol for now - replacing any currently bound
-        aux.macroMod.saveMacro(mr )
+        aux.macroMod.addMacro(mr )
         
         // Load into recorder
         aux.loadMacro(mr)

@@ -62,7 +62,7 @@ struct MacroListView: View {
                 }
             }
 
-            if model.aux.macroMod.macroTable.isEmpty {
+            if model.aux.macroMod.macroList.isEmpty {
                 Spacer()
                 VStack {
                     // Placeholder for empty macro list
@@ -76,7 +76,7 @@ struct MacroListView: View {
                     
                     LazyVStack {
                         
-                        ForEach ( model.aux.macroMod.macroTable ) { mr in
+                        ForEach ( model.aux.macroMod.macroList ) { mr in
                             
                             let sym = mr.symTag.getRichText()
                             let caption = mr.caption ?? "ç{GrayText}-caption-"
