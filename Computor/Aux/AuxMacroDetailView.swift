@@ -377,6 +377,12 @@ struct KeyAssignPopup: View, KeyPressHandler {
 }
 
 
+struct MacroMoveRec {
+    
+    var targetMod: String
+}
+
+
 struct MacroEditSheet: View {
     
     @Environment(\.dismiss) var dismiss
@@ -393,6 +399,9 @@ struct MacroEditSheet: View {
     
     @State private var kcAssigned: KeyCode? = nil
     
+    @State private var moveDialog = false
+    @State private var moveRec = MacroMoveRec( targetMod: "")
+
     var body: some View {
         
         let kcStr: String = kcAssigned?.str ?? ""
@@ -432,7 +441,11 @@ struct MacroEditSheet: View {
             // Module Editor
             SheetCollapsibleView( label: "={Module: }" ) {
                 
-                SelectModulePopup( db: model.db )
+                SelectModulePopup( db: model.db ) { mfc in
+                    
+                    moveRec = MacroMoveRec( targetMod: mfc.modSym )
+                    moveDialog = true
+                }
             }
             
             Spacer()
@@ -447,6 +460,21 @@ struct MacroEditSheet: View {
         .onSubmit {
             scc( caption )
             dismiss()
+        }
+        .confirmationDialog("Confirm Deletion", isPresented: $moveDialog, presenting: moveRec ) { mmr in
+            
+            Button("Move to Module: \(mmr.targetMod)") {
+                //moveDialog = false
+            }
+            
+            Button("Copy to Module: \(mmr.targetMod)") {
+                //moveDialog = false
+            }
+            
+            
+            Button("Cancel", role: .cancel) {
+                //moveDialog = false
+            }
         }
     }
 }
@@ -484,10 +512,7 @@ struct ModuleKeyView: View {
 }
 
 
-struct MacroMoveRec {
-    
-    var targetMod: String
-}
+typealias ModSelectClosure = ( _ mfr: MacroFileRec ) -> Void
 
 
 struct SelectModulePopup: View {
@@ -496,9 +521,6 @@ struct SelectModulePopup: View {
     
     @EnvironmentObject var model: CalculatorModel
     @EnvironmentObject var keyData: KeyData
-    
-    @State private var moveDialog = false
-    @State private var moveRec = MacroMoveRec( targetMod: "")
 
     let keySpec: KeySpec = ksModuleKey
     
@@ -506,6 +528,8 @@ struct SelectModulePopup: View {
     
     // Parameters
     var db: Database
+    
+    var msc: ModSelectClosure
     
     var body: some View {
         
@@ -534,23 +558,8 @@ struct SelectModulePopup: View {
                                         .onTapGesture {
                                             hapticFeedback.impactOccurred()
                                             
-                                            moveDialog = true
-                                            moveRec = MacroMoveRec( targetMod: sym )
-                                        }
-                                        .confirmationDialog("Confirm Deletion", isPresented: $moveDialog, presenting: moveRec ) { mmr in
+                                            msc( row[c] )
                                             
-                                            Button("Move to Module: \(mmr.targetMod)") {
-                                                //moveDialog = false
-                                            }
-                                            
-                                            Button("Copy to Module: \(mmr.targetMod)") {
-                                                //moveDialog = false
-                                            }
-                                            
-
-                                            Button("Cancel", role: .cancel) {
-                                                //moveDialog = false
-                                            }
                                         }
                                 }
                                 

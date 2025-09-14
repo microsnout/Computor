@@ -156,10 +156,8 @@ struct MacroListView: View {
         }
         .sheet( isPresented: $modSelSheet ) {
             
-            ModuleSelectSheet( model: model ) { x in
-                
-                
-            }
+            // Choose a Module to display in Aux
+            ModuleSelectSheet( model: model )
         }
     }
 }
@@ -171,24 +169,24 @@ struct ModuleSelectSheet: View {
     
     @StateObject var model: CalculatorModel
     
-    var scc: SheetContinuationClosure
-    
     var body: some View {
         
         VStack( alignment: .leading ) {
             
             SheetHeaderText( txt: "Select Module:" )
-            SelectModulePopup( db: model.db )
+            
+            SelectModulePopup( db: model.db ) { mfc in
+                
+                // Set displayed module mfc
+                model.aux.macroMod = mfc
+                dismiss()
+            }
             
             Spacer()
         }
         .padding( [.leading, .trailing], 40 )
         .presentationBackground( Color.black.opacity(0.7) )
         .presentationDetents( [.fraction(0.5), .large] )
-        .onSubmit {
-            // scc( caption )
-            dismiss()
-        }
     }
 }
 
