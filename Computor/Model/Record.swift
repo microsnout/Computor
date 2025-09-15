@@ -30,9 +30,16 @@ extension CalculatorModel {
     
     
     func getMacroFunction( _ sTag: SymbolTag ) -> MacroOpSeq? {
-        if let mr = aux.macroMod.getMacro(sTag) {
+        
+        // Assume local module is mod0 - FOR NOW
+        let mod0 = db.getModZero()
+        
+        if let mr = db.getMacro( for: sTag, localMod: mod0 ) {
+            
             return mr.opSeq
         }
+        
+        // No macro found
         return nil
     }
     
@@ -157,12 +164,18 @@ extension CalculatorModel {
     
     func changeMacroSymbol( old: SymbolTag, new: SymbolTag ) {
         
-        if let kc = kstate.keyMap.keyAssignment(old) {
+        let mod0 = db.getModZero()
+        
+        let remTag = db.getRemoteSymbolTag( for: old, to: aux.macroMod )
+
+        if let kc = kstate.keyMap.keyAssignment(remTag) {
             
             // Update key assignment
-            kstate.keyMap.assign(kc, tag: new)
+            let newRemTag = SymbolTag( new, mod: remTag.mod )
+            kstate.keyMap.assign(kc, tag: newRemTag)
         }
         
+        // Change local tag to new local tag within current recording mod
         aux.macroMod.changeMacroTag(from: old, to: new)
     }
     

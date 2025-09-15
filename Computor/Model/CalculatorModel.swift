@@ -560,6 +560,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             var result = KeyPressResult.noOp
             
             if keyCode == .lib {
+                // .lib, Sym code invoked by 'Lib' key or macro
+                
                 if let tag = event.mTag,
                    let seq = getMacroFunction(tag) {
                     
@@ -568,6 +570,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
             }
             else {
+                // Key F1..F6 pressed
+                
                 if let tag = kstate.keyMap.tagAssignment(keyCode),
                    let seq = getMacroFunction(tag) {
                     

@@ -18,13 +18,18 @@ typealias SymbolSet = Set<SymbolTag>
 
 
 extension SymbolTag {
+    
+    static let modShift = 100000000000
+    
     var kc: KeyCode { KeyCode(rawValue: (tag % 1000000000)) ?? KeyCode.noop }
     
     var isNull: Bool { self.kc == .null }
     
     var isSingleChar: Bool { (tag % 1000000000) < 1000 }
     
-    var mod: Int { tag / 100000000000 }
+    var mod: Int { tag / SymbolTag.modShift }
+    
+    var isLocalTag: Bool { self.mod == 0 }
     
     func getSymbolText( symName: String, subPt: Int, superPt: Int ) -> String {
         
@@ -77,7 +82,7 @@ extension SymbolTag {
         }
         else {
             // Eliminate mod from tag
-            var code = (tag % 100000000000)
+            var code = (tag % SymbolTag.modShift)
             var symS = ""
             var kcA: [KeyCode] = []
             
@@ -133,6 +138,16 @@ extension SymbolTag {
         }
     }
     
+    
+    init( _ localTag: SymbolTag, mod: Int ) {
+        
+        // Create a remote reference tag by adding a module index
+        self.tag = (localTag.tag % SymbolTag.modShift) + mod * SymbolTag.modShift
+    }
+    
+    
+    var localTag: SymbolTag { SymbolTag(self, mod: 0) }
+
     
     init( _ kc: KeyCode = .null ) {
         

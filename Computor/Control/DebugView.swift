@@ -62,7 +62,7 @@ struct DebugView: View {
                 model.kstate.keyMap.fnRow.removeAll()
                 model.aux.macroRec = nil
                 
-                let mod0 = model.db.createModZero()
+                let mod0 = model.db.getModZero()
                 let _ = model.db.loadModule(mod0)
                 
                 model.db.saveIndex()

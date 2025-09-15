@@ -433,8 +433,13 @@ struct MacroEditSheet: View {
                 
                 KeyAssignPopup( tag: mr.symTag ) { kc in
                     
+                    // Update state variable to display key
                     kcAssigned = kc
-                    model.assignKeyTo( kc, tag: mr.symTag )
+                    
+                    // If macroMod is mod0 this will not change the tag
+                    let remTag = model.db.getRemoteSymbolTag( for: mr.symTag, to: model.aux.macroMod )
+                    
+                    model.assignKeyTo( kc, tag: remTag )
                 }
             }
             

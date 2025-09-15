@@ -111,7 +111,7 @@ class ModuleFile: Codable {
         self.id = mfr.id
         self.modSym = mfr.modSym
         self.caption = mfr.caption
-        self.groupTable = []
+        self.groupTable = [mfr.id]
         self.macroTable = []
     }
     
@@ -119,7 +119,7 @@ class ModuleFile: Codable {
         self.id = UUID()
         self.modSym = ""
         self.caption = ""
-        self.groupTable = []
+        self.groupTable = [self.id]
         self.macroTable = []
     }
 }
@@ -378,6 +378,39 @@ extension MacroFileRec {
             // Non-existant macro
             assert(false)
         }
+    }
+    
+    
+    func getRemoteModuleIndex( for remMfc: MacroFileRec ) -> Int {
+        
+        let localMod = self.loadModule()
+        
+        if let index = localMod.groupTable.firstIndex(where: { $0 == remMfc.id } ) {
+            
+            // The local module already has an entry for this remote
+            return index
+        }
+        
+        // Allocate the next available index, add the remote uuid and save local module
+        let remIndex = localMod.groupTable.count
+        localMod.groupTable.append(remMfc.id)
+        self.saveModule()
+        return remIndex
+    }
+    
+    
+    func remoteModuleRef( _ modIndex: Int ) -> UUID? {
+        
+        let modFile = self.loadModule()
+        
+        if modIndex >= modFile.groupTable.count {
+            
+            // Non-valid reference
+            return nil
+        }
+        
+        // Return the uuid of the remote module
+        return modFile.groupTable[modIndex]
     }
 }
 
@@ -661,7 +694,7 @@ extension Database {
     }
 
     
-    func createModZero() -> MacroFileRec {
+    func getModZero() -> MacroFileRec {
         
         /// ** Create the Zero Module **
         
@@ -711,7 +744,7 @@ extension Database {
         syncModules()
         
         // Create Module zero if it doesn't exist and load it
-        let mod0 = createModZero()
+        let mod0 = getModZero()
         let _ = loadModule(mod0)
     }
     
@@ -811,6 +844,51 @@ extension Database {
         
         saveModule(mfr)
         saveIndex()
+    }
+    
+    
+    func getRemoteSymbolTag( for tag: SymbolTag, to remMod: MacroFileRec, from local: MacroFileRec? = nil ) -> SymbolTag {
+        
+        let localMod: MacroFileRec = local ?? getModZero()
+        
+        if remMod == localMod {
+            
+            // Reference is local - no change
+            return tag
+        }
+        
+        // Add this remote id to the local module, create a remote tag
+        let modIndex = localMod.getRemoteModuleIndex( for: remMod )
+        let remSym = SymbolTag( tag, mod: modIndex )
+        return remSym
+    }
+    
+    
+    func getMacro( for tag: SymbolTag, localMod: MacroFileRec ) -> MacroRec? {
+        
+        if tag.isLocalTag {
+            
+            // Lookup tag in local module provided
+            return localMod.getMacro(tag)
+        }
+        
+        // remTag is local to the remote Mod
+        let remTag = tag.localTag
+        let modIndex = tag.mod
+        
+        // Obtain the uuid of the remote module
+        if let remModId = localMod.remoteModuleRef( modIndex ) {
+            
+            // and lookup the module rec
+            if let mfrRem = getMacroFileRec(id: remModId) {
+                
+                // Look for the macro here
+                return mfrRem.getMacro(remTag)
+            }
+        }
+        
+        // Bad reference
+        return nil
     }
 }
 
