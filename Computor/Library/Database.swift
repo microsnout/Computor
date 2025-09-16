@@ -7,8 +7,6 @@
 import SwiftUI
 
 
-// ********************************************************* //
-
 class IndexFile: Codable {
     
     /// Only one of these tables per app
@@ -22,6 +20,9 @@ class IndexFile: Codable {
 let modZeroSym = "mod0"
 
 
+// ********************************************************* //
+
+
 class Database {
     
     var indexFile: IndexFile = IndexFile()
@@ -30,11 +31,11 @@ class Database {
 
 extension Database {
     
-    func getMacroFileRec( sym: String ) -> ModuleFileRec? {
+    func getModuleFileRec( sym: String ) -> ModuleFileRec? {
         indexFile.mfileTable.first( where: { $0.modSym == sym } )
     }
     
-    func getMacroFileRec( id: UUID ) -> ModuleFileRec? {
+    func getModuleFileRec( id: UUID ) -> ModuleFileRec? {
         indexFile.mfileTable.first( where: { $0.id == id } )
     }
     
@@ -239,7 +240,7 @@ extension Database {
             
             print("   Adding ModFileRec to index for: \(modName) - \(modUUID.uuidString)")
             
-            guard let _ = addExistingMacroFile( symbol: modName, uuid: modUUID) else {
+            guard let _ = addExistingModuleFile( symbol: modName, uuid: modUUID) else {
                 // assert(false)
                 print( "   Mod: \(modName) - \(modUUID) conflict with existing module with same name" )
                 return
@@ -257,14 +258,14 @@ extension Database {
         
         /// ** Create the Zero Module **
         
-        if let mod0 = getMacroFileRec( sym: modZeroSym ) {
+        if let mod0 = getModuleFileRec( sym: modZeroSym ) {
             
             // Module zero already exists
             print( "createModZero: Already exists" )
             return mod0
         }
         
-        guard let mod0 = createNewMacroFile( symbol: modZeroSym) else {
+        guard let mod0 = createNewModule( symbol: modZeroSym) else {
             print( "createModZero: Failed to create Mod zero" )
             assert(false)
         }
@@ -308,15 +309,15 @@ extension Database {
     }
     
 
-    // **************
-
+    // *****************
+    // Library Functions
     
-    func createNewMacroFile( symbol: String ) -> ModuleFileRec? {
+    func createNewModule( symbol: String ) -> ModuleFileRec? {
         
-        /// ** Create New Macro File **
+        /// ** Create New Module File **
         ///     Create a new module file with unique symbol and a new UUID
         
-        if let _ = getMacroFileRec(sym: symbol) {
+        if let _ = getModuleFileRec(sym: symbol) {
             // Already exists with this symbol
             return nil
         }
@@ -331,12 +332,12 @@ extension Database {
     }
 
     
-    func addExistingMacroFile( symbol: String, uuid: UUID ) -> ModuleFileRec? {
+    func addExistingModuleFile( symbol: String, uuid: UUID ) -> ModuleFileRec? {
         
-        /// ** Add Existing Macro File **
+        /// ** Add Existing Module File **
         ///     Create a new module file with unique symbol and a new UUID
         
-        if let _ = getMacroFileRec(sym: symbol) {
+        if let _ = getModuleFileRec(sym: symbol) {
             // Already exists with this symbol
             return nil
         }
@@ -439,7 +440,7 @@ extension Database {
         if let remModId = localMod.remoteModuleRef( modIndex ) {
             
             // and lookup the module rec
-            if let mfrRem = getMacroFileRec(id: remModId) {
+            if let mfrRem = getModuleFileRec(id: remModId) {
                 
                 // Look for the macro here
                 return mfrRem.getMacro(remTag)

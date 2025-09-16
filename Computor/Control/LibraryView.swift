@@ -83,7 +83,7 @@ struct LibraryView: View {
             
             EditModuleSheet( submitLabel: "Create" ) { (name: String, caption: String) in
                 
-                if let mfr = model.db.createNewMacroFile(symbol: name) {
+                if let mfr = model.db.createNewModule(symbol: name) {
                     
                     mfr.caption = caption.isEmpty ? nil : caption
                     mfr.mfile = ModuleFile(mfr)
