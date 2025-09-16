@@ -67,7 +67,9 @@ struct MacroDetailView: View {
         
         let modZero = modSymName == modZeroSym
         
-        let kcFn: KeyCode? = model.kstate.keyMap.keyAssignment(symTag)
+        let remTag = model.db.getRemoteSymbolTag( for: symTag, to: model.aux.macroMod )
+
+        let kcFn: KeyCode? = model.kstate.keyMap.keyAssignment(remTag)
         
         let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
         
@@ -83,7 +85,7 @@ struct MacroDetailView: View {
                         .padding( [.leading], 5 )
                         .onTapGesture {
                             if mr.isEmpty {
-                                model.aux.macroMod.deleteMacro( /* null macro */ )
+                                model.db.deleteMacro( SymbolTag(.null), from: model.aux.macroMod)
                             }
                             
                             withAnimation {
@@ -177,7 +179,6 @@ struct MacroDetailView: View {
                         HStack( spacing: 0 ) {
                             RichText("ç{GrayText}Key:", size: .small, weight: .regular).padding( [.trailing], 5 )
                             RichText( fnText, size: .small, weight: .bold )
-//                            AssignedKeyPicker( model: model )
                             Spacer()
                         }
                         

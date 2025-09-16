@@ -129,7 +129,7 @@ struct MacroListView: View {
                                                 dialogRec = nil
                                                 
                                                 // Delete this sym from Aux mod
-                                                model.aux.macroMod.deleteMacro( mr.symTag )
+                                                model.db.deleteMacro( mr.symTag, from: model.aux.macroMod)
                                                 
                                                 // Clear a key assignment for this macro if any
                                                 if let kcFn = model.kstate.keyMap.keyAssignment( mr.symTag ) {

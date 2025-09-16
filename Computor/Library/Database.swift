@@ -49,7 +49,7 @@ extension Database {
                                      appropriateFor: nil,
                                      create: false)
     }
-
+    
     private static func indexFileURL() -> URL {
         Database.documentDirectoryURL().appendingPathComponent("computor.index")
     }
@@ -57,7 +57,7 @@ extension Database {
     static func moduleDirectoryURL() -> URL {
         Database.documentDirectoryURL().appendingPathComponent("Module")
     }
-
+    
     // ***************
     
     
@@ -81,7 +81,7 @@ extension Database {
             assert(false)
         }
     }
-
+    
     
     struct IndexStore : Codable {
         
@@ -169,7 +169,7 @@ extension Database {
         
         return nil
     }
-
+    
     
     func syncModules() {
         
@@ -241,7 +241,7 @@ extension Database {
             print("   Adding ModFileRec to index for: \(modName) - \(modUUID.uuidString)")
             
             guard let _ = addExistingModuleFile( symbol: modName, uuid: modUUID) else {
-                // assert(false)
+                assert(false)
                 print( "   Mod: \(modName) - \(modUUID) conflict with existing module with same name" )
                 return
             }
@@ -252,7 +252,7 @@ extension Database {
             saveIndex()
         }
     }
-
+    
     
     func getModZero() -> ModuleFileRec {
         
@@ -275,7 +275,7 @@ extension Database {
     }
     
     // **********
-
+    
     
     func loadModule( _ mfr: ModuleFileRec ) -> ModuleFile {
         
@@ -284,16 +284,16 @@ extension Database {
         /// ** Load Module **
         return mfr.loadModule()
     }
-
+    
     
     func saveModule( _ mfr: ModuleFileRec ) {
         
         // TODO: Should we eliminate this func
-
+        
         /// ** Save Module **
         mfr.saveModule()
     }
-
+    
     
     func loadLibrary() {
         
@@ -308,14 +308,15 @@ extension Database {
         let _ = loadModule(mod0)
     }
     
-
+    
     // *****************
     // Library Functions
     
     func createNewModule( symbol: String ) -> ModuleFileRec? {
         
         /// ** Create New Module File **
-        ///     Create a new module file with unique symbol and a new UUID
+        ///     Create a new module file Index entry with unique symbol and a new UUID
+        ///     Don't create a ModuleFile until needed
         
         if let _ = getModuleFileRec(sym: symbol) {
             // Already exists with this symbol
@@ -323,14 +324,14 @@ extension Database {
         }
         
         let mfr = ModuleFileRec( sym: symbol)
-        indexFile.mfileTable.append(mfr)
         
-        let modFile = ModuleFile(mfr)
-        mfr.mfile = modFile
+        // Add to Index and save
+        indexFile.mfileTable.append(mfr)
+        saveIndex()
         
         return mfr
     }
-
+    
     
     func addExistingModuleFile( symbol: String, uuid: UUID ) -> ModuleFileRec? {
         
@@ -341,17 +342,23 @@ extension Database {
             // Already exists with this symbol
             return nil
         }
-            
+        
+        // Create module file index entry
         let mfr = ModuleFileRec( sym: symbol, uuid: uuid )
         indexFile.mfileTable.append(mfr)
+        
+        let mf = mfr.loadModule()
+        
+        // Repair Index if needed
+        if mf.modSym != mfr.modSym || mf.caption != mfr.caption {
+            assert(false)
+            mfr.modSym = mf.modSym
+            mfr.caption = mf.caption
+            // TODO: set symList from module
+            saveIndex()
+        }
+        
         return mfr
-    }
-    
-    
-    func setSymbol( _ mfr: ModuleFileRec, to newSym: String ) {
-        assert( newSym.count <= 6 && newSym.count > 0 )
-        
-        
     }
     
     
@@ -376,6 +383,7 @@ extension Database {
         
         // Remove this module from the index
         indexFile.mfileTable.removeAll( where: { $0.modSym == mfr.modSym })
+        saveIndex()
     }
     
     
@@ -388,10 +396,10 @@ extension Database {
         
         let symChanged = newSym != mfr.modSym
         
-        // Original mod URL
-        let modURL = Database.moduleDirectoryURL().appendingPathComponent( mod.filename )
-        
         if symChanged {
+            // Original mod URL
+            let modURL = Database.moduleDirectoryURL().appendingPathComponent( mod.filename )
+            
             
             mfr.modSym = newSym
             mod.modSym = newSym
@@ -409,22 +417,29 @@ extension Database {
     
     func getRemoteSymbolTag( for tag: SymbolTag, to remMod: ModuleFileRec, from local: ModuleFileRec? = nil ) -> SymbolTag {
         
+        /// ** Get Remote Symbol Tag **
+        
+        // if local module is not provided, use mod0
         let localMod: ModuleFileRec = local ?? getModZero()
         
         if remMod == localMod {
             
-            // Reference is local - no change
+            // Reference is local - no change to tag
             return tag
         }
         
         // Add this remote id to the local module, create a remote tag
         let modIndex = localMod.getRemoteModuleIndex( for: remMod )
+        
+        // Create new version of sym tag with mod index added
         let remSym = SymbolTag( tag, mod: modIndex )
         return remSym
     }
     
     
     func getMacro( for tag: SymbolTag, localMod: ModuleFileRec ) -> MacroRec? {
+        
+        /// ** Get Macro **
         
         if tag.isLocalTag {
             
@@ -450,5 +465,48 @@ extension Database {
         // Bad reference
         return nil
     }
-}
+    
+    
+    func deleteAllMacros() {
+        
+        /// ** Delete All Macros **  Debug use only
+        
+        for mfr in indexFile.mfileTable {
+            
+            if !mfr.isModZero {
+                deleteModule(mfr)
+            }
+        }
+        
+        let mod0 = getModZero()
+        mod0.symList = []
+        saveIndex()
 
+        let mf0 = mod0.loadModule()
+        mf0.macroTable = []
+        mf0.groupTable = [mod0.id]
+        saveModule(mod0)
+    }
+    
+    
+    func deleteMacro( _ sTag: SymbolTag, from mfr: ModuleFileRec  ) {
+        
+        /// ** Delete Macro **
+        
+        // Remove this symbol from the cached symbol list
+        mfr.symList.removeAll( where: { $0 == sTag } )
+        saveIndex()
+        
+        mfr.deleteMacro(sTag)
+    }
+
+    
+    func addMacro( _ mr: MacroRec, to mfc: ModuleFileRec ) {
+        
+        /// ** Add Macro **
+        
+        mfc.addMacro(mr)
+        saveIndex()
+    }
+    
+}

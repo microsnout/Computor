@@ -48,7 +48,8 @@ struct DebugView: View {
             DebugButton( label: "Delete All Macros") {
                 model.kstate.keyMap.fnRow.removeAll()
                 model.aux.macroRec = nil
-                model.aux.macroMod.deleteAll()
+                model.aux.macroMod = model.db.getModZero()
+                model.db.deleteAllMacros()
                 model.saveConfiguration()
             }
             

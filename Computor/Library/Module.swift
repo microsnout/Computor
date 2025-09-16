@@ -43,7 +43,7 @@ class ModuleFile: Codable {
     var caption: String? = nil
     
     // Table of IDs of external referenced modules - array index is encoded in symbols
-    var groupTable: [UUID] = []
+    var groupTable: [UUID] = [UUID()]
     
     // List of macro definitions in this module - a macro must have a SymbolTag to be in this list, other fields optional
     var macroTable: [MacroRec] = []
@@ -114,7 +114,7 @@ final class ModuleFileRec: Codable, Identifiable, Equatable {
     }
     
     init( sym: String ) {
-        /// Constuction of a New Module file with newly created UUID
+        /// Constuction of a New Empty Module with newly created UUID
         self.id      = UUID()
         self.modSym  = sym
         self.caption = nil
@@ -196,9 +196,8 @@ extension ModuleFileRec {
         
         if let mod = self.mfile {
             
-            if self.modSym == "_" {
-                assert(false)
-            }
+            assert( self.modSym != "_" )
+            assert( self.modSym == mod.modSym && self.caption == mod.caption )
             
             // Mod file is loaded
             do {
@@ -225,17 +224,6 @@ extension ModuleFileRec {
     }
     
     
-    func deleteAll() {
-        
-        // Debug use only
-        let mf = loadModule()
-        self.symList = []
-        mf.macroTable = []
-        mf.groupTable = []
-        saveModule()
-    }
-    
-    
     func getMacro( _ sTag: SymbolTag ) -> MacroRec? {
         
         /// ** Get Macro **
@@ -245,19 +233,23 @@ extension ModuleFileRec {
     }
     
     
-    func deleteMacro( _ sTag: SymbolTag = SymbolTag(.null) ) {
+    func deleteMacro( _ sTag: SymbolTag ) {
         
-        /// Delete a macro from module with given tag
-        /// The null tag is a valid tag for the one allowed Unnamed macro
+        /// ** Delete Macro **
+        ///     Delete a macro from module with given tag
+        ///     The null tag is a valid tag for the one allowed Unnamed macro
         
         let mf = loadModule()
         mf.macroTable.removeAll( where: { $0.symTag == sTag } )
+        
+        saveModule()
     }
     
     
     func addMacro( _ mr: MacroRec ) {
         
-        /// Save macro in module
+        /// ** Add Macro **
+        
         let mf = loadModule()
         
         if let x = mf.macroTable.firstIndex( where: { $0.symTag == mr.symTag } ) {
@@ -296,6 +288,8 @@ extension ModuleFileRec {
     
     func changeMacroTag( from oldTag: SymbolTag, to newTag: SymbolTag ) {
         
+        /// ** Change Macro Tag **
+        
         if let mr = getMacro(oldTag) {
             
             // TODO: check for newTag already in use
@@ -325,11 +319,14 @@ extension ModuleFileRec {
     
     func getRemoteModuleIndex( for remMfc: ModuleFileRec ) -> Int {
         
+        /// ** Get Remote Module Index **
+        
         let localMod = self.loadModule()
         
-        if let index = localMod.groupTable.firstIndex(where: { $0 == remMfc.id } ) {
+        if let index = localMod.groupTable.firstIndex( where: { $0 == remMfc.id } ) {
             
             // The local module already has an entry for this remote
+            assert( index >= 1 )
             return index
         }
         
@@ -337,11 +334,17 @@ extension ModuleFileRec {
         let remIndex = localMod.groupTable.count
         localMod.groupTable.append(remMfc.id)
         self.saveModule()
+        
+        assert( remIndex >= 1 )
         return remIndex
     }
     
     
     func remoteModuleRef( _ modIndex: Int ) -> UUID? {
+        
+        /// ** Remote Module Ref **
+        
+        assert( modIndex >= 1 )
         
         let modFile = self.loadModule()
         

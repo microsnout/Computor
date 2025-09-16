@@ -24,8 +24,7 @@ extension CalculatorModel {
         }
         
         // Now delete the macro and save file
-        aux.macroMod.deleteMacro(sTag)
-        saveConfiguration()
+        db.deleteMacro( sTag, from: aux.macroMod)
     }
     
     
@@ -85,7 +84,7 @@ extension CalculatorModel {
                 
                 kstate.keyMap.assign( kcFn, tag: sTag )
                 let mr = MacroRec( tag: sTag )
-                aux.macroMod.addMacro(mr)
+                db.addMacro( mr, to: aux.macroMod )
                 aux.record(mr)
             }
             else {
@@ -114,6 +113,7 @@ extension CalculatorModel {
             
             // Remove the key mapping for this key
             kstate.keyMap.clearKeyAssignment(kcFn)
+            saveConfiguration()
         }
     }
     
@@ -131,7 +131,7 @@ extension CalculatorModel {
             
             // Null tag was not found - create the null rec
             let mr = MacroRec()
-            aux.macroMod.addMacro(mr)
+            db.addMacro( mr, to: aux.macroMod )
             aux.record(mr)
         }
         else {
@@ -143,13 +143,14 @@ extension CalculatorModel {
     
     func createNewMacro() {
         
-        /// Called from MacroListView 'plus' button
+        /// ** Create New Macro **
+        ///     Called from MacroListView 'plus' button
         
         // A blank macro record
         let mr = MacroRec()
         
         // Bind to null symbol for now - replacing any currently bound
-        aux.macroMod.addMacro(mr )
+        db.addMacro( mr, to: aux.macroMod )
         
         // Load into recorder
         aux.loadMacro(mr)
@@ -164,19 +165,23 @@ extension CalculatorModel {
     
     func changeMacroSymbol( old: SymbolTag, new: SymbolTag ) {
         
-        let mod0 = db.getModZero()
+        // Called from macro detail view - so sym is local to macroMod
         
+        // Find remote tag from mod0
         let remTag = db.getRemoteSymbolTag( for: old, to: aux.macroMod )
 
         if let kc = kstate.keyMap.keyAssignment(remTag) {
             
-            // Update key assignment
+            // Update key assignment to new remote tag
             let newRemTag = SymbolTag( new, mod: remTag.mod )
             kstate.keyMap.assign(kc, tag: newRemTag)
         }
         
         // Change local tag to new local tag within current recording mod
         aux.macroMod.changeMacroTag(from: old, to: new)
+        
+        // Above call saves module but cannot save Index
+        db.saveIndex()
     }
     
     
