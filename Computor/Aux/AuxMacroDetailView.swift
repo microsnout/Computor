@@ -517,7 +517,7 @@ struct ModuleKeyView: View {
 }
 
 
-typealias ModSelectClosure = ( _ mfr: MacroFileRec ) -> Void
+typealias ModSelectClosure = ( _ mfr: ModuleFileRec ) -> Void
 
 
 struct SelectModulePopup: View {
@@ -538,7 +538,7 @@ struct SelectModulePopup: View {
     
     var body: some View {
         
-        let modRowList: [[MacroFileRec]] = db.indexFile.mfileTable.chunked(into: 3)
+        let modRowList: [[ModuleFileRec]] = db.indexFile.mfileTable.chunked(into: 3)
         
         VStack( alignment: .center, spacing: 0) {
             

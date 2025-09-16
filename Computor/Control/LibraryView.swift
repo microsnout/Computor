@@ -14,9 +14,9 @@ struct LibraryView: View {
     
     // Open macro module edit sheet for adding or creating new modules
     @State private var addItem:    Bool = false
-    @State private var editItem:   MacroFileRec? = nil
+    @State private var editItem:   ModuleFileRec? = nil
     
-    @Binding var list: [MacroFileRec]
+    @Binding var list: [ModuleFileRec]
     
     var body: some View {
         
@@ -95,7 +95,7 @@ struct LibraryView: View {
         }
         
         // Edit name and caption of macro module
-        .sheet( item: $editItem ) { (mfr: MacroFileRec) in
+        .sheet( item: $editItem ) { (mfr: ModuleFileRec) in
             
             EditModuleSheet( editName: mfr.modSym , editCaption: mfr.caption ?? "", submitLabel: "Save" ) { (newName: String, newCaption: String) in
                 
@@ -132,9 +132,9 @@ struct LibraryView: View {
 
 struct ActionMenu: View {
     
-    @Binding var editItem: MacroFileRec?
+    @Binding var editItem: ModuleFileRec?
     
-    var mfr: MacroFileRec
+    var mfr: ModuleFileRec
     
     var body: some View {
         Menu {

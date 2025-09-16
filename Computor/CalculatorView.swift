@@ -140,7 +140,7 @@ struct CalculatorView: View {
             // TODO: Fix this up!
             
             // Set aux display view to mod zero
-            model.aux.macroMod = model.db.getMacroFileRec(sym: modZeroSym) ?? MacroFileRec( sym: "?")
+            model.aux.macroMod = model.db.getMacroFileRec(sym: modZeroSym) ?? ModuleFileRec( sym: "?")
         }
         .onChange(of: scenePhase) { oldPhase, phase in
             if phase == .inactive {
