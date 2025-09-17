@@ -42,7 +42,15 @@ class NormalContext : EventContext {
         case .stopFn, .openBrace, .closeBrace:
             return KeyPressResult.noOp
             
-        case .recFn, .macroRecord:
+        case .recFn:
+            if model.kstate.keyMap.isAssigned( event.kcTop ?? .null ) {
+                // Already something assigned to this key
+                return KeyPressResult.stateError
+                // TODO: This is not indicating an error
+            }
+            fallthrough
+                
+        case .macroRecord:
             // Record menu from Fn key or record op from macro detail view
             model.pushContext( RecordingContext(), lastEvent: event )
             return KeyPressResult.macroOp

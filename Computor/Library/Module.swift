@@ -171,6 +171,8 @@ extension ModuleFileRec {
             let store = try JSONDecoder().decode(ModuleStore.self, from: data)
             let mod = store.modFile
             
+            assert( self.id == mod.id && self.modSym == mod.modSym )
+            
             print( "loadModule: \(self.modSym) - \(self.id.uuidString) Loaded" )
             
             // Successful load

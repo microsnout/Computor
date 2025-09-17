@@ -67,9 +67,7 @@ struct MacroDetailView: View {
         
         let modZero = modSymName == modZeroSym
         
-        let remTag = model.db.getRemoteSymbolTag( for: symTag, to: model.aux.macroMod )
-
-        let kcFn: KeyCode? = model.kstate.keyMap.keyAssignment(remTag)
+        let kcFn: KeyCode? = model.getKeyAssignment(for: symTag, in: model.aux.macroMod)
         
         let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
         
@@ -233,7 +231,7 @@ struct MacroDetailView: View {
         }
         .padding( [.bottom, .leading, .trailing], 5 )
         
-        // Macro Rename Sheet
+        // Macro Edit Sheet
         .sheet(isPresented: $editSheet) {
             
             MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) { newtxt in

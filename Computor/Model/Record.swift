@@ -15,16 +15,18 @@ extension CalculatorModel {
         
         // Delete macro bound to sTag and save config
         
-        // Test if we are deleting the macro currently being viewed in Aux dispaly
-        if let mr = aux.macroMod.getMacro(sTag) {
-            if mr === aux.macroRec {
-                // Yes, clear Aux display state
+        let mod0 = db.getModZero()
+        
+        if let (mr, mfr) = db.getMacro( for: sTag, localMod: mod0) {
+            
+            // Test if we are deleting the macro currently being viewed in Aux dispaly
+            if mfr == aux.macroMod && mr === aux.macroRec {
                 aux.clearMacroState()
             }
+            
+            // Now delete the macro and save file
+            db.deleteMacro( sTag.localTag, from: mfr)
         }
-        
-        // Now delete the macro and save file
-        db.deleteMacro( sTag, from: aux.macroMod)
     }
     
     
@@ -33,7 +35,7 @@ extension CalculatorModel {
         // Assume local module is mod0 - FOR NOW
         let mod0 = db.getModZero()
         
-        if let mr = db.getMacro( for: sTag, localMod: mod0 ) {
+        if let (mr, _) = db.getMacro( for: sTag, localMod: mod0 ) {
             
             return mr.opSeq
         }
@@ -68,10 +70,14 @@ extension CalculatorModel {
         
         if let sTag = kstate.keyMap.tagAssignment(kcFn) {
             
-            // TODO: Should eventually find a mr from any module not just current
-            if let mr = aux.macroMod.getMacro(sTag) {
+            // sTag is assigned to key kcFn
+            
+            let mod0 = db.getModZero()
+            
+            if let (mr, mfr) = db.getMacro(for: sTag, localMod: mod0) {
                 
-                aux.record(mr)
+                // Found a macro rec for sTag in mfr
+                aux.record(mr, in: mfr)
             }
             else {
                 // A tag assigned to this key but no macro rec - should not happen
@@ -85,7 +91,7 @@ extension CalculatorModel {
                 kstate.keyMap.assign( kcFn, tag: sTag )
                 let mr = MacroRec( tag: sTag )
                 db.addMacro( mr, to: aux.macroMod )
-                aux.record(mr)
+                aux.record(mr, in: aux.macroMod)
             }
             else {
                 // Recording kc key with no possible tag
@@ -107,11 +113,15 @@ extension CalculatorModel {
             
             if tag == fnTag {
                 
-                // Macro assigned to this key has symbol matching key - delete it
+                // Macro assigned to this key has symbol matching key
+                // Clear assignment and delete macro
+                kstate.keyMap.clearKeyAssignment(kcFn)
                 clearMacroFunction(tag)
             }
             
+            // Macro is assigned to a custom symbol
             // Remove the key mapping for this key
+            // Macro will still exist
             kstate.keyMap.clearKeyAssignment(kcFn)
             saveConfiguration()
         }
@@ -120,25 +130,25 @@ extension CalculatorModel {
     
     /// ** NOT USED **
     ///
-    func record( _ tag: SymbolTag = SymbolTag(.null) ) {
-        
-        if let mr = aux.macroMod.getMacro(tag) {
-            
-            // Start recording symbol tag - which could be null
-            aux.record(mr)
-        }
-        else if tag == SymbolTag(.null) {
-            
-            // Null tag was not found - create the null rec
-            let mr = MacroRec()
-            db.addMacro( mr, to: aux.macroMod )
-            aux.record(mr)
-        }
-        else {
-            // A non null tag with no record
-            assert(false)
-        }
-    }
+//    func record( _ tag: SymbolTag = SymbolTag(.null) ) {
+//        
+//        if let mr = aux.macroMod.getMacro(tag) {
+//            
+//            // Start recording symbol tag - which could be null
+//            aux.record(mr)
+//        }
+//        else if tag == SymbolTag(.null) {
+//            
+//            // Null tag was not found - create the null rec
+//            let mr = MacroRec()
+//            db.addMacro( mr, to: aux.macroMod )
+//            aux.record(mr)
+//        }
+//        else {
+//            // A non null tag with no record
+//            assert(false)
+//        }
+//    }
     
     
     func createNewMacro() {
@@ -207,6 +217,22 @@ extension CalculatorModel {
             // New assignment
             kstate.keyMap.assign(kc, tag: tag )
         }
+    }
+    
+    
+    func getKeyAssignment( for tag: SymbolTag, in mfc: ModuleFileRec ) -> KeyCode? {
+        
+        /// ** Get Key Assignment **
+        ///     tag is a local symbol in mfc
+        
+        if mfc.isModZero {
+            // Search for key with local sym tag
+            return kstate.keyMap.keyAssignment(tag)
+        }
+        
+        // Create a remote tag for symbols in mfc as seen from mod0
+        let remTag = db.getRemoteSymbolTag( for: tag, to: mfc )
+        return kstate.keyMap.keyAssignment(remTag)
     }
     
     

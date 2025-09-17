@@ -84,7 +84,7 @@ struct MacroListView: View {
                             let sym = mr.symTag.getRichText()
                             let caption = mr.caption ?? "ç{GrayText}-caption-"
                             let color = mr.caption != nil ? "UnitText" : "GrayText"
-                            let kcKey = model.kstate.keyMap.keyAssignment(mr.symTag)
+                            let kcKey = model.getKeyAssignment( for: mr.symTag, in: model.aux.macroMod )
                             let key   = kcKey == nil ? "" : "F\(kcKey!.rawValue % 10)"
 
                             VStack {

@@ -31,7 +31,7 @@ class RecordingContext : EventContext {
             if let mr = model.aux.macroRec {
                 
                 // Start recording
-                model.aux.record(mr)
+                model.aux.record(mr, in: model.aux.macroMod)
             }
             else {
                 // There must be a valid macroRec when the .macroRecord event is received
@@ -72,7 +72,7 @@ class RecordingContext : EventContext {
                 // Consider this fn key a stopFn command
                 fallthrough
             }
-            else if model.aux.macroMod.getMacro( SymbolTag(event.keyCode) ) == nil {
+            else if !model.kstate.keyMap.isAssigned(event.keyCode) {
                 
                 // No op any undefined keys
                 return KeyPressResult.noOp

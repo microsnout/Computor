@@ -51,6 +51,10 @@ struct KeyMapRec: Codable {
         return nil
     }
     
+    func isAssigned( _ kc: KeyCode ) -> Bool {
+        self.tagAssignment(kc) != nil
+    }
+
     mutating func clearKeyAssignment( _ kc: KeyCode ) {
         fnRow.removeValue( forKey: kc)
     }

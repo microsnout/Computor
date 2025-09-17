@@ -182,12 +182,14 @@ extension Database {
         
         let modFilenameList = listFiles( inDirectory: modDir.path(), withPrefix: "Module.")
         
+#if DEBUG
         print("#1 mod filename list:")
         for fn in modFilenameList {
             print( "   found: \(fn)" )
         }
         print("")
-        
+#endif
+
         var validModFiles: [(String, UUID)] = modFilenameList.compactMap { fname in splitModFilename(fname) }
         
         var missingFiles: [UUID] = []
@@ -200,7 +202,24 @@ extension Database {
         print("")
 #endif
         
+        let mod0IdList: [UUID] = validModFiles.compactMap( { (sym, uuid) in sym == modZeroSym ? uuid : nil } )
+        
+#if DEBUG
+        if mod0IdList.count > 1 {
+            print("Multiple Mod0 files")
+            for id in mod0IdList {
+                print( "   mod0 - \(id.uuidString)" )
+            }
+            assert(false)
+        }
+#endif
+        
+        // Do we have a mod0 ID?
+        let mod0Id: UUID? = mod0IdList.count == 1 ? mod0IdList[0] : nil
+
         var numMatched = 0
+        
+        var mfrMod0: ModuleFileRec? = nil
         
         // For each record in the index file
         for mfr in indexFile.mfileTable {
@@ -217,6 +236,12 @@ extension Database {
                 
                 print( "   Mod file match: \(modName) - \(modUUID.uuidString)" )
                 numMatched += 1
+                
+                if modName == modZeroSym {
+                    // Enforce only one mod0
+                    assert( mfrMod0 == nil )
+                    mfrMod0 = mfr
+                }
                 
                 validModFiles.removeAll( where: { (name, uuid) in uuid == mfr.id } )
             }
@@ -241,7 +266,7 @@ extension Database {
             print("   Adding ModFileRec to index for: \(modName) - \(modUUID.uuidString)")
             
             guard let _ = addExistingModuleFile( symbol: modName, uuid: modUUID) else {
-                assert(false)
+                // assert(false)
                 print( "   Mod: \(modName) - \(modUUID) conflict with existing module with same name" )
                 return
             }
@@ -270,7 +295,7 @@ extension Database {
             assert(false)
         }
         
-        print( "createModZero: Created" )
+        print( "createModZero: Created mod0 - \(mod0.id.uuidString)" )
         return mod0
     }
     
@@ -320,6 +345,8 @@ extension Database {
         
         if let _ = getModuleFileRec(sym: symbol) {
             // Already exists with this symbol
+            print( "createNewModule: Attempt to create duplicat named mod: \(symbol)")
+            assert(false)
             return nil
         }
         
@@ -382,7 +409,7 @@ extension Database {
         }
         
         // Remove this module from the index
-        indexFile.mfileTable.removeAll( where: { $0.modSym == mfr.modSym })
+        indexFile.mfileTable.removeAll( where: { $0.modSym == mfr.modSym || $0.id == mfr.id })
         saveIndex()
     }
     
@@ -437,14 +464,18 @@ extension Database {
     }
     
     
-    func getMacro( for tag: SymbolTag, localMod: ModuleFileRec ) -> MacroRec? {
+    func getMacro( for tag: SymbolTag, localMod: ModuleFileRec ) -> (MacroRec, ModuleFileRec)? {
         
         /// ** Get Macro **
         
         if tag.isLocalTag {
             
             // Lookup tag in local module provided
-            return localMod.getMacro(tag)
+            if let mr = localMod.getMacro(tag) {
+                return (mr, localMod)
+            }
+            
+            return nil
         }
         
         // remTag is local to the remote Mod
@@ -458,7 +489,9 @@ extension Database {
             if let mfrRem = getModuleFileRec(id: remModId) {
                 
                 // Look for the macro here
-                return mfrRem.getMacro(remTag)
+                if let mr = mfrRem.getMacro(remTag) {
+                    return (mr, mfrRem)
+                }
             }
         }
         

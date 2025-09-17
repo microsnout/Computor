@@ -83,11 +83,12 @@ extension AuxState {
     }
     
     
-    mutating func record( _ mr: MacroRec ) {
+    mutating func record( _ mr: MacroRec, in mfr: ModuleFileRec ) {
         
         switch recState {
             
         case .stop:
+            macroMod = mfr
             macroRec = mr
             mr.opSeq.clear()
             activeView = .macroView
