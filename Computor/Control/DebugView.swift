@@ -45,6 +45,24 @@ struct DebugView: View {
                 model.saveConfiguration()
             }
             
+            DebugButton( label: "Print Key Assignments") {
+                
+                let mod0 = model.db.getModZero()
+                
+                print( "Key Assignments:" )
+               
+                for (kc, tag) in model.kstate.keyMap.fnRow {
+                    
+                    print( "   kc: \(kc.str)   tag: \(tag.getRichText())")
+                    
+                    if let (mr, mfr) = model.db.getMacro(for: tag, localMod: mod0) {
+                        
+                        print( "      Macro: \(mr.symTag.getRichText()) in Mod: \(mfr.modSym)" )
+                    }
+                    
+                }
+            }
+
             DebugButton( label: "Delete All Macros") {
                 model.kstate.keyMap.fnRow.removeAll()
                 model.aux.macroRec = nil
@@ -85,10 +103,17 @@ struct DebugView: View {
 
             DebugButton( label: "Print Macro Table" ) {
                 
-                print("Macro Table:")
+                let n = model.db.indexFile.mfileTable.count
+                
+                print("Macro Table: \(n) entries")
+                
                 for mfr in model.db.indexFile.mfileTable {
-                    let caption = mfr.caption ?? "-caption-"
-                    print( "   \(mfr.modSym)  \(caption)" )
+                    
+                    let mf = mfr.loadModule()
+                    
+                    let idMatch = mfr.id == mf.id
+                    
+                    print( "   \(mfr.modSym) - \(mfr.id.uuidString)  MF: \(mf.modSym) Id match: \(idMatch)" )
                 }
                 print("")
             }

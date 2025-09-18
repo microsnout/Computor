@@ -181,36 +181,31 @@ extension Database {
         let modDir = Database.moduleDirectoryURL()
         
         let modFilenameList = listFiles( inDirectory: modDir.path(), withPrefix: "Module.")
+
+        var validModFiles: [(String, UUID)] = modFilenameList.compactMap { fname in splitModFilename(fname) }
         
+        var missingFiles: [UUID] = []
+        
+        var mod0IdList: [UUID] = validModFiles.compactMap( { (sym, uuid) in sym == modZeroSym ? uuid : nil } )
+
 #if DEBUG
         print("#1 mod filename list:")
         for fn in modFilenameList {
             print( "   found: \(fn)" )
         }
         print("")
-#endif
-
-        var validModFiles: [(String, UUID)] = modFilenameList.compactMap { fname in splitModFilename(fname) }
         
-        var missingFiles: [UUID] = []
-        
-#if DEBUG
         print("#2 Valid files found:")
         for (name, uuid) in validModFiles {
             print( "   \(name) - \(uuid.uuidString)" )
         }
         print("")
-#endif
         
-        let mod0IdList: [UUID] = validModFiles.compactMap( { (sym, uuid) in sym == modZeroSym ? uuid : nil } )
-        
-#if DEBUG
         if mod0IdList.count > 1 {
             print("Multiple Mod0 files")
             for id in mod0IdList {
                 print( "   mod0 - \(id.uuidString)" )
             }
-            assert(false)
         }
 #endif
         
@@ -241,6 +236,9 @@ extension Database {
                     // Enforce only one mod0
                     assert( mfrMod0 == nil )
                     mfrMod0 = mfr
+                    
+                    // Remove the mod0 file id that matches Index
+                    mod0IdList.removeAll(where: { $0 == mfr.id } )
                 }
                 
                 validModFiles.removeAll( where: { (name, uuid) in uuid == mfr.id } )
@@ -263,6 +261,14 @@ extension Database {
         // Add index entries for remaining valid files
         for (modName, modUUID) in validModFiles {
             
+            if let mod0 = mfrMod0 {
+                if modName == modZeroSym {
+                    
+                    // Don't add a 2nd Index for extra mod0 file
+                    continue
+                }
+            }
+            
             print("   Adding ModFileRec to index for: \(modName) - \(modUUID.uuidString)")
             
             guard let _ = addExistingModuleFile( symbol: modName, uuid: modUUID) else {
@@ -275,6 +281,13 @@ extension Database {
         if !validModFiles.isEmpty || !missingFiles.isEmpty {
             // Write out index file since we added or removed entries to it
             saveIndex()
+        }
+        
+        // Delete any extraneous mod0 files
+        if mod0IdList.count > 0 {
+            for uuid in mod0IdList {
+                deleteFile( fileName: "Module.mod0.\(uuid.uuidString)", inDirectory: modDir )
+            }
         }
     }
     

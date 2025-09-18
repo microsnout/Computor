@@ -30,10 +30,13 @@ class NormalContext : EventContext {
         case .editFn:
             if let kcFn = event.kcTop {
                 
+                let mod0 = model.db.getModZero()
+                
                 if let tag = model.kstate.keyMap.tagAssignment(kcFn),
-                   let mr = model.aux.macroMod.getMacro(tag) {
+                   let (mr, mfr) = model.db.getMacro( for: tag, localMod: mod0) {
                     
                     // This key has a macro sym assigned
+                    model.aux.macroMod = mfr
                     model.aux.loadMacro(mr)
                 }
             }

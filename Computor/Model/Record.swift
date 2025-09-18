@@ -88,10 +88,23 @@ extension CalculatorModel {
             // No tag assigned - must be a blank Fn key - find matching tag
             if let sTag = SymbolTag.getFnSym(kcFn) {
                 
-                kstate.keyMap.assign( kcFn, tag: sTag )
+                // Macro will be in this module
+                let recMod = aux.macroMod
+                
+                // Make a remote version of Fn tag if macroMod is not mod0
+                let recTag = db.getRemoteSymbolTag(for: sTag, to: recMod)
+                
+                // Add to key map
+                kstate.keyMap.assign( kcFn, tag: recTag )
+                
+                // Create macro rec with local tag
                 let mr = MacroRec( tag: sTag )
-                db.addMacro( mr, to: aux.macroMod )
-                aux.record(mr, in: aux.macroMod)
+                
+                // Add macro rec to the remote module
+                db.addMacro( mr, to: recMod )
+                
+                // Start recording
+                aux.record(mr, in: recMod)
             }
             else {
                 // Recording kc key with no possible tag

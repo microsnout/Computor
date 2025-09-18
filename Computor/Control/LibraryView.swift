@@ -124,6 +124,13 @@ struct LibraryView: View {
             
             // Delete the Mod file
             let mfr = list[index]
+            
+            if mfr == model.aux.macroMod {
+                // Don't want to delete the currently displayed module
+                model.aux.macroMod = model.db.getModZero()
+                model.aux.macroRec = nil
+            }
+            
             model.db.deleteModule(mfr)
         }
     }
