@@ -49,7 +49,7 @@ struct CalculatorView: View {
                                 AuxiliaryDisplayView( model: model, auxView: $model.aux.activeView )
                                 
                                 DotIndicatorView( currentView: $model.aux.activeView )
-                                    .padding( .top, 4 )
+                                    .padding( .top, 5 )
                                     .frame( maxHeight: 8)
                                 
                                 HStack {

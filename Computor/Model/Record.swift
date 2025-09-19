@@ -286,6 +286,46 @@ extension CalculatorModel {
         return KeyPressResult.stateChange
     }
     
+    
+    func moveMacro( _ mTag: SymbolTag, from srcMod: ModuleFileRec, to dstMod: ModuleFileRec ) {
+        
+        /// ** Move Macro **
+        ///     Move key assignment as well
+        
+        if let mr = srcMod.getMacro(mTag) {
+            
+            // Move this symbol to new module
+            db.moveMacro( mr, from: srcMod, to: dstMod )
+            
+            // Current remote tag to source mod
+            let remTag = db.getRemoteSymbolTag( for: mTag, to: srcMod)
+            
+            // Look for a key assignment
+            if let kc = kstate.keyMap.keyAssignment(remTag) {
+                
+                kstate.keyMap.clearKeyAssignment(kc)
+                
+                // Create new tag to destination mod
+                let newTag = db.getRemoteSymbolTag( for: mTag, to: dstMod)
+                
+                kstate.keyMap.assign(kc, tag: newTag)
+            }
+        }
+    }
+
+    
+    func copyMacro( _ mTag: SymbolTag, from srcMod: ModuleFileRec, to dstMod: ModuleFileRec ) {
+        
+        /// ** Copy Macro **
+        ///     Leave key assignment alone if there is one
+        
+        if let mr = srcMod.getMacro(mTag) {
+            
+            // Move this symbol to new module
+            db.copyMacro( mr, from: srcMod, to: dstMod )
+        }
+    }
+
     // *** *** ***
     
     func pauseRecording() {

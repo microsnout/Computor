@@ -21,6 +21,10 @@ class MacroRec: Codable, Identifiable {
         self.caption = caption
         self.opSeq = opSeq
     }
+    
+    func copy() -> MacroRec {
+        return MacroRec( tag: self.symTag, caption: self.caption, seq: self.opSeq)
+    }
 }
 
 

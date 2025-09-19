@@ -378,7 +378,7 @@ struct KeyAssignPopup: View, KeyPressHandler {
 
 struct MacroMoveRec {
     
-    var targetMod: String
+    var targetMod: ModuleFileRec
 }
 
 
@@ -399,19 +399,25 @@ struct MacroEditSheet: View {
     @State private var kcAssigned: KeyCode? = nil
     
     @State private var moveDialog = false
-    @State private var moveRec = MacroMoveRec( targetMod: "")
+    @State private var moveRec = MacroMoveRec( targetMod: ModuleFileRec( sym: "" ) )
 
     var body: some View {
         
-        let kcStr: String = kcAssigned?.str ?? ""
+        let kcFn: KeyCode? = model.getKeyAssignment(for: mr.symTag, in: model.aux.macroMod)
         
+        let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
+        
+        let modSymStr = model.aux.macroMod.modSym
+
         VStack( alignment: .leading ) {
             
             // DONE Button
             HStack {
                 Spacer()
                 
-                RichText( "Done", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
+                Button( action: { dismiss() } ) {
+                    RichText( "Done", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
+                }
             }
             .padding( [.top], 5 )
             
@@ -428,7 +434,7 @@ struct MacroEditSheet: View {
             SheetTextField( label: "Caption:", placeholder: "-caption-", text: $caption )
             
             // Assigned Key Editor
-            SheetCollapsibleView( label: "={Assigned Key: }\(kcStr)" ) {
+            SheetCollapsibleView( label: "={Assigned Key: }\(fnText)" ) {
                 
                 KeyAssignPopup( tag: mr.symTag ) { kc in
                     
@@ -443,11 +449,11 @@ struct MacroEditSheet: View {
             }
             
             // Module Editor
-            SheetCollapsibleView( label: "={Module: }" ) {
+            SheetCollapsibleView( label: "={Module: }\(modSymStr)" ) {
                 
-                SelectModulePopup( db: model.db ) { mfc in
+                SelectModulePopup( db: model.db ) { mfr in
                     
-                    moveRec = MacroMoveRec( targetMod: mfc.modSym )
+                    moveRec = MacroMoveRec( targetMod: mfr )
                     moveDialog = true
                 }
             }
@@ -467,17 +473,22 @@ struct MacroEditSheet: View {
         }
         .confirmationDialog("Confirm Deletion", isPresented: $moveDialog, presenting: moveRec ) { mmr in
             
-            Button("Move to Module: \(mmr.targetMod)") {
-                //moveDialog = false
+            Button("Move to Module: \(mmr.targetMod.modSym)") {
+                
+                // Move the macro and set aux display to destination mod
+                model.moveMacro( mr.symTag, from: model.aux.macroMod, to: moveRec.targetMod )
+                model.aux.macroMod = moveRec.targetMod
             }
             
-            Button("Copy to Module: \(mmr.targetMod)") {
-                //moveDialog = false
+            Button("Copy to Module: \(mmr.targetMod.modSym)") {
+                
+                // Copy the macro and leave aux display on source mod
+                model.copyMacro( mr.symTag, from: model.aux.macroMod, to: moveRec.targetMod )
             }
             
             
             Button("Cancel", role: .cancel) {
-                //moveDialog = false
+                // Nothing to do
             }
         }
     }

@@ -555,4 +555,19 @@ extension Database {
         saveIndex()
     }
     
+    
+    func moveMacro( _ mr: MacroRec, from srcMod: ModuleFileRec, to dstMod: ModuleFileRec ) {
+        
+        // Move the existing macro rec
+        addMacro( mr, to: dstMod )
+        deleteMacro( mr.symTag, from: srcMod )
+    }
+    
+    
+    func copyMacro( _ mr: MacroRec, from srcMod: ModuleFileRec, to dstMod: ModuleFileRec ) {
+        
+        // Create a copy of the macro record
+        let newMacro = mr.copy()
+        addMacro( newMacro, to: dstMod )
+    }
 }
