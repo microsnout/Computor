@@ -30,14 +30,15 @@ extension CalculatorModel {
     }
     
     
-    func getMacroFunction( _ sTag: SymbolTag ) -> MacroOpSeq? {
+    func getMacroFunction( _ sTag: SymbolTag ) -> (MacroRec, ModuleFileRec)? {
         
-        // Assume local module is mod0 - FOR NOW
-        let mod0 = db.getModZero()
+        // Get current module to resolve macro references
+        let modCtx = currentMEC?.module ?? db.getModZero()
         
-        if let (mr, _) = db.getMacro( for: sTag, localMod: mod0 ) {
+        if let (mr, mfr) = db.getMacro( for: sTag, localMod: modCtx ) {
             
-            return mr.opSeq
+            // Found macro rec mr in Module file mfr
+            return (mr, mfr)
         }
         
         // No macro found
@@ -249,7 +250,7 @@ extension CalculatorModel {
     }
     
     
-    func playMacroSeq( _ seq: MacroOpSeq ) -> KeyPressResult {
+    func playMacroSeq( _ seq: MacroOpSeq, in mod: ModuleFileRec ) -> KeyPressResult {
         
         acceptTextEntry()
         
@@ -264,9 +265,13 @@ extension CalculatorModel {
         // Don't maintain undo stack during playback ops
         pauseUndoStack()
         
+        // Create new module execution context for resolving macro references
+        pushMEC(mod)
+        
         for op in seq {
             
             if op.execute(self) == KeyPressResult.stateError {
+                popMEC()
                 resumeUndoStack()
                 currentLVF = currentLVF?.prevLVF
                 popContext()
@@ -276,6 +281,8 @@ extension CalculatorModel {
                 return KeyPressResult.stateError
             }
         }
+        
+        popMEC()
         resumeUndoStack()
         
         // Pop the local variable storage, restoring prev

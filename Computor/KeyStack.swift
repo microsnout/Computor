@@ -402,8 +402,6 @@ struct GlobalMemoryPopup: View, KeyPressHandler {
             
             if keyData.pressedKey?.kc == .rcl || !model.state.memory.isEmpty {
                 
-                let mod0 = model.db.getModZero()
-                
                 let tags = [ SymbolTagGroup( label: "Global Memories", tagList: getTagList() ) ]
                 
                 SelectSymbolPopup( tagGroupList: tags, title: "Select Memory" ) {

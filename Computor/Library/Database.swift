@@ -209,9 +209,6 @@ extension Database {
         }
 #endif
         
-        // Do we have a mod0 ID?
-        let mod0Id: UUID? = mod0IdList.count == 1 ? mod0IdList[0] : nil
-
         var numMatched = 0
         
         var mfrMod0: ModuleFileRec? = nil
@@ -261,7 +258,7 @@ extension Database {
         // Add index entries for remaining valid files
         for (modName, modUUID) in validModFiles {
             
-            if let mod0 = mfrMod0 {
+            if let _ = mfrMod0 {
                 if modName == modZeroSym {
                     
                     // Don't add a 2nd Index for extra mod0 file

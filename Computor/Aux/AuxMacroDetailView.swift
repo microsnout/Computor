@@ -203,7 +203,7 @@ struct MacroDetailView: View {
                             
                             // PLAY
                             Button {
-                                _ = model.playMacroSeq( mr.opSeq )
+                                _ = model.playMacroSeq( mr.opSeq, in: model.aux.macroMod )
                             } label: {
                                 Image( systemName: "play.fill").frame( minWidth: 0 )
                             }

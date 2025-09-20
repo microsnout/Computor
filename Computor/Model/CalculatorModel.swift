@@ -114,6 +114,18 @@ class LocalVariableFrame {
 }
 
 
+class ModuleExecutionContext {
+    let prevMEC: ModuleExecutionContext?
+    
+    var module: ModuleFileRec
+    
+    init( _ prev: ModuleExecutionContext? = nil, module mfr: ModuleFileRec ) {
+        self.prevMEC = prev
+        self.module = mfr
+    }
+}
+
+
 struct KeyState {
     
     var func2R: PadSpec = psFunctions2R
@@ -150,6 +162,19 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     // Storage of memories local to a block {..}
     var currentLVF: LocalVariableFrame? = nil
+    
+    var currentMEC: ModuleExecutionContext? = nil
+    
+    func pushMEC( _ mfr: ModuleFileRec ) {
+        currentMEC = ModuleExecutionContext( currentMEC, module: mfr)
+    }
+    
+    func popMEC()
+    {
+        if let mec = currentMEC {
+            currentMEC = mec.prevMEC
+        }
+    }
     
     private var undoStack = UndoStack()
     
@@ -555,29 +580,36 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 state.Xtv = tv
             }
             
-        case .F1, .F2, .F3, .F4, .F5, .F6, .lib:
+        case .F1, .F2, .F3, .F4, .F5, .F6:
             // Macro function execution
             var result = KeyPressResult.noOp
             
-            if keyCode == .lib {
-                // .lib, Sym code invoked by 'Lib' key or macro
+            // Key F1..F6 pressed
+            
+            if let tag = kstate.keyMap.tagAssignment(keyCode),
+               let (mr, mfr) = getMacroFunction(tag) {
                 
-                if let tag = event.mTag,
-                   let seq = getMacroFunction(tag) {
-                    
-                    // Macro tag selected from popup
-                    result = playMacroSeq(seq)
-                }
+                // Macro tag assigned to Fn key
+                result = playMacroSeq(mr.opSeq, in: mfr)
             }
-            else {
-                // Key F1..F6 pressed
+            
+            if result == KeyPressResult.stateError {
+                return KeyPressResult.stateError
+            }
+
+        case .lib:
+            // Macro function execution
+            var result = KeyPressResult.noOp
+            
+            // .lib, Sym code invoked by 'Lib' key or macro
+            
+            if let tag = event.mTag,
+               let (mr, mfr) = getMacroFunction(tag) {
                 
-                if let tag = kstate.keyMap.tagAssignment(keyCode),
-                   let seq = getMacroFunction(tag) {
-                    
-                    // Macro tag assigned to Fn key
-                    result = playMacroSeq(seq)
-                }
+                
+                
+                // Macro tag selected from popup
+                result = playMacroSeq(mr.opSeq, in: mfr)
             }
             
             if result == KeyPressResult.stateError {
