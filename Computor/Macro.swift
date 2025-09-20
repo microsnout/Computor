@@ -38,10 +38,41 @@ struct MacroEvent: CodableMacroOp {
             return "??"
         }
         
-        if var keyText = key.text {
+        if key.kc == .lib {
+            
+            if let mTag = event.mTag {
+                
+                if let (_, mfr) = model.db.getMacro( for: mTag, localMod: model.aux.macroMod ) {
+                    
+                    if mfr == model.aux.macroMod {
+                        
+                        // Local to this module
+                        return mTag.getRichText()
+                    }
+                    
+                    // Remote module reference
+                    var text = mfr.modSym
+                    text += "ç{ModText}/ç{}"
+                    text += mTag.getRichText()
+                    return text
+                }
+                else {
+                    // Macro not found
+                    return "ç{StatusRedText}\(mTag.getRichText())ç{}"
+                }
+            }
+            else {
+                // Bad macro event
+                assert(false)
+                return "ç{StatusRedText}Lib ?ç{}"
+            }
+        }
+        else if var keyText = key.text {
+            
             // Key has custom text string
             
             if let mTag = event.mTag {
+                
                 // Add sub key parm to op, like adding .A to .Sto
                 keyText += " "
                 keyText += mTag.getRichText()
@@ -52,9 +83,11 @@ struct MacroEvent: CodableMacroOp {
         return model.getKeyText(event.kc) ?? "??"
     }
     
+    
     func getPlainText() -> String {
         return String( describing: event.keyCode )
     }
+    
     
     init( _ event: KeyEvent ) {
         self.event = event
