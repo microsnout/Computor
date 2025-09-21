@@ -15,6 +15,8 @@ struct DocumentView: View {
     // Open macro module edit sheet for adding or creating new modules
     @State private var addItem:    Bool = false
     @State private var editItem:   DocumentFileRec? = nil
+    
+    @Binding var list: [DocumentFileRec]
 
     var body: some View {
         
@@ -23,7 +25,7 @@ struct DocumentView: View {
                 
                 List {
                     
-                    ForEach ( model.db.indexFile.dFileTable ) { dfr in
+                    ForEach ( list ) { dfr in
                         
                         let caption =  dfr.isDocZero ? "" : (dfr.caption ?? "ç{GrayText}-caption-ç{}")
                         
@@ -43,7 +45,7 @@ struct DocumentView: View {
                     .onMove { fromOffsets, toOffset in
                         
                         // Re-arrange macro module list
-                        model.db.indexFile.dFileTable.move( fromOffsets: fromOffsets, toOffset: toOffset)
+                        list.move( fromOffsets: fromOffsets, toOffset: toOffset)
                     }
                     .onDelete( perform: deleteItems)
                     
@@ -123,7 +125,7 @@ struct DocumentView: View {
         for index in offsets {
             
             // Delete the Mod file
-            let dfr = model.db.indexFile.dFileTable[index]
+            let dfr = list[index]
             
             model.db.deleteDocument(dfr)
         }
