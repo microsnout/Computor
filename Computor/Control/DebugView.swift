@@ -38,85 +38,98 @@ struct DebugView: View {
     
     var body: some View {
         
-        VStack {
+        NavigationStack {
             
-            DebugButton( label: "Clear Key Assignments") {
-                model.kstate.keyMap.fnRow.removeAll()
-                model.saveConfiguration()
-            }
-            
-            DebugButton( label: "Print Key Assignments") {
+            VStack {
                 
-                let mod0 = model.db.getModZero()
+                DebugButton( label: "Clear Key Assignments") {
+                    model.kstate.keyMap.fnRow.removeAll()
+                    model.saveConfiguration()
+                }
                 
-                print( "Key Assignments:" )
-               
-                for (kc, tag) in model.kstate.keyMap.fnRow {
+                DebugButton( label: "Print Key Assignments") {
                     
-                    print( "   kc: \(kc.str)   tag: \(tag.getRichText())")
+                    let mod0 = model.db.getModZero()
                     
-                    if let (mr, mfr) = model.db.getMacro(for: tag, localMod: mod0) {
+                    print( "Key Assignments:" )
+                    
+                    for (kc, tag) in model.kstate.keyMap.fnRow {
                         
-                        print( "      Macro: \(mr.symTag.getRichText()) in Mod: \(mfr.modSym)" )
+                        print( "   kc: \(kc.str)   tag: \(tag.getRichText())")
+                        
+                        if let (mr, mfr) = model.db.getMacro(for: tag, localMod: mod0) {
+                            
+                            print( "      Macro: \(mr.symTag.getRichText()) in Mod: \(mfr.modSym)" )
+                        }
+                        
+                    }
+                }
+                
+                DebugButton( label: "Delete All Macros") {
+                    model.kstate.keyMap.fnRow.removeAll()
+                    model.aux.macroRec = nil
+                    model.aux.macroMod = model.db.getModZero()
+                    model.db.deleteAllMacros()
+                    model.saveConfiguration()
+                }
+                
+                DebugButton( label: "Delete ALL Module files") {
+                    
+                    
+                    for mfr in model.db.indexFile.mfileTable {
+                        model.db.deleteModule(mfr)
                     }
                     
-                }
-            }
-
-            DebugButton( label: "Delete All Macros") {
-                model.kstate.keyMap.fnRow.removeAll()
-                model.aux.macroRec = nil
-                model.aux.macroMod = model.db.getModZero()
-                model.db.deleteAllMacros()
-                model.saveConfiguration()
-            }
-            
-            DebugButton( label: "Delete ALL Module files") {
-                
-                
-                for mfr in model.db.indexFile.mfileTable {
-                    model.db.deleteModule(mfr)
-                }
-                
-                model.kstate.keyMap.fnRow.removeAll()
-                model.aux.macroRec = nil
-                
-                let mod0 = model.db.getModZero()
-                let _ = model.db.loadModule(mod0)
-                
-                model.db.saveIndex()
-                
-                let modDir = Database.moduleDirectoryURL()
-                deleteAllFiles(in: modDir)
-            }
-
-            
-            DebugButton( label: "Print Key Maps" ) {
-                
-                print("Key Map:")
-                for (key, tag) in model.kstate.keyMap.fnRow {
-                    print( "   \(key.str) -> \(tag.getRichText())" )
-                }
-                print("")
-            }
-
-
-            DebugButton( label: "Print Macro Table" ) {
-                
-                let n = model.db.indexFile.mfileTable.count
-                
-                print("Macro Table: \(n) entries")
-                
-                for mfr in model.db.indexFile.mfileTable {
+                    model.kstate.keyMap.fnRow.removeAll()
+                    model.aux.macroRec = nil
                     
-                    let mf = mfr.loadModule()
+                    let mod0 = model.db.getModZero()
+                    let _ = model.db.loadModule(mod0)
                     
-                    let idMatch = mfr.id == mf.id
+                    model.db.saveIndex()
                     
-                    print( "   \(mfr.modSym) - \(mfr.id.uuidString)  MF: \(mf.modSym) Id match: \(idMatch)" )
+                    let modDir = Database.moduleDirectoryURL()
+                    deleteAllFiles(in: modDir)
                 }
-                print("")
+                
+                
+                DebugButton( label: "Print Key Maps" ) {
+                    
+                    print("Key Map:")
+                    for (key, tag) in model.kstate.keyMap.fnRow {
+                        print( "   \(key.str) -> \(tag.getRichText())" )
+                    }
+                    print("")
+                }
+                
+                
+                DebugButton( label: "Print Macro Table" ) {
+                    
+                    let n = model.db.indexFile.mfileTable.count
+                    
+                    print("Macro Table: \(n) entries")
+                    
+                    for mfr in model.db.indexFile.mfileTable {
+                        
+                        let mf = mfr.loadModule()
+                        
+                        let idMatch = mfr.id == mf.id
+                        
+                        print( "   \(mfr.modSym) - \(mfr.id.uuidString)  MF: \(mf.modSym) Id match: \(idMatch)" )
+                    }
+                    print("")
+                }
             }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    SectionHeaderText( text: "Debug Functions" )
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
         }
+        .padding()
+        .frame( maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color("ControlBack"))
+        .scrollContentBackground(.hidden)
     }
 }

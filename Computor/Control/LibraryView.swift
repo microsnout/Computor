@@ -73,8 +73,8 @@ struct LibraryView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
         }
-        .frame( maxWidth: .infinity, maxHeight: .infinity)
         .padding()
+        .frame( maxWidth: .infinity, maxHeight: .infinity)
         .background(Color("ControlBack"))
         .scrollContentBackground(.hidden)
         

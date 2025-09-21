@@ -26,7 +26,7 @@ struct SectionHeaderText: View {
     
     var body: some View {
         Text(text)
-            .font(.system( .title3, design: .monospaced ))
+            .font(.system( .headline, design: .monospaced ))
             .bold()
             .foregroundColor( Color("AccentText") )
             .padding(.vertical, 0)
@@ -55,65 +55,75 @@ struct SettingsView: View {
     
     var body: some View {
         NavigationStack {
-            List {
-                // SECTION COLORS
-                Section( header: SectionHeaderText( text: "Colors")  ) {
-                    Toggle("Display Dark Mode", isOn: $darkMode)
-                        .tint( Color("Frame"))
-                }
-                .listSectionSeparator(.hidden, edges: .top)
-                .listSectionSeparatorTint( Color("AccentText"))
-
-                // SECTION PRI DISPLAY
-                Section( header: SectionHeaderText( text: "Primary Display").foregroundColor(Color("DisplayText"))  ) {
-                    Picker( selection: $priDispTextSize, label: Text("Text Size")) {
-                        Text("Small").tag(TextSize.small)
-                        Text("Medium").tag(TextSize.normal)
-                        Text("Large").tag(TextSize.large)
+            VStack {
+                List {
+                    // SECTION COLORS
+                    Section( header: SectionHeaderText( text: "Colors")  ) {
+                        Toggle("Display Dark Mode", isOn: $darkMode)
+                            .tint( Color("Frame"))
                     }
+                    .listSectionSeparator(.hidden, edges: .top)
+                    .listSectionSeparatorTint( Color("AccentText"))
                     
-                }
-                .listSectionSeparator(.hidden, edges: .top)
-                .listSectionSeparatorTint( Color("AccentText"))
-
-                // SECTION AUX DISPLAY
-                Section( header: SectionHeaderText( text: "Auxiliary Display").foregroundColor(Color("DisplayText"))  ) {
-                    Picker( selection: $auxDispTextSize, label: Text("Text Size")) {
-                        Text("Small").tag(TextSize.small)
-                        Text("Medium").tag(TextSize.normal)
-                        Text("Large").tag(TextSize.large)
+                    // SECTION PRI DISPLAY
+                    Section( header: SectionHeaderText( text: "Primary Display").foregroundColor(Color("DisplayText"))  ) {
+                        Picker( selection: $priDispTextSize, label: Text("Text Size")) {
+                            Text("Small").tag(TextSize.small)
+                            Text("Medium").tag(TextSize.normal)
+                            Text("Large").tag(TextSize.large)
+                        }
+                        
                     }
-                }
-                .listSectionSeparator(.hidden, edges: .top)
-                .listSectionSeparatorTint( Color("AccentText"))
-
-                // SECTION KEYBOARD
-                Section( header: SectionHeaderText( text: "Keyboard").foregroundColor(Color("DisplayText")) ) {
+                    .listSectionSeparator(.hidden, edges: .top)
+                    .listSectionSeparatorTint( Color("AccentText"))
                     
-                    Toggle("Serif Font", isOn: $serifFont)
-                        .tint( Color("Frame"))
-                        .listRowSeparator(.hidden)
-
-                    Toggle("Key help captions", isOn: $keyCaptions)
-                        .tint( Color("Frame"))
-                        .listRowSeparator(.hidden)
-
-                    Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
-                        Text("Default").tag(SoftkeyUnits.mixed)
-                        Text("Metric").tag(SoftkeyUnits.metric)
-                        Text("Imperial").tag(SoftkeyUnits.imperial)
-                        Text("Physics").tag(SoftkeyUnits.physics)
-                        Text("Electrical").tag(SoftkeyUnits.electrical)
-                        Text("Navigation").tag(SoftkeyUnits.navigation)
+                    // SECTION AUX DISPLAY
+                    Section( header: SectionHeaderText( text: "Auxiliary Display").foregroundColor(Color("DisplayText"))  ) {
+                        Picker( selection: $auxDispTextSize, label: Text("Text Size")) {
+                            Text("Small").tag(TextSize.small)
+                            Text("Medium").tag(TextSize.normal)
+                            Text("Large").tag(TextSize.large)
+                        }
                     }
+                    .listSectionSeparator(.hidden, edges: .top)
+                    .listSectionSeparatorTint( Color("AccentText"))
+                    
+                    // SECTION KEYBOARD
+                    Section( header: SectionHeaderText( text: "Keyboard").foregroundColor(Color("DisplayText")) ) {
+                        
+                        Toggle("Serif Font", isOn: $serifFont)
+                            .tint( Color("Frame"))
+                            .listRowSeparator(.hidden)
+                        
+                        Toggle("Key help captions", isOn: $keyCaptions)
+                            .tint( Color("Frame"))
+                            .listRowSeparator(.hidden)
+                        
+                        Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
+                            Text("Default").tag(SoftkeyUnits.mixed)
+                            Text("Metric").tag(SoftkeyUnits.metric)
+                            Text("Imperial").tag(SoftkeyUnits.imperial)
+                            Text("Physics").tag(SoftkeyUnits.physics)
+                            Text("Electrical").tag(SoftkeyUnits.electrical)
+                            Text("Navigation").tag(SoftkeyUnits.navigation)
+                        }
+                    }
+                    .listSectionSeparator(.hidden, edges: .top)
+                    .listSectionSeparatorTint( Color("AccentText"))
                 }
-                .listSectionSeparator(.hidden, edges: .top)
-                .listSectionSeparatorTint( Color("AccentText"))
+                .listStyle( .grouped )
             }
-            .listStyle( .grouped )
-            .background(Color("ControlBack"))
-            .scrollContentBackground(.hidden)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    SectionHeaderText( text: "Settings" )
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
         }
+        .padding()
+        .frame( maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color("ControlBack"))
+        .scrollContentBackground(.hidden)
     }
 }
 

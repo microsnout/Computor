@@ -36,7 +36,7 @@ struct HelpPageView: View {
                     let lines = txt.split( separator: "\n")
                     let line  = String( lines[0].dropFirst(2) )
                     let strs  = line.split( separator: "/")
-
+                    
                     ZStack( alignment: .leading ) {
                         VStack( alignment: .leading ) {
                             NavigationLink {
@@ -70,8 +70,6 @@ struct HelpPageView: View {
                 }
             }
         }
-        .navigationTitle("Computor Help")
-        .navigationBarTitleDisplayMode(.inline)
         
         .onAppear() {
             if let fileURL = Bundle.main.url( forResource: pageFile, withExtension: "txt") {
@@ -92,21 +90,26 @@ struct HelpPageView: View {
     }
 }
 
+
 struct HelpView: View {
     
     var body: some View {
         
         NavigationStack {
-            HelpPageView( pageFile: "root")
+            
+            VStack {
+                HelpPageView( pageFile: "root")
+            }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    SectionHeaderText( text: "Help" )
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
         }
         .frame( maxWidth: .infinity, maxHeight: .infinity)
         .padding()
         .background(Color("ControlBack"))
         .scrollContentBackground(.hidden)
     }
-}
-
-
-#Preview {
-    HelpView()
 }

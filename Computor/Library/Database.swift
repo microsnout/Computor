@@ -12,12 +12,13 @@ class IndexFile: Codable {
     /// Only one of these tables per app
     /// Contains a record of each macro library file
     
-    var stateTable: [DocumentFileRec] = []
+    var dFileTable: [DocumentFileRec] = []
     var mfileTable: [ModuleFileRec] = []
 }
 
 
 let modZeroSym = "mod0"
+let docZeroSym = "doc0"
 
 
 // ********************************************************* //
@@ -39,6 +40,14 @@ extension Database {
         indexFile.mfileTable.first( where: { $0.id == id } )
     }
     
+    func getDocumentFileRec( sym: String ) -> DocumentFileRec? {
+        indexFile.dFileTable.first( where: { $0.docSym == sym } )
+    }
+    
+    func getDocumentFileRec( id: UUID ) -> DocumentFileRec? {
+        indexFile.dFileTable.first( where: { $0.id == id } )
+    }
+
     
     // *** File system paths ***
     
@@ -122,7 +131,7 @@ extension Database {
         indexFile = iFile
         
 #if DEBUG
-        print( "Index File \(iFile.stateTable.count) State Records, \(iFile.mfileTable.count) MacroModules" )
+        print( "Index File \(iFile.dFileTable.count) State Records, \(iFile.mfileTable.count) MacroModules" )
         for mfr in indexFile.mfileTable {
             print( "   Index mfr: \(mfr.modSym) - \(mfr.id.uuidString)" )
         }
@@ -181,13 +190,13 @@ extension Database {
         let modDir = Database.moduleDirectoryURL()
         
         let modFilenameList = listFiles( inDirectory: modDir.path(), withPrefix: "Module.")
-
+        
         var validModFiles: [(String, UUID)] = modFilenameList.compactMap { fname in splitModFilename(fname) }
         
         var missingFiles: [UUID] = []
         
         var mod0IdList: [UUID] = validModFiles.compactMap( { (sym, uuid) in sym == modZeroSym ? uuid : nil } )
-
+        
 #if DEBUG
         print("#1 mod filename list:")
         for fn in modFilenameList {
@@ -524,7 +533,7 @@ extension Database {
         let mod0 = getModZero()
         mod0.symList = []
         saveIndex()
-
+        
         let mf0 = mod0.loadModule()
         mf0.macroTable = []
         mf0.groupTable = [mod0.id]
@@ -542,7 +551,7 @@ extension Database {
         
         mfr.deleteMacro(sTag)
     }
-
+    
     
     func addMacro( _ mr: MacroRec, to mfc: ModuleFileRec ) {
         
@@ -566,5 +575,102 @@ extension Database {
         // Create a copy of the macro record
         let newMacro = mr.copy()
         addMacro( newMacro, to: dstMod )
+    }
+    
+    
+    // **************************
+    // *** Document Functions ***
+    
+    
+    func loadDocument( _ dfr: DocumentFileRec ) -> DocumentFile {
+        
+        // TODO: Should we eliminate this func
+        
+        /// ** Load Module **
+        return dfr.loadDocument()
+    }
+    
+    
+    func saveDocument( _ dfr: DocumentFileRec ) {
+        
+        // TODO: Should we eliminate this func
+        
+        /// ** Save Module **
+        dfr.saveDocument()
+    }
+
+    func deleteDocument( _ dfr: DocumentFileRec ) {
+        
+        /// ** Delete Document **
+        
+        // Delete the Mod file associated with this mfr rec if it exists
+        if let doc = dfr.dfile {
+            
+            // Doc file is loaded
+            let docDirURL = Database.documentDirectoryURL()
+            deleteFile( fileName: doc.filename, inDirectory: docDirURL )
+            dfr.dfile = nil
+        }
+        else {
+            
+            // Doc file is not loaded - delete it anyway
+            let docDirURL = Database.documentDirectoryURL()
+            deleteFile( fileName: dfr.filename, inDirectory: docDirURL )
+        }
+        
+        // Remove this module from the index
+        indexFile.dFileTable.removeAll( where: { $0.docSym == dfr.docSym || $0.id == dfr.id })
+        saveIndex()
+    }
+    
+    
+    func createNewDocument( symbol: String ) -> DocumentFileRec? {
+        
+        /// ** Create New Document File **
+        ///     Create a new Document file Index entry with unique symbol and a new UUID
+        ///     Don't create a DocumentFile until needed
+        
+        if let _ = getDocumentFileRec(sym: symbol) {
+            // Already exists with this symbol
+            print( "createNewModule: Attempt to create duplicat named mod: \(symbol)")
+            assert(false)
+            return nil
+        }
+        
+        let dfr = DocumentFileRec( sym: symbol)
+        
+        // Add to Index and save
+        indexFile.dFileTable.append(dfr)
+        saveIndex()
+        
+        return dfr
+    }
+    
+    
+    func setDocumentSymbolandCaption( _ dfr: DocumentFileRec, newSym: String, newCaption: String? = nil ) {
+        
+        /// ** Set Document Symbol and Caption **
+        
+        // Load the module file
+        let doc = loadDocument(dfr)
+        
+        let symChanged = newSym != dfr.docSym
+        
+        if symChanged {
+            // Original mod URL
+            let docURL = Database.documentDirectoryURL().appendingPathComponent( doc.filename )
+            
+            
+            dfr.docSym = newSym
+            doc.docSym = newSym
+            
+            renameFile( originalURL: docURL, newName: doc.filename)
+        }
+        
+        dfr.caption = newCaption
+        doc.caption = newCaption
+        
+        saveDocument(dfr)
+        saveIndex()
     }
 }

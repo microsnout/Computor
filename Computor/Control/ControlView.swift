@@ -16,6 +16,11 @@ struct ControlView: View {
         TabView {
             
             Group {
+                DocumentView( model: model )
+                    .tabItem {
+                        Label( "Documents", systemImage: "document.on.document" )
+                    }
+                
                 LibraryView( model: model, list: $model.db.indexFile.mfileTable )
                     .tabItem {
                         Label( "Modules", systemImage: "book.pages" )
