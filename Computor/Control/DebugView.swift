@@ -55,7 +55,7 @@ struct DebugView: View {
                     
                     for (kc, tag) in model.kstate.keyMap.fnRow {
                         
-                        print( "   kc: \(kc.str)   tag: \(tag.getRichText())")
+                        print( "   kc: \(kc.str)   tag: \(tag)")
                         
                         if let (mr, mfr) = model.db.getMacro(for: tag, localMod: mod0) {
                             
@@ -97,7 +97,7 @@ struct DebugView: View {
                     
                     print("Key Map:")
                     for (key, tag) in model.kstate.keyMap.fnRow {
-                        print( "   \(key.str) -> \(tag.getRichText())" )
+                        print( "   \(key.str) -> \(tag)" )
                     }
                     print("")
                 }

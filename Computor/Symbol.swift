@@ -8,7 +8,7 @@
 import SwiftUI
 
 
-struct SymbolTag: Hashable, Codable, Equatable {
+struct SymbolTag: Hashable, Codable, Equatable, CustomStringConvertible {
     
     var tag: Int
 }
@@ -30,6 +30,8 @@ extension SymbolTag {
     var mod: Int { tag / SymbolTag.modShift }
     
     var isLocalTag: Bool { self.mod == 0 }
+    
+    var description: String { self.getRichText() }
     
     func getSymbolText( symName: String, subPt: Int, superPt: Int ) -> String {
         

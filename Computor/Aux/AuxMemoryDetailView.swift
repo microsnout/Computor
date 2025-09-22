@@ -88,7 +88,7 @@ struct MemoryDetailView: View {
                         }
                         .onChange(  of: memRec, initial: true ) {
                             if let mr = memRec {
-                                print( "scrollto \(mr.tag.getRichText())" )
+                                print( "scrollto \(mr.tag)" )
                                 proxy.scrollTo( mr.id )
                             }
                         }
