@@ -162,6 +162,25 @@ class ObservableArray<T>: ObservableObject {
 // ******************
 // iOS File Functions
 
+func createDirectory( _ dirURL: URL ) {
+    
+    /// ** Create Directory **
+    
+    do {
+        try FileManager.default.createDirectory( at: dirURL, withIntermediateDirectories: false, attributes: nil)
+        
+        print("Directory created successfully at: \(dirURL.path)")
+    }
+    catch CocoaError.fileWriteFileExists {
+        print( "Module directory already exists - no problem" )
+    }
+    catch {
+        print("Error creating directory: \(error.localizedDescription)")
+        assert(false)
+    }
+}
+
+
 func listFiles( inDirectory path: String, withPrefix pattern: String ) -> [String] {
     
     /// ** List Files in Path **
