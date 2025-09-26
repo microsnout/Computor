@@ -16,7 +16,7 @@ struct ControlView: View {
         TabView {
             
             Group {
-                DocumentView( model: model, list: $model.db.indexFile.dFileTable )
+                DocumentView( model: model, list: $model.db.docTable.objTable)
                     .tabItem {
                         Label( "Documents", systemImage: "document.on.document" )
                     }

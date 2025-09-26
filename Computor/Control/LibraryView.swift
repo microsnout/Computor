@@ -170,7 +170,7 @@ struct ActionMenu: View {
 
 struct EditModuleSheet: View {
     
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.dismiss) private var dismiss
     
     @State var editName: String = ""
     @State var editCaption: String = ""

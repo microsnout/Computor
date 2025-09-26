@@ -8,7 +8,7 @@
 import SwiftUI
 
 
-protocol DataObjectProtocol: AnyObject, Identifiable, CustomStringConvertible {
+protocol DataObjectProtocol: AnyObject, Identifiable, Equatable, CustomStringConvertible {
     
     // Stored properties required
     var id: UUID { get }
@@ -22,6 +22,10 @@ protocol DataObjectProtocol: AnyObject, Identifiable, CustomStringConvertible {
     // Func requirements
 }
 
+
+// ***************************************************************************** Data Object File
+// ***************************************************************************** Data Object File
+// ***************************************************************************** Data Object File
 
 class DataObjectFile: DataObjectProtocol, Codable {
     
@@ -51,7 +55,16 @@ class DataObjectFile: DataObjectProtocol, Codable {
     
     var objDirName: String { get {""} }
     var objZeroName: String { get {""} }
+    
+    static func == ( lhs: DataObjectFile, rhs: DataObjectFile ) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
+
+
+// ***************************************************************************** Data Object Rec
+// ***************************************************************************** Data Object Rec
+// ***************************************************************************** Data Object Rec
 
 
 protocol ObjectRecProtocol: DataObjectProtocol, Codable where FileT: DataObjectFile {
@@ -75,10 +88,23 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
     var name: String
     var caption: String?
     
+    // Not coded
     var objFile: FileT?
     
+    var isObjZero: Bool {
+        self.name == objZeroName
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case caption
+        // objFile not coded
+    }
+
     // DataObject computed properties
     var filename: String { "\(self.objDirName).\(self.name).\(self.id.uuidString)" }
+    
     var objectDirectoryURL: URL { Database.documentDirectoryURL().appendingPathComponent( self.objDirName) }
     
     // CustomStringConvertible
@@ -100,8 +126,19 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
         self.objFile = nil
     }
     
+    required init(from decoder: any Decoder) throws {
+        let container: KeyedDecodingContainer<DataObjectRec<FileT>.CodingKeys> = try decoder.container(keyedBy: DataObjectRec<FileT>.CodingKeys.self)
+        self.id = try container.decode(UUID.self, forKey: DataObjectRec<FileT>.CodingKeys.id)
+        self.name = try container.decode(String.self, forKey: DataObjectRec<FileT>.CodingKeys.name)
+        self.caption = try container.decodeIfPresent(String.self, forKey: DataObjectRec<FileT>.CodingKeys.caption)
+    }
+
     var objDirName: String { get {""} }
     var objZeroName: String { get {""} }
+    
+    static func == ( lhs: DataObjectRec, rhs: DataObjectRec ) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
 
 
@@ -175,7 +212,9 @@ extension DataObjectRec {
 }
 
 
-// ***************************************************** Object Index
+// ***************************************************************************** Object Table
+// ***************************************************************************** Object Table
+// ***************************************************************************** Object Table
 
 
 // Not needed??
@@ -200,8 +239,8 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         objTable.first( where: { $0.name == name } )
     }
     
-    func getObjectFileRec( id: UUID ) -> ObjRecT? {
-        objTable.first( where: { $0.id == id } )
+    func getObjectFileRec( id uuid: UUID ) -> ObjRecT? {
+        objTable.first( where: { $0.id == uuid } )
     }
     
     init( tableName: String, objZeroName: String = "obj0" ) {
@@ -336,7 +375,7 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         /// ** Delete Object **
         
         // Delete the Object file associated with this rec if it exists
-        if let objFile = rec.objFile {
+        if let _ = rec.objFile {
             
             // Obj file is loaded
             let objDirURL = self.objectDirectoryURL

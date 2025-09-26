@@ -476,7 +476,7 @@ class UnitDef: Codable {
         }
         
 #if DEBUG
-        print( "User UnitDef: '\(uid)' - > \(def)" )
+//        print( "User UnitDef: '\(uid)' - > \(def)" )
 #endif
 
         return def
@@ -502,7 +502,7 @@ class UnitDef: Codable {
             UnitDef.sigUserDict[usig] = def
             
 #if DEBUG
-            print( "reIndexUserUnit: \(def)" )
+//            print( "reIndexUserUnit: \(def)" )
 #endif
         }
     }
@@ -526,10 +526,10 @@ class UnitDef: Codable {
         
 #if DEBUG
         // UnitDef
-        print( "Predefined Unit Definitions:")
-        for def in UnitDef.stdDefList {
-            print( "UnitDef: \(def)" )
-        }
+//        print( "Predefined Unit Definitions:")
+//        for def in UnitDef.stdDefList {
+//            print( "UnitDef: \(def)" )
+//        }
 #endif
     }
 }
@@ -762,7 +762,7 @@ class TypeDef: Codable {
             }
             
 #if DEBUG
-            print( "reIndexUserType: \(def)" )
+//            print( "reIndexUserType: \(def)" )
 #endif
         }
     }
@@ -832,10 +832,10 @@ class TypeDef: Codable {
         defineStdType( .temp, .degF,    "F",    9.0/5.0, delta: 32)
         
         #if DEBUG
-        print( "\nType Definitions:")
-        for (tt, def) in TypeDef.typeDict {
-            print( "\(tt) -> \(def)")
-        }
+//        print( "\nType Definitions:")
+//        for (tt, def) in TypeDef.typeDict {
+//            print( "\(tt) -> \(def)")
+//        }
         #endif
     }
 }

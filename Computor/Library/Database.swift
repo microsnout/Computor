@@ -12,7 +12,7 @@ class IndexFile: Codable {
     /// Only one of these tables per app
     /// Contains a record of each macro library file
     
-    var dFileTable: [DocumentFileRec] = []
+    var dFileTable: [DocumentRec] = []
     var mfileTable: [ModuleFileRec] = []
 }
 
@@ -27,6 +27,8 @@ let docZeroSym = "doc0"
 class Database {
     
     var indexFile: IndexFile = IndexFile()
+    
+    var docTable = ObjectTable<DocumentRec>( tableName: "Document", objZeroName: "doc0" )
 }
 
 
@@ -40,12 +42,12 @@ extension Database {
         indexFile.mfileTable.first( where: { $0.id == id } )
     }
     
-    func getDocumentFileRec( sym: String ) -> DocumentFileRec? {
-        indexFile.dFileTable.first( where: { $0.docSym == sym } )
+    func getDocumentFileRec( name: String ) -> DocumentRec? {
+        docTable.getObjectFileRec(name)
     }
     
-    func getDocumentFileRec( id: UUID ) -> DocumentFileRec? {
-        indexFile.dFileTable.first( where: { $0.id == id } )
+    func getDocumentFileRec( id uuid: UUID ) -> DocumentRec? {
+        docTable.getObjectFileRec(id: uuid)
     }
 
     
@@ -397,7 +399,7 @@ extension Database {
         
         // Repair Index if needed
         if mf.modSym != mfr.modSym || mf.caption != mfr.caption {
-            assert(false)
+            // assert(false)
             mfr.modSym = mf.modSym
             mfr.caption = mf.caption
             // TODO: set symList from module
@@ -582,7 +584,7 @@ extension Database {
     // *** Document Functions ***
     
     
-    func loadDocument( _ dfr: DocumentFileRec ) -> DocumentFile {
+    func loadDocument( _ dfr: DocumentRec ) -> DocumentFile {
         
         // TODO: Should we eliminate this func
         
@@ -591,7 +593,7 @@ extension Database {
     }
     
     
-    func saveDocument( _ dfr: DocumentFileRec ) {
+    func saveDocument( _ dfr: DocumentRec ) {
         
         // TODO: Should we eliminate this func
         
@@ -599,78 +601,27 @@ extension Database {
         dfr.saveDocument()
     }
 
-    func deleteDocument( _ dfr: DocumentFileRec ) {
+    func deleteDocument( _ dfr: DocumentRec ) {
         
         /// ** Delete Document **
-        
-        // Delete the Mod file associated with this mfr rec if it exists
-        if let doc = dfr.dfile {
-            
-            // Doc file is loaded
-            let docDirURL = Database.documentDirectoryURL()
-            deleteFile( fileName: doc.filename, inDirectory: docDirURL )
-            dfr.dfile = nil
-        }
-        else {
-            
-            // Doc file is not loaded - delete it anyway
-            let docDirURL = Database.documentDirectoryURL()
-            deleteFile( fileName: dfr.filename, inDirectory: docDirURL )
-        }
-        
-        // Remove this module from the index
-        indexFile.dFileTable.removeAll( where: { $0.docSym == dfr.docSym || $0.id == dfr.id })
-        saveIndex()
+        docTable.deleteObject(dfr)
     }
     
     
-    func createNewDocument( symbol: String ) -> DocumentFileRec? {
+    func createNewDocument( symbol: String ) -> DocumentRec? {
         
         /// ** Create New Document File **
         ///     Create a new Document file Index entry with unique symbol and a new UUID
         ///     Don't create a DocumentFile until needed
         
-        if let _ = getDocumentFileRec(sym: symbol) {
-            // Already exists with this symbol
-            print( "createNewModule: Attempt to create duplicat named mod: \(symbol)")
-            assert(false)
-            return nil
-        }
-        
-        let dfr = DocumentFileRec( sym: symbol)
-        
-        // Add to Index and save
-        indexFile.dFileTable.append(dfr)
-        saveIndex()
-        
-        return dfr
+        docTable.createNewObject(name: symbol)
     }
     
     
-    func setDocumentSymbolandCaption( _ dfr: DocumentFileRec, newSym: String, newCaption: String? = nil ) {
+    func setDocumentSymbolandCaption( _ dfr: DocumentRec, newSym: String, newCaption: String? = nil ) {
         
         /// ** Set Document Symbol and Caption **
         
-        // Load the module file
-        let doc = loadDocument(dfr)
-        
-        let symChanged = newSym != dfr.docSym
-        
-        if symChanged {
-            // Original mod URL
-            let docURL = Database.documentDirectoryURL().appendingPathComponent( doc.filename )
-            
-            
-            dfr.docSym = newSym
-            doc.docSym = newSym
-            
-            renameFile( originalURL: docURL, newName: doc.filename)
-        }
-        
-        dfr.caption = newCaption
-        doc.caption = newCaption
-        
-        saveDocument(dfr)
-        saveIndex()
+        docTable.setObjectNameAndCaption(dfr, newName: newSym, newCaption: newCaption)
     }
 }
