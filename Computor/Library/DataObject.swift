@@ -310,7 +310,7 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         
         do {
             let data = try JSONEncoder().encode(objTable)
-            let outfile = Database.documentDirectoryURL().appendingPathComponent( self.tableName )
+            let outfile = objectDirectoryURL.appendingPathComponent( self.tableName )
             try data.write(to: outfile)
         }
         catch {
@@ -318,7 +318,170 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         }
     }
 
+    
+    // ************************************************
+    // ************************************************
+    // ************************************************
 
+    
+    func syncModules() {
+        
+        /// ** Sync Modules **
+        /// Make Index file consistent with actual module files present
+        
+        print( "\nSync: \(self.tableName) Objects:" )
+        
+        let modDir = self.objectDirectoryURL
+        
+        let modFilenameList = listFiles( inDirectory: modDir.path(), withPrefix: "\(self.tableName).")
+        
+        var validModFiles: [(String, UUID)] = modFilenameList.compactMap { fname in splitObjFilename(fname) }
+        
+        var missingFiles: [UUID] = []
+        
+        var mod0IdList: [UUID] = validModFiles.compactMap( { (sym, uuid) in sym == objZeroName ? uuid : nil } )
+        
+#if DEBUG
+        print("#1 \(self.tableName) filename list:")
+        for fn in modFilenameList {
+            print( "   found: \(fn)" )
+        }
+        print("")
+        
+        print("#2 Valid files found:")
+        for (name, uuid) in validModFiles {
+            print( "   \(name) - \(uuid.uuidString)" )
+        }
+        print("")
+        
+        if mod0IdList.count > 1 {
+            print("Multiple \(self.objZeroName) files")
+            for id in mod0IdList {
+                print( "   \(self.objZeroName) - \(id.uuidString)" )
+            }
+        }
+#endif
+        
+        var numMatched = 0
+        
+        var mfrMod0: ObjRecT? = nil
+        
+        // For each record in the index file
+        for mfr in objTable {
+            
+            if let (modName, modUUID) = validModFiles.first( where: { (name, uuid) in uuid == mfr.id } ) {
+                
+                // The file exists
+                
+                if modName != mfr.name {
+                    // Should not happen - correct index
+                    assert(false)
+                    mfr.name = modName
+                }
+                
+                print( "   \(self.tableName) file match: \(modName) - \(modUUID.uuidString)" )
+                numMatched += 1
+                
+                if modName == modZeroSym {
+                    // Enforce only one mod0
+                    assert( mfrMod0 == nil )
+                    mfrMod0 = mfr
+                    
+                    // Remove the mod0 file id that matches Index
+                    mod0IdList.removeAll(where: { $0 == mfr.id } )
+                }
+                
+                validModFiles.removeAll( where: { (name, uuid) in uuid == mfr.id } )
+            }
+            else {
+                // No file matching this index entry
+                missingFiles.append(mfr.id)
+                
+                print( "   Missing \(tableName) file for index entry: \(mfr.name) - \(mfr.id.uuidString)")
+            }
+        }
+        
+        print( "   Number of matched files(\(numMatched)), remaining valid(\(validModFiles.count)), index entries(\(objTable.count))" )
+        
+        // Eliminate index file entries where the file is missing
+        objTable.removeAll( where: { missingFiles.contains( $0.id ) } )
+        
+        print( "   Remaining index entries after removing missing files(\(objTable.count))")
+        
+        // Add index entries for remaining valid files
+        for (modName, modUUID) in validModFiles {
+            
+            if let _ = mfrMod0 {
+                if modName == objZeroName {
+                    
+                    // Don't add a 2nd Index for extra mod0 file
+                    continue
+                }
+            }
+            
+            print("   Adding \(self.tableName) ObjectRec for: \(modName) - \(modUUID.uuidString)")
+            
+            guard let _ = addExistingObjectFile( name: modName, uuid: modUUID) else {
+                // assert(false)
+                print( "   Obj: \(modName) - \(modUUID) conflict with existing module with same name" )
+                return
+            }
+        }
+        
+        if !validModFiles.isEmpty || !missingFiles.isEmpty {
+            // Write out index file since we added or removed entries to it
+            saveTable()
+        }
+        
+        // Delete any extraneous obj0 files
+        if mod0IdList.count > 0 {
+            for uuid in mod0IdList {
+                deleteFile( fileName: "\(tableName).\(objZeroName).\(uuid.uuidString)", inDirectory: modDir )
+            }
+        }
+    }
+    
+    
+    func getObjZero() -> ObjRecT {
+        
+        /// ** Create the Zero Object **
+        
+        if let obj0 = getObjectFileRec( objZeroName ) {
+            
+            // Object zero already exists
+            print( "createObjZero: Already exists" )
+            return obj0
+        }
+        
+        guard let obj0 = createNewObject( name: objZeroName ) else {
+            print( "createObjZero: Failed to create Obj zero" )
+            assert(false)
+        }
+        
+        print( "createObjZero: Created obj0 - \(obj0.id.uuidString)" )
+        return obj0
+    }
+    
+    
+    func loadObjectLibrary() {
+        
+        /// ** Load Library **
+        
+        createTableDirectory()
+        loadTable()
+        syncModules()
+        
+        // Create Module zero if it doesn't exist and load it
+        let obj0 = getObjZero()
+        let _ = loadObject(obj0)
+    }
+
+    
+    // ************************************************
+    // ************************************************  Object Functions
+    // ************************************************
+
+    
     func createNewObject( name: String, caption: String? = nil ) -> ObjRecT? {
         
         /// ** Create New Object File **
@@ -439,24 +602,6 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         rec.saveObject()
     }
     
-    
-    func getObjZero() -> ObjRecT {
-        
-        /// ** Create the Zero Object **
-        
-        if let obj0 = getObjectFileRec( objZeroName ) {
-            
-            // Object zero already exists
-            return obj0
-        }
-        
-        guard let obj0 = createNewObject( name: modZeroSym) else {
-            assert(false)
-        }
-        
-        return obj0
-    }
-
 }
 
 

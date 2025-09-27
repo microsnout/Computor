@@ -169,10 +169,10 @@ func createDirectory( _ dirURL: URL ) {
     do {
         try FileManager.default.createDirectory( at: dirURL, withIntermediateDirectories: false, attributes: nil)
         
-        print("Directory created successfully at: \(dirURL.path)")
+        print("Directory created: \(dirURL.path)")
     }
     catch CocoaError.fileWriteFileExists {
-        print( "Module directory already exists - no problem" )
+        print( "Directory already exists: \(dirURL.path())" )
     }
     catch {
         print("Error creating directory: \(error.localizedDescription)")

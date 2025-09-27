@@ -112,6 +112,9 @@ class DocumentFile: DataObjectFile {
 
         try super.init(from: decoder)
     }
+    
+    override var objDirName: String { get {"Computor"} }
+    override var objZeroName: String { get {"doc0"} }
 }
 
 
@@ -158,7 +161,7 @@ final class DocumentRec: DataObjectRec<DocumentFile> {
 //        self.isObjZero
 //    }
     
-    override var objDirName: String { get {"Document"} }
+    override var objDirName: String { get {"Computor"} }
     override var objZeroName: String { get {"doc0"} }
 }
 

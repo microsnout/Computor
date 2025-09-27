@@ -28,7 +28,7 @@ class Database {
     
     var indexFile: IndexFile = IndexFile()
     
-    var docTable = ObjectTable<DocumentRec>( tableName: "Document", objZeroName: "doc0" )
+    var docTable = ObjectTable<DocumentRec>( tableName: "Computor", objZeroName: "doc0" )
 }
 
 
@@ -352,6 +352,8 @@ extension Database {
         // Create Module zero if it doesn't exist and load it
         let mod0 = getModZero()
         let _ = loadModule(mod0)
+        
+        docTable.loadObjectLibrary()
     }
     
     
