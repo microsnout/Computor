@@ -169,10 +169,10 @@ func createDirectory( _ dirURL: URL ) {
     do {
         try FileManager.default.createDirectory( at: dirURL, withIntermediateDirectories: false, attributes: nil)
         
-        print("Directory created: \(dirURL.path)")
+        print( "Directory created: ../\( findPathTail( dirURL.path(), from: "Documents") )" )
     }
     catch CocoaError.fileWriteFileExists {
-        print( "Directory already exists: \(dirURL.path())" )
+        print( "Directory already exists: ../\( findPathTail( dirURL.path(), from: "Documents") )" )
     }
     catch {
         print("Error creating directory: \(error.localizedDescription)")
@@ -264,4 +264,15 @@ func renameFile( originalURL: URL, newName: String) {
     catch {
         print("Error renaming file: \(error.localizedDescription)")
     }
+}
+
+
+func findPathTail( _ path: String, from subStr: String ) -> String {
+    
+    if let range = path.range( of: subStr ) {
+        
+        return String( path[range.lowerBound...] )
+    }
+    
+    return ""
 }

@@ -112,9 +112,6 @@ class DocumentFile: DataObjectFile {
 
         try super.init(from: decoder)
     }
-    
-    override var objDirName: String { get {"Computor"} }
-    override var objZeroName: String { get {"doc0"} }
 }
 
 
@@ -156,10 +153,10 @@ final class DocumentRec: DataObjectRec<DocumentFile> {
     static func == ( lhs: DocumentRec, rhs: DocumentRec ) -> Bool {
         return lhs.id == rhs.id
     }
-//    
-//    var isDocZero: Bool {
-//        self.isObjZero
-//    }
+    
+    var isDocZero: Bool {
+        self.isObjZero
+    }
     
     override var objDirName: String { get {"Computor"} }
     override var objZeroName: String { get {"doc0"} }

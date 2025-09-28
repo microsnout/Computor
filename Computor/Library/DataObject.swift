@@ -14,12 +14,6 @@ protocol DataObjectProtocol: AnyObject, Identifiable, Equatable, CustomStringCon
     var id: UUID { get }
     var name: String { get set }
     var caption: String? { get set }
-    
-    // Computed properties
-    var filename: String { get }
-    var objectDirectoryURL: URL { get }
-
-    // Func requirements
 }
 
 
@@ -33,10 +27,6 @@ class DataObjectFile: DataObjectProtocol, Codable {
     var id: UUID
     var name: String
     var caption: String?
-    
-    // DataObject computed properties
-    var filename: String { "\(self.objDirName).\(self.name).\(self.id.uuidString)" }
-    var objectDirectoryURL: URL { Database.documentDirectoryURL().appendingPathComponent( self.objDirName) }
 
     // CustomStringConvertible
     var description: String { "\(self.name) - \(self.id.uuidString)" }
@@ -52,9 +42,6 @@ class DataObjectFile: DataObjectProtocol, Codable {
         self.name = ""
         self.caption = nil
     }
-    
-    var objDirName: String { get {""} }
-    var objZeroName: String { get {""} }
     
     static func == ( lhs: DataObjectFile, rhs: DataObjectFile ) -> Bool {
         return lhs.id == rhs.id
@@ -78,6 +65,10 @@ protocol ObjectRecProtocol: DataObjectProtocol, Codable where FileT: DataObjectF
     
     func saveObject()
     func loadObject() -> FileT
+    
+    // Computed properties
+    var filename: String { get }
+    var objectDirectoryURL: URL { get }
 }
 
 
@@ -104,7 +95,6 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
 
     // DataObject computed properties
     var filename: String { "\(self.objDirName).\(self.name).\(self.id.uuidString)" }
-    
     var objectDirectoryURL: URL { Database.documentDirectoryURL().appendingPathComponent( self.objDirName) }
     
     // CustomStringConvertible
@@ -161,14 +151,14 @@ extension DataObjectRec {
             do {
                 let data = try JSONEncoder().encode(obj)
                 
-                let outfile = self.objectDirectoryURL.appendingPathComponent( obj.filename )
+                let outfile = self.objectDirectoryURL.appendingPathComponent( self.filename )
                 
                 try data.write(to: outfile)
                 
-                print( "saveObject: wrote out: \(obj.filename)")
+                print( "saveObject: wrote out: \(self.filename)")
             }
             catch {
-                print( "saveObject: file: \(obj.filename) error: \(error.localizedDescription)")
+                print( "saveObject: file: \(self.filename) error: \(error.localizedDescription)")
             }
         }
     }
@@ -254,6 +244,8 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         Database.documentDirectoryURL().appendingPathComponent(self.tableName)
     }
     
+    var tableFilename: String { "Table.\(self.tableName)" }
+    
     
     func splitObjFilename( _ fname: String ) -> ( String, UUID )? {
         
@@ -291,7 +283,7 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         /// ** Load Index **
         
         do {
-            let fileURL = Database.documentDirectoryURL().appendingPathComponent( self.tableName )
+            let fileURL = Database.documentDirectoryURL().appendingPathComponent( self.tableFilename )
             let data    = try Data( contentsOf: fileURL)
             
             objTable = try JSONDecoder().decode( TableFile.self, from: data)
@@ -310,11 +302,13 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         
         do {
             let data = try JSONEncoder().encode(objTable)
-            let outfile = objectDirectoryURL.appendingPathComponent( self.tableName )
+            let outfile = Database.documentDirectoryURL().appendingPathComponent( self.tableFilename )
             try data.write(to: outfile)
+            
+            print( "Save Table: ../\( findPathTail(outfile.path(), from: "Documents" ) )" )
         }
         catch {
-            print( "saveIndexFile: error: \(error.localizedDescription)")
+            print( "Save Table: Error - \(error.localizedDescription)")
         }
     }
 
@@ -467,6 +461,8 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         
         /// ** Load Library **
         
+        print( "\nLoad Object Library: \(self.tableName)" )
+        
         createTableDirectory()
         loadTable()
         syncModules()
@@ -495,6 +491,9 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         }
         
         let rec = ObjRecT( name: name, caption: nil)
+        
+        // This will create an object file if needed
+        _ = rec.loadObject()
         
         // Add to Index and save
         objTable.append(rec)
@@ -569,12 +568,12 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         
         if nameChanged {
             // Original obj URL
-            let objURL = Database.moduleDirectoryURL().appendingPathComponent( obj.filename )
+            let objURL = Database.moduleDirectoryURL().appendingPathComponent( rec.filename )
             
             rec.name = newName
             obj.name = newName
             
-            renameFile( originalURL: objURL, newName: obj.filename)
+            renameFile( originalURL: objURL, newName: rec.filename)
         }
         
         rec.caption = newCaption
@@ -601,29 +600,5 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         /// ** Save Module **
         rec.saveObject()
     }
-    
-}
-
-
-// ***************************************************** Sample
-
-final class SampleObjectFile: DataObjectFile {
-    
-    override var objDirName: String { get {"Sample"} }
-    override var objZeroName: String { get {"sam0"} }
-}
-
-
-final class SampleObjectRec: DataObjectRec<SampleObjectFile> {
-    
-    
-    override var objDirName: String { get {"Sample"} }
-    override var objZeroName: String { get {"sam0"} }
-}
-
-
-class ComputorDatabase {
-    
-    var sampleTable = ObjectTable<SampleObjectRec>( tableName: "Sample", objZeroName: "sam0" )
     
 }
