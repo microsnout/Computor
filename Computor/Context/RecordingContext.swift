@@ -83,7 +83,7 @@ class RecordingContext : EventContext {
             }
             
         case .stopFn, .macroStop:
-            model.saveConfiguration()
+            model.aux.macroMod.saveModule()
             model.aux.recordStop()
             model.popContext( event )
             

@@ -44,7 +44,6 @@ struct DebugView: View {
                 
                 DebugButton( label: "Clear Key Assignments") {
                     model.kstate.keyMap.fnRow.removeAll()
-                    model.saveConfiguration()
                 }
                 
                 DebugButton( label: "Print Key Assignments") {
@@ -70,7 +69,6 @@ struct DebugView: View {
                     model.aux.macroRec = nil
                     model.aux.macroMod = model.db.getModZero()
                     model.db.deleteAllMacros()
-                    model.saveConfiguration()
                 }
                 
                 DebugButton( label: "Delete ALL Module files") {

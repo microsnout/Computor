@@ -137,7 +137,6 @@ extension CalculatorModel {
             // Remove the key mapping for this key
             // Macro will still exist
             kstate.keyMap.clearKeyAssignment(kcFn)
-            saveConfiguration()
         }
     }
     

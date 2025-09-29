@@ -147,7 +147,6 @@ struct CalculatorView: View {
                 Task {
                     do {
                         try model.saveState()
-                        model.saveConfiguration()
                     }
                     catch {
                         fatalError(error.localizedDescription)

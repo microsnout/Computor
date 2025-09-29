@@ -67,15 +67,5 @@ extension CalculatorModel {
         try data.write(to: outfile)
     }
     
-    // ***
-
-    
-    func saveConfiguration() {
-        
-        /// ** saveConfiguration **
-         
-        aux.macroMod.saveModule()
-    }
-
 }
 
