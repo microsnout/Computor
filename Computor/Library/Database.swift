@@ -353,7 +353,7 @@ extension Database {
         let mod0 = getModZero()
         let _ = loadModule(mod0)
         
-        docTable.loadObjectLibrary()
+        docTable.loadObjectTable()
     }
     
     
@@ -610,13 +610,13 @@ extension Database {
     }
     
     
-    func createNewDocument( symbol: String ) -> DocumentRec? {
+    func createNewDocument( symbol: String, caption: String? = nil ) -> DocumentRec? {
         
         /// ** Create New Document File **
         ///     Create a new Document file Index entry with unique symbol and a new UUID
         ///     Don't create a DocumentFile until needed
         
-        docTable.createNewObject(name: symbol)
+        docTable.createNewObject(name: symbol, caption: caption)
     }
     
     
@@ -625,5 +625,12 @@ extension Database {
         /// ** Set Document Symbol and Caption **
         
         docTable.setObjectNameAndCaption(dfr, newName: newSym, newCaption: newCaption)
+    }
+    
+    func documentExists( _ name: String ) -> Bool {
+        if let _ = docTable.getObjectFileRec(name) {
+            return true
+        }
+        return false
     }
 }

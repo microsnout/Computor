@@ -32,18 +32,25 @@ struct DocumentView: View {
                         
                         let caption =  (dfr.caption ?? "ç{GrayText}-caption-ç{}")
                         
-                        HStack {
-                            ZStack( alignment: .leadingFirstTextBaseline ) {
-                                RichText( dfr.name, size: .normal, weight: .bold, design: .monospaced, defaultColor: "BlackText" )
-                                RichText( caption, size: .normal, weight: .thin, design: .serif, defaultColor: "ModText" ).padding( [.leading], 60)
+                        VStack {
+                            HStack {
+                                ZStack( alignment: .leadingFirstTextBaseline ) {
+                                    RichText( dfr.name, size: .normal, weight: .bold, design: .monospaced, defaultColor: "BlackText" )
+                                    RichText( caption, size: .normal, weight: .thin, design: .serif, defaultColor: "ModText" ).padding( [.leading], 60)
+                                }
+                                
+                                Spacer()
+                                
+                                // DOT DOT DOT ellipsis menu
+                                // ActionMenu( editItem: $editItem, dfr: dfr )
                             }
+                            .deleteDisabled( dfr.isObjZero )
                             
-                            Spacer()
-                            
-                            // DOT DOT DOT ellipsis menu
-                            // ActionMenu( editItem: $editItem, dfr: mfr )
+                            HStack {
+                                RichText( dfr.dateCreated.formatted(date: .abbreviated, time: .omitted), size: .small, weight: .light, design: .default, defaultColor: "BlackText" )
+                                Spacer()
+                            }
                         }
-                        .deleteDisabled( dfr.isObjZero )
                     }
                     .onMove { fromOffsets, toOffset in
                         
@@ -111,13 +118,7 @@ struct DocumentView: View {
             
             EditModuleSheet( submitLabel: "Create" ) { (name: String, caption: String) in
                 
-                if let dfr = model.db.createNewDocument(symbol: name) {
-
-                    dfr.caption = caption.isEmpty ? nil : caption
-
-                    // Save new mod file - index will be saved by on change handler
-                    model.db.saveDocument(dfr)
-                }
+                _ = model.db.createNewDocument(symbol: name, caption: caption.isEmpty ? nil : caption )
             }
         }
         

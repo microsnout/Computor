@@ -287,10 +287,15 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
             let data    = try Data( contentsOf: fileURL)
             
             objTable = try JSONDecoder().decode( TableFile.self, from: data)
+            
+            print( "Load Table: ../\( findPathTail(fileURL.path(), from: "Documents" ) )" )
         }
         catch {
             // File not found - Return an empty Index
             objTable = []
+            
+            print( "LoadTable: '\(self.tableFilename)' Not found: set to []" )
+            print( "LoadTable Error: \(error.localizedDescription)" )
         }
     }
     
@@ -323,8 +328,6 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         /// ** Sync Modules **
         /// Make Index file consistent with actual module files present
         
-        print( "\nSync: \(self.tableName) Objects:" )
-        
         let modDir = self.objectDirectoryURL
         
         let modFilenameList = listFiles( inDirectory: modDir.path(), withPrefix: "\(self.tableName).")
@@ -336,22 +339,27 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         var mod0IdList: [UUID] = validModFiles.compactMap( { (sym, uuid) in sym == objZeroName ? uuid : nil } )
         
 #if DEBUG
-        print("#1 \(self.tableName) filename list:")
+        print( "\nSync: '\(self.tableName)' Objects:" )
+        
+        print( "   Object Table: \(self.objTable.count) entries" )
+        for obj in self.objTable {
+            print( "   - \(obj.filename)" )
+        }
+        
+        print("\n#1 \(self.tableName) filename list:")
         for fn in modFilenameList {
             print( "   found: \(fn)" )
         }
-        print("")
         
-        print("#2 Valid files found:")
+        print("\n#2 Valid files found:")
         for (name, uuid) in validModFiles {
             print( "   \(name) - \(uuid.uuidString)" )
         }
-        print("")
         
         if mod0IdList.count > 1 {
-            print("Multiple \(self.objZeroName) files")
+            print("\nMultiple \(self.objZeroName) files")
             for id in mod0IdList {
-                print( "   \(self.objZeroName) - \(id.uuidString)" )
+                print( "   - \(self.objZeroName) - \(id.uuidString)" )
             }
         }
 #endif
@@ -360,7 +368,7 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         
         var mfrMod0: ObjRecT? = nil
         
-        // For each record in the index file
+        // For each record in the table file
         for mfr in objTable {
             
             if let (modName, modUUID) = validModFiles.first( where: { (name, uuid) in uuid == mfr.id } ) {
@@ -373,7 +381,7 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
                     mfr.name = modName
                 }
                 
-                print( "   \(self.tableName) file match: \(modName) - \(modUUID.uuidString)" )
+                print( "File found for: \(modName) - \(modUUID.uuidString)" )
                 numMatched += 1
                 
                 if modName == modZeroSym {
@@ -391,16 +399,16 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
                 // No file matching this index entry
                 missingFiles.append(mfr.id)
                 
-                print( "   Missing \(tableName) file for index entry: \(mfr.name) - \(mfr.id.uuidString)")
+                print( "Missing file for table entry: \(mfr.name) - \(mfr.id.uuidString)")
             }
         }
         
-        print( "   Number of matched files(\(numMatched)), remaining valid(\(validModFiles.count)), index entries(\(objTable.count))" )
+        print( "\nNumber of matched files(\(numMatched)), remaining valid files(\(validModFiles.count)), table entries(\(objTable.count))" )
         
         // Eliminate index file entries where the file is missing
         objTable.removeAll( where: { missingFiles.contains( $0.id ) } )
         
-        print( "   Remaining index entries after removing missing files(\(objTable.count))")
+        print( "\nRemaining index entries after removing missing files(\(objTable.count))")
         
         // Add index entries for remaining valid files
         for (modName, modUUID) in validModFiles {
@@ -413,11 +421,11 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
                 }
             }
             
-            print("   Adding \(self.tableName) ObjectRec for: \(modName) - \(modUUID.uuidString)")
+            print("\nAdding \(self.tableName) ObjectRec for: \(modName) - \(modUUID.uuidString)")
             
             guard let _ = addExistingObjectFile( name: modName, uuid: modUUID) else {
                 // assert(false)
-                print( "   Obj: \(modName) - \(modUUID) conflict with existing module with same name" )
+                print( "\nObj: \(modName) - \(modUUID) conflict with existing module with same name" )
                 return
             }
         }
@@ -443,25 +451,25 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         if let obj0 = getObjectFileRec( objZeroName ) {
             
             // Object zero already exists
-            print( "createObjZero: Already exists" )
+            print( "Get Obj Zero: Already exists" )
             return obj0
         }
         
         guard let obj0 = createNewObject( name: objZeroName ) else {
-            print( "createObjZero: Failed to create Obj zero" )
+            print( "Get Obj Zero: Failed to create Obj zero" )
             assert(false)
         }
         
-        print( "createObjZero: Created obj0 - \(obj0.id.uuidString)" )
+        print( "Get Obj Zero: Created obj0 - \(obj0.id.uuidString)" )
         return obj0
     }
     
     
-    func loadObjectLibrary() {
+    func loadObjectTable() {
         
         /// ** Load Library **
         
-        print( "\nLoad Object Library: \(self.tableName)" )
+        print( "\nLoad Object Table: '\(self.tableName)'" )
         
         createTableDirectory()
         loadTable()

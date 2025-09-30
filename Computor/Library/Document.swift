@@ -150,6 +150,13 @@ final class DocumentRec: DataObjectRec<DocumentFile> {
         try super.init(from: decoder)
     }
     
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(dateCreated, forKey: .dateCreated)
+        
+        try super.encode(to: encoder)
+    }
+    
     static func == ( lhs: DocumentRec, rhs: DocumentRec ) -> Bool {
         return lhs.id == rhs.id
     }

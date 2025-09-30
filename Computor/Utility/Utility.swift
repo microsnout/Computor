@@ -166,16 +166,18 @@ func createDirectory( _ dirURL: URL ) {
     
     /// ** Create Directory **
     
+    let pathTail = findPathTail( dirURL.path(), from: "Documents")
+    
     do {
         try FileManager.default.createDirectory( at: dirURL, withIntermediateDirectories: false, attributes: nil)
         
-        print( "Directory created: ../\( findPathTail( dirURL.path(), from: "Documents") )" )
+        print( "Directory created: ../\(pathTail)" )
     }
     catch CocoaError.fileWriteFileExists {
-        print( "Directory already exists: ../\( findPathTail( dirURL.path(), from: "Documents") )" )
+        print( "Directory already exists: ../\(pathTail)" )
     }
     catch {
-        print("Error creating directory: \(error.localizedDescription)")
+        print("Error creating directory: \(pathTail) - \(error.localizedDescription)")
         assert(false)
     }
 }
