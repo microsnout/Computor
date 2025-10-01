@@ -135,9 +135,15 @@ struct CalculatorView: View {
         .task {
             // Load calculator instance states and macro modules
             model.db.loadLibrary()
-            model.loadState()
             
-            // TODO: Fix this up!
+            // Restore the calculator state and key assignments
+            model.state = model.db.docFile.state
+            model.kstate.keyMap = model.db.docFile.keyMap
+            
+            // Reload unit data and setup indexes
+            UserUnitData.uud = model.db.docFile.unitData
+            UnitDef.reIndexUserUnits()
+            TypeDef.reIndexUserTypes()
             
             // Set aux display view to mod zero
             model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleFileRec( sym: "?")
@@ -146,7 +152,7 @@ struct CalculatorView: View {
             if phase == .inactive {
                 Task {
                     do {
-                        try model.saveState()
+                        try model.saveDocument()
                     }
                     catch {
                         fatalError(error.localizedDescription)
@@ -159,12 +165,3 @@ struct CalculatorView: View {
         }
     }
 }
-
-
-//struct CalculatorView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        CalculatorView()
-//            .preferredColorScheme(.light)
-//    }
-//}
-

@@ -225,14 +225,6 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
     
     var objTable: [ObjRecT]
     
-    func getObjectFileRec( _ name: String ) -> ObjRecT? {
-        objTable.first( where: { $0.name == name } )
-    }
-    
-    func getObjectFileRec( id uuid: UUID ) -> ObjRecT? {
-        objTable.first( where: { $0.id == uuid } )
-    }
-    
     init( tableName: String, objZeroName: String = "obj0" ) {
         
         self.tableName = tableName
@@ -240,6 +232,19 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         objTable = []
     }
     
+}
+
+
+extension ObjectTable {
+    
+    func getObjectFileRec( _ name: String ) -> ObjRecT? {
+        objTable.first( where: { $0.name == name } )
+    }
+    
+    func getObjectFileRec( id uuid: UUID ) -> ObjRecT? {
+        objTable.first( where: { $0.id == uuid } )
+    }
+
     var objectDirectoryURL: URL {
         Database.documentDirectoryURL().appendingPathComponent(self.tableName)
     }
@@ -384,7 +389,7 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
                 print( "File found for: \(modName) - \(modUUID.uuidString)" )
                 numMatched += 1
                 
-                if modName == modZeroSym {
+                if modName == objZeroName {
                     // Enforce only one mod0
                     assert( mfrMod0 == nil )
                     mfrMod0 = mfr

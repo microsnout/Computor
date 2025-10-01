@@ -112,6 +112,15 @@ class DocumentFile: DataObjectFile {
 
         try super.init(from: decoder)
     }
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(state, forKey: .state)
+        try container.encode(unitData, forKey: .unitData)
+        try container.encode(keyMap, forKey: .keyMap)
+
+        try super.encode(to: encoder)
+    }
 }
 
 

@@ -29,6 +29,9 @@ class Database {
     var indexFile: IndexFile = IndexFile()
     
     var docTable = ObjectTable<DocumentRec>( tableName: "Computor", objZeroName: "doc0" )
+    
+    // Current active document 
+    var docFile = DocumentFile()
 }
 
 
@@ -48,6 +51,10 @@ extension Database {
     
     func getDocumentFileRec( id uuid: UUID ) -> DocumentRec? {
         docTable.getObjectFileRec(id: uuid)
+    }
+    
+    func getDocZero() -> DocumentRec {
+        docTable.getObjZero()
     }
 
     
@@ -354,6 +361,8 @@ extension Database {
         let _ = loadModule(mod0)
         
         docTable.loadObjectTable()
+        
+        self.docFile = getDocZero().loadDocument()
     }
     
     

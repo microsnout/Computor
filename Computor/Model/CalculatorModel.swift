@@ -476,7 +476,19 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             assert(false)
         }
     }
+
     
+    func saveDocument() throws {
+        
+        /// Save calculator state when app terminates
+        db.docFile.state = self.state
+        db.docFile.keyMap = self.kstate.keyMap
+        db.docFile.unitData = UserUnitData.uud
+        
+        db.getDocZero().saveDocument()
+        db.docTable.saveTable()
+    }
+
     
     // **********************************************************************
     // **********************************************************************
