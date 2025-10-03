@@ -10,6 +10,8 @@ import SwiftUI
 
 struct DocumentView: View {
     
+    @Environment(\.dismiss) private var dismiss
+
     @StateObject var model: CalculatorModel
     
     // Open macro module edit sheet for adding or creating new modules
@@ -34,6 +36,8 @@ struct DocumentView: View {
                         
                         VStack {
                             HStack {
+                                
+                                // Document name and caption
                                 ZStack( alignment: .leadingFirstTextBaseline ) {
                                     RichText( dfr.name, size: .normal, weight: .bold, design: .monospaced, defaultColor: "BlackText" )
                                     RichText( caption, size: .normal, weight: .thin, design: .serif, defaultColor: "ModText" ).padding( [.leading], 60)
@@ -41,11 +45,18 @@ struct DocumentView: View {
                                 
                                 Spacer()
                                 
+                                // Calculator Icon to load this document
+                                Button( action: { model.loadDocument(dfr.name); dismiss() } ) {
+                                    Image( systemName: "candybarphone" )
+                                }
+                                .padding( [.trailing], 10 )
+                                
                                 // DOT DOT DOT ellipsis menu
-                                // ActionMenu( editItem: $editItem, dfr: dfr )
+                                DocumentActionMenu( editItem: $editItem, mfr: dfr )
                             }
                             .deleteDisabled( dfr.isObjZero )
                             
+                            // Date Display
                             HStack {
                                 RichText( dfr.dateCreated.formatted(date: .abbreviated, time: .omitted), size: .small, weight: .light, design: .default, defaultColor: "BlackText" )
                                 Spacer()
@@ -131,31 +142,37 @@ struct DocumentView: View {
             }
         }
         
-//        .onChange( of: model.db.docTable.objTable) { oldList, newList in
-//
-//            // Module file index has changed
-//            model.db.saveIndex()
-//            
-//#if DEBUG
-//            print("   Wrote index file:")
-//            for dfr in newList {
-//                print( "   \(dfr.docSym)")
-//            }
-//#endif
-//        }
     }
+}
+
+
+struct DocumentActionMenu: View {
     
+    @Binding var editItem: DocumentRec?
     
-    func deleteItems( at offsets: IndexSet) {
+    var mfr: DocumentRec
+    
+    var body: some View {
         
-        list.remove(atOffsets: offsets)
-        
-//        for index in offsets {
-//            
-//            // Delete the Mod file
-//            let dfr = list[index]
-//            
-//            model.db.deleteDocument(dfr)
-//        }
+        Menu {
+            Button {
+                // Open module edit sheet
+                editItem = mfr
+            }
+            label: {
+                Label( "Edit name and caption", systemImage: "pencil")
+            }
+            
+            Button {
+                // No implementation yet
+            }
+            label: {
+                Label( "Share module", systemImage: "rectangle.portrait.and.arrow.right")
+            }
+        }
+        label: {
+            Label("", systemImage: "ellipsis")
+        }
+        .disabled( mfr.isDocZero )
     }
 }

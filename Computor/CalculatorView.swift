@@ -133,17 +133,11 @@ struct CalculatorView: View {
         }
         .environmentObject(model)
         .task {
-            // Load calculator instance states and macro modules
+            // Load calculator documents and macro modules
             model.db.loadLibrary()
             
-            // Restore the calculator state and key assignments
-            model.state = model.db.docFile.state
-            model.kstate.keyMap = model.db.docFile.keyMap
-            
-            // Reload unit data and setup indexes
-            UserUnitData.uud = model.db.docFile.unitData
-            UnitDef.reIndexUserUnits()
-            TypeDef.reIndexUserTypes()
+            // Activate doc0
+            model.loadDocument( docZeroSym )
             
             // Set aux display view to mod zero
             model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleFileRec( sym: "?")
@@ -151,12 +145,7 @@ struct CalculatorView: View {
         .onChange(of: scenePhase) { oldPhase, phase in
             if phase == .inactive {
                 Task {
-                    do {
-                        try model.saveDocument()
-                    }
-                    catch {
-                        fatalError(error.localizedDescription)
-                    }
+                    model.saveDocument()
                 }
             }
         }

@@ -149,6 +149,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var kstate = KeyState()
     @Published var db     = Database()
     
+    // Currently active calculator document
+    var activeDocName: String = ""
+    
     // Pause recording when value greater than 0
     var pauseRecCount: Int = 0
 
@@ -478,15 +481,41 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
 
     
-    func saveDocument() throws {
+    func saveDocument() {
         
-        /// Save calculator state when app terminates
-        db.docFile.state = self.state
-        db.docFile.keyMap = self.kstate.keyMap
-        db.docFile.unitData = UserUnitData.uud
+        if let docRec = db.getDocumentFileRec(name: self.activeDocName) {
+            
+            docRec.writeDocument() { obj in
+                obj.state = self.state
+                obj.keyMap = self.kstate.keyMap
+                obj.unitData = UserUnitData.uud
+            }
+        }
+    }
+    
+    
+    func loadDocument( _ name: String ) {
         
-        db.getDocZero().saveDocument()
-        db.docTable.saveTable()
+        if name != self.activeDocName {
+            
+            // Save any changes before loading new doc
+            saveDocument()
+            
+            if let docRec = db.getDocumentFileRec(name: name) {
+                
+                docRec.readDocument() { obj in
+                    
+                    self.state = obj.state
+                    self.kstate.keyMap = obj.keyMap
+                    
+                    UserUnitData.uud = obj.unitData
+                    UnitDef.reIndexUserUnits()
+                    TypeDef.reIndexUserTypes()
+                    
+                    self.activeDocName = name
+                }
+            }
+        }
     }
 
     

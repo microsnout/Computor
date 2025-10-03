@@ -29,9 +29,6 @@ class Database {
     var indexFile: IndexFile = IndexFile()
     
     var docTable = ObjectTable<DocumentRec>( tableName: "Computor", objZeroName: "doc0" )
-    
-    // Current active document 
-    var docFile = DocumentFile()
 }
 
 
@@ -361,8 +358,6 @@ extension Database {
         let _ = loadModule(mod0)
         
         docTable.loadObjectTable()
-        
-        self.docFile = getDocZero().loadDocument()
     }
     
     

@@ -66,6 +66,9 @@ protocol ObjectRecProtocol: DataObjectProtocol, Codable where FileT: DataObjectF
     func saveObject()
     func loadObject() -> FileT
     
+    func readObject( _: (FileT) -> Void )
+    func writeObject( _: (FileT) -> Void )
+
     // Computed properties
     var filename: String { get }
     var objectDirectoryURL: URL { get }
@@ -197,6 +200,39 @@ extension DataObjectRec {
             self.objFile = dof
             saveObject()
             return dof
+        }
+    }
+    
+    
+    func readObject( _ readFunc: ( FileT ) -> Void ) {
+        
+        if let obj = self.objFile {
+            // Already loaded
+            readFunc(obj)
+        }
+        else {
+            // Load, read, unload
+            let obj = loadObject()
+            readFunc(obj)
+            self.objFile = nil
+        }
+    }
+    
+    
+    func writeObject( _ writeFunc: (FileT) -> Void ) {
+        
+        if let obj = self.objFile {
+            // Already loaded
+            writeFunc(obj)
+            saveObject()
+        }
+        else {
+            // Load, write, unload
+            let obj = loadObject()
+            writeFunc(obj)
+            saveObject()
+            self.objFile = nil
+
         }
     }
 }

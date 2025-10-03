@@ -193,5 +193,13 @@ extension DocumentRec {
         /// ** Save Document **
         saveObject()
     }
+    
+    func readDocument( _ readFunc: (DocumentFile) -> Void ) {
+        readObject(readFunc)
+    }
+    
+    func writeDocument( _ writeFunc: (DocumentFile) -> Void ) {
+        writeObject(writeFunc)
+    }
 }
 
