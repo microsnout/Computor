@@ -30,7 +30,7 @@ struct LibraryView: View {
                         
                         HStack {
                             ZStack( alignment: .leadingFirstTextBaseline ) {
-                                RichText( mfr.modSym, size: .normal, weight: .bold, design: .monospaced, defaultColor: "BlackText" )
+                                RichText( mfr.name, size: .normal, weight: .bold, design: .monospaced, defaultColor: "BlackText" )
                                 RichText( caption, size: .normal, weight: .thin, design: .serif, defaultColor: "ModText" ).padding( [.leading], 60)
                             }
                             
@@ -97,7 +97,7 @@ struct LibraryView: View {
         // Edit name and caption of macro module
         .sheet( item: $editItem ) { (mfr: ModuleFileRec) in
             
-            EditModuleSheet( editName: mfr.modSym , editCaption: mfr.caption ?? "", submitLabel: "Save" ) { (newName: String, newCaption: String) in
+            EditModuleSheet( editName: mfr.name , editCaption: mfr.caption ?? "", submitLabel: "Save" ) { (newName: String, newCaption: String) in
                 
                 model.db.setModuleSymbolandCaption( mfr, newSym: newName, newCaption: newCaption.isEmpty ? nil : newCaption )
             }
@@ -111,7 +111,7 @@ struct LibraryView: View {
 #if DEBUG
             print("   Wrote index file:")
             for mfr in newList {
-                print( "   \(mfr.modSym)")
+                print( "   \(mfr.name)")
             }
 #endif
         }

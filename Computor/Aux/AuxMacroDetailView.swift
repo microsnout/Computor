@@ -63,7 +63,7 @@ struct MacroDetailView: View {
         
         let symName  = symTag.getRichText()
         
-        let modSymName = model.aux.macroMod.modSym
+        let modSymName = model.aux.macroMod.name
         
         let modZero = modSymName == modZeroSym
         
@@ -145,7 +145,7 @@ struct MacroDetailView: View {
                 HStack {
                     let caption = mr.caption ?? "ç{GrayText}-caption-"
                     
-                    let modSymStr = model.aux.macroMod.modSym
+                    let modSymStr = model.aux.macroMod.name
                     
                     VStack( alignment: .leading, spacing: 10 ) {
                         
@@ -407,7 +407,7 @@ struct MacroEditSheet: View {
         
         let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
         
-        let modSymStr = model.aux.macroMod.modSym
+        let modSymStr = model.aux.macroMod.name
 
         VStack( alignment: .leading ) {
             
@@ -473,14 +473,14 @@ struct MacroEditSheet: View {
         }
         .confirmationDialog("Confirm Deletion", isPresented: $moveDialog, presenting: moveRec ) { mmr in
             
-            Button("Move to Module: \(mmr.targetMod.modSym)") {
+            Button("Move to Module: \(mmr.targetMod.name)") {
                 
                 // Move the macro and set aux display to destination mod
                 model.moveMacro( mr.symTag, from: model.aux.macroMod, to: moveRec.targetMod )
                 model.aux.macroMod = moveRec.targetMod
             }
             
-            Button("Copy to Module: \(mmr.targetMod.modSym)") {
+            Button("Copy to Module: \(mmr.targetMod.name)") {
                 
                 // Copy the macro and leave aux display on source mod
                 model.copyMacro( mr.symTag, from: model.aux.macroMod, to: moveRec.targetMod )
@@ -567,7 +567,7 @@ struct SelectModulePopup: View {
                                 
                                 ForEach ( row.indices, id: \.self ) { c in
                                     
-                                    let sym = row[c].modSym
+                                    let sym = row[c].name
                                     
                                     ModuleKeyView( modSym: sym, keySpec: keySpec )
                                         .onTapGesture {

@@ -51,7 +51,7 @@ struct MacroEvent: CodableMacroOp {
                     }
                     
                     // Remote module reference
-                    var text = mfr.modSym
+                    var text = mfr.name
                     text += "ç{ModText}/ç{}"
                     text += mTag.getRichText()
                     return text

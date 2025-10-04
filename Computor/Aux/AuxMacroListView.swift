@@ -40,7 +40,7 @@ struct MacroListView: View {
     var body: some View {
         
         // Symbol for currently selected macro module
-        let modSymStr = model.aux.macroMod.modSym
+        let modSymStr = model.aux.macroMod.name
         
         VStack {
             AuxHeaderView( theme: Theme.lightYellow ) {

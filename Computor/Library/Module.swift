@@ -41,7 +41,7 @@ class ModuleFile: Codable {
     var id: UUID = UUID()
     
     // Short name of module - displayed as prefix to symbol
-    var modSym: String = ""
+    var name: String = ""
     
     // Descriptive caption for this module
     var caption: String? = nil
@@ -55,7 +55,7 @@ class ModuleFile: Codable {
     
     init( _ mfr: ModuleFileRec ) {
         self.id = mfr.id
-        self.modSym = mfr.modSym
+        self.name = mfr.name
         self.caption = mfr.caption
         self.groupTable = [mfr.id]
         self.macroTable = []
@@ -63,7 +63,7 @@ class ModuleFile: Codable {
     
     init() {
         self.id = UUID()
-        self.modSym = ""
+        self.name = ""
         self.caption = ""
         self.groupTable = [self.id]
         self.macroTable = []
@@ -72,10 +72,10 @@ class ModuleFile: Codable {
 
 extension ModuleFile {
     
-    var symStr: String { "{\(self.modSym)}" }
+    var symStr: String { "{\(self.name)}" }
     
     var filename: String {
-        "Module.\(modSym).\(id.uuidString)"
+        "Module.\(name).\(id.uuidString)"
     }
 }
 
@@ -102,7 +102,7 @@ final class ModuleFileRec: Codable, Identifiable, Equatable {
     /// Contains a list of all symbols defined in file
     
     var id: UUID
-    var modSym: String
+    var name: String
     var caption: String? = nil
     var symList: [SymbolTag] = []
     
@@ -111,7 +111,7 @@ final class ModuleFileRec: Codable, Identifiable, Equatable {
     
     private enum CodingKeys: String, CodingKey {
         case id
-        case modSym
+        case name
         case caption
         case symList
         // Ignore mfile for Codable
@@ -120,7 +120,7 @@ final class ModuleFileRec: Codable, Identifiable, Equatable {
     init( sym: String ) {
         /// Constuction of a New Empty Module with newly created UUID
         self.id      = UUID()
-        self.modSym  = sym
+        self.name  = sym
         self.caption = nil
         self.symList = []
         self.mfile   = nil
@@ -129,7 +129,7 @@ final class ModuleFileRec: Codable, Identifiable, Equatable {
     init( sym: String, uuid: UUID ) {
         /// Constuction of an existing Module file with provided UUID
         self.id      = uuid
-        self.modSym  = sym
+        self.name  = sym
         self.caption = nil
         self.symList = []
         self.mfile   = nil
@@ -138,7 +138,7 @@ final class ModuleFileRec: Codable, Identifiable, Equatable {
     init( from decoder: any Decoder) throws {
         let container = try decoder.container( keyedBy: CodingKeys.self)
         self.id = try container.decode( UUID.self, forKey: .id)
-        self.modSym = try container.decode( String.self, forKey: .modSym)
+        self.name = try container.decode( String.self, forKey: .name)
         self.caption = try container.decodeIfPresent( String.self, forKey: .caption)
         self.symList = try container.decode( [SymbolTag].self, forKey: .symList)
     }
@@ -152,10 +152,10 @@ final class ModuleFileRec: Codable, Identifiable, Equatable {
 extension ModuleFileRec {
     
     var filename: String {
-        "Module.\(modSym).\(id.uuidString)" }
+        "Module.\(name).\(id.uuidString)" }
     
     var isModZero: Bool {
-        self.modSym == modZeroSym }
+        self.name == modZeroSym }
     
     
     func loadModule() -> ModuleFile {
@@ -165,7 +165,7 @@ extension ModuleFileRec {
         if let mf = self.mfile {
             
             // Module already loaded
-            print( "loadModule: \(mf.modSym) already loaded" )
+            print( "loadModule: \(mf.name) already loaded" )
             return mf
         }
         
@@ -175,9 +175,9 @@ extension ModuleFileRec {
             let store = try JSONDecoder().decode(ModuleStore.self, from: data)
             let mod = store.modFile
             
-            assert( self.id == mod.id && self.modSym == mod.modSym )
+            assert( self.id == mod.id && self.name == mod.name )
             
-            print( "loadModule: \(self.modSym) - \(self.id.uuidString) Loaded" )
+            print( "loadModule: \(self.name) - \(self.id.uuidString) Loaded" )
             
             // Successful load
             self.mfile = mod
@@ -185,7 +185,7 @@ extension ModuleFileRec {
         }
         catch {
             // Missing file or bad file - create empty file
-            print( "Creating Mod file for index: \(self.modSym) - \(self.id.uuidString)")
+            print( "Creating Mod file for index: \(self.name) - \(self.id.uuidString)")
             
             // Create new module file for mfr rec and save it
             let mod = ModuleFile(self)
@@ -202,8 +202,8 @@ extension ModuleFileRec {
         
         if let mod = self.mfile {
             
-            assert( self.modSym != "_" )
-            assert( self.modSym == mod.modSym && self.caption == mod.caption )
+            assert( self.name != "_" )
+            assert( self.name == mod.name && self.caption == mod.caption )
             
             // Mod file is loaded
             do {

@@ -465,7 +465,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
         
         model.db.indexFile.mfileTable.map { remMod in
             SymbolTagGroup(
-                label: remMod.modSym,
+                label: remMod.name,
                 tagList:
                     remMod.symList.map { tag in
                         model.db.getRemoteSymbolTag(for: tag, to: remMod)

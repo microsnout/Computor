@@ -35,7 +35,7 @@ class Database {
 extension Database {
     
     func getModuleFileRec( sym: String ) -> ModuleFileRec? {
-        indexFile.mfileTable.first( where: { $0.modSym == sym } )
+        indexFile.mfileTable.first( where: { $0.name == sym } )
     }
     
     func getModuleFileRec( id: UUID ) -> ModuleFileRec? {
@@ -139,7 +139,7 @@ extension Database {
 #if DEBUG
         print( "Index File \(iFile.dFileTable.count) State Records, \(iFile.mfileTable.count) MacroModules" )
         for mfr in indexFile.mfileTable {
-            print( "   Index mfr: \(mfr.modSym) - \(mfr.id.uuidString)" )
+            print( "   Index mfr: \(mfr.name) - \(mfr.id.uuidString)" )
         }
 #endif
     }
@@ -235,10 +235,10 @@ extension Database {
                 
                 // The file exists
                 
-                if modName != mfr.modSym {
+                if modName != mfr.name {
                     // Should not happen - correct index
                     assert(false)
-                    mfr.modSym = modName
+                    mfr.name = modName
                 }
                 
                 print( "   Mod file match: \(modName) - \(modUUID.uuidString)" )
@@ -259,7 +259,7 @@ extension Database {
                 // No file matching this index entry
                 missingFiles.append(mfr.id)
                 
-                print( "   Missing mod file for index entry: \(mfr.modSym) - \(mfr.id.uuidString)")
+                print( "   Missing mod file for index entry: \(mfr.name) - \(mfr.id.uuidString)")
             }
         }
         
@@ -404,9 +404,9 @@ extension Database {
         let mf = mfr.loadModule()
         
         // Repair Index if needed
-        if mf.modSym != mfr.modSym || mf.caption != mfr.caption {
+        if mf.name != mfr.name || mf.caption != mfr.caption {
             // assert(false)
-            mfr.modSym = mf.modSym
+            mfr.name = mf.name
             mfr.caption = mf.caption
             // TODO: set symList from module
             saveIndex()
@@ -436,7 +436,7 @@ extension Database {
         }
         
         // Remove this module from the index
-        indexFile.mfileTable.removeAll( where: { $0.modSym == mfr.modSym || $0.id == mfr.id })
+        indexFile.mfileTable.removeAll( where: { $0.name == mfr.name || $0.id == mfr.id })
         saveIndex()
     }
     
@@ -448,15 +448,15 @@ extension Database {
         // Load the module file
         let mod = loadModule(mfr)
         
-        let symChanged = newSym != mfr.modSym
+        let symChanged = newSym != mfr.name
         
         if symChanged {
             // Original mod URL
             let modURL = Database.moduleDirectoryURL().appendingPathComponent( mod.filename )
             
             
-            mfr.modSym = newSym
-            mod.modSym = newSym
+            mfr.name = newSym
+            mod.name = newSym
             
             renameFile( originalURL: modURL, newName: mod.filename)
         }

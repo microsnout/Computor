@@ -58,7 +58,7 @@ struct DebugView: View {
                         
                         if let (mr, mfr) = model.db.getMacro(for: tag, localMod: mod0) {
                             
-                            print( "      Macro: \(mr.symTag.getRichText()) in Mod: \(mfr.modSym)" )
+                            print( "      Macro: \(mr.symTag.getRichText()) in Mod: \(mfr.name)" )
                         }
                         
                     }
@@ -113,7 +113,7 @@ struct DebugView: View {
                         
                         let idMatch = mfr.id == mf.id
                         
-                        print( "   \(mfr.modSym) - \(mfr.id.uuidString)  MF: \(mf.modSym) Id match: \(idMatch)" )
+                        print( "   \(mfr.name) - \(mfr.id.uuidString)  MF: \(mf.name) Id match: \(idMatch)" )
                     }
                     print("")
                 }
