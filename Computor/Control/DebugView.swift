@@ -74,7 +74,7 @@ struct DebugView: View {
                 DebugButton( label: "Delete ALL Module files") {
                     
                     
-                    for mfr in model.db.indexFile.mfileTable {
+                    for mfr in model.db.modTable.objTable {
                         model.db.deleteModule(mfr)
                     }
                     
@@ -84,9 +84,9 @@ struct DebugView: View {
                     let mod0 = model.db.getModZero()
                     let _ = model.db.loadModule(mod0)
                     
-                    model.db.saveIndex()
+                    model.db.modTable.saveTable()
                     
-                    let modDir = Database.moduleDirectoryURL()
+                    let modDir = model.db.modTable.objectDirectoryURL
                     deleteAllFiles(in: modDir)
                 }
                 
@@ -103,11 +103,11 @@ struct DebugView: View {
                 
                 DebugButton( label: "Print Macro Table" ) {
                     
-                    let n = model.db.indexFile.mfileTable.count
+                    let n = model.db.modTable.objTable.count
                     
                     print("Macro Table: \(n) entries")
                     
-                    for mfr in model.db.indexFile.mfileTable {
+                    for mfr in model.db.modTable.objTable {
                         
                         let mf = mfr.loadModule()
                         

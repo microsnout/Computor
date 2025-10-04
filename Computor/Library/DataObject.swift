@@ -137,10 +137,6 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
 
 extension DataObjectRec {
     
-    var isModZero: Bool {
-        self.name == self.objZeroName }
-    
-    
     func saveObject() {
         
         /// ** Save Object **
@@ -617,7 +613,7 @@ extension ObjectTable {
         
         if nameChanged {
             // Original obj URL
-            let objURL = Database.moduleDirectoryURL().appendingPathComponent( rec.filename )
+            let objURL = self.objectDirectoryURL.appendingPathComponent( rec.filename )
             
             rec.name = newName
             obj.name = newName

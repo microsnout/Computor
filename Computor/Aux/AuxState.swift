@@ -35,7 +35,7 @@ struct AuxState {
     var memRec: MemoryRec? = nil
     
     // Currently viewed macro module file
-    var macroMod: ModuleFileRec = ModuleFileRec( sym: "_" )
+    var macroMod: ModuleRec = ModuleRec( name: "_" )
 
     // Currently selected macro record - if non-nil displays macro detail view
     var macroRec: MacroRec? = nil
@@ -83,7 +83,7 @@ extension AuxState {
     }
     
     
-    mutating func record( _ mr: MacroRec, in mfr: ModuleFileRec ) {
+    mutating func record( _ mr: MacroRec, in mfr: ModuleRec ) {
         
         switch recState {
             

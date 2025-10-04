@@ -117,9 +117,9 @@ class LocalVariableFrame {
 class ModuleExecutionContext {
     let prevMEC: ModuleExecutionContext?
     
-    var module: ModuleFileRec
+    var module: ModuleRec
     
-    init( _ prev: ModuleExecutionContext? = nil, module mfr: ModuleFileRec ) {
+    init( _ prev: ModuleExecutionContext? = nil, module mfr: ModuleRec ) {
         self.prevMEC = prev
         self.module = mfr
     }
@@ -168,7 +168,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     var currentMEC: ModuleExecutionContext? = nil
     
-    func pushMEC( _ mfr: ModuleFileRec ) {
+    func pushMEC( _ mfr: ModuleRec ) {
         currentMEC = ModuleExecutionContext( currentMEC, module: mfr)
     }
     

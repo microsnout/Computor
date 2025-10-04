@@ -30,7 +30,7 @@ extension CalculatorModel {
     }
     
     
-    func getMacroFunction( _ sTag: SymbolTag ) -> (MacroRec, ModuleFileRec)? {
+    func getMacroFunction( _ sTag: SymbolTag ) -> (MacroRec, ModuleRec)? {
         
         // Get current module to resolve macro references
         let modCtx = currentMEC?.module ?? db.getModZero()
@@ -204,7 +204,7 @@ extension CalculatorModel {
         aux.macroMod.changeMacroTag(from: old, to: new)
         
         // Above call saves module but cannot save Index
-        db.saveIndex()
+        db.modTable.saveTable()
     }
     
     
@@ -233,7 +233,7 @@ extension CalculatorModel {
     }
     
     
-    func getKeyAssignment( for tag: SymbolTag, in mfc: ModuleFileRec ) -> KeyCode? {
+    func getKeyAssignment( for tag: SymbolTag, in mfc: ModuleRec ) -> KeyCode? {
         
         /// ** Get Key Assignment **
         ///     tag is a local symbol in mfc
@@ -249,7 +249,7 @@ extension CalculatorModel {
     }
     
     
-    func playMacroSeq( _ seq: MacroOpSeq, in mod: ModuleFileRec ) -> KeyPressResult {
+    func playMacroSeq( _ seq: MacroOpSeq, in mod: ModuleRec ) -> KeyPressResult {
         
         acceptTextEntry()
         
@@ -293,7 +293,7 @@ extension CalculatorModel {
     }
     
     
-    func moveMacro( _ mTag: SymbolTag, from srcMod: ModuleFileRec, to dstMod: ModuleFileRec ) {
+    func moveMacro( _ mTag: SymbolTag, from srcMod: ModuleRec, to dstMod: ModuleRec ) {
         
         /// ** Move Macro **
         ///     Move key assignment as well
@@ -320,7 +320,7 @@ extension CalculatorModel {
     }
 
     
-    func copyMacro( _ mTag: SymbolTag, from srcMod: ModuleFileRec, to dstMod: ModuleFileRec ) {
+    func copyMacro( _ mTag: SymbolTag, from srcMod: ModuleRec, to dstMod: ModuleRec ) {
         
         /// ** Copy Macro **
         ///     Leave key assignment alone if there is one

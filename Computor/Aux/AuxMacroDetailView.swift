@@ -378,7 +378,7 @@ struct KeyAssignPopup: View, KeyPressHandler {
 
 struct MacroMoveRec {
     
-    var targetMod: ModuleFileRec
+    var targetMod: ModuleRec
 }
 
 
@@ -399,7 +399,7 @@ struct MacroEditSheet: View {
     @State private var kcAssigned: KeyCode? = nil
     
     @State private var moveDialog = false
-    @State private var moveRec = MacroMoveRec( targetMod: ModuleFileRec( sym: "" ) )
+    @State private var moveRec = MacroMoveRec( targetMod: ModuleRec( name: "" ) )
 
     var body: some View {
         
@@ -527,7 +527,7 @@ struct ModuleKeyView: View {
 }
 
 
-typealias ModSelectClosure = ( _ mfr: ModuleFileRec ) -> Void
+typealias ModSelectClosure = ( _ mfr: ModuleRec ) -> Void
 
 
 struct SelectModulePopup: View {
@@ -548,7 +548,7 @@ struct SelectModulePopup: View {
     
     var body: some View {
         
-        let modRowList: [[ModuleFileRec]] = db.indexFile.mfileTable.chunked(into: 3)
+        let modRowList: [[ModuleRec]] = db.modTable.objTable.chunked(into: 3)
         
         VStack( alignment: .center, spacing: 0) {
             

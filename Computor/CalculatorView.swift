@@ -134,13 +134,13 @@ struct CalculatorView: View {
         .environmentObject(model)
         .task {
             // Load calculator documents and macro modules
-            model.db.loadLibrary()
+            model.db.loadDatabase()
             
             // Activate doc0
             model.loadDocument( docZeroSym )
             
             // Set aux display view to mod zero
-            model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleFileRec( sym: "?")
+            model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleRec( name: "?")
         }
         .onChange(of: scenePhase) { oldPhase, phase in
             if phase == .inactive {

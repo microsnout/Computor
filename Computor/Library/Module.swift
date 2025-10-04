@@ -33,191 +33,139 @@ typealias GroupId = Int
 
 /// **  Module File **
 
-class ModuleFile: Codable {
+class ModuleFile: DataObjectFile {
     
-    /// One of these files per macro  module file
-    
-    // Unique ID for this module/file
-    var id: UUID = UUID()
-    
-    // Short name of module - displayed as prefix to symbol
-    var name: String = ""
-    
-    // Descriptive caption for this module
-    var caption: String? = nil
+    // Added fields
     
     // Table of IDs of external referenced modules - array index is encoded in symbols
     var groupTable: [UUID] = [UUID()]
     
-    // List of macro definitions in this module - a macro must have a SymbolTag to be in this list, other fields optional
+    // List of macro definitions in this module - a macro must have a SymbolTag to be in this list
     var macroTable: [MacroRec] = []
     
+    private enum CodingKeys: String, CodingKey {
+        case groupTable
+        case macroTable
+    }
     
-    init( _ mfr: ModuleFileRec ) {
-        self.id = mfr.id
-        self.name = mfr.name
-        self.caption = mfr.caption
+    init( _ mfr: ModuleRec ) {
+        
         self.groupTable = [mfr.id]
         self.macroTable = []
+        
+        super.init()
     }
     
-    init() {
-        self.id = UUID()
-        self.name = ""
-        self.caption = ""
-        self.groupTable = [self.id]
+    required init() {
+        
+        self.groupTable = [UUID()]
         self.macroTable = []
+        
+        super.init()
     }
-}
-
-extension ModuleFile {
     
-    var symStr: String { "{\(self.name)}" }
-    
-    var filename: String {
-        "Module.\(name).\(id.uuidString)"
+    required init( _ obj: any DataObjectProtocol ) {
+        
+        self.groupTable = [obj.id]
+        self.macroTable = []
+        
+        super.init(obj)
     }
-}
-
-
-struct ModuleStore : Codable {
     
-    /// ModuleStore
+    required init( from decoder: any Decoder) throws {
+        
+        let container = try decoder.container( keyedBy: CodingKeys.self)
+        self.groupTable = try container.decode( [UUID].self, forKey: .groupTable)
+        self.macroTable = try container.decode( [MacroRec].self, forKey: .macroTable)
+        
+        try super.init(from: decoder)
+    }
     
-    var modFile: ModuleFile
-    
-    init( _ mFile: ModuleFile = ModuleFile() ) {
-        self.modFile = mFile
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(groupTable, forKey: .groupTable)
+        try container.encode(macroTable, forKey: .macroTable)
+        
+        try super.encode(to: encoder)
     }
 }
 
 
 // ********************************************************* //
 
-/// ** Macro File Record **
+/// ** Module Record **
 
-final class ModuleFileRec: Codable, Identifiable, Equatable {
+final class ModuleRec: DataObjectRec<ModuleFile> {
     
     /// Description of one macro library file
     /// Contains a list of all symbols defined in file
     
-    var id: UUID
-    var name: String
-    var caption: String? = nil
+    // Added fields
     var symList: [SymbolTag] = []
     
-    // Not stored in Index file - nil if file not loaded
+    // Not stored in file - nil if file not loaded
     var mfile: ModuleFile? = nil
     
     private enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case caption
         case symList
         // Ignore mfile for Codable
     }
     
-    init( sym: String ) {
+    required init( name: String, caption: String? = nil ) {
         /// Constuction of a New Empty Module with newly created UUID
-        self.id      = UUID()
-        self.name  = sym
-        self.caption = nil
         self.symList = []
         self.mfile   = nil
+        
+        super.init( name: name, caption: caption)
     }
     
-    init( sym: String, uuid: UUID ) {
+    required init( id uuid: UUID, name: String, caption: String? = nil ) {
         /// Constuction of an existing Module file with provided UUID
-        self.id      = uuid
-        self.name  = sym
-        self.caption = nil
         self.symList = []
         self.mfile   = nil
+        
+        super.init( id: uuid, name: name, caption: caption)
     }
     
-    init( from decoder: any Decoder) throws {
+    required init( from decoder: any Decoder) throws {
         let container = try decoder.container( keyedBy: CodingKeys.self)
-        self.id = try container.decode( UUID.self, forKey: .id)
-        self.name = try container.decode( String.self, forKey: .name)
-        self.caption = try container.decodeIfPresent( String.self, forKey: .caption)
         self.symList = try container.decode( [SymbolTag].self, forKey: .symList)
+        
+        try super.init( from: decoder)
     }
     
-    static func == ( lhs: ModuleFileRec, rhs: ModuleFileRec ) -> Bool {
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode( symList, forKey: .symList)
+        
+        try super.encode(to: encoder)
+    }
+
+    static func == ( lhs: ModuleRec, rhs: ModuleRec ) -> Bool {
         return lhs.id == rhs.id
     }
+    
+    var isModZero: Bool {
+        self.isObjZero }
+    
+    override var objDirName: String { get {"Module"} }
+    override var objZeroName: String { get {"mod0"} }
 }
 
 
-extension ModuleFileRec {
-    
-    var filename: String {
-        "Module.\(name).\(id.uuidString)" }
-    
-    var isModZero: Bool {
-        self.name == modZeroSym }
-    
+extension ModuleRec {
     
     func loadModule() -> ModuleFile {
         
         /// ** Load Module **
-        
-        if let mf = self.mfile {
-            
-            // Module already loaded
-            print( "loadModule: \(mf.name) already loaded" )
-            return mf
-        }
-        
-        do {
-            let fileURL = Database.moduleDirectoryURL().appendingPathComponent( self.filename )
-            let data = try Data( contentsOf: fileURL)
-            let store = try JSONDecoder().decode(ModuleStore.self, from: data)
-            let mod = store.modFile
-            
-            assert( self.id == mod.id && self.name == mod.name )
-            
-            print( "loadModule: \(self.name) - \(self.id.uuidString) Loaded" )
-            
-            // Successful load
-            self.mfile = mod
-            return mod
-        }
-        catch {
-            // Missing file or bad file - create empty file
-            print( "Creating Mod file for index: \(self.name) - \(self.id.uuidString)")
-            
-            // Create new module file for mfr rec and save it
-            let mod = ModuleFile(self)
-            self.mfile = mod
-            saveModule()
-            return mod
-        }
+        loadObject()
     }
     
     
     func saveModule() {
         
         /// ** Save Module **
-        
-        if let mod = self.mfile {
-            
-            assert( self.name != "_" )
-            assert( self.name == mod.name && self.caption == mod.caption )
-            
-            // Mod file is loaded
-            do {
-                let store = ModuleStore( mod )
-                let data = try JSONEncoder().encode(store)
-                let outfile = Database.moduleDirectoryURL().appendingPathComponent( mod.filename )
-                try data.write(to: outfile)
-                
-                print( "saveModule: wrote out: \(mod.filename)")
-            }
-            catch {
-                print( "saveModule: file: \(mod.filename) error: \(error.localizedDescription)")
-            }
-        }
+        saveObject()
     }
     
     
@@ -323,7 +271,7 @@ extension ModuleFileRec {
     }
     
     
-    func getRemoteModuleIndex( for remMfc: ModuleFileRec ) -> Int {
+    func getRemoteModuleIndex( for remMfc: ModuleRec ) -> Int {
         
         /// ** Get Remote Module Index **
         

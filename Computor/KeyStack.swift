@@ -463,7 +463,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
     
     func getMacroTags() -> [SymbolTagGroup] {
         
-        model.db.indexFile.mfileTable.map { remMod in
+        model.db.modTable.objTable.map { remMod in
             SymbolTagGroup(
                 label: remMod.name,
                 tagList:

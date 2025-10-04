@@ -14,9 +14,9 @@ struct LibraryView: View {
     
     // Open macro module edit sheet for adding or creating new modules
     @State private var addItem:    Bool = false
-    @State private var editItem:   ModuleFileRec? = nil
+    @State private var editItem:   ModuleRec? = nil
     
-    @Binding var list: [ModuleFileRec]
+    @Binding var list: [ModuleRec]
     
     var body: some View {
         
@@ -95,7 +95,7 @@ struct LibraryView: View {
         }
         
         // Edit name and caption of macro module
-        .sheet( item: $editItem ) { (mfr: ModuleFileRec) in
+        .sheet( item: $editItem ) { (mfr: ModuleRec) in
             
             EditModuleSheet( editName: mfr.name , editCaption: mfr.caption ?? "", submitLabel: "Save" ) { (newName: String, newCaption: String) in
                 
@@ -106,7 +106,7 @@ struct LibraryView: View {
         .onChange( of: list ) { oldList, newList in
             
             // Module file index has changed
-            model.db.saveIndex()
+            model.db.modTable.saveTable()
             
 #if DEBUG
             print("   Wrote index file:")
@@ -139,9 +139,9 @@ struct LibraryView: View {
 
 struct ActionMenu: View {
     
-    @Binding var editItem: ModuleFileRec?
+    @Binding var editItem: ModuleRec?
     
-    var mfr: ModuleFileRec
+    var mfr: ModuleRec
     
     var body: some View {
         Menu {
