@@ -141,29 +141,6 @@ extension CalculatorModel {
     }
     
     
-    /// ** NOT USED **
-    ///
-//    func record( _ tag: SymbolTag = SymbolTag(.null) ) {
-//        
-//        if let mr = aux.macroMod.getMacro(tag) {
-//            
-//            // Start recording symbol tag - which could be null
-//            aux.record(mr)
-//        }
-//        else if tag == SymbolTag(.null) {
-//            
-//            // Null tag was not found - create the null rec
-//            let mr = MacroRec()
-//            db.addMacro( mr, to: aux.macroMod )
-//            aux.record(mr)
-//        }
-//        else {
-//            // A non null tag with no record
-//            assert(false)
-//        }
-//    }
-    
-    
     func createNewMacro() {
         
         /// ** Create New Macro **
