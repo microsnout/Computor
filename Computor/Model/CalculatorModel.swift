@@ -788,36 +788,43 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
-    func getKeyText( _ kc: KeyCode ) -> String? {
+    enum KeyTextCode: Int {
+        case none = 0, custom, funcKey, UnitKey, symbol
+    }
+    
+    func getKeyText( _ kc: KeyCode ) -> (String?, KeyTextCode) {
+        
+        /// ** Get Key Text **
         
         if kc == .noop {
-            return nil
+            return (nil, .none)
         }
         
         guard let key = Key.keyList[kc] else {
             // All keys must be in keyList
             assert(false)
-            return nil
+            return (nil, .none)
         }
         
         if let text = key.text {
             // A key with custom text assigned
-            return text
+            return (text, .custom)
         }
 
         if KeyCode.fnSet.contains(kc) {
             // F1 to F6
             
             if let fTag = kstate.keyMap.tagAssignment(kc) {
+                
                 // A SymbolTag is assigned to this key
-                return fTag.getRichText()
+                return (fTag.getRichText(), .symbol)
             }
             
             // Disabled key, no macro
-            return "ç{GrayText}F\(kc.rawValue % 10)"
+            return ("ç{GrayText}F\(kc.rawValue % 10)", .funcKey)
         }
     
-        return nil
+        return (nil, .none)
     }
     
     

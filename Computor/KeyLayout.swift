@@ -305,7 +305,7 @@ func initKeyLayout() {
                        keys: [
                         Key(.clX,  "ƒ{0.8}ClrX",   caption: "Clear X"),
                         Key(.clY,  "ƒ{0.8}ClrY",   caption: "Clear Y"),
-                        Key(.clZ,  "ƒ{0.8}ClrY",   caption: "Clear Z"),
+                        Key(.clZ,  "ƒ{0.8}ClrZ",   caption: "Clear Z"),
                         Key(.clReg,"ƒ{0.8}CL Reg", caption: "Clear Registers"),
                        ],
                        caption: "Clear"
@@ -396,8 +396,8 @@ func initKeyLayout() {
     SubPadSpec.define( .x2,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.abs,    "|x|"),
-                        Key(.x3,     "x^{3}"),
+                        Key(.x2, "x^{2}"),
+                        Key(.x3, "x^{3}"),
                        ]
     )
 
@@ -419,13 +419,14 @@ func initKeyLayout() {
     SubPadSpec.define( .zRe,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.zRe,  "ƒ{0.9}Re(x)"),
-                        Key(.zIm,  "ƒ{0.9}Im(x)"),
-                        Key(.abs,  "|x|"),
-                        Key(.zArg, "ƒ{0.9}Arg(x)"),
-                        Key(.zConj,"ƒ{1.2}x\u{0305}"),
-                        Key(.zNorm,"ƒ{0.7}Norm(x)"),
-                       ]
+                        Key(.zRe,  "ƒ{0.9}Re(x)",       caption: "Real(x)"),
+                        Key(.zIm,  "ƒ{0.9}Im(x)",       caption: "Imaginary(x)"),
+                        Key(.abs,  "|x|",               caption: "Abs(x)"),
+                        Key(.zArg, "ƒ{0.9}Arg(x)",      caption: "Argument(x)"),
+                        Key(.zConj,"ƒ{1.2}x\u{0305}",   caption: "Conjugate(x)"),
+                        Key(.zNorm,"ƒ{0.7}Norm(x)",     caption: "Normal(x)"),
+                       ],
+                       caption: "Complex Operations"
     )
 
     SubPadSpec.define( .times,

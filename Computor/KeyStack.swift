@@ -680,7 +680,7 @@ struct KeyView: View {
         let hasSubpad = SubPadSpec.getSpec(key.kc) != nil
         
         VStack {
-            let keyText: String? = model.getKeyText(key.kc)
+            let (keyText, textCode) = model.getKeyText(key.kc)
             
             GeometryReader { geometry in
                 let vframe = geometry.frame(in: CoordinateSpace.global)
@@ -760,8 +760,8 @@ struct KeyView: View {
                                 .foregroundColor( Color(padSpec.keySpec.textColor)), alignment: .center)
                             
                     }
-                    .if( hasSubpad ) { view in
-                        // Add subpad indicator dot to key
+                    .if( hasSubpad && textCode != .symbol ) { view in
+                        // Add subpad indicator dot to key - but not for keys with assigned symbols
                         view.overlay(alignment: .topTrailing) {
                             yellowCircle
                                 .alignmentGuide(.top) { $0[.top] - 3}

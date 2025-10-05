@@ -80,7 +80,9 @@ struct MacroEvent: CodableMacroOp {
             return keyText
         }
         
-        return model.getKeyText(event.kc) ?? "??"
+        let (keyText, keyCode) = model.getKeyText(event.kc)
+        
+        return keyText ?? "??"
     }
     
     
