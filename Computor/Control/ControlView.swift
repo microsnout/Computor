@@ -21,7 +21,7 @@ struct ControlView: View {
                         Label( "Documents", systemImage: "document.on.document" )
                     }
                 
-                LibraryView( model: model, list: $model.db.modTable.objTable )
+                ModuleView( model: model, list: $model.db.modTable.objTable )
                     .tabItem {
                         Label( "Modules", systemImage: "book.pages" )
                     }

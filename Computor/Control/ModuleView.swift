@@ -8,7 +8,7 @@
 import SwiftUI
 
 
-struct LibraryView: View {
+struct ModuleView: View {
     
     @StateObject var model: CalculatorModel
     
