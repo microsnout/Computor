@@ -198,28 +198,27 @@ extension Database {
     }
     
     
-    func deleteMacro( _ sTag: SymbolTag, from mfr: ModuleRec  ) {
+    func deleteMacro( _ sTag: SymbolTag, from mod: ModuleRec  ) {
         
         /// ** Delete Macro **
         
-        // Remove this symbol from the cached symbol list
-        mfr.symList.removeAll( where: { $0 == sTag } )
+        mod.deleteMacro(sTag)
         modTable.saveTable()
-        
-        mfr.deleteMacro(sTag)
     }
     
     
-    func addMacro( _ mr: MacroRec, to mfc: ModuleRec ) {
+    func addMacro( _ mr: MacroRec, to mod: ModuleRec ) {
         
         /// ** Add Macro **
         
-        mfc.addMacro(mr)
+        mod.addMacro(mr)
         modTable.saveTable()
     }
     
     
     func moveMacro( _ mr: MacroRec, from srcMod: ModuleRec, to dstMod: ModuleRec ) {
+        
+        /// ** Move Macro **
         
         // Move the existing macro rec
         addMacro( mr, to: dstMod )
@@ -229,9 +228,20 @@ extension Database {
     
     func copyMacro( _ mr: MacroRec, from srcMod: ModuleRec, to dstMod: ModuleRec ) {
         
+        /// ** Copy Macro **
+        
         // Create a copy of the macro record
         let newMacro = mr.copy()
         addMacro( newMacro, to: dstMod )
+    }
+    
+    
+    func changeMacroTag( from oldTag: SymbolTag, to newTag: SymbolTag, in mod: ModuleRec ) {
+        
+        /// ** Change Macro Tag **
+        
+        mod.changeMacroTag(from: oldTag, to: newTag)
+        modTable.saveTable()
     }
     
     
@@ -280,7 +290,11 @@ extension Database {
         docTable.setObjectNameAndCaption(dfr, newName: newSym, newCaption: newCaption)
     }
     
+    
     func documentExists( _ name: String ) -> Bool {
+        
+        /// ** Document Exists **
+        
         if let _ = docTable.getObjectFileRec(name) {
             return true
         }

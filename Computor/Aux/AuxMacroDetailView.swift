@@ -444,7 +444,7 @@ struct MacroEditSheet: View {
                     // If macroMod is mod0 this will not change the tag
                     let remTag = model.db.getRemoteSymbolTag( for: mr.symTag, to: model.aux.macroMod )
                     
-                    model.assignKeyTo( kc, tag: remTag )
+                    model.assignKey( kc, to: remTag )
                 }
             }
             

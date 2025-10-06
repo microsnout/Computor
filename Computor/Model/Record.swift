@@ -17,20 +17,22 @@ extension CalculatorModel {
         
         let mod0 = db.getModZero()
         
-        if let (mr, mfr) = db.getMacro( for: sTag, localMod: mod0) {
+        if let (mr, mod) = db.getMacro( for: sTag, localMod: mod0) {
             
             // Test if we are deleting the macro currently being viewed in Aux dispaly
-            if mfr == aux.macroMod && mr === aux.macroRec {
+            if mod == aux.macroMod && mr === aux.macroRec {
                 aux.clearMacroState()
             }
             
             // Now delete the macro and save file
-            db.deleteMacro( sTag.localTag, from: mfr)
+            db.deleteMacro( sTag.localTag, from: mod)
         }
     }
     
     
     func getMacroFunction( _ sTag: SymbolTag ) -> (MacroRec, ModuleRec)? {
+        
+        /// ** Get Macro Function **
         
         // Get current module to resolve macro references
         let modCtx = currentMEC?.module ?? db.getModZero()
@@ -48,20 +50,16 @@ extension CalculatorModel {
     
     func isRecordingKey( _ kc: KeyCode ) -> Bool {
         
+        /// ** Is Recording Key **
         /// Return true if kc key is currently recording
         
-        if let mr = aux.macroRec {
-            
-            if let kcFn = kstate.keyMap.keyAssignment( mr.symTag ) {
-                
-                // We are recording a sym that is assigned to key kcFn
-                return kcFn == kc && aux.recState.isRecording
-            }
-            
-            // recording but no key assignment
-            return false
+        if let mr = aux.macroRec,
+           let kcFn = kstate.keyMap.keyAssignment( mr.symTag ) {
+
+            // We are recording a sym that is assigned to key kcFn
+            return kcFn == kc && aux.recState.isRecording
         }
-        
+
         // Not recording anything
         return false
     }
@@ -69,53 +67,46 @@ extension CalculatorModel {
     
     func startRecordingFnKey( _ kcFn: KeyCode ) {
         
-        if let sTag = kstate.keyMap.tagAssignment(kcFn) {
+        /// ** Start Recording Fn Key **
+        
+        if let _ = kstate.keyMap.tagAssignment(kcFn) {
             
-            // sTag is assigned to key kcFn
-            
-            let mod0 = db.getModZero()
-            
-            if let (mr, mfr) = db.getMacro(for: sTag, localMod: mod0) {
-                
-                // Found a macro rec for sTag in mfr
-                aux.record(mr, in: mfr)
-            }
-            else {
-                // A tag assigned to this key but no macro rec - should not happen
-                assert(false)
-            }
+            // A tag assigned to this key - should not happen
+            assert(false)
+            return
         }
-        else {
-            // No tag assigned - must be a blank Fn key - find matching tag
-            if let sTag = SymbolTag.getFnSym(kcFn) {
-                
-                // Macro will be in this module
-                let recMod = aux.macroMod
-                
-                // Make a remote version of Fn tag if macroMod is not mod0
-                let recTag = db.getRemoteSymbolTag(for: sTag, to: recMod)
-                
-                // Add to key map
-                kstate.keyMap.assign( kcFn, tag: recTag )
-                
-                // Create macro rec with local tag
-                let mr = MacroRec( tag: sTag )
-                
-                // Add macro rec to the remote module
-                db.addMacro( mr, to: recMod )
-                
-                // Start recording
-                aux.record(mr, in: recMod)
-            }
-            else {
-                // Recording kc key with no possible tag
-                assert(false)
-            }
+        
+        // No tag assigned - must be a blank Fn key - find matching tag
+        guard let sTag = SymbolTag.getFnSym(kcFn) else {
+            
+            // Recording kc key with no possible tag
+            assert(false)
+            return
         }
+            
+        // Macro will be in this module
+        let recMod = aux.macroMod
+        
+        // Make a remote version of Fn tag if macroMod is not mod0
+        let recTag = db.getRemoteSymbolTag(for: sTag, to: recMod)
+        
+        // Add to key map
+        kstate.keyMap.assign( kcFn, tag: recTag )
+        
+        // Create macro rec with local tag
+        let mr = MacroRec( tag: sTag )
+        
+        // Add macro rec to the remote module
+        db.addMacro( mr, to: recMod )
+        
+        // Start recording
+        aux.record(mr, in: recMod)
     }
     
     
     func clearRecordingFnKey( _ kcFn: KeyCode ) {
+        
+        /// ** Clear Recording Fn Key **
         
         // Lookup macro assigned to this key
         if let tag = kstate.keyMap.tagAssignment(kcFn) {
@@ -123,19 +114,18 @@ extension CalculatorModel {
             guard let fnTag = SymbolTag.getFnSym(kcFn) else {
                 // There must be a tag representing this kc because we only get here by pressing F1..F6
                 assert(false)
+                return
             }
             
             if tag == fnTag {
                 
                 // Macro assigned to this key has symbol matching key
-                // Clear assignment and delete macro
-                kstate.keyMap.clearKeyAssignment(kcFn)
+                // Delete the macro because it only works on this key
                 clearMacroFunction(tag)
             }
             
-            // Macro is assigned to a custom symbol
             // Remove the key mapping for this key
-            // Macro will still exist
+            // Macro will still exist unless it was deleted above
             kstate.keyMap.clearKeyAssignment(kcFn)
         }
     }
@@ -157,18 +147,14 @@ extension CalculatorModel {
     }
     
     
-    func setMacroCaption( _ caption: String, for tag: SymbolTag ) {
-        
-        aux.macroMod.setMacroCaption(tag, caption)
-    }
-    
-    
     func changeMacroSymbol( old: SymbolTag, new: SymbolTag ) {
+        
+        /// ** Change Macro Symbol **
         
         // Called from macro detail view - so sym is local to macroMod
         
         // Find remote tag from mod0
-        let remTag = db.getRemoteSymbolTag( for: old, to: aux.macroMod )
+        let remTag = db.getRemoteSymbolTag( for: old, to: aux.macroMod /* from mod0 */ )
 
         if let kc = kstate.keyMap.keyAssignment(remTag) {
             
@@ -178,14 +164,13 @@ extension CalculatorModel {
         }
         
         // Change local tag to new local tag within current recording mod
-        aux.macroMod.changeMacroTag(from: old, to: new)
-        
-        // Above call saves module but cannot save Index
-        db.modTable.saveTable()
+        db.changeMacroTag(from: old, to: new, in: aux.macroMod)
     }
     
     
-    func assignKeyTo( _ kc: KeyCode, tag: SymbolTag ) {
+    func assignKey( _ kc: KeyCode, to tag: SymbolTag ) {
+        
+        /// ** Assign Key **
         
         if let oldKey = kstate.keyMap.keyAssignment(tag) {
             
@@ -207,26 +192,31 @@ extension CalculatorModel {
             // New assignment
             kstate.keyMap.assign(kc, tag: tag )
         }
+        
+        // Save now - don't wait for app losing focus
+        saveDocument()
     }
     
     
-    func getKeyAssignment( for tag: SymbolTag, in mfc: ModuleRec ) -> KeyCode? {
+    func getKeyAssignment( for tag: SymbolTag, in mod: ModuleRec ) -> KeyCode? {
         
         /// ** Get Key Assignment **
         ///     tag is a local symbol in mfc
         
-        if mfc.isModZero {
+        if mod.isModZero {
             // Search for key with local sym tag
             return kstate.keyMap.keyAssignment(tag)
         }
         
         // Create a remote tag for symbols in mfc as seen from mod0
-        let remTag = db.getRemoteSymbolTag( for: tag, to: mfc )
+        let remTag = db.getRemoteSymbolTag( for: tag, to: mod )
         return kstate.keyMap.keyAssignment(remTag)
     }
     
     
     func playMacroSeq( _ seq: MacroOpSeq, in mod: ModuleRec ) -> KeyPressResult {
+        
+        /// ** Play Macro Seq **
         
         acceptTextEntry()
         
@@ -312,15 +302,24 @@ extension CalculatorModel {
     // *** *** ***
     
     func pauseRecording() {
+        
+        /// ** Pause Recording **
+        
         pauseRecCount += 1
     }
     
     func resumeRecording() {
+        
+        /// ** Resume Recording **
+        
         pauseRecCount -= 1
     }
     
     
     func markMacroIndex() -> Int {
+        
+        /// ** Mark Macro Index **
+        
         guard let mr = aux.macroRec else {
             assert(false)
             return 0
@@ -332,6 +331,9 @@ extension CalculatorModel {
     
     
     func recordKeyEvent( _ event: KeyEvent ) {
+        
+        /// ** Record Key Event **
+        
         if pauseRecCount > 0 {
             logAux.debug( "recordKeyFn: Paused" )
             return
@@ -421,6 +423,9 @@ extension CalculatorModel {
     
     
     func recordValueEvent( _ tv: TaggedValue ) {
+        
+        /// ** Record Value Event **
+        
         if aux.isRec
         {
             guard let mr = aux.macroRec else {

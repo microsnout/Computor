@@ -195,6 +195,7 @@ extension ModuleRec {
         
         let mf = loadModule()
         mf.macroTable.removeAll( where: { $0.symTag == sTag } )
+        symList.removeAll( where: { $0 == sTag } )
         
         saveModule()
     }
