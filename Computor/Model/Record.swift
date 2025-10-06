@@ -77,7 +77,7 @@ extension CalculatorModel {
         }
         
         // No tag assigned - must be a blank Fn key - find matching tag
-        guard let sTag = SymbolTag.getFnSym(kcFn) else {
+        guard let sTag = SymbolTag.getKeyCodeSym(kcFn) else {
             
             // Recording kc key with no possible tag
             assert(false)
@@ -111,7 +111,7 @@ extension CalculatorModel {
         // Lookup macro assigned to this key
         if let tag = kstate.keyMap.tagAssignment(kcFn) {
             
-            guard let fnTag = SymbolTag.getFnSym(kcFn) else {
+            guard let fnTag = SymbolTag.getKeyCodeSym(kcFn) else {
                 // There must be a tag representing this kc because we only get here by pressing F1..F6
                 assert(false)
                 return

@@ -21,6 +21,10 @@ extension SymbolTag {
     
     static let modShift = 100000000000
     
+    // Starting mod values for User modules and builtin system modules
+    static let firstUserMod  = 0
+    static let firstSysMod = 100
+    
     var kc: KeyCode { KeyCode(rawValue: (tag % 1000000000)) ?? KeyCode.noop }
     
     var isNull: Bool { self.kc == .null }
@@ -28,6 +32,9 @@ extension SymbolTag {
     var isSingleChar: Bool { (tag % 1000000000) < 1000 }
     
     var mod: Int { tag / SymbolTag.modShift }
+    
+    var isUserMod: Bool { self.mod < 100 }
+    var isSysMod: Bool { self.mod >= 100 }
     
     var isLocalTag: Bool { self.mod == 0 }
     
@@ -157,7 +164,7 @@ extension SymbolTag {
         /// If kc is F1..F6, lookup encoded symbol version
         /// if other kc, just store the kd rawValue
         
-        if let fnTag = SymbolTag.getFnSym(kc) {
+        if let fnTag = SymbolTag.getKeyCodeSym(kc) {
             
             // Split .F1 KeyCode to [.F, .d1]
             self.tag = fnTag.tag
@@ -208,11 +215,32 @@ extension SymbolTag {
         .F4 : SymbolTag( [.F, .d4]),
         .F5 : SymbolTag( [.F, .d5]),
         .F6 : SymbolTag( [.F, .d6]),
+        
+        .U1 : SymbolTag( [.U, .d1]),
+        .U2 : SymbolTag( [.U, .d2]),
+        .U3 : SymbolTag( [.U, .d3]),
+        .U4 : SymbolTag( [.U, .d4]),
+        .U5 : SymbolTag( [.U, .d5]),
+        .U6 : SymbolTag( [.U, .d6]),
     ]
     
-    static func getFnSym( _ kc: KeyCode ) -> SymbolTag? {
-        SymbolTag.fnSym[kc]
+    static func getKeyCodeSym( _ kc: KeyCode ) -> SymbolTag? {
+        
+        /// ** Get KeyCode Sym **
+        
+        if kc.isFuncKey {
+            // Symbol associated with F1..F6 and U1..U6
+            return SymbolTag.fnSym[kc]
+        }
+        
+        if ( kc.isLowerAlpha || kc.isUpperAlpha || kc.isGreekAlpha ) {
+            return SymbolTag( [kc] )
+        }
+        
+        return nil
     }
+    
+    static var Null: SymbolTag { SymbolTag(.null) }
 }
 
 
@@ -240,7 +268,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
     @State private var symArray: [KeyCode] = []
     
     // Pre-existing symbol can be provided
-    var tag: SymbolTag = SymbolTag(.null)
+    var tag: SymbolTag = SymbolTag.Null
+    
     var scc: SymbolContinuationClosure
     
     enum CharSet: Int {

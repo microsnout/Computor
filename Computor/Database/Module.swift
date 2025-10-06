@@ -14,9 +14,9 @@ class MacroRec: Codable, Identifiable {
     
     var id: SymbolTag { symTag }
     
-    var isEmpty: Bool { symTag == SymbolTag(.null) && caption == nil && opSeq.isEmpty }
+    var isEmpty: Bool { symTag == SymbolTag.Null && caption == nil && opSeq.isEmpty }
     
-    init(tag symTag: SymbolTag = SymbolTag(.null) , caption: String? = nil, seq opSeq: MacroOpSeq = MacroOpSeq() ) {
+    init(tag symTag: SymbolTag = SymbolTag.Null , caption: String? = nil, seq opSeq: MacroOpSeq = MacroOpSeq() ) {
         self.symTag = symTag
         self.caption = caption
         self.opSeq = opSeq

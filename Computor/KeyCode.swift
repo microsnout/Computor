@@ -127,6 +127,12 @@ enum KeyCode: Int, Codable {
     
     var isGreekAlpha: Bool
     { return self.rawValue >= KeyCode.alpha.rawValue && self.rawValue <= KeyCode.omega.rawValue }
+    
+    var isUnitKey: Bool
+    { KeyCode.UnSet.contains(self) }
+
+    var isFuncKey: Bool
+    { KeyCode.fnSet.contains(self) || self.isUnitKey }
 
     static let digitSet:Set<KeyCode> = [.d0, .d1, .d2, .d3, .d4, .d5, .d6, .d7, .d8, .d9]
 
