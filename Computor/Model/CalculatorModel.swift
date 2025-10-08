@@ -644,16 +644,53 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             // .lib, Sym code invoked by 'Lib' key or macro
             
-            if let tag = event.mTag,
-               let (mr, mfr) = getMacroFunction(tag) {
+            if let tag = event.mTag {
                 
-                
-                
-                // Macro tag selected from popup
-                result = playMacroSeq(mr.opSeq, in: mfr)
+                if tag.isUserMod {
+                    
+                    if let (mr, mfr) = getMacroFunction(tag) {
+                        
+                        
+                        
+                        // Macro tag selected from popup
+                        result = playMacroSeq(mr.opSeq, in: mfr)
+                    }
+                }
+                else {
+                    
+                    // System Library Mod code
+                    if let lf = SystemLibrary.getLibFunction( for: tag ) {
+                        
+                        if !state.patternMatch( lf.regPattern ) {
+                            
+                            // Stack state not compatible with function
+                            displayErrorIndicator()
+                            return KeyPressResult.stateError
+                        }
+                        
+                        pushState()
+
+                        let (newState, res) = lf.libFunc(state)
+                        
+                        if let s1 = newState
+                        {
+                            state = s1
+                            state.noLift = false
+                            
+                            // Successful state change
+                            return res
+                        }
+                        else {
+                            // Failed to produce a new state
+                            popState()
+                            result = res
+                        }
+                    }
+                }
             }
             
             if result == KeyPressResult.stateError {
+                displayErrorIndicator()
                 return KeyPressResult.stateError
             }
             
@@ -746,19 +783,24 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
             }
             
-            // Display 'error' indicator in primary display
-            self.status.error = true
-            
-            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { timer in
-                // Clear 'error' indication
-                self.status.error = false
-            }
-            
+            displayErrorIndicator()
             return KeyPressResult.stateError
         }
         
         // Successful state change
         return KeyPressResult.stateChange
+    }
+    
+    
+    func displayErrorIndicator() {
+        
+        // Display 'error' indicator in primary display
+        self.status.error = true
+        
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { timer in
+            // Clear 'error' indication
+            self.status.error = false
+        }
     }
     
     // **********************************************************************

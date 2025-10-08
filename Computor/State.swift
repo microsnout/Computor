@@ -21,7 +21,7 @@ struct RegisterPattern {
     var specList: [RegisterSpec]
     var stateTest: StateTest?
     
-    init( _ specList: [RegisterSpec], _ stateTest: StateTest? = nil) {
+    init( _ specList: [RegisterSpec] = [], _ stateTest: StateTest? = nil) {
         self.specList = specList
         self.stateTest = stateTest
     }

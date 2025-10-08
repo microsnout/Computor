@@ -441,6 +441,11 @@ struct GlobalMemoryPopup: View, KeyPressHandler {
 }
 
 
+enum LibrarySource: Int {
+    case user = 0, system
+}
+
+
 struct MacroLibraryPopup: View, KeyPressHandler {
     
     /// Select an existing memory if there are any or go directly to new memory popup
@@ -448,29 +453,37 @@ struct MacroLibraryPopup: View, KeyPressHandler {
     @EnvironmentObject var model: CalculatorModel
     @EnvironmentObject var keyData: KeyData
     
+    @State private var libSource: LibrarySource = .user
+    
     func keyPress(_ event: KeyEvent ) -> KeyPressResult {
         return KeyPressResult.modalPopupContinue
     }
 
     
-    func getTagList() -> [SymbolTag] {
+    func getMacroTags( _ libSrc: LibrarySource ) -> [SymbolTagGroup] {
         
-        let tags = model.aux.macroMod.symList
-        
-        return tags.filter { $0 != SymbolTag.Null }
-    }
-    
-    
-    func getMacroTags() -> [SymbolTagGroup] {
-        
-        model.db.modTable.objTable.map { remMod in
-            SymbolTagGroup(
-                label: remMod.name,
-                tagList:
-                    remMod.symList.map { tag in
-                        model.db.getRemoteSymbolTag(for: tag, to: remMod)
-                    }
-            )
+        switch libSrc {
+        case .user:
+            return
+                model.db.modTable.objTable.map { remMod in
+                    SymbolTagGroup(
+                        label: remMod.name,
+                        tagList:
+                            remMod.symList.map { tag in
+                                model.db.getRemoteSymbolTag(for: tag, to: remMod)
+                            }
+                    )
+                }
+            
+        case .system:
+            return
+                SystemLibrary.groups.map { group in
+                    SymbolTagGroup(
+                        label: group.name,
+                        tagList:
+                            group.functions.map { SymbolTag($0.sym, mod: group.modCode) }
+                    )
+                }
         }
     }
 
@@ -479,12 +492,20 @@ struct MacroLibraryPopup: View, KeyPressHandler {
         
         CustomModalPopup( keyPressHandler: self, myModalKey: .selectMacro ) {
             
-            let tagGroupList = getMacroTags()
+            let tagGroupList = getMacroTags(libSource)
             
             SelectSymbolPopup( tagGroupList: tagGroupList, title: "Macro Library" ) {
                 
-                // No footer
-                Spacer().frame( height: 20 ).padding([.top, .bottom], 0)
+                // User Lib or System Lib picker
+                Picker("", selection: $libSource) {
+                    RichText( "User", size: .small, weight: .regular, design: .default, defaultColor: "BlackText" )
+                        .tag(LibrarySource.user)
+                    RichText( "System", size: .small, weight: .regular, design: .default, defaultColor: "BlackText" )
+                        .tag(LibrarySource.system)
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+                .padding( [.top, .bottom], 15 )
             }
         }
     }
