@@ -7,9 +7,9 @@ Maps a function ƒ(x) to each element of a sequence
     X: [1 x N] matrix of any type
     
 ß{Example:}
-    4 <Range>
+    4 ∆{Range}
         x: [1 2 3 4]
-    Map-x x^{2}
+    ∆{Map-x} x^{2}
         x: [1 4 9 16]
 
 ß{Notes:}
@@ -23,13 +23,13 @@ Maps a function ƒ(x,y) to each element of 2 sequences
     X: [1 x N] row matrix
     
 ß{Example:}
-    4 <Range> <Enter>
+    4 ∆{Range} ∆{Enter}
         y: [1, 2, 3, 4]
         x: [1, 2, 3, 4]
     100 X
         y: [1, 2, 3, 4]
         x: [100, 200, 300, 400]
-    Map-xy +
+    ∆{Map-xy} +
         x: [101, 201, 301, 401]
 
 ß{Notes:}
@@ -45,7 +45,7 @@ Generates a range of integers from 1 to N
     X: N
     
 ß{Example:}
-    6 <Seq>
+    6 ∆{Seq}
         x: [1, 2, 3, 4, 5, 6]
 ####
 @@R
@@ -58,10 +58,10 @@ Combine all elements of a sequence into a single value. Applies ƒ(x, y) to succ
     X: [1 x N] Sequence of values
     
 ß{Example:}
-    5 <Range>
+    5 ∆{Range}
         x: [1, 2, 3, 4, 5]
-    <CLRy>
-    <Reduce> '+'
+    ∆{ClrY}
+    ∆{Reduce} '+'
         x: 15
         
 ß{Notes:}
@@ -78,9 +78,9 @@ Generates a sequence of values in a Row matrix
     X: Number of iterations
     
 ß{Example:}
-    10 <Enter>
-    2 <Enter>
-    6 <Seq>
+    10 ∆{Enter}
+    2 ∆{Enter}
+    6 ∆{Seq}
         x: [10, 12, 14, 16, 18, 20]
     
 ß{Notes:}

@@ -61,7 +61,7 @@ struct RichText: View {
         var subScriptFont: Font = self.subScriptFont
         var baseLine = self.baseLine
 
-        let opCodeSet:Set<Character> = ["^", "_", "=", "ç", "ƒ", "ß"]
+        let opCodeSet:Set<Character> = ["^", "_", "=", "ç", "ƒ", "ß", "∆"]
         
         while let validIndex = string.firstIndex( where: { (ch) -> Bool in  return opCodeSet.contains(ch) }) {
             
@@ -118,10 +118,19 @@ struct RichText: View {
                     .foregroundColor( Color(color))
 
             case "ß":
+                // Used in Help file for section headings
                 text = text + Text(opStr)
                     .font(bodyFont)
                     .foregroundColor( Color("ModText") )
-                
+
+            case "∆":
+                // Used in Help file for key commands
+                var (body, _, _ ) = getTextSpec(textSize)
+                text = text + Text(opStr)
+                    .font( .system( size: body*0.8, weight: .heavy, design: .default ).uppercaseSmallCaps() )
+                    .baselineOffset(1.0)
+                    .foregroundColor( Color("AccentText") )
+
             case "ç":
                 color = opStr.isEmpty ? defaultColor : opStr
                 

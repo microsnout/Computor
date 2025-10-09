@@ -53,10 +53,13 @@ struct CalculatorView: View {
                                     .frame( maxHeight: 8)
                                 
                                 HStack {
+                                    let docName = model.activeDocName == docZeroSym ? "" : model.activeDocName
+                                    
                                     Text("Computor").foregroundColor(Color("Frame"))/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
                                     
                                     Spacer()
                                     
+                                    RichText( docName, size: .small, weight: .bold, design: .default, defaultColor: "AccentText" )
                                     Button {
                                         presentSettings = true
                                     } label: {

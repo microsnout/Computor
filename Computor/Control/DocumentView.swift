@@ -16,6 +16,7 @@ struct DocumentView: View {
     
     // Open macro module edit sheet for adding or creating new modules
     @State private var addItem:    Bool = false
+    @State private var saveItem:   Bool = false
     @State private var editItem:   DocumentRec? = nil
     
     @State private var showingDeleteConfirmation = false
@@ -94,12 +95,23 @@ struct DocumentView: View {
                     }
                     
                     // Add new module button is part of list
+                    Button( action: { saveItem = true } ) {
+                        HStack {
+                            Image( systemName: "document.circle" )
+                                .foregroundColor( Color("ModText") )
+                            
+                            RichText( "Save Document As..", size: .small, weight: .bold, design: .monospaced, defaultColor: "ModText" )
+                            Spacer()
+                        }
+                    }
+
+                    // Add new module button is part of list
                     Button( action: { addItem = true } ) {
                         HStack {
                             Image( systemName: "plus.circle" )
                                 .foregroundColor( Color("ModText") )
                             
-                            RichText( "Add Calculator Document", size: .small, weight: .bold, design: .monospaced, defaultColor: "ModText" )
+                            RichText( "New Calculator Document", size: .small, weight: .bold, design: .monospaced, defaultColor: "ModText" )
                             Spacer()
                         }
                     }
@@ -124,6 +136,15 @@ struct DocumentView: View {
         .background(Color("ControlBack"))
         .scrollContentBackground(.hidden)
         
+        // Save current module to..
+        .sheet( isPresented: $saveItem ) {
+            
+            EditModuleSheet( submitLabel: "Save" ) { (name: String, caption: String) in
+                
+                _ = model.db.createNewDocument(symbol: name, caption: caption.isEmpty ? nil : caption )
+            }
+        }
+
         // Add a new macro module
         .sheet( isPresented: $addItem ) {
             
