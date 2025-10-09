@@ -45,7 +45,7 @@ Generates a range of integers from 1 to N
     X: N
     
 ß{Example:}
-    6 ∆{Seq}
+    6 ∆{Range}
         x: [1, 2, 3, 4, 5, 6]
 ####
 @@R
