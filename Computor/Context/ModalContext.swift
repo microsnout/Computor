@@ -63,7 +63,7 @@ class ModalContext : EventContext {
         guard let model = self.model else { return KeyPressResult.null }
         
 #if DEBUG
-        print( "ModalContext executeFn: \(event.keyCode)")
+        // print( "ModalContext executeFn: \(event.keyCode)")
 #endif
         
         switch event.kc {

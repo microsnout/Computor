@@ -670,7 +670,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                         
                         pushState()
 
-                        let (newState, res) = lf.libFunc(state)
+                        let (newState, res) = lf.libFunc(self, state)
                         
                         if let s1 = newState
                         {
