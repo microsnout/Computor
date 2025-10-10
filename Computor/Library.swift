@@ -142,12 +142,6 @@ var stdGroup = LibraryGroup(
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libTrapezoidalRule(_:)
         ),
-
-        LibraryFunction(
-            sym: SymbolTag( [.T, .q] ),
-            require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
-            libTrapezoidalRule2(_:)
-        ),
     ])
 
 
@@ -241,19 +235,6 @@ func qtrap( _ f: (Double) -> Double, a: Double, b: Double, eps: Double = 1.0e-7,
 
 func libTrapezoidalRule( _ model: CalculatorModel ) -> KeyPressResult {
     
-    let s0 = model.state
-    
-    // Create a Reduce function obj capturing the value list and mode reference
-    let trapFn = TrapezoidalRuleContext( fromA: s0.Xtv, toB: s0.Ytv )
-    
-    model.pushContext( trapFn, lastEvent: KeyEvent(.lib) )
-    
-    return KeyPressResult.modalFunction
-}
-
-
-func libTrapezoidalRule2( _ model: CalculatorModel ) -> KeyPressResult {
-    
     return model.withModalFunc( prompt: "ç{UnitText}Trapezoid Rule ƒ()" ) { model, f in
         
         let (a, b) = model.state.popRealXY()
@@ -262,54 +243,6 @@ func libTrapezoidalRule2( _ model: CalculatorModel ) -> KeyPressResult {
         
         model.enterRealValue(result)
         
-        return KeyPressResult.stateChange
-    }
-}
-
-
-class TrapezoidalRuleContext : ModalContext {
-    
-    let fromA:  TaggedValue
-    let toB:  TaggedValue
-
-    init( fromA: TaggedValue, toB: TaggedValue ) {
-        self.fromA = fromA
-        self.toB = toB
-    }
-    
-    override var statusString: String? { "ç{UnitText}Trapezoid Rule ƒ()" }
-    
-    override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
-        
-        guard let model = self.model else { return KeyPressResult.null }
-        
-        let f: (Double) -> Double = { x in
-            
-            let xValue = TaggedValue( reg: x)
-            model.enterValue(xValue)
-            
-            if self.executeFn( event ) == .stateChange {
-                let fResult = model.state.X
-                model.state.stackDrop()
-                
-                // print( "f(\(x)) = \(fResult)")
-                return fResult
-            }
-            else {
-                model.state.stackDrop()
-                return 0.0
-            }
-        }
-        
-        // Remove parameter values from stack
-        model.state.stackDrop()
-        model.state.stackDrop()
-        
-        let result = qtrap( f, a: fromA.reg, b: toB.reg)
-        
-        let resTv = TaggedValue( reg: result )
-        
-        model.enterValue(resTv)
         return KeyPressResult.stateChange
     }
 }
