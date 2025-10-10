@@ -256,17 +256,12 @@ func libTrapezoidalRule2( _ model: CalculatorModel ) -> KeyPressResult {
     
     return model.withModalFunc( prompt: "ç{UnitText}Trapezoid Rule ƒ()" ) { model, f in
         
-        let (a, b) = (model.state.X, model.state.Y)
+        let (a, b) = model.state.popRealXY()
         
-        model.state.stackDrop()
-        model.state.stackDrop()
-
         let result = qtrap( f, a: a, b: b)
         
-        let resTv = TaggedValue( reg: result )
+        model.enterRealValue(result)
         
-        model.enterValue(resTv)
-
         return KeyPressResult.stateChange
     }
 }

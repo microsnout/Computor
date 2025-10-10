@@ -877,6 +877,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             pushValue(tv)
         }
     }
+    
+    
+    func enterRealValue( _ r: Double ) {
+        let tv = TaggedValue( reg: r )
+        enterValue(tv)
+    }
 
     
     func pushValue(_ tv: TaggedValue) {

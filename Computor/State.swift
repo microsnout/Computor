@@ -313,4 +313,22 @@ extension CalcState {
         let last = stackSize-1
         self.stack[last] = xtv
     }
+    
+    mutating func popRealX() -> Double {
+        let x = self.X
+        stackDrop()
+        return x
+    }
+    
+    mutating func popRealXY() -> (Double, Double) {
+        let (x, y) = (self.X, self.Y)
+        stackDrop(2)
+        return (x,y)
+    }
+    
+    mutating func popRealXYZ() -> (Double, Double, Double) {
+        let (x, y, z) = (self.X, self.Y, self.Z)
+        stackDrop(3)
+        return (x,y,z)
+    }
 }
