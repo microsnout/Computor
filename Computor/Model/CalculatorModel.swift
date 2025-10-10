@@ -670,21 +670,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                         
                         pushState()
 
-                        let (newState, res) = lf.libFunc(self, state)
+                        result = lf.libFunc(self)
                         
-                        if let s1 = newState
+                        if result == KeyPressResult.stateError
                         {
-                            state = s1
-                            state.noLift = false
-                            
-                            // Successful state change
-                            return res
-                        }
-                        else {
-                            // Failed to produce a new state
                             popState()
-                            result = res
+                            displayErrorIndicator()
+                            return result
                         }
+                        
+                        state.noLift = false
+                        return result
                     }
                 }
             }

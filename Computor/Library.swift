@@ -19,7 +19,7 @@ func installFunctions( _ model: CalculatorModel ) {
 // Library Data Structures
 // ***********************
 
-typealias LibFuncClosure = ( _ model: CalculatorModel, _ s0: CalcState ) -> (CalcState?, KeyPressResult)
+typealias LibFuncClosure = ( _ model: CalculatorModel ) -> KeyPressResult
 
 
 struct SystemLibrary {
@@ -75,6 +75,54 @@ class LibraryFunction {
 }
 
 
+typealias FunctionX = ( _ x: Double ) -> Double
+
+
+class LibraryFunctionContext : ModalContext {
+    
+    var prompt: String
+    
+    var block: ( _ model: CalculatorModel, _ f: FunctionX ) -> KeyPressResult
+    
+    init( prompt: String, block: @escaping ( _ model: CalculatorModel, _ f: FunctionX ) -> KeyPressResult ) {
+        self.prompt = prompt
+        self.block = block
+    }
+    
+    override var statusString: String? { self.prompt }
+    
+    override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        let f: FunctionX = { x in
+            
+            let tvX = TaggedValue( reg: x )
+            model.enterValue(tvX)
+            let _ = self.executeFn(event)
+            let value = model.state.X
+            model.state.stackDrop()
+            return value
+        }
+        
+        return self.block(model, f)
+    }
+}
+
+
+extension CalculatorModel {
+    
+    func withModalFunc( prompt: String, block: @escaping ( _ model: CalculatorModel, _ f: FunctionX ) -> KeyPressResult ) -> KeyPressResult {
+        
+        let ctx = LibraryFunctionContext( prompt: prompt, block: block )
+        
+        self.pushContext(ctx)
+        
+        return KeyPressResult.modalFunction
+    }
+}
+
+
 // **************************
 // Standard Library Functions
 // **************************
@@ -86,26 +134,33 @@ var stdGroup = LibraryGroup(
         LibraryFunction(
             sym: SymbolTag( [.Q, .f] ),
             require: [ .X([.real]), .Y([.real]), .Z([.real])], where: { s0 in s0.Xt == s0.Yt && s0.Yt == s0.Zt && s0.Xt == tagUntyped },
-            libQuadraticFormula(_:_:)
+            libQuadraticFormula(_:)
         ),
 
         LibraryFunction(
             sym: SymbolTag( [.T, .r] ),
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
-            libTrapezoidalRule(_:_:)
+            libTrapezoidalRule(_:)
+        ),
+
+        LibraryFunction(
+            sym: SymbolTag( [.T, .q] ),
+            require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            libTrapezoidalRule2(_:)
         ),
     ])
 
 
-func libQuadraticFormula( _ model: CalculatorModel, _ s0: CalcState) -> (CalcState?, KeyPressResult) {
+func libQuadraticFormula( _ model: CalculatorModel ) -> KeyPressResult {
     
     /// Solve quadratic function
     /// 0 = ax^2 + bx + c
     /// where X=a, Y=b, Z=c
     
-    let (a, b, c) = (s0.X, s0.Y, s0.Z)
+    var s1 = model.state
     
-    var s1 = s0
+    let (a, b, c) = (s1.X, s1.Y, s1.Z)
+    
     s1.stackDrop()
     s1.stackDrop()
     
@@ -113,7 +168,7 @@ func libQuadraticFormula( _ model: CalculatorModel, _ s0: CalcState) -> (CalcSta
     
     if rad == 0.0 {
         // One solution
-        s1.setRealValue( -b / 2*a, fmt: s0.Xfmt )
+        s1.setRealValue( -b / 2*a, fmt: model.state.Xfmt )
     }
     else if rad > 0.0 {
         // Two real solutions
@@ -129,7 +184,9 @@ func libQuadraticFormula( _ model: CalculatorModel, _ s0: CalcState) -> (CalcSta
         s1.stack[regX].set2( re, im, c: 1 )
         s1.stack[regX].set2( re, -im, c: 2 )
     }
-    return (s1, KeyPressResult.stateChange)
+    
+    model.state = s1
+    return KeyPressResult.stateChange
 }
 
 
@@ -182,14 +239,36 @@ func qtrap( _ f: (Double) -> Double, a: Double, b: Double, eps: Double = 1.0e-7,
 }
 
 
-func libTrapezoidalRule( _ model: CalculatorModel, _ s0: CalcState) -> (CalcState?, KeyPressResult) {
+func libTrapezoidalRule( _ model: CalculatorModel ) -> KeyPressResult {
+    
+    let s0 = model.state
     
     // Create a Reduce function obj capturing the value list and mode reference
     let trapFn = TrapezoidalRuleContext( fromA: s0.Xtv, toB: s0.Ytv )
     
     model.pushContext( trapFn, lastEvent: KeyEvent(.lib) )
+    
+    return KeyPressResult.modalFunction
+}
 
-    return (nil, KeyPressResult.stateError)
+
+func libTrapezoidalRule2( _ model: CalculatorModel ) -> KeyPressResult {
+    
+    return model.withModalFunc( prompt: "ç{UnitText}Trapezoid Rule ƒ()" ) { model, f in
+        
+        let (a, b) = (model.state.X, model.state.Y)
+        
+        model.state.stackDrop()
+        model.state.stackDrop()
+
+        let result = qtrap( f, a: a, b: b)
+        
+        let resTv = TaggedValue( reg: result )
+        
+        model.enterValue(resTv)
+
+        return KeyPressResult.stateChange
+    }
 }
 
 
