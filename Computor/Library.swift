@@ -142,6 +142,12 @@ var stdGroup = LibraryGroup(
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libTrapezoidalRule(_:)
         ),
+
+        LibraryFunction(
+            sym: SymbolTag( [.S, .r] ),
+            require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            libSimpsonsRule(_:)
+        ),
     ])
 
 
@@ -233,6 +239,34 @@ func qtrap( _ f: (Double) -> Double, a: Double, b: Double, eps: Double = 1.0e-7,
 }
 
 
+func qsimp( _ f: (Double) -> Double, a: Double, b: Double, eps: Double = 1.0e-7, nmax: Int = 14 ) -> Double {
+    
+    /// ** qsimp **
+    ///  from Numerical Recipes in C page 139
+
+    var ost = trapzd( f, a, b )
+    var os  = ost
+    
+    for j in 2...nmax {
+        
+        let st = trapzd( f, a, b, n: j, s0: ost )
+        let s  = (4.0*st - ost)/3.0
+        
+        print( "qsimp: n=\(j)  os=\(os)  s=\(s)  s-os=\(abs(s-os))  eps: \(eps * abs(os))" )
+        
+        if ( abs(s-os) < eps * abs(os) ) {
+            return s
+        }
+        
+        ost = st
+        os  = s
+    }
+    
+    return 0.0
+    
+}
+
+
 func libTrapezoidalRule( _ model: CalculatorModel ) -> KeyPressResult {
     
     return model.withModalFunc( prompt: "ç{UnitText}Trapezoid Rule ƒ()" ) { model, f in
@@ -240,6 +274,21 @@ func libTrapezoidalRule( _ model: CalculatorModel ) -> KeyPressResult {
         let (a, b) = model.state.popRealXY()
         
         let result = qtrap( f, a: a, b: b)
+        
+        model.enterRealValue(result)
+        
+        return KeyPressResult.stateChange
+    }
+}
+
+
+func libSimpsonsRule( _ model: CalculatorModel ) -> KeyPressResult {
+    
+    return model.withModalFunc( prompt: "ç{UnitText}Simpsons Rule ƒ()" ) { model, f in
+        
+        let (a, b) = model.state.popRealXY()
+        
+        let result = qsimp( f, a: a, b: b)
         
         model.enterRealValue(result)
         
