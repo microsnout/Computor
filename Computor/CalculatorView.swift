@@ -10,22 +10,28 @@ import SwiftUI
 struct CalculatorView: View {
     
     @Environment(\.scenePhase) private var scenePhase
+    
+    // This method works better than below commented version on device, not as well on simulator
+    @Environment(\.horizontalSizeClass) var hSizeClass
+    @Environment(\.verticalSizeClass) var vSizeClass
 
     @StateObject var model = CalculatorModel()
     
     @State private var presentSettings: Bool = false
     
-    @State var orientation = UIDevice.current.orientation
+    // Old code for landscape/portrait flipping
     
-    let orientationChanged = NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)
-        .makeConnectable()
-        .autoconnect()
+//    @State var orientation = UIDevice.current.orientation
+    
+//    let orientationChanged = NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)
+//        .makeConnectable()
+//        .autoconnect()
 
     
     var body: some View {
         
         Group {
-            if orientation.isLandscape {
+            if hSizeClass == .regular && vSizeClass == .compact {
                 LandscapeView( model: model )
             }
             else {
@@ -152,8 +158,8 @@ struct CalculatorView: View {
                 }
             }
         }
-        .onReceive(orientationChanged) { _ in
-            self.orientation = UIDevice.current.orientation
-        }
+//        .onReceive(orientationChanged) { _ in
+//            self.orientation = UIDevice.current.orientation
+//        }
     }
 }
