@@ -82,7 +82,8 @@ enum KeyCode: Int, Codable {
     
     case d0, d1, d2, d3, d4, d5, d6, d7, d8, d9
     
-    case period, asterisk, prime, doublePrime, dash
+    case starSym, plusSym, primeSym, doublePrimeSym, fullStopSym, percentSym, hashSym
+    case funcSym, deltaSym, nablaSym, sumSym, integralSym
     
     case symbolCharEnd
     
@@ -109,6 +110,10 @@ enum KeyCode: Int, Codable {
         if self.isDigit {
             return String( self.rawValue - KeyCode.d0.rawValue )
         }
+        if self.isExtraSym {
+            let ix = self.rawValue - KeyCode.starSym.rawValue
+            return String( KeyCode.extraSym[ix])
+        }
         return String( describing: self )
     }
 
@@ -133,6 +138,9 @@ enum KeyCode: Int, Codable {
 
     var isFuncKey: Bool
     { KeyCode.fnSet.contains(self) || self.isUnitKey }
+    
+    var isExtraSym: Bool
+    { return self.rawValue >= KeyCode.starSym.rawValue && self.rawValue <= KeyCode.integralSym.rawValue }
 
     static let digitSet:Set<KeyCode> = [.d0, .d1, .d2, .d3, .d4, .d5, .d6, .d7, .d8, .d9]
 
@@ -140,7 +148,10 @@ enum KeyCode: Int, Codable {
 
     static let UnSet:Set<KeyCode> = [.U1, .U2, .U3, .U4, .U5, .U6]
     
-    static let specialSymSet:Set<KeyCode> = [.period, .asterisk, .prime, .doublePrime, .dash]
+    static let extraSymSet:Set<KeyCode> = [
+        starSym, plusSym, primeSym, doublePrimeSym, fullStopSym, percentSym,
+        hashSym, funcSym, deltaSym, nablaSym, sumSym, integralSym
+    ]
 
     static let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .editFn, .openBrace]
 
@@ -151,5 +162,20 @@ enum KeyCode: Int, Codable {
         "\u{03b1}", "\u{03b2}", "\u{03b3}", "\u{03b4}", "\u{03b5}", "\u{03b6}", "\u{03b7}", "\u{03b8}",
         "\u{03b9}", "\u{03ba}", "\u{03bb}", "\u{03bc}", "\u{03bd}", "\u{03be}", "\u{03bf}", "\u{03c0}",
         "\u{03c1}", "\u{03c3}", "\u{03c4}", "\u{03c5}", "\u{03c6}", "\u{03c7}", "\u{03c8}", "\u{03c9}" ]
+    
+    static let extraSym = [
+        "\u{002A}", // *
+        "\u{002B}", // +
+        "\u{0027}", // '
+        "\u{0022}", // "
+        "\u{002E}", // full stop
+        "\u{0025}", // %
+        "\u{0023}", // #
+        "\u{0192}", // f with hook
+        "\u{2206}", // delta
+        "\u{2207}", // inverted delta
+        "\u{2211}", // Sum
+        "\u{222B}", // Integral
+    ]
 }
 

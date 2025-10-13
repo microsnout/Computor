@@ -517,8 +517,20 @@ let psDigits =
         keys: [
             Key(.d1, "1"), Key(.d2, "2"), Key(.d3, "3"), Key(.d4, "4"), Key(.d5, "5"), Key(.d6, "6"),
             Key(.d7, "7"), Key(.d8, "8"), Key(.d9, "9"), Key(.d0, "0"), Key(.noop), Key(.noop),
-            Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop),
-            Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop), Key(.noop),
+            
+            Key(.starSym,        KeyCode.extraSym[0] ),
+            Key(.plusSym,        KeyCode.extraSym[1] ),
+            Key(.primeSym,       KeyCode.extraSym[2] ),
+            Key(.doublePrimeSym, KeyCode.extraSym[3] ),
+            Key(.fullStopSym,    KeyCode.extraSym[4] ),
+            Key(.percentSym,     KeyCode.extraSym[5] ),
+            Key(.hashSym,        KeyCode.extraSym[6] ),
+            Key(.funcSym,        KeyCode.extraSym[7] ),
+            Key(.deltaSym,       KeyCode.extraSym[8] ),
+            Key(.nablaSym,       KeyCode.extraSym[9] ),
+            Key(.sumSym,         KeyCode.extraSym[10] ),
+            Key(.integralSym,    KeyCode.extraSym[11] ),
+            
             Key(.noop), Key(.noop),
         ],
         caption: "Memory"

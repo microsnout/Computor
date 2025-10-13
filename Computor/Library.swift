@@ -138,13 +138,13 @@ var stdGroup = LibraryGroup(
         ),
 
         LibraryFunction(
-            sym: SymbolTag( [.T, .r] ),
+            sym: SymbolTag( [.integralSym, .T], subPt: 2 ),
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libTrapezoidalRule(_:)
         ),
 
         LibraryFunction(
-            sym: SymbolTag( [.S, .r] ),
+            sym: SymbolTag( [.integralSym, .S], subPt: 2 ),
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libSimpsonsRule(_:)
         ),
