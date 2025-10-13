@@ -370,8 +370,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
             
             HStack {
                 Button( "", systemImage: "arrowshape.left.arrowshape.right" ) {
-                    // Don't include digits for the first letter
-                    charSet = symN == 0 ? charSet.nextSetZero : charSet.nextSet
+                    charSet = charSet.nextSet
                 }
                 
                 HStack {
@@ -381,10 +380,6 @@ struct NewSymbolPopup: View, KeyPressHandler {
                                 // Add border around selected char set
                                 txt.overlay(
                                     RoundedRectangle( cornerRadius: 5).inset(by: -1).stroke(.blue, lineWidth: 1) )
-                            }
-                            .if ( symN == 0 && cs == CharSet.digit ) { txt in
-                                // Digits not allowed for first char
-                                txt.foregroundColor(.gray)
                             }
                     }
                 }
