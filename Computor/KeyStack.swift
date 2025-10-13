@@ -494,7 +494,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
             
             let tagGroupList = getMacroTags(libSource)
             
-            SelectSymbolPopup( tagGroupList: tagGroupList, title: "Macro Library" ) {
+            SelectSymbolPopup( tagGroupList: tagGroupList, title: "Function Library" ) {
                 
                 // User Lib or System Lib picker
                 Picker("", selection: $libSource) {

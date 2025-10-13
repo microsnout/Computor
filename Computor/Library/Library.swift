@@ -12,6 +12,7 @@ func installFunctions( _ model: CalculatorModel ) {
     /// ** Install Fuctions **
     
     SystemLibrary.addGroup( stdGroup )
+    SystemLibrary.addGroup( integralGroup )
 }
 
 
@@ -136,7 +137,12 @@ var stdGroup = LibraryGroup(
             require: [ .X([.real]), .Y([.real]), .Z([.real])], where: { s0 in s0.Xt == s0.Yt && s0.Yt == s0.Zt && s0.Xt == tagUntyped },
             libQuadraticFormula(_:)
         ),
+    ])
 
+var integralGroup = LibraryGroup(
+    name: "Integration",
+    functions: [
+        
         LibraryFunction(
             sym: SymbolTag( [.integralSym, .T], subPt: 2 ),
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
