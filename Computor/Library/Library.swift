@@ -153,8 +153,8 @@ var stdGroup = LibraryGroup(
 
 func libQuadraticFormula( _ model: CalculatorModel ) -> KeyPressResult {
     
-    /// Solve quadratic function
-    /// 0 = ax^2 + bx + c
+    /// ** Quadratic Function **
+    /// ax^2 + bx + c
     /// where X=a, Y=b, Z=c
     
     var s1 = model.state
