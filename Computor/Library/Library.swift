@@ -137,6 +137,12 @@ var stdGroup = LibraryGroup(
             require: [ .X([.real]), .Y([.real]), .Z([.real])], where: { s0 in s0.Xt == s0.Yt && s0.Yt == s0.Zt && s0.Xt == tagUntyped },
             libQuadraticFormula(_:)
         ),
+
+        LibraryFunction(
+            sym: SymbolTag( [.P, .t] ),
+            require: [ .X([.real]), .Y([.vector], .matrix) ],
+            libPolyTerp(_:)
+        ),
     ])
 
 var integralGroup = LibraryGroup(
@@ -270,6 +276,46 @@ func qsimp( _ f: (Double) -> Double, a: Double, b: Double, eps: Double = 1.0e-7,
     
     return 0.0
     
+}
+
+
+func polyTerp( _ points: [( x:Double, y:Double)], x: Double ) -> Double {
+    
+    func P( _ a: Int, _ b: Int ) -> Double {
+        
+        if a == b {
+            return points[a].y
+        }
+        let pL = P( a, b-1 )
+        let pU = P( a+1, b )
+        let (xa, xb) = (points[a].x, points[b].x)
+        return ( (x - xa)*pU - (x - xb)*pL ) / (xb - xa)
+    }
+    
+    let n = points.count
+    return P(0, n-1)
+}
+
+
+func libPolyTerp( _ model: CalculatorModel ) -> KeyPressResult {
+    
+    let xValue = model.state.X
+    let tvPoints = model.state.Ytv
+    
+    model.state.stackDrop(2)
+
+    let n = tvPoints.cols
+    var pts: [(x: Double, y: Double)] = []
+    
+    for i in 1...n {
+        let (xValue, yVaue) = tvPoints.getVector( c: i )
+        pts.append( (x: xValue, y: yVaue) )
+    }
+    
+    let result = polyTerp(pts, x: xValue )
+    
+    model.enterRealValue(result)
+    return KeyPressResult.stateChange
 }
 
 
