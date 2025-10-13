@@ -299,11 +299,9 @@ func polyTerp( _ points: [( x:Double, y:Double)], x: Double ) -> Double {
 
 func libPolyTerp( _ model: CalculatorModel ) -> KeyPressResult {
     
-    let xValue = model.state.X
-    let tvPoints = model.state.Ytv
+    let xValue = model.state.popRealX()
+    let tvPoints = model.state.popValueX()
     
-    model.state.stackDrop(2)
-
     let n = tvPoints.cols
     var pts: [(x: Double, y: Double)] = []
     

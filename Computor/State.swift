@@ -319,7 +319,7 @@ extension CalcState {
         stackDrop()
         return x
     }
-    
+
     mutating func popRealXY() -> (Double, Double) {
         let (x, y) = (self.X, self.Y)
         stackDrop(2)
@@ -330,5 +330,11 @@ extension CalcState {
         let (x, y, z) = (self.X, self.Y, self.Z)
         stackDrop(3)
         return (x,y,z)
+    }
+
+    mutating func popValueX() -> TaggedValue {
+        let tv = self.Xtv
+        stackDrop()
+        return tv
     }
 }
