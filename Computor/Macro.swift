@@ -42,7 +42,17 @@ struct MacroEvent: CodableMacroOp {
             
             if let mTag = event.mTag {
                 
-                if let (_, mfr) = model.db.getMacro( for: mTag, localMod: model.aux.macroMod ) {
+                if mTag.isSysMod {
+                    
+                    // Render name for system tag
+                    let group = SystemLibrary.getSystemGroup( for: mTag )
+                    var text = group.name
+                    text += "ç{ModText}/ç{}"
+                    text += mTag.getRichText()
+                    return text
+
+                }
+                else if let (_, mfr) = model.db.getMacro( for: mTag, localMod: model.aux.macroMod ) {
                     
                     if mfr == model.aux.macroMod {
                         
@@ -80,7 +90,7 @@ struct MacroEvent: CodableMacroOp {
             return keyText
         }
         
-        let (keyText, keyCode) = model.getKeyText(event.kc)
+        let (keyText, _) = model.getKeyText(event.kc)
         
         return keyText ?? "??"
     }

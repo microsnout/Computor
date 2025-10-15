@@ -34,6 +34,9 @@ struct StatusState {
     var statusMid:   String? = nil
     var statusRight: String? = nil
     
+    // Override string labels for X,Y and Z registers
+    var regLabels: [String]? = nil
+    
     var error = false
     
     var leftText: String { statusLeft ?? "" }
@@ -43,11 +46,59 @@ struct StatusState {
             return "ç{StatusRedText}Errorç{}"
         }
         
-        return statusMid ?? ""
+        return "ç{StatusText}\(statusMid ?? "")ç{}"
     }
     
     var rightText: String { statusRight ?? "" }
     
+    mutating func setRegisterLabels( _ labels: [String] ) {
+        
+        assert( labels.count > 0 && labels.count <= 3 )
+        
+        let n = labels.count
+        
+        // Longest label sets the field width
+        var width = 0
+        for str in labels {
+            width = max(width, str.count)
+        }
+        
+        // All right aligned lablel strings
+        let range = 0...2
+        
+        self.regLabels = range.map( { x in
+            
+            let str = x < n ? labels[x] : Self.stackRegNames[x]
+            
+            var padded = ""
+            
+            str.withCString { cstr in
+                
+                padded = String( format: "%*s", width, cstr )
+            }
+            return padded
+        } )
+    }
+    
+    
+    mutating func clearRegisterLabels() {
+        self.regLabels = nil
+    }
+    
+    
+    func getRegisterLabel( _ index: Int ) -> String {
+        assert( index <= 2 )
+        
+        if let setLabels = self.regLabels  {
+            // Return temporary register label
+            return setLabels[index]
+        }
+        
+        // Use default register label
+        return Self.stackRegNames[index]
+    }
+    
+    static let stackRegNames = ["X", "Y", "Z"]
 }
 
 
@@ -339,9 +390,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
-    static let stackRegNames = ["X", "Y", "Z", "T"]
-    
     func renderRow( index: Int ) -> String {
+        
+        /// ** Render Row **
+        /// Produce a string rendering of the specified line of the primary display
+        
         let stkIndex = bufferIndex(index)
         
         guard stkIndex <= regT else {
@@ -368,11 +421,12 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         let tv = state.stack[stkIndex]
-        var text = "ƒ{0.8}ç{RegLetterText}={\(CalculatorModel.stackRegNames[stkIndex])  }ç{}ƒ{}"
+        var text = "ƒ{0.8}ç{RegLetterText}={\(status.getRegisterLabel(stkIndex))  }ç{}ƒ{}"
         let (valueStr, _) = tv.renderRichText()
         text += valueStr
         return text
     }
+    
     
     func memoryOp( key: KeyCode, tag: SymbolTag ) {
         pushState()

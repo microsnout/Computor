@@ -457,7 +457,7 @@ class MapFunctionX : ModalContext {
         self.valueList = valueList
     }
     
-    override var statusString: String? { "ç{UnitText}Map ƒ()" }
+    override var statusString: String? { "Map ƒ()" }
     
     override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
         
@@ -523,7 +523,7 @@ class MapFunctionXY : ModalContext {
         self.valueListY = valueListY
     }
     
-    override var statusString: String? { "ç{UnitText}Map-xy ƒ(,)" }
+    override var statusString: String? { "Map-xy ƒ(,)" }
     
     override func modalExecute( _ event: KeyEvent ) -> KeyPressResult {
         
@@ -590,7 +590,7 @@ class ReduceFunction : ModalContext {
         self.valueList = valueList
     }
     
-    override var statusString: String? { "ƒ{0.9}ç{UnitText}Reduce ƒ(,)" }
+    override var statusString: String? { "ƒ{0.9}Reduce ƒ(,)" }
     
     override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
         

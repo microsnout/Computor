@@ -205,11 +205,14 @@ class ModalContext : EventContext {
 class ModalConfirmationContext: EventContext {
     
     var prompt: String
+    
+    var regLabels: [String]?
 
     var block: ( _ model: CalculatorModel ) -> KeyPressResult
     
-    init( prompt: String, block: @escaping ( _ : CalculatorModel ) -> KeyPressResult ) {
+    init( prompt: String, regLabels: [String]?, block: @escaping ( _ : CalculatorModel ) -> KeyPressResult ) {
         self.prompt = prompt
+        self.regLabels = regLabels
         self.block = block
     }
 
@@ -226,6 +229,7 @@ class ModalConfirmationContext: EventContext {
         switch event.kc {
             
         case .enter:
+            model.popContext( event )
             let result = self.block(model)
             return result
             
@@ -241,12 +245,23 @@ class ModalConfirmationContext: EventContext {
 
     
     override func onModelSet() {
+        
+        guard let model = self.model else { assert(false); return }
+        
         // Display status string while in modal state
-        model?.status.statusMid = statusString
+        model.status.statusMid = statusString
+        
+        if let labels = regLabels {
+            model.status.setRegisterLabels(labels)
+        }
     }
     
     override func onDeactivate( lastEvent: KeyEvent ) {
+        
+        guard let model = self.model else { assert(false); return }
+        
         // Remove status string
-        model?.status.statusMid = nil
+        model.status.statusMid = nil
+        model.status.clearRegisterLabels()
     }
 }

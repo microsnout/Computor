@@ -44,6 +44,15 @@ struct SystemLibrary {
         let localTag = tag.localTag
         return Self.groups[index].functions.first( where: { $0.sym == localTag } )
     }
+    
+    
+    static func getSystemGroup( for tag: SymbolTag ) -> LibraryGroup {
+        
+        assert( tag.isSysMod )
+
+        let index = tag.mod - SymbolTag.firstSysMod
+        return Self.groups[index]
+    }
 }
 
 
@@ -115,6 +124,10 @@ extension CalculatorModel {
     
     func withModalFunc( prompt: String, block: @escaping (_ model: CalculatorModel, _ f: FunctionX) -> KeyPressResult )-> KeyPressResult {
         
+        /// ** With Modal Func **
+        /// Delays execution of 'block' until the user enters a function, either single key or a {..} block
+        /// Passes the entred function to the block
+        
         let ctx = LibraryFunctionContext( prompt: prompt, block: block )
         
         self.pushContext(ctx)
@@ -123,14 +136,18 @@ extension CalculatorModel {
     }
     
     
-    func withModalConfirmation( prompt: String, block: @escaping (_ model: CalculatorModel ) -> KeyPressResult ) -> KeyPressResult {
+    func withModalConfirmation( prompt: String, regLabels labels: [String]? = nil, block: @escaping (_ model: CalculatorModel ) -> KeyPressResult ) -> KeyPressResult {
+        
+        /// ** With Modal Confirmation **
+        /// Delays execution of the function block until confirmed by pressing Enter
+        /// Does Nothing (no delay) if currently in recording or playback context
         
         let withinNormalContext: Bool = self.eventContext is NormalContext
         
         if withinNormalContext {
             
             // Return confirmation context to handle Enter to confirm execution
-            let ctx = ModalConfirmationContext( prompt: "Press Enter to confirm:", block: block )
+            let ctx = ModalConfirmationContext( prompt: prompt, regLabels: labels, block: block )
             self.pushContext(ctx)
             return KeyPressResult.modalFunction
         }
@@ -188,7 +205,7 @@ func libQuadraticFormula( _ model: CalculatorModel ) -> KeyPressResult {
     /// ax^2 + bx + c
     /// where X=a, Y=b, Z=c
     
-    return model.withModalConfirmation(prompt: "Press Enter:" ) { model in
+    return model.withModalConfirmation(prompt: "Solve Ax^{2}+Bx+C: ƒ{0.8}Enter|Undo", regLabels: ["A", "B", "C"] ) { model in
         
         var s1 = model.state
         
@@ -321,21 +338,24 @@ func polyTerp( _ points: [( x:Double, y:Double)], x: Double ) -> Double {
 
 func libPolyTerp( _ model: CalculatorModel ) -> KeyPressResult {
     
-    let xValue = model.state.popRealX()
-    let tvPoints = model.state.popValueX()
-    
-    let n = tvPoints.cols
-    var pts: [(x: Double, y: Double)] = []
-    
-    for i in 1...n {
-        let (xValue, yVaue) = tvPoints.getVector( c: i )
-        pts.append( (x: xValue, y: yVaue) )
+    return model.withModalConfirmation(prompt: "Interpolate Polynomial: ƒ{0.8}Enter|Undo", regLabels: ["x-value", "points"] ) { model in
+        
+        let xValue = model.state.popRealX()
+        let tvPoints = model.state.popValueX()
+        
+        let n = tvPoints.cols
+        var pts: [(x: Double, y: Double)] = []
+        
+        for i in 1...n {
+            let (xValue, yVaue) = tvPoints.getVector( c: i )
+            pts.append( (x: xValue, y: yVaue) )
+        }
+        
+        let result = polyTerp(pts, x: xValue )
+        
+        model.enterRealValue(result)
+        return KeyPressResult.stateChange
     }
-    
-    let result = polyTerp(pts, x: xValue )
-    
-    model.enterRealValue(result)
-    return KeyPressResult.stateChange
 }
 
 
