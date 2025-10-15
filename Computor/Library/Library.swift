@@ -380,19 +380,19 @@ func romberg( _ f: (Double) -> Double, a: Double, b: Double, eps: Double = 1.0e-
         
         let sj = trapzd( f, a, b, n: j, s0: lastS )
         
-        s.append( ( 0.25 * s[j-2].x, sj ) )
+        s.append( ( 0.25 * s[s.count-1].x, sj ) )
         
         if ( j >= k ) {
             
-            let sk = Array( s.suffix(k) )
-            
-            let (ss, dss) = polyTerp( sk, x: 0.0 )
+            let (ss, dss) = polyTerp( s, x: 0.0 )
             
             print( "romberg: n=\(j)  lasts=\(lastS)  s=\(sj)  dss=\(abs(dss))  eps*ss: \(eps * abs(ss))" )
 
             if abs(dss) < eps * abs(ss) {
                 return ss
             }
+            
+            s.removeFirst()
         }
         else {
             print( "romberg: n=\(j)  lasts=\(lastS)  s=\(sj)  sj-lasts=\(abs(sj-lastS))  eps: \(eps * abs(lastS))" )
