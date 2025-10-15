@@ -243,7 +243,6 @@ class ModalConfirmationContext: EventContext {
     }
 
 
-    
     override func onModelSet() {
         
         guard let model = self.model else { assert(false); return }

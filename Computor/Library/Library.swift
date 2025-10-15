@@ -91,11 +91,13 @@ typealias FunctionX = ( _ x: Double ) -> Double
 class LibraryFunctionContext : ModalContext {
     
     var prompt: String
+    var regLabels: [String]?
     
     var block: ( _ model: CalculatorModel, _ f: FunctionX ) -> KeyPressResult
     
-    init( prompt: String, block: @escaping ( _ model: CalculatorModel, _ f: FunctionX ) -> KeyPressResult ) {
+    init( prompt: String, regLabels labels: [String]? = nil, block: @escaping ( _ model: CalculatorModel, _ f: FunctionX ) -> KeyPressResult ) {
         self.prompt = prompt
+        self.regLabels = labels
         self.block = block
     }
     
@@ -117,18 +119,38 @@ class LibraryFunctionContext : ModalContext {
         
         return self.block(model, f)
     }
+
+    override func onModelSet() {
+        
+        super.onModelSet()
+        
+        guard let model = self.model else { assert(false); return }
+        
+        if let labels = regLabels {
+            model.status.setRegisterLabels(labels)
+        }
+    }
+    
+    override func onDeactivate( lastEvent: KeyEvent ) {
+        
+        super.onDeactivate(lastEvent: lastEvent)
+        
+        guard let model = self.model else { assert(false); return }
+        
+        model.status.clearRegisterLabels()
+    }
 }
 
 
 extension CalculatorModel {
     
-    func withModalFunc( prompt: String, block: @escaping (_ model: CalculatorModel, _ f: FunctionX) -> KeyPressResult )-> KeyPressResult {
+    func withModalFunc( prompt: String, regLabels labels: [String]? = nil, block: @escaping (_ model: CalculatorModel, _ f: FunctionX) -> KeyPressResult )-> KeyPressResult {
         
         /// ** With Modal Func **
         /// Delays execution of 'block' until the user enters a function, either single key or a {..} block
         /// Passes the entred function to the block
         
-        let ctx = LibraryFunctionContext( prompt: prompt, block: block )
+        let ctx = LibraryFunctionContext( prompt: prompt, regLabels: labels, block: block )
         
         self.pushContext(ctx)
         
@@ -361,7 +383,7 @@ func libPolyTerp( _ model: CalculatorModel ) -> KeyPressResult {
 
 func libTrapezoidalRule( _ model: CalculatorModel ) -> KeyPressResult {
     
-    return model.withModalFunc( prompt: "ç{UnitText}Trapezoid Rule ƒ()" ) { model, f in
+    return model.withModalFunc( prompt: "ç{UnitText}Trapezoid Rule:  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
         
         let (a, b) = model.state.popRealXY()
         
@@ -376,7 +398,7 @@ func libTrapezoidalRule( _ model: CalculatorModel ) -> KeyPressResult {
 
 func libSimpsonsRule( _ model: CalculatorModel ) -> KeyPressResult {
     
-    return model.withModalFunc( prompt: "ç{UnitText}Simpsons Rule ƒ()" ) { model, f in
+    return model.withModalFunc( prompt: "ç{UnitText}Simpsons Rule:  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
         
         let (a, b) = model.state.popRealXY()
         

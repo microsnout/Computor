@@ -287,7 +287,7 @@ extension CalcState {
         stack[regX].setShape( ss, rows: rows, cols: cols)
     }
 
-    mutating func stackDrop(_ by: Int = 1 ) {
+    mutating func stackDrop() {
         for rx in regX ..< stackSize-1 {
             self.stack[rx] = self.stack[rx+1]
         }
@@ -322,13 +322,16 @@ extension CalcState {
 
     mutating func popRealXY() -> (Double, Double) {
         let (x, y) = (self.X, self.Y)
-        stackDrop(2)
+        stackDrop()
+        stackDrop()
         return (x,y)
     }
     
     mutating func popRealXYZ() -> (Double, Double, Double) {
         let (x, y, z) = (self.X, self.Y, self.Z)
-        stackDrop(3)
+        stackDrop()
+        stackDrop()
+        stackDrop()
         return (x,y,z)
     }
 
