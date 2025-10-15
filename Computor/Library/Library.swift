@@ -113,13 +113,32 @@ class LibraryFunctionContext : ModalContext {
 
 extension CalculatorModel {
     
-    func withModalFunc( prompt: String, block: @escaping ( _ model: CalculatorModel, _ f: FunctionX ) -> KeyPressResult ) -> KeyPressResult {
+    func withModalFunc( prompt: String, block: @escaping (_ model: CalculatorModel, _ f: FunctionX) -> KeyPressResult )-> KeyPressResult {
         
         let ctx = LibraryFunctionContext( prompt: prompt, block: block )
         
         self.pushContext(ctx)
         
         return KeyPressResult.modalFunction
+    }
+    
+    
+    func withModalConfirmation( prompt: String, block: @escaping (_ model: CalculatorModel ) -> KeyPressResult ) -> KeyPressResult {
+        
+        let withinNormalContext: Bool = self.eventContext is NormalContext
+        
+        if withinNormalContext {
+            
+            // Return confirmation context to handle Enter to confirm execution
+            let ctx = ModalConfirmationContext( prompt: "Press Enter to confirm:", block: block )
+            self.pushContext(ctx)
+            return KeyPressResult.modalFunction
+        }
+        else {
+            // Execute block immediately if recording or playback
+            return block( self )
+        }
+
     }
 }
 
@@ -169,36 +188,39 @@ func libQuadraticFormula( _ model: CalculatorModel ) -> KeyPressResult {
     /// ax^2 + bx + c
     /// where X=a, Y=b, Z=c
     
-    var s1 = model.state
-    
-    let (a, b, c) = (s1.X, s1.Y, s1.Z)
-    
-    s1.stackDrop()
-    s1.stackDrop()
-    
-    let rad = b*b - 4*a*c
-    
-    if rad == 0.0 {
-        // One solution
-        s1.setRealValue( -b / 2*a, fmt: model.state.Xfmt )
+    return model.withModalConfirmation(prompt: "Press Enter:" ) { model in
+        
+        var s1 = model.state
+        
+        let (a, b, c) = (s1.X, s1.Y, s1.Z)
+        
+        s1.stackDrop()
+        s1.stackDrop()
+        
+        let rad = b*b - 4*a*c
+        
+        if rad == 0.0 {
+            // One solution
+            s1.setRealValue( -b / 2*a, fmt: model.state.Xfmt )
+        }
+        else if rad > 0.0 {
+            // Two real solutions
+            s1.setShape( cols: 2 )
+            s1.stack[regX].set1( (-b + sqrt(rad))/2*a, c: 1 )
+            s1.stack[regX].set1( (-b - sqrt(rad))/2*a, c: 2 )
+        }
+        else {
+            // Return 2 complex values
+            s1.stack[regX].setMatrix( .complex, cols: 2 )
+            let re = -b/2*a
+            let im = sqrt(-rad)/2*a
+            s1.stack[regX].set2( re, im, c: 1 )
+            s1.stack[regX].set2( re, -im, c: 2 )
+        }
+        
+        model.state = s1
+        return KeyPressResult.stateChange
     }
-    else if rad > 0.0 {
-        // Two real solutions
-        s1.setShape( cols: 2 )
-        s1.stack[regX].set1( (-b + sqrt(rad))/2*a, c: 1 )
-        s1.stack[regX].set1( (-b - sqrt(rad))/2*a, c: 2 )
-    }
-    else {
-        // Return 2 complex values
-        s1.stack[regX].setMatrix( .complex, cols: 2 )
-        let re = -b/2*a
-        let im = sqrt(-rad)/2*a
-        s1.stack[regX].set2( re, im, c: 1 )
-        s1.stack[regX].set2( re, -im, c: 2 )
-    }
-    
-    model.state = s1
-    return KeyPressResult.stateChange
 }
 
 

@@ -202,3 +202,51 @@ class ModalContext : EventContext {
 }
 
 
+class ModalConfirmationContext: EventContext {
+    
+    var prompt: String
+
+    var block: ( _ model: CalculatorModel ) -> KeyPressResult
+    
+    init( prompt: String, block: @escaping ( _ : CalculatorModel ) -> KeyPressResult ) {
+        self.prompt = prompt
+        self.block = block
+    }
+
+    var statusString: String? { self.prompt }
+
+    override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+#if DEBUG
+        print( "ModalConfirmation event: \(event.keyCode)")
+#endif
+        
+        switch event.kc {
+            
+        case .enter:
+            let result = self.block(model)
+            return result
+            
+        default:
+            // Return to invoking context
+            model.popContext( event )
+            
+            // Let the newly restored context handle this event
+            return KeyPressResult.resendEvent
+        }
+    }
+
+
+    
+    override func onModelSet() {
+        // Display status string while in modal state
+        model?.status.statusMid = statusString
+    }
+    
+    override func onDeactivate( lastEvent: KeyEvent ) {
+        // Remove status string
+        model?.status.statusMid = nil
+    }
+}
