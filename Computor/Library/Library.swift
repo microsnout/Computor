@@ -218,6 +218,12 @@ var integralGroup = LibraryGroup(
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libSimpsonsRule(_:)
         ),
+
+        LibraryFunction(
+            sym: SymbolTag( [.integralSym, .R], subPt: 2 ),
+            require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            libRombergRule(_:)
+        ),
     ])
 
 
@@ -340,21 +346,61 @@ func qsimp( _ f: (Double) -> Double, a: Double, b: Double, eps: Double = 1.0e-7,
 }
 
 
-func polyTerp( _ points: [( x:Double, y:Double)], x: Double ) -> Double {
+func polyTerp( _ points: [( x:Double, y:Double)], x: Double ) -> ( y: Double, dy: Double) {
     
-    func P( _ a: Int, _ b: Int ) -> Double {
+    func P( _ a: Int, _ b: Int ) -> (Double, Double ) {
         
         if a == b {
-            return points[a].y
+            return (points[a].y, points[a].y)
         }
-        let pL = P( a, b-1 )
-        let pU = P( a+1, b )
+        let (pL, _) = P( a, b-1 )
+        let (pU, _) = P( a+1, b )
         let (xa, xb) = (points[a].x, points[b].x)
-        return ( (x - xa)*pU - (x - xb)*pL ) / (xb - xa)
+        let y = ( (x - xa)*pU - (x - xb)*pL ) / (xb - xa)
+        let dy = min( abs(y-pL), abs(y-pU) )
+        return (y, dy)
     }
     
     let n = points.count
-    return P(0, n-1)
+    let (y, dy) = P(0, n-1)
+    return (y, dy)
+}
+
+
+func romberg( _ f: (Double) -> Double, a: Double, b: Double, eps: Double = 1.0e-7, nmax: Int = 14, k: Int = 5 ) -> Double {
+    
+    /// ** romberg **
+    ///  from Numerical Recipes in C page 140
+    
+    var lastS = trapzd( f, a, b )
+    
+    var s: [( x: Double, y: Double)] = [(1.0, lastS)]
+    
+    for j in 2...nmax {
+        
+        let sj = trapzd( f, a, b, n: j, s0: lastS )
+        
+        s.append( ( 0.25 * s[j-2].x, sj ) )
+        
+        if ( j >= k ) {
+            
+            let sk = Array( s.suffix(k) )
+            
+            let (ss, dss) = polyTerp( sk, x: 0.0 )
+            
+            print( "romberg: n=\(j)  lasts=\(lastS)  s=\(sj)  dss=\(abs(dss))  eps*ss: \(eps * abs(ss))" )
+
+            if abs(dss) < eps * abs(ss) {
+                return ss
+            }
+        }
+        else {
+            print( "romberg: n=\(j)  lasts=\(lastS)  s=\(sj)  sj-lasts=\(abs(sj-lastS))  eps: \(eps * abs(lastS))" )
+        }
+        
+        lastS = sj
+    }
+    return 0.0
 }
 
 
@@ -373,7 +419,7 @@ func libPolyTerp( _ model: CalculatorModel ) -> KeyPressResult {
             pts.append( (x: xValue, y: yVaue) )
         }
         
-        let result = polyTerp(pts, x: xValue )
+        let (result, _) = polyTerp(pts, x: xValue )
         
         model.enterRealValue(result)
         return KeyPressResult.stateChange
@@ -403,6 +449,21 @@ func libSimpsonsRule( _ model: CalculatorModel ) -> KeyPressResult {
         let (a, b) = model.state.popRealXY()
         
         let result = qsimp( f, a: a, b: b)
+        
+        model.enterRealValue(result)
+        
+        return KeyPressResult.stateChange
+    }
+}
+
+
+func libRombergRule( _ model: CalculatorModel ) -> KeyPressResult {
+    
+    return model.withModalFunc( prompt: "ç{UnitText}Romberg Rule:  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
+        
+        let (a, b) = model.state.popRealXY()
+        
+        let result = romberg( f, a: a, b: b)
         
         model.enterRealValue(result)
         

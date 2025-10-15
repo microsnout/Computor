@@ -125,7 +125,7 @@ struct RichText: View {
 
             case "∆":
                 // Used in Help file for key commands
-                var (body, _, _ ) = getTextSpec(textSize)
+                let (body, _, _ ) = getTextSpec(textSize)
                 text = text + Text(opStr)
                     .font( .system( size: body*0.8, weight: .heavy, design: .default ).uppercaseSmallCaps() )
                     .baselineOffset(1.0)
