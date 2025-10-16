@@ -1,0 +1,35 @@
+@@Standard
+####
+ç{AccentText}ƒ{1.3}Qf ƒ{}ç{}
+Quadratic Function
+
+Find roots of Ax^{2}+Bx+C
+
+ß{Parameters:}
+z: C
+y: B
+x: A
+####
+ç{AccentText}ƒ{1.3}Pt ƒ{}ç{}
+Polynomial Interpolation with Neville's algorithm
+
+ß{Parameters:}
+y: Points, [<x,y>,...]
+x: x-value to evaluate
+####
+@@Integration
+####
+ç{AccentText}ƒ{1.3}∫_{T}  ƒ{}Trapezoid Rule ƒ{}ç{}
+
+ç{AccentText}ƒ{1.3}∫_{S}  ƒ{}Simpsons Rule ƒ{}ç{}
+
+ç{AccentText}ƒ{1.3}∫_{R}  ƒ{}Romberg Method ƒ{}ç{}
+
+Integrates ƒ(x) from lower bound to upper bound
+
+ß{Parameters:}
+y: Upper Bound
+x: Lower Bound
+
+ß{Notes:}
+Function is entered after invoking integration and can be a single key like x^{2} or a compound function {...}

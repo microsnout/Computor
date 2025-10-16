@@ -48,9 +48,22 @@
 		0C3354E42CC7A52100776F58 /* ComputorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ComputorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		0C53FD122EA178A00051C398 /* Exceptions for "Computor" folder in "Compile Sources" phase from "Computor" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 0C3354C62CC7A51E00776F58 /* Sources */;
+			membershipExceptions = (
+				HelpText/stdlib.txt,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0C3354CC2CC7A51E00776F58 /* Computor */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0C53FD122EA178A00051C398 /* Exceptions for "Computor" folder in "Compile Sources" phase from "Computor" target */,
+			);
 			path = Computor;
 			sourceTree = "<group>";
 		};

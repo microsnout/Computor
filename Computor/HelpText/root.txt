@@ -1,6 +1,5 @@
-@@Root
+@@Computor Help Topics
 ####
 $$Key Functions/keyhelp
-Explanation goes here
 ####
-$$Key Functions/keyhelp
+$$Standard Library Functions/stdlib
