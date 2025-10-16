@@ -163,10 +163,10 @@ extension CalculatorModel {
         /// ** With Modal Confirmation **
         /// Delays execution of the function block until confirmed by pressing Enter
         /// Does Nothing (no delay) if currently in recording or playback context
-        
+       
         let withinNormalContext: Bool = self.eventContext is NormalContext
         
-        if withinNormalContext {
+        if self.modalConfirmation &&  withinNormalContext {
             
             // Return confirmation context to handle Enter to confirm execution
             let ctx = ModalConfirmationContext( prompt: prompt, regLabels: labels, block: block )

@@ -14,6 +14,7 @@ extension String {
     static var settingsAuxDispTextSize : String { "settings.auxDispTextSize" }
     static var settingsSoftkeyUnits : String { "settings.softkeyUnits" }
     static var settingsKeyCaptions : String { "settings.keyCaptions" }
+    static var settingsModalConfirmation : String { "settings.modalConfirmation" }
 }
 
 enum SoftkeyUnits: Int, Hashable {
@@ -52,6 +53,9 @@ struct SettingsView: View {
 
     @AppStorage(.settingsKeyCaptions)
     private var keyCaptions = true
+
+    @AppStorage(.settingsModalConfirmation)
+    private var modalConfirmation = true
     
     var body: some View {
         NavigationStack {
@@ -91,14 +95,14 @@ struct SettingsView: View {
                     // SECTION KEYBOARD
                     Section( header: SectionHeaderText( text: "Keyboard").foregroundColor(Color("DisplayText")) ) {
                         
-                        Toggle("Serif Font", isOn: $serifFont)
-                            .tint( Color("Frame"))
-                            .listRowSeparator(.hidden)
-                        
-                        Toggle("Key help captions", isOn: $keyCaptions)
-                            .tint( Color("Frame"))
-                            .listRowSeparator(.hidden)
-                        
+                        Group {
+                            Toggle("Serif Font", isOn: $serifFont)
+                            Toggle("Key help captions", isOn: $keyCaptions)
+                            Toggle("Parameter Confirmation", isOn: $modalConfirmation)
+                        }
+                        .tint( Color("Frame"))
+                        .listRowSeparator(.hidden)
+
                         Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
                             Text("Default").tag(SoftkeyUnits.mixed)
                             Text("Metric").tag(SoftkeyUnits.metric)

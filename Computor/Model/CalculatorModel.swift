@@ -200,6 +200,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var kstate = KeyState()
     @Published var db     = Database()
     
+    @AppStorage(.settingsModalConfirmation)
+    var modalConfirmation = true
+    
     // Currently active calculator document
     var activeDocName: String = ""
     
