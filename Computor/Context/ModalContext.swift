@@ -186,6 +186,7 @@ class ModalContext : EventContext {
             
             model.resumeRecording()
             model.resumeUndoStack()
+            model.autoswitchFixSci()
             return result
         }
     }

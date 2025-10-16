@@ -704,8 +704,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     
                     if let (mr, mfr) = getMacroFunction(tag) {
                         
-                        
-                        
                         // Macro tag selected from popup
                         result = playMacroSeq(mr.opSeq, in: mfr)
                     }
@@ -734,6 +732,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                         }
                         
                         state.noLift = false
+                        autoswitchFixSci()
                         return result
                     }
                 }
@@ -755,19 +754,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     state = newState
                     state.noLift = false
                     
-                    // Autoswitch between scientific and decimal
-                    if state.Xfmt.style == .decimal {
-                        if abs(state.X) >= 10000000000000.0 {
-                            state.Xfmt.style = .scientific
-                        }
-                    }
-                    else if state.Xfmt.style == .scientific {
-                        if abs(state.X) < 1000.0 {
-                            state.Xfmt.style = .decimal
-                        }
-                    }
                     
                     // Successful state change
+                    autoswitchFixSci()
                     return KeyPressResult.stateChange
                 }
                 else {
@@ -787,6 +776,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                             state.noLift = false
                             
                             // Successful state change
+                            autoswitchFixSci()
                             return KeyPressResult.stateChange
                         }
                         else {
@@ -814,6 +804,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                                 state.noLift = false
                                 
                                 // Successful state change
+                                autoswitchFixSci()
                                 return KeyPressResult.stateChange
                             }
                         }
@@ -824,6 +815,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                         state.noLift = false
                         
                         // Successful state change
+                        autoswitchFixSci()
                         return KeyPressResult.stateChange
                     }
                     else {
@@ -838,6 +830,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         }
         
         // Successful state change
+        autoswitchFixSci()
         return KeyPressResult.stateChange
     }
     
@@ -850,6 +843,22 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { timer in
             // Clear 'error' indication
             self.status.error = false
+        }
+    }
+    
+    
+    func autoswitchFixSci() {
+        
+        // Autoswitch between scientific and decimal
+        if state.Xfmt.style == .decimal {
+            if abs(state.X) >= 10000000000000.0 {
+                state.Xfmt.style = .scientific
+            }
+        }
+        else if state.Xfmt.style == .scientific {
+            if abs(state.X) < 1000.0 {
+                state.Xfmt.style = .decimal
+            }
         }
     }
     
