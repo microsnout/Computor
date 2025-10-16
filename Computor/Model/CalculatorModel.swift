@@ -582,6 +582,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         let keyCode = event.kc
         
         switch keyCode {
+            
+        case .noop, .noopBrace:
+            return KeyPressResult.noOp
+            
         case .back:
             // Undo last operation by restoring previous state
             popState()

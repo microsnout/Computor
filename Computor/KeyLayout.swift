@@ -146,7 +146,7 @@ let psFunctions2R = PadSpec(
     cols: 3,
     keys: [ Key(.zRe, "ƒ{0.8}Re( )"),
             Key(.seq, "ƒ{0.8}Seq"),
-            Key(.noop, "ç{GrayText}{ }"),
+            Key(.noopBrace, "ç{GrayText}{ }"),
           ]
 )
 

@@ -42,7 +42,7 @@ enum KeyCode: Int, Codable {
     case matrix = 200, range, seq, mapX, mapXY, reduce, addRow, addCol, dotProduct, crossProduct, transpose, identity
     
     // Memory operations
-    case noop = 220, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem
+    case noop = 220, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem, noopBrace
     
     // Macro recorder operations
     case macroRecord = 240, macroStop, macroPlay, macroSlowPlay, macroStep, macroRename
