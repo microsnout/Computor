@@ -136,39 +136,3 @@ struct AuxRegisterView: View {
         }
     }
 }
-
-
-//struct ValueBrowserView_Previews: PreviewProvider {
-//    
-//    static func addSampleMacro( _ model: CalculatorModel ) -> CalculatorModel {
-//        let newModel = model
-//        
-//        // FIX: MacroKey not working here, keys not defined yet?
-//        newModel.state.Xtv = TaggedValue(.real, reg: 3.33)
-//        return newModel
-//    }
-//    
-//    static var previews: some View {
-//        @StateObject  var model = MacroListView_Previews.addSampleMacro( CalculatorModel())
-//        
-//        ZStack {
-//            Rectangle()
-//                .fill(Color("Background"))
-//                .edgesIgnoringSafeArea( .all )
-//            
-//            VStack {
-//                VStack {
-//                    ValueBrowserView( model: model)
-//                        .frame( maxWidth: .infinity, maxHeight: .infinity)
-//                        .preferredColorScheme(.light)
-//                }
-//                .padding([.leading, .trailing, .top, .bottom], 0)
-//                .background( Color("Display") )
-//                .border(Color("Frame"), width: 3)
-//            }
-//            .padding(.horizontal, 30)
-//            .padding(.vertical, 5)
-//            .background( Color("Background"))
-//        }
-//    }
-//}

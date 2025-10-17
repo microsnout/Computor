@@ -85,24 +85,19 @@ struct AuxiliaryDisplayView: View {
 }
 
 
-//struct AuxiliaryDisplayView_Previews: PreviewProvider {
-//    
-//    static var previews: some View {
-//        @StateObject  var model = CalculatorModel()
-//        
-//        @State var view = AuxDispView.memoryList
-//        
-//        ZStack {
-//            Rectangle()
-//                .fill(Color("Background"))
-//                .edgesIgnoringSafeArea( .all )
-//            
-//            VStack {
-//                AuxiliaryDisplayView( model: model, auxView: $view )
-//                    .preferredColorScheme(.light)
-//            }
-//            .padding(.horizontal, 30)
-//            .padding(.vertical, 5)
-//        }
-//    }
-//}
+struct AuxHeaderView<Content: View>: View {
+    
+    var theme: Theme
+    
+    @ViewBuilder let content: Content
+    
+    var body: some View {
+        
+        VStack {
+            content
+        }
+        .frame( maxWidth: .infinity, maxHeight: 24 )
+        .background( theme.mainColor )
+    }
+    
+}
