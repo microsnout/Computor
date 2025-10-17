@@ -270,6 +270,9 @@ struct NewSymbolPopup: View, KeyPressHandler {
     // Pre-existing symbol can be provided
     var tag: SymbolTag = SymbolTag.Null
     
+    var radius = 10.0
+    var frameWidth = 0.0
+    
     var scc: SymbolContinuationClosure
     
     enum CharSet: Int {
@@ -477,7 +480,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
         .background() {
             
             Color( "SuperLightGray")
-                .cornerRadius(10)
+                .cornerRadius(radius)
+                .border(Color("Frame"), width: frameWidth)
                 .padding( [.leading, .trailing], 20 )
                 .padding( [.top, .bottom], 5 )
         }
