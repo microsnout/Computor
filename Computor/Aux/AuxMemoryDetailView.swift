@@ -15,6 +15,8 @@ struct MemoryDetailView: View {
     @State private var renameSheet = false
     
     @State private var position: MemoryRec? = nil
+    
+    @State private var refreshView = false
 
     var body: some View {
         if let mr = model.aux.memRec {
@@ -116,12 +118,11 @@ struct MemoryDetailView: View {
                         Image( systemName: "arrowshape.up" )
                     }
                     
-                    // DELETE
-                    Button( action: {
-                        model.deleteMemoryRecords( set: [mr.tag])
-                        model.aux.memRec = nil
-                    } ) {
-                        Image( systemName: "trash" )
+                    // PENCIL EDIT BUTTON
+                    Button {
+                        renameSheet = true
+                    } label: {
+                        Image( systemName: "square.and.pencil")
                     }
                 }
                 .frame( maxWidth: .infinity )
@@ -133,18 +134,70 @@ struct MemoryDetailView: View {
                 position = newRec
             }
             
-            // Rename Memory
-            .sheet(isPresented: $renameSheet) {
-                ZStack {
-                    Color("ControlBack").edgesIgnoringSafeArea(.all)
-                    
-                    AuxRenameView( name: mr.caption ?? "" ) { newName in
-                        mr.caption = newName
-                    }
-                        .presentationDetents([.fraction(0.4)])
-                        .presentationBackground( Color("ControlBack") )
+            // Edit Memory
+            .sheet( isPresented: $renameSheet) {
+                
+                MemoryEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) { newtxt in
+                    mr.caption = newtxt
+                    refreshView.toggle()
                 }
             }
+        }
+    }
+}
+
+
+struct MemoryEditSheet: View {
+    
+    @Environment(\.dismiss) var dismiss
+    
+    var mr: MemoryRec
+    
+    @State var caption: String
+    
+    @StateObject var model: CalculatorModel
+    
+    var scc: SheetContinuationClosure
+    
+    @State private var symName: String = ""
+    
+    var body: some View {
+        
+        VStack( alignment: .leading ) {
+            
+            // DONE Button
+            HStack {
+                Spacer()
+                
+                Button( action: { scc(caption); dismiss() } ) {
+                    RichText( "Done", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
+                }
+            }
+            .padding( [.top], 5 )
+            
+            // Symbol Editor
+            SheetCollapsibleView( label: "={Symbol: }\(symName)" ) {
+                
+                NewSymbolPopup( tag: mr.tag ) { newTag in
+                    mr.tag = newTag
+                    symName = mr.tag.getRichText()
+                }
+            }
+            
+            // Caption Editor
+            SheetTextField( label: "Caption:", placeholder: "-caption-", text: $caption )
+            
+            Spacer()
+        }
+        .padding( [.leading, .trailing], 40 )
+        .presentationBackground( Color.black.opacity(0.7) )
+        .presentationDetents( [.fraction(0.7), .large] )
+        .onAppear() {
+            symName = mr.tag.getRichText()
+        }
+        .onSubmit {
+            scc( caption )
+            dismiss()
         }
     }
 }

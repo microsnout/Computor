@@ -357,6 +357,7 @@ struct NewMemoryCustomPopup: View, KeyPressHandler {
         CustomModalPopup( keyPressHandler: self, myModalKey: .newMemory ) {
             
             NewSymbolPopup() { tag in
+                
                 if let kcOp = keyData.pressedKey {
                     // Send event for memory op
                     _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )
@@ -366,6 +367,8 @@ struct NewMemoryCustomPopup: View, KeyPressHandler {
                 keyData.pressedKey = nil
                 keyData.modalKey = .none
             }
+            .frame( width: 300 )
+            .padding( [.top, .bottom], 20)
         }
     }
 }
