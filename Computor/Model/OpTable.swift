@@ -170,6 +170,36 @@ extension CalculatorModel {
                 return nil
             },
         
+        .deltaPercent:
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal && s0.Ytv.isReal else {
+                    // Real values only
+                    return nil
+                }
+                
+                if s0.Xt == tagUntyped {
+                    var s1 = s0
+                    s1.Xtv = TaggedValue( tag: s0.Yt, reg: (s0.X - s0.Y) / s0.Y * 100.0, format: s0.Yfmt)
+                    return s1
+                }
+                return nil
+            },
+
+        .totalPercent:
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal && s0.Ytv.isReal else {
+                    // Real values only
+                    return nil
+                }
+                
+                if s0.Xt == tagUntyped {
+                    var s1 = s0
+                    s1.Xtv = TaggedValue( tag: s0.Yt, reg: s0.X / s0.Y * 100.0, format: s0.Yfmt)
+                    return s1
+                }
+                return nil
+            },
+
         .percent:
             CustomOp { (s0: CalcState) -> CalcState? in
                 guard s0.Xtv.isReal && s0.Ytv.isReal else {

@@ -437,6 +437,14 @@ func initKeyLayout() {
                        ]
     )
 
+    SubPadSpec.define( .percent,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.deltaPercent, "\u{2206}%"),
+                        Key(.totalPercent, "%T"),
+                       ]
+    )
+
     SubPadSpec.define( .stoX,
                        keySpec: ksSubFn,
                        keys: [

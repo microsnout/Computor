@@ -13,7 +13,7 @@ enum KeyCode: Int, Codable {
     
     case dot = 20, enter, clX, clY, clZ, clReg, back, sign, eex, d000
     
-    case fixL = 30, fixR, roll, xy, xz, yz, lastx, percent
+    case fixL = 30, fixR, roll, xy, xz, yz, lastx, percent, deltaPercent, totalPercent
     
     case y2x = 40, inv, x2, sqrt, abs, x3, root3
     
