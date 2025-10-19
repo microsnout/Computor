@@ -504,6 +504,18 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.sign, .back, .eex, .d000]) )
     
     
+    func newGlobalMemory( _ mTag: SymbolTag, caption: String? = nil ) -> MemoryRec {
+        
+        /// ** New Global Memory **
+        /// Creates a new global with provided symbol and caption, value will be 0.0
+        /// Does not check for already existing memory with that Symbol !!
+        
+        let mr = MemoryRec( tag: mTag, caption: caption )
+        state.memory.append( mr )
+        return mr
+    }
+    
+    
     func storeRegister( _ event: KeyEvent, _ tv: TaggedValue ) {
         
         if let mTag = event.mTag {
@@ -524,8 +536,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 }
                 else {
                     // New global memory
-                    let mr   = MemoryRec( tag: mTag, tv: tv )
-                    state.memory.append( mr )
+                    let mr   = newGlobalMemory( mTag )
+                    mr.tv = tv
                 }
                 
                 // Scroll aux display to memory list

@@ -137,8 +137,9 @@ struct MemoryDetailView: View {
             // Edit Memory
             .sheet( isPresented: $renameSheet) {
                 
-                MemoryEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) { newtxt in
-                    mr.caption = newtxt
+                MemoryEditSheet( mTag: mr.tag, caption: mr.caption ?? "", model: model ) { newTag, newtxt in
+                    mr.tag = newTag
+                    mr.caption = newtxt.isEmpty ? nil : newtxt
                     refreshView.toggle()
                 }
             }
@@ -147,17 +148,19 @@ struct MemoryDetailView: View {
 }
 
 
+typealias MemorySheetContinuationClosure = ( _ tag: SymbolTag, _ str: String ) -> Void
+
+
 struct MemoryEditSheet: View {
     
     @Environment(\.dismiss) var dismiss
     
-    var mr: MemoryRec
-    
-    @State var caption: String
+    @State var mTag: SymbolTag = SymbolTag.Null
+    @State var caption: String = ""
     
     @StateObject var model: CalculatorModel
     
-    var scc: SheetContinuationClosure
+    var scc: MemorySheetContinuationClosure
     
     @State private var symName: String = ""
     
@@ -169,7 +172,7 @@ struct MemoryEditSheet: View {
             HStack {
                 Spacer()
                 
-                Button( action: { scc(caption); dismiss() } ) {
+                Button( action: { scc(mTag, caption); dismiss() } ) {
                     RichText( "Done", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
                 }
             }
@@ -178,9 +181,9 @@ struct MemoryEditSheet: View {
             // Symbol Editor
             SheetCollapsibleView( label: "={Symbol: }\(symName)" ) {
                 
-                NewSymbolPopup( tag: mr.tag ) { newTag in
-                    mr.tag = newTag
-                    symName = mr.tag.getRichText()
+                NewSymbolPopup( tag: mTag ) { newTag in
+                    mTag = newTag
+                    symName = mTag.getRichText()
                 }
             }
             
@@ -193,10 +196,10 @@ struct MemoryEditSheet: View {
         .presentationBackground( Color.black.opacity(0.7) )
         .presentationDetents( [.fraction(0.7), .large] )
         .onAppear() {
-            symName = mr.tag.getRichText()
+            symName = (mTag == SymbolTag.Null) ? "" : mTag.getRichText()
         }
         .onSubmit {
-            scc( caption )
+            scc( mTag, caption )
             dismiss()
         }
     }

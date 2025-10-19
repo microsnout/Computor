@@ -14,7 +14,7 @@ class MemoryRec: Codable, Identifiable, Hashable, Equatable {
     
     var id: SymbolTag { tag }
     
-    init( tag: SymbolTag, caption: String? = nil, tv: TaggedValue) {
+    init( tag: SymbolTag, caption: String? = nil, tv: TaggedValue = TaggedValue() ) {
         self.tag = tag
         self.caption = caption
         self.tv = tv

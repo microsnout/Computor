@@ -341,45 +341,14 @@ struct CustomModalPopup<Content: View>: View {
 }
 
 
-struct NewMemoryCustomPopup: View, KeyPressHandler {
-    
-    /// Use the NewSymbolPopup to create a new memory sym
-    
-    @EnvironmentObject var model: CalculatorModel
-    @EnvironmentObject var keyData: KeyData
-    
-    func keyPress(_ event: KeyEvent ) -> KeyPressResult {
-        return KeyPressResult.modalPopupContinue
-    }
-    
-    var body: some View {
-        
-        CustomModalPopup( keyPressHandler: self, myModalKey: .newMemory ) {
-            
-            NewSymbolPopup( radius: 0.0, frameWidth: 2 ) { tag in
-                
-                if let kcOp = keyData.pressedKey {
-                    // Send event for memory op
-                    _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )
-                }
-                
-                // Close modal popup
-                keyData.pressedKey = nil
-                keyData.modalKey = .none
-            }
-            .frame( width: 300 )
-            .padding( [.top, .bottom], 20)
-        }
-    }
-}
-
-
 struct GlobalMemoryPopup: View, KeyPressHandler {
     
     /// Select an existing memory if there are any or go directly to new memory popup
     
     @EnvironmentObject var model: CalculatorModel
     @EnvironmentObject var keyData: KeyData
+    
+    @State private var memorySheet: Bool = false
     
     func keyPress(_ event: KeyEvent ) -> KeyPressResult {
         return KeyPressResult.modalPopupContinue
@@ -403,40 +372,37 @@ struct GlobalMemoryPopup: View, KeyPressHandler {
         
         CustomModalPopup( keyPressHandler: self, myModalKey: .globalMemory ) {
             
-            if keyData.pressedKey?.kc == .rcl || !model.state.memory.isEmpty {
+            let tags = [ SymbolTagGroup( label: "Global Memories", tagList: getTagList() ) ]
+            
+            SelectSymbolPopup( tagGroupList: tags, title: "Select Memory" ) {
                 
-                let tags = [ SymbolTagGroup( label: "Global Memories", tagList: getTagList() ) ]
-                
-                SelectSymbolPopup( tagGroupList: tags, title: "Select Memory" ) {
+                // Footer content that goes below the tag list box
+                if keyData.pressedKey?.kc != .rcl {
                     
-                    // Footer content that goes below the tag list box
-                    if keyData.pressedKey?.kc != .rcl {
-                        HStack( spacing: 20 ) {
-                            
-                            // New Memory Button
-                            Button( "New..." )
-                            {
-                                keyData.modalKey = .newMemory
-                            }
+                    HStack( spacing: 20 ) {
+                        
+                        // New Memory Button
+                        Button( "New..." )
+                        {
+                            memorySheet = true
                         }
-                        .padding( [.top, .bottom], 10)
                     }
-                    else {
-                        // Recall op has no New memory button
-                        Spacer().frame( height: 20 ).padding([.top, .bottom], 0)
-                    }
+                    .padding( [.top, .bottom], 10)
+                }
+                else {
+                    // Recall op has no New memory button
+                    Spacer().frame( height: 20 ).padding([.top, .bottom], 0)
                 }
             }
-            else {
-                NewSymbolPopup() { tag in
-                    if let kcOp = keyData.pressedKey {
-                        // Send event for memory op
-                        _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )
-                    }
-                    
-                    // Close modal popup
-                    keyData.pressedKey = nil
-                    keyData.modalKey = .none
+        }
+        
+        // Edit Memory
+        .sheet( isPresented: $memorySheet) {
+            
+            MemoryEditSheet( model: model ) {  newTag, newtxt in
+                
+                if newTag != SymbolTag.Null {
+                    let _ = model.newGlobalMemory( newTag, caption: newtxt.isEmpty ? nil : newtxt )
                 }
             }
         }
@@ -893,7 +859,6 @@ struct KeyStack<Content: View>: View {
             
             SubPopMenu()
             GlobalMemoryPopup()
-            NewMemoryCustomPopup()
             MacroLibraryPopup()
         }
         .onGeometryChange( for: CGRect.self, of: {proxy in proxy.frame(in: .global)} ) { newValue in
