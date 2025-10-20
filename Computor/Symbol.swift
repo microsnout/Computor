@@ -276,32 +276,24 @@ struct NewSymbolPopup: View, KeyPressHandler {
     var scc: SymbolContinuationClosure
     
     enum CharSet: Int {
-        case upper = 0, lower, greek, digit
+        case upper = 0, lower, greek, script, digit
         
         var nextSet: CharSet {
             switch self {
             case .upper:    return .lower
             case .lower:    return .greek
-            case .greek:    return .digit
-            case .digit:    return .upper
-            }
-        }
-        
-        var nextSetZero: CharSet {
-            switch self {
-            case .upper:    return .lower
-            case .lower:    return .greek
-            case .greek:    return .upper
+            case .greek:    return .script
+            case .script:   return .digit
             case .digit:    return .upper
             }
         }
     }
     
-    let setList: [CharSet] = [.upper, .lower, .greek, .digit]
+    let setList: [CharSet] = [.upper, .lower, .greek, .script, .digit]
     
-    let padList: [PadSpec] = [psAlpha, psAlphaLower, psGreek, psDigits]
+    let padList: [PadSpec] = [psAlpha, psAlphaLower, psGreek, psScript, psDigits]
     
-    let setLabels = ["ABC", "abc", "\u{03b1}\u{03b2}\u{03b3}", "123"]
+    let setLabels = ["ABC", "abc", "\u{03b1}\u{03b2}\u{03b3}", "\u{1D4D0}\u{1D4D1}\u{1D4D2}", "123"]
     
     func keyPress(_ event: KeyEvent ) -> KeyPressResult {
         if symN < 3 {

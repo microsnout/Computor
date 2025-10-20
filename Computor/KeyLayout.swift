@@ -485,7 +485,7 @@ PadSpec(
         Key(.S, "S"), Key(.T, "T"), Key(.U, "U"), Key(.V, "V"), Key(.W, "W"), Key(.X, "X"),
         Key(.Y, "Y"), Key(.Z, "Z"),
     ],
-    caption: "Memory"
+    caption: "Alpha Upper"
 )
 
 
@@ -500,21 +500,35 @@ let psAlphaLower =
             Key(.s, "s"), Key(.t, "t"), Key(.u, "u"), Key(.v, "v"), Key(.w, "w"), Key(.x, "x"),
             Key(.y, "y"), Key(.z, "z"),
         ],
-        caption: "Memory"
+        caption: "Alpha Lower"
 )
 
 let psGreek =
+PadSpec(
+    keySpec: ksSheetPop,
+    cols: 6,
+    keys: [
+        Key(.alpha,   "\u{03b1}"), Key(.beta,    "\u{03b2}"), Key(.gamma,   "\u{03b3}"), Key(.delta,   "\u{03b4}"), Key(.epsilon, "\u{03b5}"), Key(.zeta,    "\u{03b6}"),
+        Key(.eta,     "\u{03b7}"), Key(.theta,   "\u{03b8}"), Key(.iota,    "\u{03b9}"), Key(.kappa,   "\u{03ba}"), Key(.lambda,  "\u{03bb}"), Key(.mu,      "\u{03bc}"),
+        Key(.nu,      "\u{03bd}"), Key(.xi,      "\u{03be}"), Key(.omicron, "\u{03bf}"), Key(.pi,      "\u{03c0}"), Key(.rho,     "\u{03c1}"), Key(.sigma,   "\u{03c3}"),
+        Key(.tau,     "\u{03c4}"), Key(.upsilon, "\u{03c5}"), Key(.phi,     "\u{03c6}"), Key(.chi,     "\u{03c7}"), Key(.psi,     "\u{03c8}"), Key(.omega,   "\u{03c9}"),
+        Key(.noop), Key(.noop),
+    ],
+    caption: "Greek"
+)
+
+let psScript =
     PadSpec(
         keySpec: ksSheetPop,
         cols: 6,
         keys: [
-            Key(.alpha,   "\u{03b1}"), Key(.beta,    "\u{03b2}"), Key(.gamma,   "\u{03b3}"), Key(.delta,   "\u{03b4}"), Key(.epsilon, "\u{03b5}"), Key(.zeta,    "\u{03b6}"),
-            Key(.eta,     "\u{03b7}"), Key(.theta,   "\u{03b8}"), Key(.iota,    "\u{03b9}"), Key(.kappa,   "\u{03ba}"), Key(.lambda,  "\u{03bb}"), Key(.mu,      "\u{03bc}"),
-            Key(.nu,      "\u{03bd}"), Key(.xi,      "\u{03be}"), Key(.omicron, "\u{03bf}"), Key(.pi,      "\u{03c0}"), Key(.rho,     "\u{03c1}"), Key(.sigma,   "\u{03c3}"),
-            Key(.tau,     "\u{03c4}"), Key(.upsilon, "\u{03c5}"), Key(.phi,     "\u{03c6}"), Key(.chi,     "\u{03c7}"), Key(.psi,     "\u{03c8}"), Key(.omega,   "\u{03c9}"),
-            Key(.noop), Key(.noop),
+            Key(.scriptA, "\u{1D4D0}"), Key(.scriptB, "\u{1D4D1}"), Key(.scriptC, "\u{1D4D2}"), Key(.scriptD, "\u{1D4D3}"), Key(.scriptE, "\u{1D4D4}"), Key(.scriptF, "\u{1D4D5}"),
+            Key(.scriptG, "\u{1D4D6}"), Key(.scriptH, "\u{1D4D7}"), Key(.scriptI, "\u{1D4D8}"), Key(.scriptJ, "\u{1D4D9}"), Key(.scriptK, "\u{1D4DA}"), Key(.scriptL, "\u{1D4DB}"),
+            Key(.scriptM, "\u{1D4DC}"), Key(.scriptN, "\u{1D4DD}"), Key(.scriptO, "\u{1D4DE}"), Key(.scriptP, "\u{1D4DF}"), Key(.scriptQ, "\u{1D4E0}"), Key(.scriptR, "\u{1D4E1}"),
+            Key(.scriptS, "\u{1D4E2}"), Key(.scriptT, "\u{1D4E3}"), Key(.scriptU, "\u{1D4E4}"), Key(.scriptV, "\u{1D4E5}"), Key(.scriptW, "\u{1D4E6}"), Key(.scriptX, "\u{1D4E7}"),
+            Key(.scriptY, "\u{1D4E8}"), Key(.scriptZ, "\u{1D4E9}"),
         ],
-        caption: "Memory"
+        caption: "Script"
     )
 
 

@@ -201,6 +201,12 @@ var stdGroup = LibraryGroup(
             require: [ .X([.real]), .Y([.vector], .matrix) ],
             libPolyTerp(_:)
         ),
+
+        LibraryFunction(
+            sym: SymbolTag( [.scriptR, .B], subPt: 2 ),
+            require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            libBisection(_:)
+        ),
     ])
 
 var integralGroup = LibraryGroup(
@@ -401,6 +407,64 @@ func romberg( _ f: (Double) -> Double, a: Double, b: Double, eps: Double = 1.0e-
         lastS = sj
     }
     return 0.0
+}
+
+
+func bisection( _ f: (Double) -> Double, x1: Double, x2: Double, acc: Double ) -> Double? {
+    
+    /// ** bisection **
+    /// Bisectin root finder
+    
+    let nmax = 50
+    
+    var (a, b) = (x1, x2)
+    
+    var (fa, fb) = (f(a), f(b))
+    
+    if ( fa * fb > 0.0 ) { return nil }
+    
+    if ( fa == 0.0 ) { return fa }
+    if ( fb == 0.0 ) { return fb }
+    
+    if fa > 0 {
+        (fa, fb) = (fb, fa)
+    }
+
+    for n in 1...nmax {
+        
+        print( "Bisection n=\(n) a=\(a) b=\(b) fa=\(fa) fb=\(fb)" )
+        
+        if abs(fa-fb) < acc { return a }
+        
+        let mx = (a + b)/2
+        
+        let fmx = f(mx)
+        
+        if fmx ==  0.0 { return mx }
+        
+        if fmx < 0 {
+            (a, fa) = (mx, fmx)
+        }
+        else {
+            (b, fb) = (mx, fmx)
+        }
+    }
+    return nil
+}
+
+
+func libBisection( _ model: CalculatorModel ) -> KeyPressResult {
+    
+    return model.withModalFunc( prompt: "ç{UnitText}Root (bisection):  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
+        
+        let (a, b) = model.state.popRealXY()
+        
+        if let root = bisection(f, x1: a, x2: b, acc: 10e-10 ) {
+            
+            model.enterRealValue(root)
+        }
+        return KeyPressResult.stateError
+    }
 }
 
 

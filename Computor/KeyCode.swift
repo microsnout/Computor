@@ -85,6 +85,9 @@ enum KeyCode: Int, Codable {
     case starSym, plusSym, primeSym, doublePrimeSym, fullStopSym, percentSym, hashSym
     case funcSym, deltaSym, nablaSym, sumSym, integralSym
     
+    case scriptA, scriptB, scriptC, scriptD, scriptE, scriptF, scriptG, scriptH, scriptI, scriptJ, scriptK, scriptL, scriptM
+    case scriptN, scriptO, scriptP, scriptQ, scriptR, scriptS, scriptT, scriptU, scriptV, scriptW, scriptX, scriptY, scriptZ
+    
     case symbolCharEnd
     
     // *********
@@ -114,6 +117,10 @@ enum KeyCode: Int, Codable {
             let ix = self.rawValue - KeyCode.starSym.rawValue
             return String( KeyCode.extraSym[ix])
         }
+        if self.isScriptAlpha {
+            let ix = self.rawValue - KeyCode.scriptA.rawValue
+            return String( KeyCode.scriptAlpha[ix])
+        }
         return String( describing: self )
     }
 
@@ -141,6 +148,9 @@ enum KeyCode: Int, Codable {
     
     var isExtraSym: Bool
     { return self.rawValue >= KeyCode.starSym.rawValue && self.rawValue <= KeyCode.integralSym.rawValue }
+    
+    var isScriptAlpha: Bool
+    { return self.rawValue >= KeyCode.scriptA.rawValue && self.rawValue <= KeyCode.scriptZ.rawValue }
 
     static let digitSet:Set<KeyCode> = [.d0, .d1, .d2, .d3, .d4, .d5, .d6, .d7, .d8, .d9]
 
@@ -176,6 +186,14 @@ enum KeyCode: Int, Codable {
         "\u{2207}", // inverted delta
         "\u{2211}", // Sum
         "\u{222B}", // Integral
+    ]
+    
+    static let scriptAlpha = [
+        "\u{1D4D0}",  "\u{1D4D1}",  "\u{1D4D2}",  "\u{1D4D3}",  "\u{1D4D4}",  "\u{1D4D5}",
+        "\u{1D4D6}",  "\u{1D4D7}",  "\u{1D4D8}",  "\u{1D4D9}",  "\u{1D4DA}",  "\u{1D4DB}",
+        "\u{1D4DC}",  "\u{1D4DD}",  "\u{1D4DE}",  "\u{1D4DF}",  "\u{1D4E0}",  "\u{1D4E1}",
+        "\u{1D4E2}",  "\u{1D4E3}",  "\u{1D4E4}",  "\u{1D4E5}",  "\u{1D4E6}",  "\u{1D4E7}",
+        "\u{1D4E8}",  "\u{1D4E9}",
     ]
 }
 

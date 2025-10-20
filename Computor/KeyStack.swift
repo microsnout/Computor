@@ -438,8 +438,8 @@ struct MacroLibraryPopup: View, KeyPressHandler {
                     SymbolTagGroup(
                         label: remMod.name,
                         tagList:
-                            remMod.symList.map { tag in
-                                model.db.getRemoteSymbolTag(for: tag, to: remMod)
+                            remMod.symList.compactMap { tag in
+                                tag.isNull ? nil : model.db.getRemoteSymbolTag(for: tag, to: remMod )
                             }
                     )
                 }
