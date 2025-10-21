@@ -219,6 +219,12 @@ var rootGroup = LibraryGroup(
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libSecant(_:)
         ),
+
+        LibraryFunction(
+            sym: SymbolTag( [.scriptR, .B, .r], subPt: 2 ),
+            require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            libBrent(_:)
+        ),
     ])
 
 var integralGroup = LibraryGroup(
@@ -518,6 +524,102 @@ func secant( _ f: (Double) -> Double, x1: Double, x2: Double, acc: Double ) -> D
 }
 
 
+func brent( _ f: (Double) -> Double, x1: Double, x2: Double ) -> Double? {
+    
+    /// ** brent **
+    /// Root finder - Brent's method
+    
+    let nmax = 100
+    
+    let eps = 2.22044604925031e-16
+    
+    var (a, b)   = (x1, x2)
+    var (fa, fb) = (f(a), f(b))
+    
+    if ( fa * fb > 0.0 ) { return nil }
+    
+    if ( fa == 0.0 ) { return fa }
+    
+    var (c, fc) = (a, fa)
+    var d = b - c
+    var e = d
+
+    for n in 1...nmax {
+        
+        if ( fb == 0.0 ) { return fb }
+        
+        if fa > fb {
+            a = c; fa = fc; d = b - c; e = d
+        }
+
+        if abs(fa) < abs(fb) {
+            (fa, fb) = (fb, fa)
+            (a, b) = (b, a)
+            (c, fc) = (a, fa)
+        }
+        
+        let m = (a - b) * 0.5
+        
+        let tol = 2 * eps * max( abs(b), 1.0 )
+        
+        print( "Bisection n=\(n) a=\(a) b=\(b) c=\(c) abs(m)=\(abs(m))" )
+
+        if abs(m) <= tol || fb == 0.0 { return b }
+        
+        if abs(e) >= tol && abs(fc) > abs(fb) {
+            
+            let s = fb/fc
+            
+            var p: Double
+            var q: Double
+            
+            if a == c {
+                p = 2.0 * m * s
+                q = 1.0 - s
+                
+                print( "Brent - Secant" )
+            }
+            else {
+                let r = fb/fa
+                q = fc/fa
+                p = s * (2.0 * m * q * (q - r) - (b - c) * (r - 1.0))
+                q = (q - 1.0) * (r - 1.0) * (s - 1.0)
+                
+                print( "Brent - IQI" )
+            }
+            
+            if p > 0.0 { q = -q }
+            p = abs(p)
+            
+            if 2*p < 3.0 * m * q - abs(tol*q) && p < abs(0.5 * e * q) {
+                e = d
+                d = p/q
+            }
+            else {
+                (d, e) = (m, m)
+            }
+        }
+        else {
+            // Bisection
+            (d, e) = (m, m)
+            print( "Brent - Bisection" )
+        }
+        
+        (c, fc) = (b, fb)
+        
+        if abs(d) > tol {
+            b += d
+        }
+        else {
+            b += (b - a) < 0 ? tol : -tol
+        }
+        
+        fb = f(b)
+    }
+    return nil
+}
+
+
 func libBisection( _ model: CalculatorModel ) -> KeyPressResult {
     
     return model.withModalFunc( prompt: "ç{UnitText}Root (Bisection):  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
@@ -540,6 +642,21 @@ func libSecant( _ model: CalculatorModel ) -> KeyPressResult {
         let (a, b) = model.state.popRealXY()
         
         if let root = secant(f, x1: a, x2: b, acc: 10e-8 ) {
+            
+            model.enterRealValue(root)
+        }
+        return KeyPressResult.stateError
+    }
+}
+
+
+func libBrent( _ model: CalculatorModel ) -> KeyPressResult {
+    
+    return model.withModalFunc( prompt: "ç{UnitText}Root (Brent):  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
+        
+        let (a, b) = model.state.popRealXY()
+        
+        if let root = brent(f, x1: a, x2: b ) {
             
             model.enterRealValue(root)
         }
