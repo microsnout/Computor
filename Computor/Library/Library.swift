@@ -524,14 +524,14 @@ func secant( _ f: (Double) -> Double, x1: Double, x2: Double, acc: Double ) -> D
 }
 
 
-func brent( _ f: (Double) -> Double, x1: Double, x2: Double ) -> Double? {
+func brent( _ f: (Double) -> Double, x1: Double, x2: Double, tol: Double ) -> Double? {
     
     /// ** brent **
     /// Root finder - Brent's method
     
     let nmax = 100
     
-    let eps = 2.22044604925031e-16
+    let eps = 3.0e-8
     
     var (a, b)   = (x1, x2)
     var (fa, fb) = (f(a), f(b))
@@ -540,35 +540,31 @@ func brent( _ f: (Double) -> Double, x1: Double, x2: Double ) -> Double? {
     
     if ( fa == 0.0 ) { return fa }
     
-    var (c, fc) = (a, fa)
+    var (c, fc) = (b, fb)
     var d = b - c
     var e = d
 
     for n in 1...nmax {
         
-        if ( fb == 0.0 ) { return fb }
-        
-        if fa > fb {
-            a = c; fa = fc; d = b - c; e = d
+        if fb*fc > 0 {
+            c = a; fc = fa; d = b-a; e = d
         }
 
-        if abs(fa) < abs(fb) {
-            (fa, fb) = (fb, fa)
-            (a, b) = (b, a)
-            (c, fc) = (a, fa)
+        if abs(fc) < abs(fb) {
+            a = b; b = c; c = a; fa = fb; fb = fc; fc = fa
         }
         
-        let m = (a - b) * 0.5
+        let tol1 = 2.0 * eps * abs(b) + 0.5*tol
         
-        let tol = 2 * eps * max( abs(b), 1.0 )
+        let m = (c - b) * 0.5
         
-        print( "Bisection n=\(n) a=\(a) b=\(b) c=\(c) abs(m)=\(abs(m))" )
+        print( "Bisection n=\(n) a=\(a) b=\(b) c=\(c) abs(m)=\(abs(m)) tol1=\(tol1)" )
 
-        if abs(m) <= tol || fb == 0.0 { return b }
+        if abs(m) <= tol1 || fb == 0.0 { return b }
         
-        if abs(e) >= tol && abs(fc) > abs(fb) {
+        if abs(e) >= tol1 && abs(fa) > abs(fb) {
             
-            let s = fb/fc
+            let s = fb/fa
             
             var p: Double
             var q: Double
@@ -580,9 +576,9 @@ func brent( _ f: (Double) -> Double, x1: Double, x2: Double ) -> Double? {
                 print( "Brent - Secant" )
             }
             else {
-                let r = fb/fa
-                q = fc/fa
-                p = s * (2.0 * m * q * (q - r) - (b - c) * (r - 1.0))
+                let r = fb/fc
+                q = fa/fc
+                p = s * (2.0 * m * q * (q - r) - (b - a) * (r - 1.0))
                 q = (q - 1.0) * (r - 1.0) * (s - 1.0)
                 
                 print( "Brent - IQI" )
@@ -591,27 +587,29 @@ func brent( _ f: (Double) -> Double, x1: Double, x2: Double ) -> Double? {
             if p > 0.0 { q = -q }
             p = abs(p)
             
-            if 2*p < 3.0 * m * q - abs(tol*q) && p < abs(0.5 * e * q) {
-                e = d
-                d = p/q
+            let min1 = 3.0*m*q - abs(tol1*q)
+            let min2 = abs(e*q)
+            
+            if 2*p < min(min1, min2) {
+                e = d; d = p/q
             }
             else {
-                (d, e) = (m, m)
+                d = m; e = d
             }
         }
         else {
             // Bisection
-            (d, e) = (m, m)
+            d = m; e = d
             print( "Brent - Bisection" )
         }
         
-        (c, fc) = (b, fb)
+        (a, fa) = (b, fb)
         
-        if abs(d) > tol {
+        if abs(d) > tol1 {
             b += d
         }
         else {
-            b += (b - a) < 0 ? tol : -tol
+            b += (m > 0.0 ? abs(tol1) : -abs(tol1))
         }
         
         fb = f(b)
@@ -656,7 +654,7 @@ func libBrent( _ model: CalculatorModel ) -> KeyPressResult {
         
         let (a, b) = model.state.popRealXY()
         
-        if let root = brent(f, x1: a, x2: b ) {
+        if let root = brent(f, x1: a, x2: b, tol: 1e-10 ) {
             
             model.enterRealValue(root)
         }
