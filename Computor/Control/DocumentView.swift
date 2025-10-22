@@ -46,7 +46,7 @@ struct DocumentView: View {
                                 
                                 Spacer()
                                 
-                                // Calculator Icon to load this document
+                                // LOAD - Calculator Icon to load this document
                                 Button( action: { model.loadDocument(dfr.name); dismiss() } ) {
                                     Image( systemName: "candybarphone" )
                                 }
@@ -94,7 +94,7 @@ struct DocumentView: View {
                         }
                     }
                     
-                    // Add new module button is part of list
+                    // SAVE AS
                     Button( action: { saveItem = true } ) {
                         HStack {
                             Image( systemName: "document.circle" )
@@ -105,7 +105,7 @@ struct DocumentView: View {
                         }
                     }
 
-                    // Add new module button is part of list
+                    // ADD NEW
                     Button( action: { addItem = true } ) {
                         HStack {
                             Image( systemName: "plus.circle" )
@@ -141,7 +141,19 @@ struct DocumentView: View {
             
             EditModuleSheet( submitLabel: "Save" ) { (name: String, caption: String) in
                 
-                _ = model.db.createNewDocument(symbol: name, caption: caption.isEmpty ? nil : caption )
+                if model.activeDocName == docZeroSym {
+                    
+                    if let docRec = model.db.getDocumentFileRec( name: model.activeDocName ) {
+                        
+                        model.db.setDocumentSymbolandCaption( docRec, newSym: name, newCaption: caption.isEmpty ? nil : caption )
+                        
+                        model.activeDocName = name
+                        
+                        _ = model.db.getDocZero()
+                        
+                        dismiss()
+                    }
+                }
             }
         }
 
@@ -176,6 +188,8 @@ struct DocumentActionMenu: View {
     var body: some View {
         
         Menu {
+            
+            // EDIT
             Button {
                 // Open module edit sheet
                 editItem = mfr
@@ -184,6 +198,7 @@ struct DocumentActionMenu: View {
                 Label( "Edit name and caption", systemImage: "pencil")
             }
             
+            // SHARE
             Button {
                 // No implementation yet
             }

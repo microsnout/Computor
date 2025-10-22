@@ -200,11 +200,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var kstate = KeyState()
     @Published var db     = Database()
     
+    // Currently active calculator document
+    @Published var activeDocName: String = ""
+
     @AppStorage(.settingsModalConfirmation)
     var modalConfirmation = true
-    
-    // Currently active calculator document
-    var activeDocName: String = ""
     
     // Pause recording when value greater than 0
     var pauseRecCount: Int = 0
@@ -582,6 +582,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     TypeDef.reIndexUserTypes()
                     
                     self.activeDocName = name
+                    
+                    // Reset aux display to memory page
+                    self.aux.activeView = .memoryView
                 }
             }
         }
