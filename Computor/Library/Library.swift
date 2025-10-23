@@ -43,7 +43,7 @@ struct SystemLibrary {
         
         let index = tag.mod - SymbolTag.firstSysMod
         let localTag = tag.localTag
-        return Self.groups[index].functions.first( where: { $0.sym == localTag } )
+        return Self.groups[index].functions.first( where: { $0.symTag == localTag } )
     }
     
     
@@ -71,15 +71,17 @@ class LibraryGroup {
 }
 
 
-class LibraryFunction {
+class LibraryFunction: TaggedItem {
     
-    var sym: SymbolTag
+    var symTag: SymbolTag
+    var caption: String? = nil
     var regPattern: RegisterPattern = RegisterPattern()
     var libFunc: LibFuncClosure
     
-    init( sym: SymbolTag, require pattern: [RegisterSpec], where test: StateTest? = nil, _ libFunc: @escaping LibFuncClosure ) {
+    init( sym: SymbolTag, caption: String,  require pattern: [RegisterSpec], where test: StateTest? = nil, _ libFunc: @escaping LibFuncClosure ) {
         
-        self.sym = sym
+        self.symTag = sym
+        self.caption = caption
         self.regPattern = RegisterPattern(pattern, test)
         self.libFunc = libFunc
     }
@@ -193,12 +195,14 @@ var stdGroup = LibraryGroup(
         
         LibraryFunction(
             sym: SymbolTag( [.scriptQ, .f], subPt: 2 ),
+            caption: "Quadratic Formul",
             require: [ .X([.real]), .Y([.real]), .Z([.real])], where: { s0 in s0.Xt == s0.Yt && s0.Yt == s0.Zt && s0.Xt == tagUntyped },
             libQuadraticFormula(_:)
         ),
 
         LibraryFunction(
             sym: SymbolTag( [.scriptP, .N], subPt: 2 ),
+            caption: "Interpolation (Neville)",
             require: [ .X([.real]), .Y([.vector], .matrix) ],
             libPolyTerp(_:)
         ),
@@ -210,18 +214,21 @@ var rootGroup = LibraryGroup(
 
         LibraryFunction(
             sym: SymbolTag( [.scriptR, .B], subPt: 2 ),
+            caption: "Bisection Method",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libBisection(_:)
         ),
 
         LibraryFunction(
             sym: SymbolTag( [.scriptR, .S], subPt: 2 ),
+            caption: "Secant Method",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libSecant(_:)
         ),
 
         LibraryFunction(
             sym: SymbolTag( [.scriptR, .B, .r], subPt: 2 ),
+            caption: "Brent Method",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libBrent(_:)
         ),
@@ -233,18 +240,21 @@ var integralGroup = LibraryGroup(
         
         LibraryFunction(
             sym: SymbolTag( [.integralSym, .T], subPt: 2 ),
+            caption: "Trapezoid Rule",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libTrapezoidalRule(_:)
         ),
 
         LibraryFunction(
             sym: SymbolTag( [.integralSym, .S], subPt: 2 ),
+            caption: "Simpson's Rule",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libSimpsonsRule(_:)
         ),
 
         LibraryFunction(
             sym: SymbolTag( [.integralSym, .R], subPt: 2 ),
+            caption: "Romberg Method",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
             libRombergRule(_:)
         ),
