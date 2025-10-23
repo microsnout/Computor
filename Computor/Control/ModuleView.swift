@@ -214,7 +214,7 @@ struct EditModuleSheet: View {
                     }
                     else {
                         // Filter out all chars except letters and digits, limit length to 6
-                        editName = String( list.filter( { $0.isLetter || $0.isNumber } ).prefix(6) ).uppercased()
+                        editName = String( list.filter( { $0.isLetter || $0.isNumber } ).prefix(Const.Limit.modNameLen) ).uppercased()
                     }
                 }
                 .frame( maxWidth: 100 )

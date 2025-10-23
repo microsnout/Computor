@@ -61,7 +61,7 @@ struct CalculatorView: View {
                                 HStack {
                                     let docName = model.activeDocName == docZeroSym ? "" : model.activeDocName
                                     
-                                    Text("Computor").foregroundColor(Color("Frame"))/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
+                                    Text(Const.Str.appName).foregroundColor(Color("Frame"))/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
                                     
                                     Spacer()
                                     

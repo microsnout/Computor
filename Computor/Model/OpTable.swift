@@ -260,7 +260,7 @@ extension CalculatorModel {
             CustomOp { s0 in
                 var s1 = s0
                 
-                for i in 0 ..< stackSize {
+                for i in 0 ..< Const.Model.stackSize {
                     s1.stack[i] = untypedZero
                 }
                 s1.noLift = true

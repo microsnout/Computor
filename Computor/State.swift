@@ -12,7 +12,7 @@ let logS = Logger(subsystem: "com.microsnout.calculator", category: "state")
 
 
 // Register index values
-let regX = 0, regY = 1, regZ = 2, regT = 3, stackSize = 16
+let regX = 0, regY = 1, regZ = 2, regT = 3
 
 
 typealias StateTest = ( _ s0: CalcState) -> Bool
@@ -31,7 +31,7 @@ struct RegisterPattern {
 struct CalcState: Codable {
     /// Defines the exact state of the calculator at a given time
     ///
-    var stack  = [TaggedValue]( repeating: untypedZero, count: stackSize )
+    var stack  = [TaggedValue]( repeating: untypedZero, count: Const.Model.stackSize )
     var lastX  = untypedZero
     var noLift = false
     var memory = [MemoryRec]()
@@ -288,7 +288,7 @@ extension CalcState {
     }
 
     mutating func stackDrop() {
-        for rx in regX ..< stackSize-1 {
+        for rx in regX ..< Const.Model.stackSize-1 {
             self.stack[rx] = self.stack[rx+1]
         }
     }
@@ -302,7 +302,7 @@ extension CalcState {
         
         // logM.debug("stackLift: LIFT")
         
-        for rx in stride( from: stackSize-1, to: regX, by: -1 ) {
+        for rx in stride( from: Const.Model.stackSize-1, to: regX, by: -1 ) {
             self.stack[rx] = self.stack[rx-1]
         }
     }
@@ -310,7 +310,7 @@ extension CalcState {
     mutating func stackRoll() {
         let xtv = self.Xtv
         stackDrop()
-        let last = stackSize-1
+        let last = Const.Model.stackSize-1
         self.stack[last] = xtv
     }
     

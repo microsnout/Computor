@@ -33,7 +33,7 @@ struct DocumentView: View {
                     
                     ForEach ( list ) { (dfr: DocumentRec) in
                         
-                        let caption =  (dfr.caption ?? "ç{GrayText}-caption-ç{}")
+                        let caption =  (dfr.caption ?? Const.Placeholder.caption)
                         
                         VStack {
                             HStack {
@@ -48,7 +48,7 @@ struct DocumentView: View {
                                 
                                 // LOAD - Calculator Icon to load this document
                                 Button( action: { model.loadDocument(dfr.name); dismiss() } ) {
-                                    Image( systemName: "candybarphone" )
+                                    Image( systemName: Const.Icon.document )
                                 }
                                 .padding( [.trailing], 10 )
                                 

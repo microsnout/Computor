@@ -45,7 +45,7 @@ struct StatusView: View {
         
         let midText = model.status.midText
         
-        let rightText = model.aux.isRec ? "ç{StatusRedText}RECç{}" : model.status.rightText
+        let rightText = model.aux.isRec ? Const.Str.record : model.status.rightText
         
         HStack {
             RichText(leftText, size: .small, weight: .bold)
@@ -98,22 +98,22 @@ struct DisplayView: View {
 }
 
 
-struct DisplayView_Previews: PreviewProvider {
-    
-    static var previews: some View {
-        @StateObject  var model = CalculatorModel()
-        
-        ZStack {
-            Rectangle()
-                .fill(Color("Background"))
-                .edgesIgnoringSafeArea( .all )
-            
-            VStack {
-                DisplayView( model: model )
-                    .preferredColorScheme(.light)
-            }
-            .padding(.horizontal, 30)
-            .padding(.vertical, 5)
-        }
-    }
-}
+//struct DisplayView_Previews: PreviewProvider {
+//    
+//    static var previews: some View {
+//        @StateObject  var model = CalculatorModel()
+//        
+//        ZStack {
+//            Rectangle()
+//                .fill(Color("Background"))
+//                .edgesIgnoringSafeArea( .all )
+//            
+//            VStack {
+//                DisplayView( model: model )
+//                    .preferredColorScheme(.light)
+//            }
+//            .padding(.horizontal, 30)
+//            .padding(.vertical, 5)
+//        }
+//    }
+//}
