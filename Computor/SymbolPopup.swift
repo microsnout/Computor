@@ -41,14 +41,33 @@ struct MemoryKeyView: View {
 
 struct SymbolTagGroup: Identifiable {
     
+    struct PlainTag: TaggedItem {
+        var symTag: SymbolTag
+        var caption: String? { nil }
+        
+        init( _ tag: SymbolTag) {
+            self.symTag = tag
+        }
+    }
+    
     var label: String
-    var tagList: [SymbolTag]
-    
+    var itemList: [any TaggedItem]
     var id: UUID = UUID()
+
+    var tagList: [SymbolTag] {
+        itemList.map { $0.symTag }
+    }
     
+    // Plain list of tags, used by User lib because getting captions requires loading mod
     init( label: String, tagList: [SymbolTag]) {
         self.label = label
-        self.tagList = tagList
+        self.itemList = tagList.map { PlainTag($0) }
+    }
+    
+    // List of items containing tag and caption, used by standard lib
+    init( label: String, itemList: [any TaggedItem]) {
+        self.label = label
+        self.itemList = itemList
     }
 }
 
