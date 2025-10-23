@@ -130,7 +130,3 @@ struct SettingsView: View {
         .scrollContentBackground(.hidden)
     }
 }
-
-//#Preview {
-//    SettingsView()
-//}
