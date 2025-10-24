@@ -293,47 +293,6 @@ struct SheetTextField: View {
 
 typealias SheetContinuationClosure = ( _ str: String ) -> Void
 
-
-struct SheetCollapsibleView<Content: View>: View {
-    
-    var label: String
-    
-    @ViewBuilder var content: Content
-    
-    @State private var isCollapsed = true
-    
-    var body: some View {
-        
-        VStack( alignment: .leading ) {
-            
-            HStack {
-                RichText( "ƒ{1.2}\(label)", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
-                
-                Spacer()
-                
-                Button( "", systemImage: isCollapsed ? "chevron.down" : "chevron.up" ) {
-                    
-                    withAnimation {
-                        isCollapsed.toggle()
-                    }
-                }
-            }
-            .padding(0)
-            
-            if !isCollapsed {
-                content
-                    .transition( .asymmetric( insertion: .push(from: .top), removal: .push( from: .bottom)) )
-            }
-            
-            Divider()
-                .overlay( Color(.white))
-        }
-        .accentColor( Color("WhiteText") )
-        .padding([.top], 10)
-    }
-}
-
-
 typealias KeyCodeContinuationClosure = ( _ kc: KeyCode ) -> Void
 
 

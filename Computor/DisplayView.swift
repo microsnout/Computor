@@ -7,22 +7,6 @@
 import SwiftUI
 
 
-typealias TextSizeSpec = ( body: CGFloat, subscript: CGFloat, baseline: CGFloat )
-
-enum TextSize: Int, Hashable {
-    case small = 0, normal, large
-}
-
-let textSpecTable: [TextSize: TextSizeSpec] = [
-    .small  : ( 12.0,  9.0, 6.0 ),
-    .normal : ( 14.0, 10.0, 7.0 ),
-    .large  : ( 16.0, 11.0, 8.0 )
-]
-
-func getTextSpec( _ size: TextSize ) -> TextSizeSpec {
-    return textSpecTable[size] ?? (14.0, 10.0, 6.0)
-}
-
 struct TypedRegister: View {
     let text: String
     let size: TextSize

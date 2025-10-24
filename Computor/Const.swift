@@ -30,6 +30,18 @@ enum Const {
     }
     
     enum Icon {
+        // System Names from SF Symbols app
+        
         static let document = "candybarphone"
+        
+        static let bulletList = "list.bullet"
+        static let gridList   = "square.grid.2x2"
+        
+        static let chevronDn = "chevron.down"
+        static let chevronUp = "chevron.up"
+        
+        // ** Unused **
+        static let detail = "list.bullet.circle"
+        static let gridBox = "square.grid.3x3.square"
     }
 }
