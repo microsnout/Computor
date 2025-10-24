@@ -7,12 +7,6 @@
 import SwiftUI
 
 
-protocol TaggedItem {
-    var symTag: SymbolTag { get }
-    var caption: String? { get }
-}
-
-
 class MacroRec: Codable, Identifiable, TaggedItem {
     var symTag:     SymbolTag
     var caption:    String? = nil

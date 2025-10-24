@@ -24,6 +24,18 @@ func installFunctions( _ model: CalculatorModel ) {
 typealias LibFuncClosure = ( _ model: CalculatorModel ) -> KeyPressResult
 
 
+protocol TaggedItem {
+    var symTag: SymbolTag { get }
+    var caption: String? { get }
+}
+
+
+protocol TaggedItemGroup {
+    var name: String { get }
+    var itemList: [any TaggedItem] { get }
+}
+
+
 struct SystemLibrary {
     
     static var groups: [LibraryGroup] = []
@@ -70,10 +82,12 @@ struct SystemLibrary {
 }
 
 
-class LibraryGroup {
+class LibraryGroup: TaggedItemGroup {
     
     var name: String
     var functions: [LibraryFunction]
+    
+    var itemList: [any TaggedItem] { self.functions }
     
     init( name: String, functions: [LibraryFunction] ) {
         self.name = name
