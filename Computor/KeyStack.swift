@@ -427,6 +427,8 @@ struct MacroLibraryPopup: View, KeyPressHandler {
     func keyPress(_ event: KeyEvent ) -> KeyPressResult {
         return KeyPressResult.modalPopupContinue
     }
+    
+    let popupTitle: [LibrarySource : String] = [.user : "User Library", .system : "Standard Library"]
 
     
     func getMacroTags( _ libSrc: LibrarySource ) -> [SymbolTagGroup] {
@@ -463,13 +465,13 @@ struct MacroLibraryPopup: View, KeyPressHandler {
             
             let tagGroupList = getMacroTags(libSource)
             
-            SelectSymbolPopup( tagGroupList: tagGroupList, title: "Function Library" ) {
+            SelectSymbolPopup( tagGroupList: tagGroupList, title: popupTitle[libSource] ?? "" ) {
                 
                 // User Lib or System Lib picker
                 Picker("", selection: $libSource) {
                     RichText( "User", size: .small, weight: .regular, design: .default, defaultColor: "BlackText" )
                         .tag(LibrarySource.user)
-                    RichText( "System", size: .small, weight: .regular, design: .default, defaultColor: "BlackText" )
+                    RichText( "Standard", size: .small, weight: .regular, design: .default, defaultColor: "BlackText" )
                         .tag(LibrarySource.system)
                 }
                 .pickerStyle(.segmented)
