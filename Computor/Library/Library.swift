@@ -31,8 +31,6 @@ struct SystemLibrary {
     static func addGroup( _ group: LibraryGroup ) {
         
         // Allocate system module code
-        group.modCode = Self.groups.count + SymbolTag.firstSysMod
-        
         Self.groups.append(group)
     }
     
@@ -41,18 +39,33 @@ struct SystemLibrary {
         
         assert( tag.isSysMod )
         
-        let index = tag.mod - SymbolTag.firstSysMod
-        let localTag = tag.localTag
-        return Self.groups[index].functions.first( where: { $0.symTag == localTag } )
+        for grp in Self.groups {
+            
+            for fn in grp.functions {
+                
+                if tag == fn.symTag {
+                    return fn
+                }
+            }
+        }
+        return nil
     }
     
     
-    static func getSystemGroup( for tag: SymbolTag ) -> LibraryGroup {
+    static func getSystemGroup( for tag: SymbolTag ) -> LibraryGroup? {
         
         assert( tag.isSysMod )
-
-        let index = tag.mod - SymbolTag.firstSysMod
-        return Self.groups[index]
+        
+        for grp in Self.groups {
+            
+            for fn in grp.functions {
+                
+                if tag == fn.symTag {
+                    return grp
+                }
+            }
+        }
+        return nil
     }
 }
 
@@ -61,8 +74,6 @@ class LibraryGroup {
     
     var name: String
     var functions: [LibraryFunction]
-    
-    var modCode: Int = 0
     
     init( name: String, functions: [LibraryFunction] ) {
         self.name = name
@@ -78,9 +89,9 @@ class LibraryFunction: TaggedItem {
     var regPattern: RegisterPattern = RegisterPattern()
     var libFunc: LibFuncClosure
     
-    init( sym: SymbolTag, caption: String,  require pattern: [RegisterSpec], where test: StateTest? = nil, _ libFunc: @escaping LibFuncClosure ) {
+    init( sym localSym: SymbolTag, caption: String,  require pattern: [RegisterSpec], where test: StateTest? = nil, _ libFunc: @escaping LibFuncClosure ) {
         
-        self.symTag = sym
+        self.symTag = SymbolTag( localSym, mod: Const.LibMod.stdlib )
         self.caption = caption
         self.regPattern = RegisterPattern(pattern, test)
         self.libFunc = libFunc

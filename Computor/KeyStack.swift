@@ -452,7 +452,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
                     SymbolTagGroup(
                         label: group.name,
                         tagList:
-                            group.functions.map { SymbolTag($0.symTag, mod: group.modCode) }
+                            group.functions.map { $0.symTag }
                     )
                 }
         }

@@ -10,6 +10,7 @@ import Foundation
 enum Const {
     
     enum Str {
+        // Text strings used in UI
         
         static let appName = "Computor"
         
@@ -17,11 +18,14 @@ enum Const {
     }
     
     enum Model {
+        // Specifications for CalculatorModel
         
         static let stackSize = 16
     }
     
     enum Limit {
+        // Upper or Lower limits
+        
         static let modNameLen = 6
     }
     
@@ -43,5 +47,11 @@ enum Const {
         // ** Unused **
         static let detail = "list.bullet.circle"
         static let gridBox = "square.grid.3x3.square"
+    }
+    
+    enum LibMod {
+        // System Library module codes - not for User modules
+        
+        static let stdlib = SymbolTag.firstSysMod + 0
     }
 }

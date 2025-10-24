@@ -45,9 +45,11 @@ struct MacroEvent: CodableMacroOp {
                 if mTag.isSysMod {
                     
                     // Render name for system tag
-                    let group = SystemLibrary.getSystemGroup( for: mTag )
-                    var text = group.name
-                    text += "ç{ModText}/ç{}"
+                    var text = ""
+                    if let group = SystemLibrary.getSystemGroup( for: mTag ) {
+                        text += group.name
+                        text += "ç{ModText}/ç{}"
+                    }
                     text += mTag.getRichText()
                     return text
 
