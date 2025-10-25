@@ -355,15 +355,35 @@ struct GlobalMemoryPopup: View, KeyPressHandler {
     }
     
     
-    func getTagList() -> [SymbolTag] {
+    func getTagGroups() -> [SymbolTagGroup] {
+        
+        let globalGroup = SymbolTagGroup( label: "Global Memories", tagList: model.state.memory.map( { $0.tag } ) )
         
         if let lvf = model.currentLVF {
             
+            var localTags: [SymbolTag]
+            
+            if keyData.pressedKey?.kc == .rcl {
+                
+                // Recall only existing tags
+                localTags = Array( lvf.local.keys )
+            }
+            else {
+                
+                let kcLower: [KeyCode] =
+                [.a, .b, .c, .d, .e, .f, .g, .h, .i, .j, .k, .l, .m, .n, .o, .p, .q, .r, .s, .t, .u, .v, .w, .x, .y, .z]
+                
+                let tagLower: [SymbolTag] = kcLower.map { SymbolTag($0) }
+                
+                localTags = tagLower.map { SymbolTag( $0, mod: SymbolTag.localMemMod ) }
+            }
+            
             // Local variable frame list
-            return Array( lvf.local.keys )
+            return [ SymbolTagGroup( label: "Local Memories", tagList: localTags), globalGroup ]
         }
         else {
-            return model.state.memory.map( { $0.tag } )
+            // Global context
+            return [globalGroup ]
         }
     }
     
@@ -372,12 +392,12 @@ struct GlobalMemoryPopup: View, KeyPressHandler {
         
         CustomModalPopup( keyPressHandler: self, myModalKey: .globalMemory ) {
             
-            let tags = [ SymbolTagGroup( label: "Global Memories", tagList: getTagList() ) ]
+            let tags = getTagGroups()
             
             SelectSymbolPopup( tagGroupList: tags, title: "Select Memory" ) {
                 
                 // Footer content that goes below the tag list box
-                if keyData.pressedKey?.kc != .rcl {
+                if keyData.pressedKey?.kc != .rcl && !model.inLocalContext {
                     
                     HStack( spacing: 20 ) {
                         
