@@ -483,7 +483,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
 }
 
 
-struct localMemoryPopup: View {
+struct localMemoryPopup: View, KeyPressHandler {
     
     @EnvironmentObject var model: CalculatorModel
     
@@ -491,37 +491,37 @@ struct localMemoryPopup: View {
     private var greekKeys = false
     
     @EnvironmentObject var keyData: KeyData
+    
+    @State private var memoryOp: KeyCode = .noop
 
-    struct NewMemoryHandler: KeyPressHandler {
+    func keyPress(_ event: KeyEvent ) -> KeyPressResult {
         
-        var kcMem: KeyCode
-        var model: CalculatorModel
+        let evt = KeyEvent( memoryOp, mTag: SymbolTag(event.keyCode) )
         
-        func keyPress(_ event: KeyEvent ) -> KeyPressResult {
-            
-            let evt = KeyEvent( kcMem, mTag: SymbolTag(event.keyCode) )
-            
-            return model.keyPress(evt)
-        }
+        return model.keyPress(evt)
     }
+    
     
     var body: some View {
         
-        let keyHandler = NewMemoryHandler( kcMem: keyData.selSubkey?.kc ?? keyData.pressedKey?.kc ?? .noop , model: model)
-
-        CustomModalPopup( keyPressHandler: keyHandler, myModalKey: .newMemory ) {
+        CustomModalPopup( keyPressHandler: self, myModalKey: .newMemory ) {
 
             VStack {
                 Text( keyData.modalPad.caption ?? "Modal Pad" )
                     .padding( [.top] )
                 
                 VStack {
-                    KeypadView( padSpec: greekKeys ? psGreek : psAlpha, keyPressHandler: keyHandler )
+                    KeypadView( padSpec: greekKeys ? psGreek : psAlpha, keyPressHandler: self )
                         .padding( [.leading, .trailing, .bottom] )
                     
                     Toggle("\u{03b1}\u{03b2}\u{03b3}", isOn: $greekKeys ).frame( maxWidth: 100 ).padding( [.bottom], 20)
                 }
             }
+        }
+        .onAppear() {
+            
+            // There are memory Ops under the Sto key as well as the Sto key itself
+            memoryOp = keyData.selSubkey?.kc ?? keyData.pressedKey?.kc ?? .noop
         }
     }
 }

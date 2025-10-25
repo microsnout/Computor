@@ -24,6 +24,7 @@ extension SymbolTag {
     // Starting mod values for User modules and builtin system modules
     static let firstUserMod  = 0
     static let firstSysMod = 100
+    static let localMemMod = 1
     
     var kc: KeyCode { KeyCode(rawValue: (tag % 1000000000)) ?? KeyCode.noop }
     
@@ -36,7 +37,11 @@ extension SymbolTag {
     var isUserMod: Bool { self.mod < 100 }
     var isSysMod: Bool { self.mod >= 100 }
     
+    // Local to current module
     var isLocalTag: Bool { self.mod == 0 }
+    
+    // Local memory tag - no conflict with macro symbols
+    var isLocalMemoryTag: Bool { self.mod == 1 }
     
     var description: String { self.getRichText() }
     

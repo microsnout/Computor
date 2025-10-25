@@ -222,6 +222,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     var currentMEC: ModuleExecutionContext? = nil
     
+    var inLocalContext: Bool { currentLVF != nil }
+    
     func pushMEC( _ mfr: ModuleRec ) {
         currentMEC = ModuleExecutionContext( currentMEC, module: mfr)
     }
@@ -520,14 +522,22 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         
         if let mTag = event.mTag {
             
-            if let lvf = currentLVF {
+            if mTag.isLocalMemoryTag {
                 
-                // Local block {..} memory
-                lvf.local[mTag] = tv
+                if let lvf = currentLVF {
+                    
+                    // Local block {..} memory
+                    lvf.local[mTag] = tv
+                }
             }
             else {
                 // Global memory
-                pushState()
+                
+                if currentLVF == nil {
+                    // Only push the state if not running or recording a macro
+                    // Running or recording will push the state before the operation
+                    pushState()
+                }
                 
                 if let index = state.memory.firstIndex( where: { $0.tag == mTag }) {
                     
@@ -540,8 +550,11 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     mr.tv = tv
                 }
                 
-                // Scroll aux display to memory list
-                aux.activeView = .memoryView
+                if currentLVF == nil {
+                    // Scroll aux display to memory list
+                    // Don't change the view unless top level key press
+                    aux.activeView = .memoryView
+                }
             }
         }
         else {
@@ -675,13 +688,17 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .rcl:
             if let mTag = event.mTag {
                 
-                var tv: TaggedValue
+                var tv: TaggedValue = untypedZero
                 
-                if let lvf = currentLVF,
-                   let val = lvf.local[mTag]
-                {
-                    // Local block memory found
-                    tv = val
+                if mTag.isLocalMemoryTag {
+                    
+                    // Local memory tag recall
+                    if let lvf = currentLVF,
+                       let val = lvf.local[mTag]
+                    {
+                        // Local block memory found
+                        tv = val
+                    }
                 }
                 else if let index = state.memory.firstIndex(where: { $0.tag == mTag }) {
                     
@@ -914,6 +931,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     enum KeyTextCode: Int {
         case none = 0, custom, funcKey, UnitKey, symbol
     }
+    
     
     func getKeyText( _ kc: KeyCode ) -> (String?, KeyTextCode) {
         

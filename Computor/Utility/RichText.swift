@@ -89,7 +89,7 @@ struct RichText: View {
             
             if subStrP2.count < 3 {
                 // No possible string op
-                return text + Text(subStrP2).font(bodyFont)
+                return text + Text(subStrP2).font(bodyFont).foregroundColor( Color(color))
             }
             
             // Operation code is member of opCodeSet
@@ -103,7 +103,7 @@ struct RichText: View {
             
             if subStrP2.first != "{"  {
                 //Not a string op
-                opStr.append(String(opType))
+                opStr.append( String(opType) )
                 opType = Character(" ") //no Op
             }
             else if let endBraceIndex = subStrP2.firstIndex(where: { (char) -> Bool in  return (char == "}") })  {
@@ -117,6 +117,7 @@ struct RichText: View {
             }
             
             switch opType {
+                
             case "^":
                 text = text + Text(opStr)
                     .font(subScriptFont)
