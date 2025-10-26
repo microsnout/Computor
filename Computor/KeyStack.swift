@@ -341,7 +341,7 @@ struct CustomModalPopup<Content: View>: View {
 }
 
 
-struct GlobalMemoryPopup: View, KeyPressHandler {
+struct MemorySelectPopup: View, KeyPressHandler {
     
     /// Select an existing memory if there are any or go directly to new memory popup
     
@@ -880,7 +880,7 @@ struct KeyStack<Content: View>: View {
             ModalBlock()
             
             SubPopMenu()
-            GlobalMemoryPopup()
+            MemorySelectPopup()
             MacroLibraryPopup()
         }
         .onGeometryChange( for: CGRect.self, of: {proxy in proxy.frame(in: .global)} ) { newValue in
