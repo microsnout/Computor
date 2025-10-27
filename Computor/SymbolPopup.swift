@@ -89,6 +89,12 @@ struct SelectSymbolPopup<Content: View>: View {
     
     @ViewBuilder let footer: Content
     
+    @State private var isExpanded: Set<String> = []
+
+    // System Image names
+    var expIcon: String = Const.Icon.bulletList
+    var defIcon: String = Const.Icon.gridList
+
     var body: some View {
         
         VStack( spacing: 0) {
@@ -100,30 +106,44 @@ struct SelectSymbolPopup<Content: View>: View {
                     
                     ForEach ( tagGroupList ) { tg in
                         
-                        let tagList = tg.tagList
+                        let itemList = tg.itemList
                         
+                        let tagList = itemList.map { $0.symTag }
+
                         let tagRowList: [[SymbolTag]] = tagList.chunked(into: 4)
                         
                         HStack {
                             RichText( tg.label, size: .small, weight: .heavy, design: .monospaced, defaultColor: "AccentText" )
+                            
                             Spacer()
+                            
+                            Button( "", systemImage: isExpanded.contains(tg.label) ? defIcon : expIcon ) {
+                                withAnimation {
+                                    if isExpanded.contains(tg.label) {
+                                        _ = isExpanded.remove(tg.label)
+                                    }
+                                    else {
+                                        _ = isExpanded.insert(tg.label)
+                                    }
+                                }
+                            }
                         }
                         
-                        ForEach ( tagRowList.indices, id: \.self ) { r in
+                        if isExpanded.contains(tg.label) {
                             
-                            let row = tagRowList[r]
-                            
-                            GridRow {
+                            ForEach ( 0..<itemList.count, id: \.self ) { index in
                                 
-                                let n = row.count
+                                let item = itemList[index]
                                 
-                                ForEach ( row.indices, id: \.self ) { c in
+                                let caption: String = item.caption ?? "-caption-"
+                                
+                                GridRow {
                                     
-                                    MemoryKeyView( mTag: row[c], keySpec: keySpec )
+                                    MemoryKeyView( mTag: item.symTag, keySpec: keySpec )
                                         .onTapGesture {
                                             if let kcOp = keyData.pressedKey {
                                                 // Send event for memory op
-                                                _ = model.keyPress( KeyEvent( kcOp.kc, mTag: row[c] ) )
+                                                _ = model.keyPress( KeyEvent( kcOp.kc, mTag: item.symTag ) )
                                                 
                                                 hapticFeedback.impactOccurred()
                                             }
@@ -132,18 +152,62 @@ struct SelectSymbolPopup<Content: View>: View {
                                             keyData.pressedKey = nil
                                             keyData.modalKey = .none
                                         }
+                                    
+                                    Color.clear
+                                        .frame( width: keySpec.width, height: keySpec.height )
+
+                                    Color.clear
+                                        .frame( width: keySpec.width, height: keySpec.height )
+
+                                    Color.clear
+                                        .frame( width: keySpec.width, height: keySpec.height )
                                 }
                                 
-                                // Pad the row to 4 col so the frame doesn't shrink
-                                if n < 4 {
-                                    ForEach ( 1 ... 4-n, id: \.self ) { _ in
-                                        Color.clear
-                                            .frame( width: keySpec.width, height: keySpec.height )
-                                    }
+                                HStack {
+                                    RichText( caption, size: .small, weight: .regular, design: .default, defaultColor: "ModText" )
+                                    Spacer()
                                 }
                             }
-                            .padding( [.top], 5 )
+                            
                         }
+                        else {
+                            ForEach ( tagRowList.indices, id: \.self ) { r in
+                                
+                                let row = tagRowList[r]
+                                
+                                GridRow {
+                                    
+                                    let n = row.count
+                                    
+                                    ForEach ( row.indices, id: \.self ) { c in
+                                        
+                                        MemoryKeyView( mTag: row[c], keySpec: keySpec )
+                                            .onTapGesture {
+                                                if let kcOp = keyData.pressedKey {
+                                                    // Send event for memory op
+                                                    _ = model.keyPress( KeyEvent( kcOp.kc, mTag: row[c] ) )
+                                                    
+                                                    hapticFeedback.impactOccurred()
+                                                }
+                                                
+                                                // Close modal popup
+                                                keyData.pressedKey = nil
+                                                keyData.modalKey = .none
+                                            }
+                                    }
+                                    
+                                    // Pad the row to 4 col so the frame doesn't shrink
+                                    if n < 4 {
+                                        ForEach ( 1 ... 4-n, id: \.self ) { _ in
+                                            Color.clear
+                                                .frame( width: keySpec.width, height: keySpec.height )
+                                        }
+                                    }
+                                }
+                                .padding( [.top], 5 )
+                            }
+                        }
+                        
                         Divider()
                     }
                 }

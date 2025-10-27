@@ -224,9 +224,9 @@ extension ModuleRec {
     }
     
     
-    func setMacroCaption( _ tag: SymbolTag, _ caption: String ) {
+    func changeMacroCaption( _ tag: SymbolTag, _ caption: String ) {
         
-        /// ** Set Macro Caption **
+        /// ** Change Macro Caption **
         
         if let mr = getMacro(tag) {
             

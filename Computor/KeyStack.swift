@@ -471,8 +471,8 @@ struct MacroLibraryPopup: View, KeyPressHandler {
                 SystemLibrary.groups.map { group in
                     SymbolTagGroup(
                         label: group.name,
-                        tagList:
-                            group.functions.map { $0.symTag }
+                        itemList:
+                            group.functions.map { $0 }
                     )
                 }
         }

@@ -234,8 +234,9 @@ struct MacroDetailView: View {
         // Macro Edit Sheet
         .sheet(isPresented: $editSheet) {
             
-            MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) { newtxt in
-                mr.caption = newtxt
+            MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) { newCaption in
+                mr.caption = newCaption
+                
                 refreshView.toggle()
             }
         }
@@ -345,7 +346,7 @@ struct MacroEditSheet: View {
     
     @Environment(\.dismiss) var dismiss
     
-    var mr: MacroRec
+    @State var mr: MacroRec
 
     @State var caption: String
 
@@ -383,9 +384,9 @@ struct MacroEditSheet: View {
             // Symbol Editor
             SheetCollapsibleView( label: "={Symbol: }\(symName)" ) {
                 
-                NewSymbolPopup( tag: mr.symTag ) { tag in
-                    model.changeMacroSymbol(old: mr.symTag, new: tag)
-                    symName = mr.symTag.getRichText()
+                NewSymbolPopup( tag: mr.symTag ) { newTag in
+                    model.changeMacroSymbol( old: mr.symTag, new: newTag)
+                    symName = newTag.getRichText()
                 }
             }
             
