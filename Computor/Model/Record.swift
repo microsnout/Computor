@@ -411,22 +411,17 @@ extension CalculatorModel {
             fallthrough
             
         default:
-            if KeyCode.fnSet.contains( event.kc ) {
+            if event.kc.isFuncKey {
                 
                 if let tag = kstate.keyMap.tagAssignment(event.kc) {
-                    
                     // There is a macro assigned to this key, record the macro tag not the key code
                     mr.opSeq.append( MacroEvent( KeyEvent( .lib, mTag: tag ) ) )
-                }
-                else {
-                    // Just record the Fn key
-                    mr.opSeq.append( MacroEvent( event ) )
+                    break
                 }
             }
-            else {
-                // Not an Fn Key
-                mr.opSeq.append( MacroEvent( event ) )
-            }
+            
+            // Not an Fn Key or an Fn key with no macro assignment
+            mr.opSeq.append( MacroEvent( event ) )
         }
         
         // Log debug output
