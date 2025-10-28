@@ -222,7 +222,6 @@ extension CalculatorModel {
         
         // Macro playback - save inital state just in case
         pushState()
-        
         pushContext( PlaybackContext() )
         
         // Push a new local variable store
@@ -412,8 +411,22 @@ extension CalculatorModel {
             fallthrough
             
         default:
-            // Just record the key
-            mr.opSeq.append( MacroEvent( event ) )
+            if KeyCode.fnSet.contains( event.kc ) {
+                
+                if let tag = kstate.keyMap.tagAssignment(event.kc) {
+                    
+                    // There is a macro assigned to this key, record the macro tag not the key code
+                    mr.opSeq.append( MacroEvent( KeyEvent( .lib, mTag: tag ) ) )
+                }
+                else {
+                    // Just record the Fn key
+                    mr.opSeq.append( MacroEvent( event ) )
+                }
+            }
+            else {
+                // Not an Fn Key
+                mr.opSeq.append( MacroEvent( event ) )
+            }
         }
         
         // Log debug output
