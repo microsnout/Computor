@@ -29,6 +29,10 @@ enum Const {
         static let modNameLen = 6
     }
     
+    enum UI {
+        static let auxFrameHeight = 24.0
+    }
+    
     enum Placeholder {
         static let caption = "ç{GrayText}-caption-ç{}"
     }

@@ -172,6 +172,8 @@ struct MacroListView: View {
 
 struct ModuleSelectSheet: View {
     
+    /// Present a sheet to select from existing Modules
+    
     @Environment(\.dismiss) var dismiss
     
     @StateObject var model: CalculatorModel

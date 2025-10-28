@@ -96,7 +96,7 @@ struct AuxHeaderView<Content: View>: View {
         VStack {
             content
         }
-        .frame( maxWidth: .infinity, maxHeight: 24 )
+        .frame( maxWidth: .infinity, maxHeight: Const.UI.auxFrameHeight )
         .background( theme.mainColor )
     }
     

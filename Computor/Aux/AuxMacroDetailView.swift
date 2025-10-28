@@ -7,45 +7,6 @@
 import SwiftUI
 
 
-struct FnKeyItem: Identifiable {
-    let id = UUID()
-    let kcFn: KeyCode
-}
-
-
-struct AssignedKeyPicker: View {
-
-    @StateObject var model: CalculatorModel
-    
-    @State private var kcSelected: KeyCode = .null
-    
-    
-    func getKeyList( _ map: KeyMapRec ) -> [FnKeyItem] {
-        
-        let kcAll: [KeyCode] = [.F1, .F2, .F3, .F4, .F5, .F6]
-        
-        return kcAll.map { kc in
-            FnKeyItem( kcFn: kc )
-        }
-    }
-
-    
-    var body: some View {
-        
-        let keyList: [FnKeyItem] = getKeyList( model.kstate.keyMap )
-        
-        Picker( selection: $kcSelected, label: Text("Key:").font(.footnote) ) {
-            
-            ForEach( keyList ) { key in
-                Text(key.kcFn.str).font(.footnote).tag(key.kcFn)
-            }
-        }
-        .pickerStyle(.menu)
-        .font(.footnote)
-    }
-}
-
-
 struct MacroDetailView: View {
     
     var mr: MacroRec
@@ -336,18 +297,13 @@ struct KeyAssignPopup: View, KeyPressHandler {
 }
 
 
-struct MacroMoveRec {
-    
-    var targetMod: ModuleRec
-}
-
-
 struct MacroEditSheet: View {
+    
+    /// Sheet editor for maco definitions with collapsible sub views
     
     @Environment(\.dismiss) var dismiss
     
     @State var mr: MacroRec
-
     @State var caption: String
 
     @StateObject var model: CalculatorModel
@@ -355,18 +311,19 @@ struct MacroEditSheet: View {
     var scc: SheetContinuationClosure
     
     @State private var symName: String = ""
-    
     @State private var kcAssigned: KeyCode? = nil
     
+    struct MacroMoveRec {
+        // Information to present to confirmation dialog
+        var targetMod: ModuleRec
+    }
+
     @State private var moveDialog = false
     @State private var moveRec = MacroMoveRec( targetMod: ModuleRec( name: "" ) )
 
     var body: some View {
-        
-        let kcFn: KeyCode? = model.getKeyAssignment(for: mr.symTag, in: model.aux.macroMod)
-        
+        let kcFn: KeyCode? = model.getKeyAssignment( for: mr.symTag, in: model.aux.macroMod)
         let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
-        
         let modSymStr = model.aux.macroMod.name
 
         VStack( alignment: .leading ) {
@@ -375,6 +332,7 @@ struct MacroEditSheet: View {
             HStack {
                 Spacer()
                 
+                // DONE
                 Button( action: { dismiss() } ) {
                     RichText( "Done", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
                 }
@@ -411,9 +369,10 @@ struct MacroEditSheet: View {
             // Module Editor
             SheetCollapsibleView( label: "={Module: }\(modSymStr)" ) {
                 
-                SelectModulePopup( db: model.db ) { mfr in
+                SelectModulePopup( db: model.db ) { mod in
                     
-                    moveRec = MacroMoveRec( targetMod: mfr )
+                    // Present the mod info to dialog to display the name
+                    moveRec = MacroMoveRec( targetMod: mod )
                     moveDialog = true
                 }
             }
@@ -498,16 +457,13 @@ struct SelectModulePopup: View {
     @EnvironmentObject var keyData: KeyData
 
     let keySpec: KeySpec = ksModuleKey
-    
     let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
     
     // Parameters
     var db: Database
-    
     var msc: ModSelectClosure
     
     var body: some View {
-        
         let modRowList: [[ModuleRec]] = db.modTable.objTable.chunked(into: 3)
         
         VStack( alignment: .center, spacing: 0) {
@@ -518,23 +474,18 @@ struct SelectModulePopup: View {
                     Grid {
                         
                         ForEach ( modRowList.indices, id: \.self ) { r in
-                            
                             let row = modRowList[r]
                             
                             GridRow {
-                                
                                 let n = row.count
                                 
                                 ForEach ( row.indices, id: \.self ) { c in
-                                    
                                     let sym = row[c].name
                                     
                                     ModuleKeyView( modSym: sym, keySpec: keySpec )
                                         .onTapGesture {
                                             hapticFeedback.impactOccurred()
-                                            
                                             msc( row[c] )
-                                            
                                         }
                                 }
                                 
@@ -563,8 +514,6 @@ struct SelectModulePopup: View {
         }
         .frame( maxWidth: .infinity )
         .padding( [.leading, .trailing], 20 )
-
-//        .frame( maxHeight: 340 )
+        // .frame( maxHeight: 340 )
     }
 }
-
