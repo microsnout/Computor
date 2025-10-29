@@ -220,14 +220,14 @@ var stdGroup = LibraryGroup(
         
         LibraryFunction(
             sym: SymbolTag( [.scriptQ, .f], subPt: 2 ),
-            caption: "Quadratic Formul",
+            caption: "Quadratic Formula",
             require: [ .X([.real]), .Y([.real]), .Z([.real])], where: { s0 in s0.Xt == s0.Yt && s0.Yt == s0.Zt && s0.Xt == tagUntyped },
             libQuadraticFormula(_:)
         ),
 
         LibraryFunction(
             sym: SymbolTag( [.scriptP, .N], subPt: 2 ),
-            caption: "Interpolation (Neville)",
+            caption: "Interpolation (Neville's Algorithm)",
             require: [ .X([.real]), .Y([.vector], .matrix) ],
             libPolyTerp(_:)
         ),
