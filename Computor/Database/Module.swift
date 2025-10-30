@@ -260,7 +260,8 @@ extension ModuleRec {
             else {
                 // Sym is missing, add it
                 self.symList.append(newTag)
-                //assert(false)
+                
+                assert(false)
             }
             
             saveModule()

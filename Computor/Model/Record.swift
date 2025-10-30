@@ -151,6 +151,8 @@ extension CalculatorModel {
         
         /// ** Change Macro Symbol **
         
+        print( "model.changeMacroSymbol oldTag=\(old.getRichText())  newTag=\(new.getRichText())" )
+        
         // Called from macro detail view - so sym is local to macroMod
         
         // Find remote tag from mod0

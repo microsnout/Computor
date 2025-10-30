@@ -266,7 +266,7 @@ extension Database {
                                 if modRef == modDest && oldTag == mrRef.symTag {
                                     
                                     // This op is a reference to the destination mod/sym
-                                    let newTag = getRemoteSymbolTag( for: newTag, to: modDest, from: modRef )
+                                    let newTag = getRemoteSymbolTag( for: newTag, to: modDest, from: mod )
                                         
                                     mr.opSeq[x] = MacroEvent( KeyEvent( .lib, mTag: newTag ) )
                                     changed = true
@@ -281,11 +281,11 @@ extension Database {
             if changed {
                 mod.saveModule()
             }
-
-            // Now we can change the symbol in the destinatin module
-            modDest.changeMacroTag(from: oldTag, to: newTag)
         }
-        
+
+        // Now we can change the symbol in the destinatin module
+        modDest.changeMacroTag(from: oldTag, to: newTag)
+
         modTable.saveTable()
     }
     
