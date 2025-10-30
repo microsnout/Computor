@@ -47,8 +47,10 @@ extension Database {
     func getModZero() -> ModuleRec {
         modTable.getObjZero()
     }
-
     
+    var docList: [DocumentRec] { docTable.objTable }
+    var modList: [ModuleRec] { modTable.objTable }
+
     // *** File system paths ***
     
     static func documentDirectoryURL() -> URL {
@@ -147,7 +149,7 @@ extension Database {
         if tag.isLocalTag {
             
             // Lookup tag in local module provided
-            if let mr = localMod.getMacro(tag) {
+            if let mr = localMod.getLocalMacro(tag) {
                 return (mr, localMod)
             }
             
@@ -165,7 +167,7 @@ extension Database {
             if let mfrRem = getModuleFileRec(id: remModId) {
                 
                 // Look for the macro here
-                if let mr = mfrRem.getMacro(remTag) {
+                if let mr = mfrRem.getLocalMacro(remTag) {
                     return (mr, mfrRem)
                 }
             }
@@ -236,11 +238,54 @@ extension Database {
     }
     
     
-    func changeMacroTag( from oldTag: SymbolTag, to newTag: SymbolTag, in mod: ModuleRec ) {
+    func changeMacroTag( from oldTag: SymbolTag, to newTag: SymbolTag, in modDest: ModuleRec ) {
         
         /// ** Change Macro Tag **
         
-        mod.changeMacroTag(from: oldTag, to: newTag)
+        // Update all references to this macro with its new symbol
+        for mod in modList {
+            
+            // Load each module into memory
+            let mf = mod.loadModule()
+            
+            var changed: Bool = false
+            
+            // For each macro in this module
+            for mr in mf.macroTable {
+                
+                // Check each MacroOp in the sequence
+                for x in 0..<mr.opSeq.count {
+                    
+                    if let op = mr.opSeq[x] as? MacroEvent {
+                        
+                        if let mTag = op.event.mTag {
+                            
+                            // Resolve this remote reference
+                            if let (mrRef, modRef) = getMacro( for: mTag, localMod: mod ) {
+                                
+                                if modRef == modDest && oldTag == mrRef.symTag {
+                                    
+                                    // This op is a reference to the destination mod/sym
+                                    let newTag = getRemoteSymbolTag( for: newTag, to: modDest, from: modRef )
+                                        
+                                    mr.opSeq[x] = MacroEvent( KeyEvent( .lib, mTag: newTag ) )
+                                    changed = true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Save module if we updated any references
+            if changed {
+                mod.saveModule()
+            }
+
+            // Now we can change the symbol in the destinatin module
+            modDest.changeMacroTag(from: oldTag, to: newTag)
+        }
+        
         modTable.saveTable()
     }
     

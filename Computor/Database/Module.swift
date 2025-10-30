@@ -178,7 +178,7 @@ extension ModuleRec {
     }
     
     
-    func getMacro( _ sTag: SymbolTag ) -> MacroRec? {
+    func getLocalMacro( _ sTag: SymbolTag ) -> MacroRec? {
         
         /// ** Get Macro **
         
@@ -228,7 +228,7 @@ extension ModuleRec {
         
         /// ** Change Macro Caption **
         
-        if let mr = getMacro(tag) {
+        if let mr = getLocalMacro(tag) {
             
             // Change caption and save
             mr.caption = caption
@@ -245,7 +245,7 @@ extension ModuleRec {
         
         /// ** Change Macro Tag **
         
-        if let mr = getMacro(oldTag) {
+        if let mr = getLocalMacro(oldTag) {
             
             // TODO: check for newTag already in use
             
@@ -260,7 +260,7 @@ extension ModuleRec {
             else {
                 // Sym is missing, add it
                 self.symList.append(newTag)
-                assert(false)
+                //assert(false)
             }
             
             saveModule()

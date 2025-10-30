@@ -61,7 +61,10 @@ extension AuxState {
     }
     
     
-    mutating func clearMacroState() {
+    mutating func stopMacroRecorder() {
+        
+        /// ** Stop Macro Recorder **
+        /// This will retrun Aux display to Macro List
         
         macroRec = nil
         recState = .stop
@@ -69,6 +72,9 @@ extension AuxState {
     
     
     mutating func loadMacro( _ mr: MacroRec ) {
+        
+        /// ** Load Macro **
+        /// This will change Aux display to Macro Detail view in the 'Stop' state
         
         switch recState {
             
@@ -142,7 +148,7 @@ extension AuxState {
             
         case .recNestedModal:
             // Cancel recording as modal rec is incomplete
-            clearMacroState()
+            stopMacroRecorder()
             
         default:
             // Should not happen

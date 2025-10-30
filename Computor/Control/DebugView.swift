@@ -74,7 +74,7 @@ struct DebugView: View {
                 DebugButton( label: "Delete ALL Module files") {
                     
                     
-                    for mfr in model.db.modTable.objTable {
+                    for mfr in model.db.modList {
                         model.db.deleteModule(mfr)
                     }
                     

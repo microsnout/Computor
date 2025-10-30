@@ -21,7 +21,7 @@ extension CalculatorModel {
             
             // Test if we are deleting the macro currently being viewed in Aux dispaly
             if mod == aux.macroMod && mr === aux.macroRec {
-                aux.clearMacroState()
+                aux.stopMacroRecorder()
             }
             
             // Now delete the macro and save file
@@ -264,7 +264,7 @@ extension CalculatorModel {
         /// ** Move Macro **
         ///     Move key assignment as well
         
-        if let mr = srcMod.getMacro(mTag) {
+        if let mr = srcMod.getLocalMacro(mTag) {
             
             // Move this symbol to new module
             db.moveMacro( mr, from: srcMod, to: dstMod )
@@ -291,7 +291,7 @@ extension CalculatorModel {
         /// ** Copy Macro **
         ///     Leave key assignment alone if there is one
         
-        if let mr = srcMod.getMacro(mTag) {
+        if let mr = srcMod.getLocalMacro(mTag) {
             
             // Move this symbol to new module
             db.copyMacro( mr, from: srcMod, to: dstMod )

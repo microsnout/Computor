@@ -456,7 +456,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
         switch libSrc {
         case .user:
             return
-                model.db.modTable.objTable.map { remMod in
+                model.db.modList.map { remMod in
                     SymbolTagGroup(
                         label: remMod.name,
                         tagList:

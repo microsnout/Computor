@@ -48,7 +48,7 @@ struct MacroDetailView: View {
                             }
                             
                             withAnimation {
-                                model.aux.clearMacroState()
+                                model.aux.stopMacroRecorder()
                             }
                         }
                     
@@ -360,7 +360,7 @@ struct MacroEditSheet: View {
                     kcAssigned = kc
                     
                     // If macroMod is mod0 this will not change the tag
-                    let remTag = model.db.getRemoteSymbolTag( for: mr.symTag, to: model.aux.macroMod )
+                    let remTag = model.db.getRemoteSymbolTag( for: mr.symTag, to: model.aux.macroMod /*from mod0*/ )
                     
                     model.assignKey( kc, to: remTag )
                 }
@@ -390,6 +390,8 @@ struct MacroEditSheet: View {
             scc( caption )
             dismiss()
         }
+        
+        // MOVE MACRO SHEET
         .confirmationDialog("Confirm Deletion", isPresented: $moveDialog, presenting: moveRec ) { mmr in
             
             Button("Move to Module: \(mmr.targetMod.name)") {
@@ -464,7 +466,7 @@ struct SelectModulePopup: View {
     var msc: ModSelectClosure
     
     var body: some View {
-        let modRowList: [[ModuleRec]] = db.modTable.objTable.chunked(into: 3)
+        let modRowList: [[ModuleRec]] = db.modList.chunked(into: 3)
         
         VStack( alignment: .center, spacing: 0) {
             
