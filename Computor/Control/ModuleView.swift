@@ -83,14 +83,8 @@ struct ModuleView: View {
             
             EditModuleSheet( submitLabel: "Create" ) { (name: String, caption: String) in
                 
-                if let mfr = model.db.createNewModule(symbol: name) {
-                    
-                    mfr.caption = caption.isEmpty ? nil : caption
-                    mfr.mfile = ModuleFile(mfr)
-                    
-                    // Save new mod file - index will be saved by on change handler
-                    model.db.saveModule(mfr)
-                }
+                let capStr: String? = caption.isEmpty ? nil : caption
+                _ = model.db.createNewModule( symbol: name, caption: capStr)
             }
         }
         

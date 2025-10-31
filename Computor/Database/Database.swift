@@ -89,12 +89,12 @@ extension Database {
     // *****************
     // Library Functions
     
-    func createNewModule( symbol: String ) -> ModuleRec? {
+    func createNewModule( symbol: String, caption capStr: String? = nil ) -> ModuleRec? {
         
         /// ** Create New Module File **
         ///     Create a new module file Index entry with unique symbol and a new UUID
         ///     Don't create a ModuleFile until needed
-        modTable.createNewObject( name: symbol )
+        modTable.createNewObject( name: symbol, caption: capStr )
     }
     
     

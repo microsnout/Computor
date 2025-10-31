@@ -535,7 +535,7 @@ extension ObjectTable {
             return nil
         }
         
-        let rec = ObjRecT( name: name, caption: nil)
+        let rec = ObjRecT( name: name, caption: caption)
         
         // This will create an object file if needed
         _ = rec.loadObject()

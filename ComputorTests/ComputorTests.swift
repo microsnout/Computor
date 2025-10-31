@@ -16,8 +16,8 @@ struct ComputorTests {
         @Test("Basic Stack Ops") func testStackOps() async throws {
             
             let model = CalculatorModel()
-            _ = model.keyPress( KeyEvent( kc: .key5 ))
-            _ = model.keyPress( KeyEvent( kc: .enter ))
+            _ = model.keyPress( KeyEvent( .d5 ) )
+            _ = model.keyPress( KeyEvent( .enter ))
             
             #expect( model.state.X == 5.0 )
         }
@@ -25,11 +25,17 @@ struct ComputorTests {
         @Test("Basic Stack Ops 2") func testTwo() async throws {
             
             let model = CalculatorModel()
-            _ = model.keyPress( KeyEvent( kc: .key3 ))
-            _ = model.keyPress( KeyEvent( kc: .plus ))
+            _ = model.keyPress( KeyEvent( .d3 ))
+            _ = model.keyPress( KeyEvent( .plus ))
             
             #expect( model.state.X == 3.0 )
         }
     }
-
+ 
+    
+    @Suite("Modules") struct moduleSuite {
+        
+        @Test("") func testModules() async throws {
+        }
+    }
 }
