@@ -235,6 +235,7 @@ func initKeyLayout() {
                         Key(.asin, "atan",  caption: "Inverse tan"),
                         Key(.tanh, "tanh",  caption: "Hyperbolic tan"),
                         Key(.atanh, "atanh",caption: "Inverse tanh"),
+                        Key(.atan2, "atan2",caption: "atan y/x"),
                        ],
                        caption: "Tan functions"
     )

@@ -24,7 +24,7 @@ extension CalculatorModel {
         
         .asin:   UnaryOp( parm: tagUntyped, result: tagRad, asin ),
         .acos:   UnaryOp( parm: tagUntyped, result: tagRad, acos ),
-        .atan:   UnaryOp( parm: tagUntyped, result: tagRad, atan ),
+        .atan:   UnaryOp( parm: tagUntyped, result: tagRad, Double.atan ),
             
         .csc:   UnaryOp( parm: tagRad, result: tagUntyped, { 1.0/sin($0) } ),
         .sec:   UnaryOp( parm: tagRad, result: tagUntyped, { 1.0/cos($0) } ),
@@ -55,6 +55,22 @@ extension CalculatorModel {
         .exp:   Constant( exp(1.0) ),
         .abs:   UnaryOp( { x in abs(x) } ),
         .sign:  UnaryOp( { x in -x }),
+        
+        .atan2:
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isReal && s0.Ytv.isReal && s0.Xt == s0.Yt else {
+                    // Real values only of matching type
+                    return nil
+                }
+                
+                if s0.Xt == tagUntyped {
+                    var s1 = s0
+                    s1.stackDrop()
+                    s1.Xtv = TaggedValue( tag: tagRad, reg: Double.atan2( y: s0.Y, x: s0.X) )
+                    return s1
+                }
+                return nil
+            },
         
         .sqrt:
             CustomOp { s0 in

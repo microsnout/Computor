@@ -17,7 +17,7 @@ enum KeyCode: Int, Codable {
     
     case y2x = 40, inv, x2, sqrt, abs, x3, root3
     
-    case sin = 50, cos, tan, asin, acos, atan, csc, sec, cot, acsc, asec, acot, sinh, cosh, tanh, asinh, acosh, atanh
+    case sin = 50, cos, tan, asin, acos, atan, atan2, csc, sec, cot, acsc, asec, acot, sinh, cosh, tanh, asinh, acosh, atanh
     
     case log = 80, ln, log2, logY
     
