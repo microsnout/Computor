@@ -25,6 +25,12 @@ class MacroRec: Codable, Identifiable, TaggedItem {
     func copy() -> MacroRec {
         return MacroRec( tag: self.symTag, caption: self.caption, seq: self.opSeq)
     }
+    
+    static func +( lhs: MacroRec, rhs: MacroOp ) -> MacroRec {
+        // Add a new op to the op seq - used by Testing
+        lhs.opSeq.append(rhs)
+        return lhs
+    }
 }
 
 

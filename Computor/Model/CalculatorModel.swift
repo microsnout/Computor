@@ -8,7 +8,21 @@ import SwiftUI
 import Numerics
 import OSLog
 
-let logM = Logger(subsystem: "com.microsnout.calculator", category: "model")
+extension Logger {
+    
+    init( category: String) {
+        
+        if Const.Log.model {
+            self.init(subsystem: "com.microsnout.computor", category: category)
+        }
+        else {
+            self.init(.disabled)
+            
+        }
+    }
+}
+
+let logM = Logger( category: "model" )
 
 
 struct UndoStack {

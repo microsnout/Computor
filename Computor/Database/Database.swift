@@ -89,6 +89,17 @@ extension Database {
     // *****************
     // Library Functions
     
+    
+    func moduleExists( _ name: String ) -> Bool {
+        
+        /// ** Document Exists **
+        
+        if let _ = modTable.getObjectFileRec(name) {
+            return true
+        }
+        return false
+    }
+
     func createNewModule( symbol: String, caption capStr: String? = nil ) -> ModuleRec? {
         
         /// ** Create New Module File **
@@ -344,5 +355,10 @@ extension Database {
             return true
         }
         return false
+    }
+    
+    
+    func getDocumentRec( _ name: String ) -> DocumentRec? {
+        docTable.objTable.first( where: { $0.name == name } )
     }
 }

@@ -63,15 +63,13 @@ struct AuxPlotView : View {
     
     var body: some View {
         
-        let _ = Self._printChanges()
+        // let _ = Self._printChanges()
         
         let plotList = matchPlotPattern()
         
         let plotType = plotList.isEmpty ? PlotType.none : plotList[0]
 
-#if DEBUG
-        let _ = test(plotType)
-#endif
+        // let _ = test(plotType)
 
         switch plotType {
             

@@ -108,7 +108,7 @@ func createDirectory( _ dirURL: URL ) {
         print( "Directory created: ../\(pathTail)" )
     }
     catch CocoaError.fileWriteFileExists {
-        print( "Directory already exists: ../\(pathTail)" )
+        // print( "Directory already exists: ../\(pathTail)" )
     }
     catch {
         print("Error creating directory: \(pathTail) - \(error.localizedDescription)")

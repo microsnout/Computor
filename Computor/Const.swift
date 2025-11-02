@@ -9,6 +9,10 @@ import Foundation
 
 enum Const {
     
+    enum Log {
+        static let model = false
+    }
+    
     enum Str {
         // Text strings used in UI
         

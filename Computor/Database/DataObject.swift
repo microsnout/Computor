@@ -170,7 +170,7 @@ extension DataObjectRec {
         if let dof = self.objFile {
             
             // Object file already loaded
-            print( "loadObject: \(dof.name) already loaded" )
+            // print( "loadObject: \(dof.name) already loaded" )
             return dof
         }
         
@@ -383,12 +383,7 @@ extension ObjectTable {
             print( "   - \(obj.filename)" )
         }
         
-        print("\n#1 \(self.tableName) filename list:")
-        for fn in modFilenameList {
-            print( "   found: \(fn)" )
-        }
-        
-        print("\n#2 Valid files found:")
+        print("\nValid files found:")
         for (name, uuid) in validModFiles {
             print( "   \(name) - \(uuid.uuidString)" )
         }
@@ -418,7 +413,8 @@ extension ObjectTable {
                     mfr.name = modName
                 }
                 
-                print( "File found for: \(modName) - \(modUUID.uuidString)" )
+                // print( "File found for: \(modName) - \(modUUID.uuidString)" )
+                
                 numMatched += 1
                 
                 if modName == objZeroName {
@@ -440,12 +436,12 @@ extension ObjectTable {
             }
         }
         
-        print( "\nNumber of matched files(\(numMatched)), remaining valid files(\(validModFiles.count)), table entries(\(objTable.count))" )
+#if DEBUG
+        print( "\nNumber of matched files(\(numMatched)), remaining valid files(\(validModFiles.count)), table entries(\(objTable.count))\n" )
+#endif
         
         // Eliminate index file entries where the file is missing
         objTable.removeAll( where: { missingFiles.contains( $0.id ) } )
-        
-        print( "\nRemaining index entries after removing missing files(\(objTable.count))")
         
         // Add index entries for remaining valid files
         for (modName, modUUID) in validModFiles {
@@ -458,7 +454,9 @@ extension ObjectTable {
                 }
             }
             
+#if DEBUG
             print("\nAdding \(self.tableName) ObjectRec for: \(modName) - \(modUUID.uuidString)")
+#endif
             
             guard let _ = addExistingObjectFile( name: modName, uuid: modUUID) else {
                 // assert(false)
@@ -488,7 +486,7 @@ extension ObjectTable {
         if let obj0 = getObjectFileRec( objZeroName ) {
             
             // Object zero already exists
-            print( "Get Obj Zero: Already exists" )
+            // print( "Get Obj Zero: Already exists" )
             return obj0
         }
         
