@@ -403,7 +403,7 @@ extension ObjectTable {
         // For each record in the table file
         for mfr in objTable {
             
-            if let (modName, modUUID) = validModFiles.first( where: { (name, uuid) in uuid == mfr.id } ) {
+            if let (modName, _) = validModFiles.first( where: { (name, uuid) in uuid == mfr.id } ) {
                 
                 // The file exists
                 

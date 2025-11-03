@@ -68,7 +68,7 @@ class NormalContext : EventContext {
                 
                 model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
                     
-                    if exitEvent.keyCode ==  .back {
+                    if exitEvent.keyCode ==  .backUndo {
                         
                         // Data entry was cancelled by back/undo key
                         model.popState()

@@ -81,7 +81,7 @@ class BlockRecord : EventContext {
             model.recordKeyEvent(event)
             return KeyPressResult.recordOnly
             
-        case .back:
+        case .backUndo:
             if mr.opSeq.isEmpty {
                 model.kstate.func2R = psFunctions2R
                 
@@ -115,7 +115,7 @@ class BlockRecord : EventContext {
                 
                 model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
                     
-                    if exitEvent.kc != .back {
+                    if exitEvent.kc != .backUndo {
                         
                         // Grab the entered data value and record it
                         let tv = model.grabTextEntry()

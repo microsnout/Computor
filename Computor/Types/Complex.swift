@@ -40,7 +40,7 @@ func installComplex( _ model: CalculatorModel ) {
         }
     ])
     
-    CalculatorModel.defineOpPatterns( .sign, [
+    CalculatorModel.defineOpPatterns( .chs, [
         
         OpPattern( [ .X([.complex]) ] ) { s0 in
             var s1 = s0

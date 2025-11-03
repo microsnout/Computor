@@ -91,7 +91,7 @@ class RecordingContext : EventContext {
             model.currentLVF = model.currentLVF?.prevLVF
             return KeyPressResult.macroOp
             
-        case .back:
+        case .backUndo:
             guard let mr = model.aux.macroRec else {
                 assert(false)
                 break
@@ -131,7 +131,7 @@ class RecordingContext : EventContext {
                 
                 model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
                     
-                    if exitEvent.keyCode ==  .back {
+                    if exitEvent.keyCode ==  .backUndo {
                         
                         // Data entry was cancelled by back/undo key
                         model.popState()

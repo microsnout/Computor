@@ -51,7 +51,7 @@ let psNumeric = PadSpec(
     keys: [ Key(.d7, "ƒ{1.2}7"), Key(.d8, "ƒ{1.2}8"), Key(.d9, "ƒ{1.2}9"),
             Key(.d4, "ƒ{1.2}4"), Key(.d5, "ƒ{1.2}5"), Key(.d6, "ƒ{1.2}6"),
             Key(.d1, "ƒ{1.2}1"), Key(.d2, "ƒ{1.2}2"), Key(.d3, "ƒ{1.2}3"),
-            Key(.d0, "ƒ{1.2}0"), Key(.dot, "ƒ{1.2}."),  Key(.sign, "ƒ{1.2}+/-")
+            Key(.d0, "ƒ{1.2}0"), Key(.dot, "ƒ{1.2}."),  Key(.chs, "ƒ{1.2}+/-")
           ]
 )
 
@@ -64,16 +64,16 @@ let psEnter = PadSpec(
 let psOperations = PadSpec(
     keySpec: ksNormal,
     cols: 3,
-    keys: [ Key(.divide, "ƒ{1.4}÷"),  Key(.deg, "ƒ{0.9}deg\u{00B0}"), Key(.y2x, "y^{x}"),
-            Key(.times,  "ƒ{1.4}×"),  Key(.percent, "%"),             Key(.inv, "1/x"),
-            Key(.minus,  "ƒ{1.4}−"),  Key(.xy, "ƒ{0.9}X\u{21c6}Y"),   Key(.x2, "x^{2}"),
-            Key(.plus,   "ƒ{1.4}+"),  Key(.roll, "R\u{2193}"),        Key(.sqrt, "\u{221a}x")
+    keys: [ Key(.divide, "ƒ{1.4}÷"),  Key(.factorial, "\u{1d48f}!"),  Key(.y2x, "y^{x}"),
+            Key(.times,  "ƒ{1.4}×"),  Key(.deg, "ƒ{0.9}deg\u{00B0}"), Key(.inv, "1/x"),
+            Key(.minus,  "ƒ{1.4}−"),  Key(.percent, "%"),             Key(.x2, "x^{2}"),
+            Key(.plus,   "ƒ{1.4}+"),  Key(.xy, "ƒ{0.9}X\u{21c6}Y"),   Key(.sqrt, "\u{221a}x")
           ])
 
 let psClear = PadSpec(
         keySpec: ksNormal,
         cols: 3,
-        keys: [ Key(.back, "ƒ{0.8}BACK/UNDO", size: 2), Key(.clX, "ƒ{0.8}ClrX") ]
+        keys: [ Key(.backUndo, "ƒ{0.8}BACK/UNDO", size: 2), Key(.clearX, "ƒ{0.8}ClrX") ]
     )
 
 let psSoftkeyL = PadSpec (
@@ -126,7 +126,7 @@ let psFunctionsR = PadSpec(
         cols: 3,
         keys: [ Key(.log, "log"),
                 Key(.tenExp, "10^{x}"),
-                Key(.pi,  "ƒ{1.3}\u{1d70b}")
+                Key(.pi,  "ƒ{1.3}\u{1d6d1}")
             ]
     )
 
@@ -301,13 +301,13 @@ func initKeyLayout() {
                        ]
     )
 
-    SubPadSpec.define( .clX,
+    SubPadSpec.define( .clearX,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.clX,  "ƒ{0.8}ClrX",   caption: "Clear X"),
-                        Key(.clY,  "ƒ{0.8}ClrY",   caption: "Clear Y"),
-                        Key(.clZ,  "ƒ{0.8}ClrZ",   caption: "Clear Z"),
-                        Key(.clReg,"ƒ{0.8}CL Reg", caption: "Clear Registers"),
+                        Key(.clearX,  "ƒ{0.8}ClrX",   caption: "Clear X"),
+                        Key(.clearY,  "ƒ{0.8}ClrY",   caption: "Clear Y"),
+                        Key(.clearZ,  "ƒ{0.8}ClrZ",   caption: "Clear Z"),
+                        Key(.clearReg,"ƒ{0.8}CL Reg", caption: "Clear Registers"),
                        ],
                        caption: "Clear"
     )
@@ -457,12 +457,36 @@ func initKeyLayout() {
                        ]
     )
     
-    SubPadSpec.define( .roll,
+    SubPadSpec.define( .enter,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.roll, "R\u{2193}"),
-                        Key(.lastx, "LSTx"),
-                       ]
+                        Key(.roll, "R\u{2193}",  caption: "ƒ{0.9}Roll Down"),
+                        Key(.lastx, "LSTx",      caption: "Last \u{1d499}"),
+                       ],
+                       caption: "Stack Op"
+    )
+
+    SubPadSpec.define( .pi,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.pi,  "ƒ{1.3}\u{1d6d1}",  caption: "Pi"),
+                        Key(.phi, "ƒ{1.2}\u{1d6d7}",  caption: "Golden Ratio"),
+                        Key(.exp, "ƒ{1.3}\u{1d486}",  caption: "Euler Number"),
+                       ],
+                       caption: "Constants"
+    )
+
+    SubPadSpec.define( .factorial,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.floor,  "\u{230a}\u{230b}",  caption: "floor(\u{1d499})" ),
+                        Key(.ceiling, "\u{2308}\u{2309}",  caption: "ceiling(\u{1d499})" ),
+                        Key(.round, "round",  caption: "round(\u{1d499})" ),
+                        Key(.sign, "sign",  caption: "sign(\u{1d499})" ),
+                        Key(.gcd, "GCD", caption: "Greatest Common Divisor" ),
+                        Key(.lcm, "LCM", caption: "Least Common Multiple" ),
+                       ],
+                       caption: "Integer Functions"
     )
 
     // Modal subpad definitions

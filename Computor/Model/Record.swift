@@ -367,7 +367,7 @@ extension CalculatorModel {
             // Otherwise record the key
             mr.opSeq.append( MacroEvent( event ) )
             
-        case .back:
+        case .backUndo:
             // Backspace, need to remove last op or possibly undo a unit tag
             if let last = mr.opSeq.last {
                 

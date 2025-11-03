@@ -517,7 +517,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     static let entryStartKeys = KeyCode.digitSet.union( Set<KeyCode>([.dot]) )
     
     // Set of keys valid in data entry mode, all of above plus sign, back and enter exp
-    static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.sign, .back, .eex, .d000]) )
+    static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.chs, .backUndo, .eex, .d000]) )
     
     
     func newGlobalMemory( _ mTag: SymbolTag, caption: String? = nil ) -> MemoryRec {
@@ -631,7 +631,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .noop, .noopBrace:
             return KeyPressResult.noOp
             
-        case .back:
+        case .backUndo:
             // Undo last operation by restoring previous state
             popState()
             return KeyPressResult.stateUndo
@@ -660,7 +660,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             pushState()
             state.Xfmt.style = .scientific
             
-        case .clX:
+        case .clearX:
             // Clear X register
             pushState()
             state.Xtv = untypedZero

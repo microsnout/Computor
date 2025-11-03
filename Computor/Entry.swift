@@ -202,7 +202,7 @@ struct EntryState {
                 // No op
                 break
                 
-            case .sign:
+            case .chs:
                 if exponentText.starts( with: "-") {
                     exponentText.removeFirst()
                 }
@@ -210,7 +210,7 @@ struct EntryState {
                     exponentText.insert( "-", at: exponentText.startIndex )
                 }
 
-            case .back:
+            case .backUndo:
                 if exponentText.isEmpty {
                     exponentEntry = false
                     entryText.removeLast(3)
@@ -243,10 +243,10 @@ struct EntryState {
             case .eex:
                 startExpEntry()
 
-            case .sign:
+            case .chs:
                 flipTextSign()
 
-            case .back:
+            case .backUndo:
                 backspaceEntry()
                 
                 if !entryMode {

@@ -98,7 +98,7 @@ class ModalContext : EventContext {
                 
                 model.pushContext( BlockRecord(), lastEvent: event ) { endEvent in
                     
-                    if endEvent.kc == .back {
+                    if endEvent.kc == .backUndo {
                         // We have backspaced the open brace, cancelling the block
                         // Stay in this context and wait for another function
                     }
@@ -139,7 +139,7 @@ class ModalContext : EventContext {
                 return KeyPressResult.stateChange
             }
             
-        case .back:
+        case .backUndo:
             // Disable braces
             model.kstate.func2R = psFunctions2R
             

@@ -53,8 +53,10 @@ extension CalculatorModel {
 
         .pi:    Constant( Double.pi ),
         .exp:   Constant( exp(1.0) ),
+        .phi:   Constant( (1.0 + Double.sqrt(5.0)) / 2.0 ),
+        
         .abs:   UnaryOp( { x in abs(x) } ),
-        .sign:  UnaryOp( { x in -x }),
+        .chs:  UnaryOp( { x in -x }),
         
         .atan2:
             CustomOp { (s0: CalcState) -> CalcState? in
@@ -72,6 +74,54 @@ extension CalculatorModel {
                 return nil
             },
         
+        .factorial:
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isInteger && s0.Xt == tagUntyped else {
+                    // Untyped Integer values only
+                    return nil
+                }
+                
+                let n = Int( s0.X )
+                
+                guard n >= 0 && n <= 20 else {
+                    // Valid x values from 0 to 20 only
+                    return nil
+                }
+                
+                var result = 1
+                
+                if n > 1 {
+                    for i in 1...n {
+                        result *= i
+                    }
+                }
+                
+                var s1 = s0
+                s1.setRealValue( Double(result) )
+                return s1
+            },
+        
+        .ceiling: UnaryOp( ceil ),
+        .floor:   UnaryOp( floor ),
+        .round:   UnaryOp() { (x: Double) -> Double in x.rounded(.toNearestOrEven) },
+        .sign:    UnaryOp() { (x: Double) -> Double in (x < 0) ? -1 : (x > 0) ? +1 : 0 },
+        
+        .gcd:
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isInteger && s0.Ytv.isInteger else {
+                    // Integer values only
+                    return nil
+                }
+                
+                let (a, b) = (Int(s0.X), Int(s0.Y))
+                
+                // Implement GCD
+                
+                var s1 = s0
+                return s1
+            },
+
+
         .sqrt:
             CustomOp { s0 in
                 guard s0.Xtv.isReal else {
@@ -246,7 +296,7 @@ extension CalculatorModel {
                 return nil
             },
         
-        .clX:
+        .clearX:
             // Clear X register
             CustomOp { (s0: CalcState) -> CalcState? in
                 var s1 = s0
@@ -255,7 +305,7 @@ extension CalculatorModel {
                 return s1
             },
 
-        .clY:
+        .clearY:
             // Clear Y register
             CustomOp { s0 in
                 var s1 = s0
@@ -263,7 +313,7 @@ extension CalculatorModel {
                 return s1
             },
 
-        .clZ:
+        .clearZ:
             // Clear Z register
             CustomOp { s0 in
                 var s1 = s0
@@ -271,7 +321,7 @@ extension CalculatorModel {
                 return s1
             },
 
-        .clReg:
+        .clearReg:
             // Clear registers
             CustomOp { s0 in
                 var s1 = s0

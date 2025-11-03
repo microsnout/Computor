@@ -11,13 +11,16 @@ enum KeyCode: Int, Codable {
     
     case plus = 15, minus, times, divide
     
-    case dot = 20, enter, clX, clY, clZ, clReg, back, sign, eex, d000
+    case dot = 20, enter, clearX, clearY, clearZ, clearReg, backUndo, chs, eex, d000
     
     case fixL = 30, fixR, roll, xy, xz, yz, lastx, percent, deltaPercent, totalPercent
     
     case y2x = 40, inv, x2, sqrt, abs, x3, root3
     
     case sin = 50, cos, tan, asin, acos, atan, atan2, csc, sec, cot, acsc, asec, acot, sinh, cosh, tanh, asinh, acosh, atanh
+    
+    // Integer Operations
+    case floor = 70, ceiling, round, factorial, sign, intDivide, modulo, gcd, lcm, hcf
     
     case log = 80, ln, log2, logY
     

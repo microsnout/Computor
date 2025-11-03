@@ -9,7 +9,7 @@ import Foundation
 
 func installVector( _ model: CalculatorModel ) {
     
-    CalculatorModel.defineOpPatterns( .sign, [
+    CalculatorModel.defineOpPatterns( .chs, [
         
         /// Sign change +/-  Invert direction of vector
         
