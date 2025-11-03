@@ -150,6 +150,21 @@ class ModalContext : EventContext {
             
             return KeyPressResult.stateUndo
             
+        case .xy, .yz, .xz:
+            model.pauseUndoStack()
+            model.pauseRecording()
+            
+            // ModalExecute runs with Undo stack paused
+            let result =  model.execute( event )
+            
+            if result == .stateError {
+                model.popState()
+            }
+            
+            model.resumeRecording()
+            model.resumeUndoStack()
+            return result
+            
             
         default:
             // Disable braces
@@ -234,6 +249,21 @@ class ModalConfirmationContext: EventContext {
             let result = self.block(model)
             return result
             
+        case .xy, .yz, .xz:
+            model.pauseUndoStack()
+            model.pauseRecording()
+            
+            // ModalExecute runs with Undo stack paused
+            let result =  model.execute( event )
+            
+            if result == .stateError {
+                model.popState()
+            }
+            
+            model.resumeRecording()
+            model.resumeUndoStack()
+            return result
+
         default:
             // Return to invoking context
             model.popContext( event )
