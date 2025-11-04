@@ -108,16 +108,51 @@ extension CalculatorModel {
         
         .gcd:
             CustomOp { (s0: CalcState) -> CalcState? in
-                guard s0.Xtv.isInteger && s0.Ytv.isInteger else {
+                guard s0.Xtv.isInteger && s0.Ytv.isInteger && s0.X >= 0 && s0.Y >= 0 else {
                     // Integer values only
                     return nil
                 }
                 
-                let (a, b) = (Int(s0.X), Int(s0.Y))
+                var (a, b) = (Int(s0.X), Int(s0.Y))
                 
-                // Implement GCD
+                if b > a {
+                    // Exchange so 'a' is bigger
+                    (a, b) = (b, a)
+                }
+                
+                while b != 0 {
+                    (a, b) = (b, a % b)
+                }
                 
                 var s1 = s0
+                s1.stackDrop()
+                s1.X = Double(a)
+                return s1
+            },
+
+        .lcm:
+            CustomOp { (s0: CalcState) -> CalcState? in
+                guard s0.Xtv.isInteger && s0.Ytv.isInteger && s0.X >= 0 && s0.Y >= 0 else {
+                    // Integer values only
+                    return nil
+                }
+                
+                let (A, B) = (Int(s0.X), Int(s0.Y))
+                
+                var (a, b) = (A, B)
+                
+                if b > a {
+                    // Exchange so 'a' is bigger
+                    (a, b) = (b, a)
+                }
+                
+                while b != 0 {
+                    (a, b) = (b, a % b)
+                }
+                
+                var s1 = s0
+                s1.stackDrop()
+                s1.X = Double( A*B / a )
                 return s1
             },
 
