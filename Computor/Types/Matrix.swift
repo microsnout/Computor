@@ -99,6 +99,7 @@ func installMatrix( _ model: CalculatorModel ) {
             model.withModalConfirmation( prompt: "Sequence", regLabels: ["Number", "Inc", "Initial"] ) { model in
                 
                 // Copy parameters n and inc from s0
+                let s0 = model.state
                 let n = Int(floor(s0.X))
                 let seq = 1 ... n
                 let inc = s0.Ytv
