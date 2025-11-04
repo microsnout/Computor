@@ -32,11 +32,11 @@ func installComplex( _ model: CalculatorModel ) {
                 let zx = Comp( ratio*x.real, ratio*x.imaginary )
                 
                 s1.setComplexValue(zx + y, tag: s0.Yt, fmt: s0.Yfmt)
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         }
     ])
     
@@ -46,7 +46,7 @@ func installComplex( _ model: CalculatorModel ) {
             var s1 = s0
             let z = s0.Xtv.getComplex()
             s1.setComplexValue( Comp(-z.real, -z.imaginary), tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
 
@@ -67,11 +67,11 @@ func installComplex( _ model: CalculatorModel ) {
                 let zx = Comp( ratio*x.real, ratio*x.imaginary )
                 
                 s1.setComplexValue(y - zx, tag: s0.Yt, fmt: s0.Yfmt)
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         }
     ])
     
@@ -91,11 +91,11 @@ func installComplex( _ model: CalculatorModel ) {
                 let zx = Comp( ratio*x.real, ratio*x.imaginary )
 
                 s1.setComplexValue(zx * y, tag: tagProduct, fmt: s0.Yfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         }
     ])
 
@@ -118,11 +118,11 @@ func installComplex( _ model: CalculatorModel ) {
                 let z = Comp( (u*zRe + v*zIm)/mag2, (v*zRe - u*zIm)/mag2 )
 
                 s1.setComplexValue( z, tag: tagProduct, fmt: s0.Yfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         }
     ])
     
@@ -138,12 +138,12 @@ func installComplex( _ model: CalculatorModel ) {
                 let x = s0.Xtv.getComplex()
                 
                 s1.setComplexValue( x*x, tag: tagProduct, fmt: s0.Yfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units - NOT possible because types are the same
             assert(false)
-            return nil
+            return (KeyPressResult.stateError, nil)
         }
     ])
 
@@ -159,12 +159,12 @@ func installComplex( _ model: CalculatorModel ) {
                 let x = s0.Xtv.getComplex()
                 
                 s1.setComplexValue( x*x*x, tag: tagProduct, fmt: s0.Yfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units - NOT possible because types are the same
             assert(false)
-            return nil
+            return (KeyPressResult.stateError, nil)
         }
     ])
 
@@ -179,7 +179,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             
             s1.setRealValue( x.length, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -192,7 +192,7 @@ func installComplex( _ model: CalculatorModel ) {
             var s1 = s0
             let x = s0.Xtv.getComplex()
             s1.setRealValue( x.real , tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -205,7 +205,7 @@ func installComplex( _ model: CalculatorModel ) {
             var s1 = s0
             let x = s0.Xtv.getComplex()
             s1.setRealValue( x.imaginary , tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -218,7 +218,7 @@ func installComplex( _ model: CalculatorModel ) {
             var s1 = s0
             let x = s0.Xtv.getComplex()
             s1.setRealValue( x.phase , tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -231,7 +231,7 @@ func installComplex( _ model: CalculatorModel ) {
             var s1 = s0
             let x = s0.Xtv.getComplex()
             s1.setComplexValue( x.conjugate , tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -246,10 +246,10 @@ func installComplex( _ model: CalculatorModel ) {
             
             if let z = x.normalized {
                 s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
-            return nil
+            return (KeyPressResult.stateError, nil)
         }
     ])
 
@@ -266,12 +266,12 @@ func installComplex( _ model: CalculatorModel ) {
                 
                 if let z = x.reciprocal {
                     s1.setComplexValue( z, tag: tagProduct, fmt: s0.Xfmt )
-                    return s1
+                    return (KeyPressResult.stateChange, s1)
                 }
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         }
     ])
 
@@ -286,7 +286,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.exp(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -299,7 +299,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.cosh(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -312,7 +312,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.sinh(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -325,7 +325,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.tanh(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -338,7 +338,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.cos(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -351,7 +351,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.sin(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -364,7 +364,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.tan(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -379,7 +379,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.log(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -392,7 +392,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.acosh(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -405,7 +405,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.asinh(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -418,7 +418,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.atanh(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -431,7 +431,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.acos(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -444,7 +444,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.asin(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -457,7 +457,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.atan(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -473,7 +473,7 @@ func installComplex( _ model: CalculatorModel ) {
             let y = s0.Ytv.getComplex()
             let z = Complex.pow(y, x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.real]), .Y([.complex]) ] ) { s0 in
@@ -493,7 +493,7 @@ func installComplex( _ model: CalculatorModel ) {
             }
             
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -506,7 +506,7 @@ func installComplex( _ model: CalculatorModel ) {
             let x = s0.Xtv.getComplex()
             let z = Complex.sqrt(x)
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
 
@@ -523,7 +523,7 @@ func installComplex( _ model: CalculatorModel ) {
             let z = Comp(x, y)
             
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.polar]) ] ) { s0 in
@@ -535,7 +535,7 @@ func installComplex( _ model: CalculatorModel ) {
             let z = Comp(re, im)
             
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
     

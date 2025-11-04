@@ -22,7 +22,7 @@ func installRational( _ model: CalculatorModel ) {
             // Rational addition
             var s1 = s0
             s1.stackDrop()
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     

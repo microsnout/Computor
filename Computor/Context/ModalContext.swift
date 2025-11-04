@@ -224,9 +224,9 @@ class ModalConfirmationContext: EventContext {
     
     var regLabels: [String]?
 
-    var block: ( _ model: CalculatorModel ) -> KeyPressResult
+    var block: ( _ model: CalculatorModel ) -> OpResult
     
-    init( prompt: String, regLabels: [String]?, block: @escaping ( _ : CalculatorModel ) -> KeyPressResult ) {
+    init( prompt: String, regLabels: [String]?, block: @escaping ( _ : CalculatorModel ) -> OpResult ) {
         self.prompt = prompt
         self.regLabels = regLabels
         self.block = block
@@ -246,8 +246,14 @@ class ModalConfirmationContext: EventContext {
             
         case .enter:
             model.popContext( event )
-            let result = self.block(model)
-            return result
+            
+            let (opRes,opState) = self.block(model)
+            
+            if let newState = opState {
+                model.pushState()
+                model.state = newState
+            }
+            return opRes
             
         case .xy, .yz, .xz:
             model.pauseUndoStack()

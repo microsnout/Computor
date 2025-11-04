@@ -8,17 +8,18 @@ import SwiftUI
 import OSLog
 
 
-struct OpPattern : StateOperator {
+struct OpPattern : StateOperatorEx {
+    
     let regPattern: RegisterPattern
     
-    let block: (CalcState) -> CalcState?
+    let block: (CalcState) -> (KeyPressResult, CalcState?)
     
-    init( _ pattern: [RegisterSpec], where test: StateTest? = nil, _ block: @escaping (CalcState) -> CalcState? ) {
+    init( _ pattern: [RegisterSpec], where test: StateTest? = nil, _ block: @escaping (CalcState) -> (KeyPressResult, CalcState?) ) {
         self.regPattern = RegisterPattern(pattern, test)
         self.block = block
     }
 
-    func transition(_ s0: CalcState ) -> CalcState? {
+    func transition(_ s0: CalcState ) -> (KeyPressResult, CalcState?) {
         return block(s0)
     }
 }

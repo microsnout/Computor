@@ -17,21 +17,21 @@ func installVector( _ model: CalculatorModel ) {
             var s1 = s0
             let (x, y) = s0.Xtv.getVector()
             s1.setVectorValue( -x,-y, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
         
         OpPattern( [ .X([.vector3D]) ] ) { s0 in
             var s1 = s0
             let (x, y, z) = s0.Xtv.getVector3D()
             s1.setVector3DValue( -x,-y,-z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.polar]) ] ) { s0 in
             var s1 = s0
             let (r, w) = s0.Xtv.getPolar()
             s1.setPolarValue( r, w >= Double.pi ? (w - Double.pi) : (w + Double.pi), tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
         
         OpPattern( [ .X([.spherical]) ] ) { s0 in
@@ -39,7 +39,7 @@ func installVector( _ model: CalculatorModel ) {
             let (x, y, z) = s0.Xtv.getVector3D()
             let (r, w, p) = rect2spherical(x,y,z)
             s1.setSphericalValue( r,w,p, tag: s0.Xt, fmt: s0.Xfmt  )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
 
@@ -51,14 +51,14 @@ func installVector( _ model: CalculatorModel ) {
             var s1 = s0
             let (r, _) = s0.Xtv.getPolar()
             s1.setRealValue( abs(r), tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
         
         OpPattern( [ .X([.vector3D, .spherical]) ] ) { s0 in
             var s1 = s0
             let (r, _, _) = s0.Xtv.getSpherical()
             s1.setRealValue( abs(r), tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
     
@@ -74,7 +74,7 @@ func installVector( _ model: CalculatorModel ) {
             else {
                 s1.setRealValue( w, tag: s0.Xt, fmt: s0.Xfmt )
             }
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
 
@@ -90,7 +90,7 @@ func installVector( _ model: CalculatorModel ) {
             let x: Double = s0.X
             let y: Double = s0.Y
             s1.setVectorValue( x,y, tag: s0.Yt, fmt: s0.Yfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.polar]) ] ) { s0 in
@@ -100,7 +100,7 @@ func installVector( _ model: CalculatorModel ) {
             let (r, w) = s0.Xtv.get2()
             let (x, y) = polar2rect(r,w)
             s1.setVectorValue( x,y, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.complex]) ] ) { s0 in
@@ -109,7 +109,7 @@ func installVector( _ model: CalculatorModel ) {
             var s1 = s0
             let z = s0.Xtv.getComplex()
             s1.setVectorValue( z.real, z.imaginary, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
 
@@ -142,7 +142,7 @@ func installVector( _ model: CalculatorModel ) {
             
             // Set unit tag same as X parm
             s1.setPolarValue( r,w, tag: s0.Xt, fmt: fmtRec )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.vector]) ] ) { s0 in
@@ -152,7 +152,7 @@ func installVector( _ model: CalculatorModel ) {
             let (x, y) = s0.Xtv.getVector()
             let (r, w) = rect2polar(x,y)
             s1.setPolarValue( r,w, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.complex]) ] ) { s0 in
@@ -161,7 +161,7 @@ func installVector( _ model: CalculatorModel ) {
             var s1 = s0
             let z = s0.Xtv.getComplex()
             s1.setPolarValue( z.length, z.phase, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
 
@@ -181,7 +181,7 @@ func installVector( _ model: CalculatorModel ) {
             let y: Double = s0.Y
             let z: Double = s0.Z
             s1.setVector3DValue( x,y,z, tag: s0.Yt, fmt: s0.Yfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.spherical]) ] ) { s0 in
@@ -191,7 +191,7 @@ func installVector( _ model: CalculatorModel ) {
             let (r, w, p) = s0.Xtv.get3()
             let (x, y, z) = spherical2rect(r,w,p)
             s1.setVector3DValue( x,y,z, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
 
@@ -226,7 +226,7 @@ func installVector( _ model: CalculatorModel ) {
            }
 
            s1.setSphericalValue( r,w,p, tag: s0.Xt, fmt: fmtRec )
-           return s1
+           return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.vector3D]) ] ) { s0 in
@@ -236,7 +236,7 @@ func installVector( _ model: CalculatorModel ) {
             let (x, y, z) = s0.Xtv.get3()
             let (r, w, p) = rect2spherical(x,y,z)
             s1.setSphericalValue( r,w,p, tag: s0.Xt, fmt: s0.Xfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
     
@@ -256,11 +256,11 @@ func installVector( _ model: CalculatorModel ) {
                 let (x2, y2) = s0.Ytv.getVector()
                 
                 s1.setVectorValue( x1*ratio + x2, y1*ratio + y2, tag: s0.Yt, fmt: s0.Yfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         },
         
         OpPattern( [ .X([.polar, .vector]), .Y([.polar])] ) { s0 in
@@ -276,11 +276,11 @@ func installVector( _ model: CalculatorModel ) {
                 let (r, w) = rect2polar(x,y)
                 
                 s1.setPolarValue( r,w, tag: s0.Yt, fmt: s0.Yfmt)
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         },
 
         OpPattern( [ .X([.vector3D, .spherical]), .Y([.vector3D])] ) { s0 in
@@ -294,11 +294,11 @@ func installVector( _ model: CalculatorModel ) {
                 let (x2, y2, z2) = s0.Ytv.getVector3D()
                 
                 s1.setVector3DValue( x1*ratio + x2, y1*ratio + y2, z1*ratio + z2, tag: s0.Yt, fmt: s0.Yfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         },
         
         OpPattern( [ .X([.spherical, .vector3D]), .Y([.spherical])] ) { s0 in
@@ -314,11 +314,11 @@ func installVector( _ model: CalculatorModel ) {
                 let (r, w, p) = rect2spherical(x,y,z)
                 
                 s1.setSphericalValue( r,w,p, tag: s0.Yt, fmt: s0.Yfmt)
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         },
     ])
 
@@ -337,11 +337,11 @@ func installVector( _ model: CalculatorModel ) {
                 let (x2, y2) = s0.Ytv.getVector()
                 
                 s1.setVectorValue( x2 - x1*ratio, y2 - y1*ratio, tag: s0.Yt, fmt: s0.Yfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         },
         
         OpPattern( [ .X([.polar, .vector]), .Y([.polar])] ) { s0 in
@@ -357,11 +357,11 @@ func installVector( _ model: CalculatorModel ) {
                 let (r, w) = rect2polar(x,y)
                 
                 s1.setPolarValue( r,w, tag: s0.Yt, fmt: s0.Yfmt)
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         },
 
         OpPattern( [ .X([.vector3D, .spherical]), .Y([.vector3D])] ) { s0 in
@@ -375,11 +375,11 @@ func installVector( _ model: CalculatorModel ) {
                 let (x2, y2, z2) = s0.Ytv.getVector3D()
                 
                 s1.setVector3DValue( x2 - x1*ratio, y2 - y1*ratio, z2 - z1*ratio, tag: s0.Yt, fmt: s0.Yfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         },
         
         OpPattern( [ .X([.spherical, .vector3D]), .Y([.spherical])] ) { s0 in
@@ -395,11 +395,11 @@ func installVector( _ model: CalculatorModel ) {
                 let (r, w, p) = rect2spherical(x,y,z)
                 
                 s1.setSphericalValue( r,w,p, tag: s0.Yt, fmt: s0.Yfmt)
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         },
     ])
 
@@ -417,7 +417,7 @@ func installVector( _ model: CalculatorModel ) {
             let (x, y) = s0.Ytv.getVector()
             
             s1.setVectorValue( s*x, s*y, tag: s0.Yt, fmt: s0.Yfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.real]), .Y([.polar])], where: { $0.Xt == tagUntyped } ) { s0 in
@@ -430,7 +430,7 @@ func installVector( _ model: CalculatorModel ) {
             let (r, w) = s0.Ytv.getPolar()
             
             s1.setPolarValue( s*r, w, tag: s0.Yt, fmt: s0.Yfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.real]), .Y([.vector3D])], where: { $0.Xt == tagUntyped } ) { s0 in
@@ -443,7 +443,7 @@ func installVector( _ model: CalculatorModel ) {
             let (x, y, z) = s0.Ytv.getVector3D()
             
             s1.setVector3DValue( s*x, s*y, s*z, tag: s0.Yt, fmt: s0.Yfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
 
         OpPattern( [ .X([.real]), .Y([.spherical])], where: { $0.Xt == tagUntyped } ) { s0 in
@@ -456,7 +456,7 @@ func installVector( _ model: CalculatorModel ) {
             let (r, w, p) = s0.Ytv.getSpherical()
             
             s1.setSphericalValue( s*r, w, p, tag: s0.Yt, fmt: s0.Yfmt )
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
     
@@ -476,11 +476,11 @@ func installVector( _ model: CalculatorModel ) {
                 let (x2, y2) = s0.Ytv.getVector()
                 
                 s1.setRealValue( x2 * x1*ratio + y2 * y1*ratio, tag: tag, fmt: s0.Yfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         },
         
         OpPattern( [ .X([.vector3D, .spherical]), .Y([.vector3D, .spherical])] ) { s0 in
@@ -495,11 +495,11 @@ func installVector( _ model: CalculatorModel ) {
                 
                 s1.setRealValue( x2 * x1*ratio + y2 * y1*ratio + z2 * z1*ratio,
                                  tag: tag, fmt: s0.Yfmt )
-                return s1
+                return (KeyPressResult.stateChange, s1)
             }
             
             // Incompatible units
-            return nil
+            return (KeyPressResult.stateError, nil)
         },
         
     ])
@@ -514,7 +514,7 @@ func installVector( _ model: CalculatorModel ) {
                        let n = Int(s0.X)
                        
                        guard n >= 1 && n <= 2 else {
-                           return nil
+                           return (KeyPressResult.stateError, nil)
                        }
                        
                        let (x, y) = s0.Ytv.getVector()
@@ -523,7 +523,7 @@ func installVector( _ model: CalculatorModel ) {
                        s1.stackDrop()
                        
                        s1.setRealValue( n == 1 ? x : y, tag: s0.Yt, fmt: s0.Yfmt )
-                       return s1
+                       return (KeyPressResult.stateChange, s1)
                    },
 
         OpPattern( [ .X([.real]), .Y([.polar]) ],
@@ -532,7 +532,7 @@ func installVector( _ model: CalculatorModel ) {
                        let n = Int(s0.X)
                        
                        guard n >= 1 && n <= 2 else {
-                           return nil
+                           return (KeyPressResult.stateError, nil)
                        }
                        
                        let (r, w) = s0.Ytv.getPolar()
@@ -549,7 +549,7 @@ func installVector( _ model: CalculatorModel ) {
                        else {
                            s1.setRealValue( w, tag: tagRad, fmt: s0.Yfmt )
                        }
-                       return s1
+                       return (KeyPressResult.stateChange, s1)
                    },
         
         // TODO: Add index op for spherical
@@ -560,7 +560,7 @@ func installVector( _ model: CalculatorModel ) {
                        let n = Int(s0.X)
                        
                        guard n >= 1 && n <= 3 else {
-                           return nil
+                           return (KeyPressResult.stateError, nil)
                        }
                        
                        let (x, y, z) = s0.Ytv.getVector3D()
@@ -569,7 +569,7 @@ func installVector( _ model: CalculatorModel ) {
                        s1.stackDrop()
                        
                        s1.setRealValue( n == 1 ? x : (n == 2 ? y : z), tag: s0.Yt, fmt: s0.Yfmt )
-                       return s1
+                       return (KeyPressResult.stateChange, s1)
                    },
     ])
 
@@ -639,7 +639,7 @@ func installVector( _ model: CalculatorModel ) {
             if tagTo == tagDeg {
                 if s0.Xfmt.polarAngle != .degrees {
                     s1.Xfmt.polarAngle = .degrees
-                   return s1
+                    return s1
                 }
                 return nil
             }

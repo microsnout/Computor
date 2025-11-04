@@ -21,7 +21,10 @@ func installFunctions( _ model: CalculatorModel ) {
 // Library Data Structures
 // ***********************
 
-typealias LibFuncClosure = ( _ model: CalculatorModel ) -> KeyPressResult
+
+typealias OpResult = (_: KeyPressResult, _: CalcState?)
+
+typealias LibFuncClosure = ( _ model: CalculatorModel ) -> OpResult
 
 
 protocol TaggedItem {
@@ -121,9 +124,9 @@ class LibraryFunctionContext : ModalContext {
     var prompt: String
     var regLabels: [String]?
     
-    var block: ( _ model: CalculatorModel, _ f: FunctionX ) -> KeyPressResult
+    var block: ( _ model: CalculatorModel, _ f: FunctionX ) -> OpResult
     
-    init( prompt: String, regLabels labels: [String]? = nil, block: @escaping ( _ model: CalculatorModel, _ f: FunctionX ) -> KeyPressResult ) {
+    init( prompt: String, regLabels labels: [String]? = nil, block: @escaping ( _ model: CalculatorModel, _ f: FunctionX ) -> OpResult ) {
         self.prompt = prompt
         self.regLabels = labels
         self.block = block
@@ -145,7 +148,12 @@ class LibraryFunctionContext : ModalContext {
             return value
         }
         
-        return self.block(model, f)
+        let (opRes, opState) = self.block(model, f)
+        
+        if let newState = opState {
+            model.state = newState
+        }
+        return opRes
     }
 
     override func onModelSet() {
@@ -172,7 +180,7 @@ class LibraryFunctionContext : ModalContext {
 
 extension CalculatorModel {
     
-    func withModalFunc( prompt: String, regLabels labels: [String]? = nil, block: @escaping (_ model: CalculatorModel, _ f: FunctionX) -> KeyPressResult )-> KeyPressResult {
+    func withModalFunc( prompt: String, regLabels labels: [String]? = nil, block: @escaping (_ model: CalculatorModel, _ f: FunctionX) -> OpResult )-> OpResult {
         
         /// ** With Modal Func **
         /// Delays execution of 'block' until the user enters a function, either single key or a {..} block
@@ -182,11 +190,11 @@ extension CalculatorModel {
         
         self.pushContext(ctx)
         
-        return KeyPressResult.modalFunction
+        return (KeyPressResult.modalFunction, nil)
     }
     
     
-    func withModalConfirmation( prompt: String, regLabels labels: [String]? = nil, block: @escaping (_ model: CalculatorModel ) -> KeyPressResult ) -> KeyPressResult {
+    func withModalConfirmation( prompt: String, regLabels labels: [String]? = nil, block: @escaping (_ model: CalculatorModel ) -> OpResult ) -> OpResult {
         
         /// ** With Modal Confirmation **
         /// Delays execution of the function block until confirmed by pressing Enter
@@ -199,7 +207,7 @@ extension CalculatorModel {
             // Return confirmation context to handle Enter to confirm execution
             let ctx = ModalConfirmationContext( prompt: prompt, regLabels: labels, block: block )
             self.pushContext(ctx)
-            return KeyPressResult.modalFunction
+            return (KeyPressResult.modalFunction, nil)
         }
         else {
             // Execute block immediately if recording or playback
@@ -286,7 +294,7 @@ var integralGroup = LibraryGroup(
     ])
 
 
-func libQuadraticFormula( _ model: CalculatorModel ) -> KeyPressResult {
+func libQuadraticFormula( _ model: CalculatorModel ) -> OpResult {
     
     /// ** Quadratic Function **
     /// ax^2 + bx + c
@@ -322,8 +330,7 @@ func libQuadraticFormula( _ model: CalculatorModel ) -> KeyPressResult {
             s1.stack[regX].set2( re, -im, c: 2 )
         }
         
-        model.state = s1
-        return KeyPressResult.stateChange
+        return (KeyPressResult.stateChange, s1)
     }
 }
 
@@ -653,7 +660,7 @@ func brent( _ f: (Double) -> Double, x1: Double, x2: Double, tol: Double ) -> Do
 }
 
 
-func libBisection( _ model: CalculatorModel ) -> KeyPressResult {
+func libBisection( _ model: CalculatorModel ) -> OpResult {
     
     return model.withModalFunc( prompt: "ç{UnitText}Root (Bisection):  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
         
@@ -661,14 +668,16 @@ func libBisection( _ model: CalculatorModel ) -> KeyPressResult {
         
         if let root = bisection(f, x1: a, x2: b, acc: 10e-8 ) {
             
-            model.enterRealValue(root)
+            var s1 = model.state
+            s1.pushRealValue(root)
+            return (KeyPressResult.stateChange, s1)
         }
-        return KeyPressResult.stateError
+        return (KeyPressResult.stateError, nil)
     }
 }
 
 
-func libSecant( _ model: CalculatorModel ) -> KeyPressResult {
+func libSecant( _ model: CalculatorModel ) -> OpResult {
     
     return model.withModalFunc( prompt: "ç{UnitText}Root (Secant):  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
         
@@ -676,14 +685,16 @@ func libSecant( _ model: CalculatorModel ) -> KeyPressResult {
         
         if let root = secant(f, x1: a, x2: b, acc: 10e-8 ) {
             
-            model.enterRealValue(root)
+            var s1 = model.state
+            s1.pushRealValue(root)
+            return (KeyPressResult.stateChange, s1)
         }
-        return KeyPressResult.stateError
+        return (KeyPressResult.stateError, nil)
     }
 }
 
 
-func libBrent( _ model: CalculatorModel ) -> KeyPressResult {
+func libBrent( _ model: CalculatorModel ) -> OpResult {
     
     return model.withModalFunc( prompt: "ç{UnitText}Root (Brent):  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
         
@@ -691,14 +702,16 @@ func libBrent( _ model: CalculatorModel ) -> KeyPressResult {
         
         if let root = brent(f, x1: a, x2: b, tol: 1e-10 ) {
             
-            model.enterRealValue(root)
+            var s1 = model.state
+            s1.pushRealValue(root)
+            return (KeyPressResult.stateChange, s1)
         }
-        return KeyPressResult.stateError
+        return (KeyPressResult.stateError, nil)
     }
 }
 
 
-func libPolyTerp( _ model: CalculatorModel ) -> KeyPressResult {
+func libPolyTerp( _ model: CalculatorModel ) -> OpResult {
     
     return model.withModalConfirmation(prompt: "Interpolate Polynomial: ƒ{0.8}Enter|Undo", regLabels: ["x-value", "points"] ) { model in
         
@@ -715,13 +728,14 @@ func libPolyTerp( _ model: CalculatorModel ) -> KeyPressResult {
         
         let (result, _) = neville(pts, x: xValue )
         
-        model.enterRealValue(result)
-        return KeyPressResult.stateChange
+        var s1 = model.state
+        s1.pushRealValue(result)
+        return (KeyPressResult.stateChange, s1)
     }
 }
 
 
-func libTrapezoidalRule( _ model: CalculatorModel ) -> KeyPressResult {
+func libTrapezoidalRule( _ model: CalculatorModel ) -> OpResult {
     
     return model.withModalFunc( prompt: "ç{UnitText}Trapezoid Rule:  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
         
@@ -729,14 +743,14 @@ func libTrapezoidalRule( _ model: CalculatorModel ) -> KeyPressResult {
         
         let result = trapezoid( f, a: a, b: b)
         
-        model.enterRealValue(result)
-        
-        return KeyPressResult.stateChange
+        var s1 = model.state
+        s1.pushRealValue(result)
+        return (KeyPressResult.stateChange, s1)
     }
 }
 
 
-func libSimpsonsRule( _ model: CalculatorModel ) -> KeyPressResult {
+func libSimpsonsRule( _ model: CalculatorModel ) -> OpResult {
     
     return model.withModalFunc( prompt: "ç{UnitText}Simpsons Rule:  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
         
@@ -744,14 +758,14 @@ func libSimpsonsRule( _ model: CalculatorModel ) -> KeyPressResult {
         
         let result = simpson( f, a: a, b: b)
         
-        model.enterRealValue(result)
-        
-        return KeyPressResult.stateChange
+        var s1 = model.state
+        s1.pushRealValue(result)
+        return (KeyPressResult.stateChange, s1)
     }
 }
 
 
-func libRombergRule( _ model: CalculatorModel ) -> KeyPressResult {
+func libRombergRule( _ model: CalculatorModel ) -> OpResult {
     
     return model.withModalFunc( prompt: "ç{UnitText}Romberg Rule:  ƒ()", regLabels: ["x-lower", "x-upper"] ) { model, f in
         
@@ -759,8 +773,8 @@ func libRombergRule( _ model: CalculatorModel ) -> KeyPressResult {
         
         let result = romberg( f, a: a, b: b)
         
-        model.enterRealValue(result)
-        
-        return KeyPressResult.stateChange
+        var s1 = model.state
+        s1.pushRealValue(result)
+        return (KeyPressResult.stateChange, s1)
     }
 }

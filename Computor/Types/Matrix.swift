@@ -96,47 +96,51 @@ func installMatrix( _ model: CalculatorModel ) {
         
         OpPattern( [ .X([.real]), .Y(allTypes), .Z(allTypes) ], where: { s0 in isInt(s0.X) } ) { s0 in
                        
-            // Copy parameters n and inc from s0
-            let n = Int(floor(s0.X))
-            let seq = 1 ... n
-            let inc = s0.Ytv
-            
-            // Copy intial value from s0 and create result array of size n
-            var result = s0.Ztv
-            let ss = result.size
-            result.setShape( ss, rows: 1, cols: n )
-            
-            // Remove N and increment value from stack
-            model.state.stackDrop()
-            model.state.stackDrop()
-            
-            model.pauseUndoStack()
-            model.pauseRecording()
-            
-            for c in seq {
-                // Copy current result value to result array
-                result.setValue(model.state.Xtv, c: c)
+            model.withModalConfirmation( prompt: "Sequence", regLabels: ["Number", "Inc", "Initial"] ) { model in
                 
-                // Increment X value by inc
-                model.enterValue(inc)
+                // Copy parameters n and inc from s0
+                let n = Int(floor(s0.X))
+                let seq = 1 ... n
+                let inc = s0.Ytv
                 
-                if model.keyPress( KeyEvent(.plus)) != .stateChange {
-                    // Addition error
-                    model.resumeRecording()
-                    model.resumeUndoStack()
-                    return nil
+                // Copy intial value from s0 and create result array of size n
+                var result = s0.Ztv
+                let ss = result.size
+                result.setShape( ss, rows: 1, cols: n )
+                
+                // Remove N and increment value from stack
+                model.state.stackDrop()
+                model.state.stackDrop()
+                
+                model.pauseUndoStack()
+                model.pauseRecording()
+                
+                for c in seq {
+                    // Copy current result value to result array
+                    result.setValue(model.state.Xtv, c: c)
+                    
+                    // Increment X value by inc
+                    model.enterValue(inc)
+                    
+                    if model.keyPress( KeyEvent(.plus)) != .stateChange {
+                        // Addition error
+                        model.resumeRecording()
+                        model.resumeUndoStack()
+                        return (KeyPressResult.stateError, nil)
+                    }
+                    
                 }
+                model.resumeRecording()
+                model.resumeUndoStack()
                 
+                // Copy state, remove parameters and put result in X
+                var s1 = s0
+                s1.stackDrop()
+                s1.stackDrop()
+                s1.Xtv = result
+                
+                return (KeyPressResult.stateChange, s1)
             }
-            model.resumeRecording()
-            model.resumeUndoStack()
-            
-            // Copy state, remove parameters and put result in X
-            var s1 = s0
-            s1.stackDrop()
-            s1.stackDrop()
-            s1.Xtv = result
-            return s1
        }
    ])
                        
@@ -155,7 +159,7 @@ func installMatrix( _ model: CalculatorModel ) {
                 s1.stack[regX].set1( Double(x), c: x )
             }
             s1.stack[regX].vtp = .real
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -170,7 +174,7 @@ func installMatrix( _ model: CalculatorModel ) {
             model.pushContext( mapFn, lastEvent: KeyEvent(.mapX) )
             
             // No new state - but don't return nil or it will flag an error
-            return s0
+            return (KeyPressResult.modalFunction, nil)
         }
     ])
 
@@ -185,7 +189,7 @@ func installMatrix( _ model: CalculatorModel ) {
             model.pushContext( mapFn, lastEvent: KeyEvent(.mapX) )
             
             // No new state - but don't return nil or it will flag an error
-            return s0
+            return (KeyPressResult.modalFunction, nil)
         }
     ])
             
@@ -200,7 +204,7 @@ func installMatrix( _ model: CalculatorModel ) {
             model.pushContext( reduceFn, lastEvent: KeyEvent(.reduce) )
             
             // No new state - but don't return nil or it will flag an error
-            return s0
+            return (KeyPressResult.modalFunction, nil)
         }
     ])
 
@@ -217,7 +221,7 @@ func installMatrix( _ model: CalculatorModel ) {
                        
                        s1.Xtv.addRows( 1 )
                        s1.Xtv.copyRow( toRow: rowsY+1, from: s0.Xtv, atRow: 1 )
-                       return s1
+                       return (KeyPressResult.stateChange, s1)
                    }
     ])
 
@@ -234,7 +238,7 @@ func installMatrix( _ model: CalculatorModel ) {
                        
                        s1.Xtv.addColumns( 1 )
                        s1.Xtv.copyColumn( toCol: colsY+1, from: s0.Xtv, atCol: 1 )
-                       return s1
+                       return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -254,7 +258,7 @@ func installMatrix( _ model: CalculatorModel ) {
                            value += s0.Xtv.getReal( r: 1, c: col ) * s0.Ytv.getReal( r: 1, c: col )
                        }
                        s1.Xtv.setReal(value, tag: s0.Yt, fmt: s0.Yfmt )
-                       return s1
+                       return (KeyPressResult.stateChange, s1)
                    },
 
         OpPattern( [.X([.real], .matrix), .Y([.real], .matrix)],
@@ -270,7 +274,7 @@ func installMatrix( _ model: CalculatorModel ) {
                            value += s0.Xtv.getReal( r: row, c: 1 ) * s0.Ytv.getReal( r: row, c: 1 )
                        }
                        s1.Xtv.setReal(value, tag: s0.Yt, fmt: s0.Yfmt )
-                       return s1
+                       return (KeyPressResult.stateChange, s1)
                    },
     ])
     
@@ -303,7 +307,7 @@ func installMatrix( _ model: CalculatorModel ) {
                                s1.Xtv.set1(value, r: row, c: col )
                            }
                        }
-                       return s1
+                       return (KeyPressResult.stateChange, s1)
                    },
         
         
@@ -320,7 +324,7 @@ func installMatrix( _ model: CalculatorModel ) {
             s1.Xtv.transformValues() { value, _, _, _ in
                 return x*value
             }
-            return s1
+            return (KeyPressResult.stateChange, s1)
         }
     ])
     
@@ -345,7 +349,7 @@ func installMatrix( _ model: CalculatorModel ) {
             }
             
             s1.stack[regX] = tr
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
 
@@ -363,7 +367,7 @@ func installMatrix( _ model: CalculatorModel ) {
             for i in 1 ... n {
                 s1.set1( 1.0, r: i, c: i)
             }
-            return s1
+            return (KeyPressResult.stateChange, s1)
         },
     ])
 
@@ -416,7 +420,7 @@ func installMatrix( _ model: CalculatorModel ) {
            if rows > 1 {
                
                guard n >= 1 && n <= rows else {
-                   return nil
+                   return (KeyPressResult.stateError, nil)
                }
                
                var tv = TaggedValue( s0.Yvtp, tag: s0.Yt, format: s0.Yfmt, rows: 1, cols: cols )
@@ -426,22 +430,22 @@ func installMatrix( _ model: CalculatorModel ) {
                var s1 = s0
                s1.stackDrop()
                s1.Xtv = tv
-               return s1
+               return (KeyPressResult.stateChange, s1)
            }
            else {
                
                guard n >= 1 && n <= cols else {
-                   return nil
+                   return (KeyPressResult.stateError, nil)
                }
                
                guard let tv = s0.Ytv.getValue( c: n ) else {
-                   return nil
+                   return (KeyPressResult.stateError, nil)
                }
                
                var s1 = s0
                s1.stackDrop()
                s1.Xtv = tv
-               return s1
+               return (KeyPressResult.stateChange, s1)
            }
             
         },

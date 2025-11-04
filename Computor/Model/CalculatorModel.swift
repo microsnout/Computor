@@ -120,6 +120,14 @@ protocol StateOperator {
     func transition(_ s0: CalcState ) -> CalcState?
 }
 
+
+protocol StateOperatorEx {
+    
+    /// Extended version of StateOperator that returns a key press result as well as a possible new state
+    
+    func transition(_ s0: CalcState ) -> (KeyPressResult, CalcState?)
+}
+
 // *********** *********** *********** *********** *********** *********** *********** ***********
 
 typealias ContextContinuationClosure = ( _ event: KeyEvent ) -> Void
@@ -773,20 +781,22 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                             return KeyPressResult.stateError
                         }
                         
-                        pushState()
-
-                        result = lf.libFunc(self)
+                        let (opRes, opState) = lf.libFunc(self)
                         
-                        if result == KeyPressResult.stateError
+                        if opRes == KeyPressResult.stateError
                         {
-                            popState()
                             displayErrorIndicator()
-                            return result
+                            return opRes
                         }
                         
-                        state.noLift = false
-                        autoswitchFixSci()
-                        return result
+                        if let newState = opState {
+                            // Operation returned a new state, push in case of Undo
+                            pushState()
+                            state = newState
+                            autoswitchFixSci()
+                            state.noLift = false
+                        }
+                        return opRes
                     }
                 }
             }
@@ -798,12 +808,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
         default:
             
+            // Search for operations matching this key code in the Op Table
+            // The origingal dispatch method for simple functions of Real values
+            // Functions return either a new state or nil for error conditions
+            
             if let op = CalculatorModel.opTable[keyCode] {
                 // Transition to new calculator state based on operation
-                pushState()
                 
                 if let newState = op.transition( state ) {
                     // Operation has produced a new state
+                    pushState()
                     state = newState
                     state.noLift = false
                     
@@ -812,19 +826,29 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     autoswitchFixSci()
                     return KeyPressResult.stateChange
                 }
-                else {
-                    // Failed to produce a new state
-                    popState()
-                }
             }
             
+            // Search for operations in the Pattern Table
+            // which provides pattern matching of parameters and types
+            // Operators return both a key press result and a new state if there is one
+            // Modal operators like mapX, do not return a new state but this does not
+            // indicate an Error
+            
             if let patternList = CalculatorModel.patternTable[keyCode] {
+                
                 for pattern in patternList {
+                    
                     if state.patternMatch(pattern.regPattern) {
-                        // Transition to new calculator state based on operation
-                        pushState()
                         
-                        if let newState = pattern.transition(state) {
+                        // Transition to new calculator state based on operation
+                        
+                        let (opResult, opState): (_: KeyPressResult, _: CalcState?) = pattern.transition(state)
+                        
+                        if let newState = opState {
+                            
+                            assert( opResult == KeyPressResult.stateChange )
+                            
+                            pushState()
                             state = newState
                             state.noLift = false
                             
@@ -832,9 +856,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                             autoswitchFixSci()
                             return KeyPressResult.stateChange
                         }
-                        else {
-                            // Failed to produce a new state
-                            popState()
+                        
+                        if opResult != KeyPressResult.stateError {
+                            return opResult
                         }
 
                         // Fall through to error indication

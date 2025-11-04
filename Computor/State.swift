@@ -340,4 +340,15 @@ extension CalcState {
         stackDrop()
         return tv
     }
+    
+    mutating func pushValue(_ tv: TaggedValue) {
+        stackLift()
+        Xtv = tv
+        noLift = false
+    }
+    
+    mutating func pushRealValue( _ r: Double ) {
+        let tv = TaggedValue( reg: r )
+        pushValue(tv)
+    }
 }
