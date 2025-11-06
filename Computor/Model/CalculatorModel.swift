@@ -82,7 +82,7 @@ struct StatusState {
         
         self.regLabels = range.map( { x in
             
-            let str = x < n ? labels[x] : Self.stackRegNames[x]
+            let str = x < n ? labels[x] : CalcState.stackRegNames[x]
             
             var padded = ""
             
@@ -109,10 +109,8 @@ struct StatusState {
         }
         
         // Use default register label
-        return Self.stackRegNames[index]
+        return CalcState.stackRegNames[index]
     }
-    
-    static let stackRegNames = ["X", "Y", "Z"]
 }
 
 

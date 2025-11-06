@@ -39,6 +39,8 @@ struct CalcState: Codable {
 
 
 extension CalcState {
+    
+    static let stackRegNames = ["X", "Y", "Z"]
 
     static let defaultDecFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )

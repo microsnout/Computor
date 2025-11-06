@@ -7,13 +7,138 @@
 import SwiftUI
 
 
+struct AuxSimpleValueView: View {
+    
+    var reg: Int
+    var tv: TaggedValue
+    
+    var body: some View {
+        
+        VStack {
+            
+            let nameStr = CalcState.stackRegNames[reg]
+            let (valueStr, _) = tv.renderRichText()
+            
+            Spacer()
+            RichText( "ƒ{1.5}ç{DisplayText}\(nameStr)", size: .large, weight: .bold, design: .serif )
+            TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
+            Spacer()
+        }
+    }
+}
+
+
+struct AuxRowMatrixView: View {
+    
+    var tv: TaggedValue
+
+    var body: some View {
+        
+        let lineNoFmt = "ç{LineNoText}={%3d }ç{}"
+        
+        let ( _, _, cols ) = tv.getShape()
+
+        VStack( spacing: 0 ) {
+            ScrollView {
+                LazyVStack( spacing: 7 ) {
+                    
+                    ForEach (1...cols, id: \.self) { c in
+                        
+                        let line = String( format: lineNoFmt, c)
+                        
+                        let tvValue = tv.getValue( r: 1, c: c ) ?? untypedZero
+                        
+                        let (valueStr, _) = tvValue.renderRichText()
+                        
+                        HStack {
+                            RichText( line, size: .small )
+                            RichText( valueStr, size: .small )
+                            Spacer()
+                        }
+                    }
+                }
+                .padding([.leading, .trailing], 20)
+                .padding([.top, .bottom], 0)
+            }
+        }
+    }
+}
+
+
+struct AuxMatrixView: View {
+    
+    var tv: TaggedValue
+
+    let lineNoFmt = "ç{LineNoText}={%3d }ç{}"
+    let colNoFmt  = "ç{LineNoText}={%3d}ç{}"
+    
+    var body: some View {
+
+        let ( _, rows, cols ) = tv.getShape()
+
+        VStack( spacing: 0 ) {
+            Spacer()
+            ScrollView {
+                ScrollView( [.horizontal, .vertical] ) {
+                    Grid {
+                        GridRow {
+                            HStack {
+                                RichText( "ç{LineNoText}={ }ç{}", size: .small )
+                                Spacer()
+                            }
+                            .padding( 2)
+                            
+                            ForEach (1...cols, id: \.self) { c in
+                                let col = String( format: colNoFmt, c)
+                                
+                                HStack {
+                                    RichText( col, size: .small )
+                                    Spacer()
+                                }
+                                .padding( 2)
+                            }
+                        }
+                        
+                        ForEach (1...rows, id: \.self) { r in
+                            
+                            let row = String( format: lineNoFmt, r)
+                            
+                            GridRow {
+                                HStack {
+                                    RichText( row, size: .small )
+                                    Spacer()
+                                }
+                                .padding( 2)
+                                
+                                ForEach (1...cols, id: \.self) { c in
+                                    
+                                    let tvValue = tv.getValue( r: r, c: c ) ?? untypedZero
+                                    
+                                    let (valueStr, _) = tvValue.renderRichText()
+                                    
+                                    HStack {
+                                        RichText( valueStr, size: .small )
+                                        Spacer()
+                                    }
+                                    .padding( 2)
+                                }
+                            }
+                        }
+                    }
+                    .padding([.leading, .trailing], 20)
+                    .padding([.top, .bottom], 0)
+                }
+            }
+            Spacer()
+        }
+    }
+}
+
+
 struct AuxRegisterView: View {
     
     @StateObject var model: CalculatorModel
     
-    let lineNoFmt = "ç{LineNoText}={%3d }ç{}"
-    let colNoFmt  = "ç{LineNoText}={%3d}ç{}"
-
     func shapeStr( _ rows: Int, _ cols: Int ) -> String {
         if rows*cols == 1 {
             return ""
@@ -23,115 +148,30 @@ struct AuxRegisterView: View {
     }
     
     var body: some View {
-        let tv = model.state.Xtv
+        let register = regX
         
-        let nameStr = "X"
+        let value = model.state.Xtv
         
-        let color = "DisplayText"
+        let ( _, rows, cols ) = value.getShape()
         
-        let ( _, rows, cols ) = tv.getShape()
+        let nameStr = CalcState.stackRegNames[register]
 
         VStack {
             AuxHeaderView( theme: Theme.lightRed ) {
                 RichText( "\(nameStr) Register  \(shapeStr(rows, cols))", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
             }
             
-            Spacer()
-            
-            if tv.isSimple {
+            if value.isSimple {
                 // Non-matrix value
-                
-                let (valueStr, _) = tv.renderRichText()
-                
-                VStack {
-                    RichText( "ƒ{1.5}ç{\(color)}\(nameStr)", size: .large, weight: .bold, design: .serif )
-                    TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
-                }
-                Spacer()
+                AuxSimpleValueView( reg: register, tv: value  )
             }
-            else if tv.rows == 1 {
+            else if value.rows == 1 {
                 // Row matrix
-                
-                VStack( spacing: 0 ) {
-                    ScrollView {
-                        LazyVStack( spacing: 7 ) {
-                            
-                            ForEach (1...cols, id: \.self) { c in
-                                
-                                let line = String( format: lineNoFmt, c)
-                                
-                                let tvValue = tv.getValue( r: 1, c: c ) ?? untypedZero
-                                
-                                let (valueStr, _) = tvValue.renderRichText()
-                                
-                                HStack {
-                                    RichText( line, size: .small )
-                                    RichText( valueStr, size: .small )
-                                    Spacer()
-                                }
-                            }
-                        }
-                        .padding([.leading, .trailing], 20)
-                        .padding([.top, .bottom], 0)
-                    }
-                }
+                AuxRowMatrixView( tv: value )
             }
             else {
-                VStack( spacing: 0 ) {
-                    Spacer()
-                    ScrollView {
-                        ScrollView( [.horizontal, .vertical] ) {
-                            Grid {
-                                GridRow {
-                                    HStack {
-                                        RichText( "ç{LineNoText}={ }ç{}", size: .small )
-                                        Spacer()
-                                    }
-                                    .padding( 2)
-
-                                    ForEach (1...cols, id: \.self) { c in
-                                        let col = String( format: colNoFmt, c)
-                                        
-                                        HStack {
-                                            RichText( col, size: .small )
-                                            Spacer()
-                                        }
-                                        .padding( 2)
-                                    }
-                                }
-                                
-                                ForEach (1...rows, id: \.self) { r in
-                                    
-                                    let row = String( format: lineNoFmt, r)
-
-                                    GridRow {
-                                        HStack {
-                                            RichText( row, size: .small )
-                                            Spacer()
-                                        }
-                                        .padding( 2)
-
-                                        ForEach (1...cols, id: \.self) { c in
-
-                                            let tvValue = tv.getValue( r: r, c: c ) ?? untypedZero
-                                            
-                                            let (valueStr, _) = tvValue.renderRichText()
-                                            
-                                            HStack {
-                                                RichText( valueStr, size: .small )
-                                                Spacer()
-                                            }
-                                            .padding( 2)
-                                        }
-                                    }
-                                }
-                            }
-                            .padding([.leading, .trailing], 20)
-                            .padding([.top, .bottom], 0)
-                        }
-                    }
-                    Spacer()
-                }
+                // Matrix view
+                AuxMatrixView( tv: value )
             }
         }
     }

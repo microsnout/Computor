@@ -389,7 +389,7 @@ func initKeyLayout() {
                         Key(.addRow, "ƒ{0.8}+Row",   caption: "Add New Row"),
                         Key(.addCol, "ƒ{0.8}+Col",   caption: "Add New Col"),
                         Key(.transpose, "={[]}^{T}", caption: "Transpose"),
-                        Key(.identity, "I_{N}",      caption: "Identity"),
+                        Key(.identity, "I_{N}",      caption: "Identity Matrix"),
                        ],
                        caption: "Matrix Operations"
     )
