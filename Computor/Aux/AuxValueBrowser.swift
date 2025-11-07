@@ -139,6 +139,10 @@ struct AuxRegisterView: View {
     
     @StateObject var model: CalculatorModel
     
+    @State private var position: Int? = 2
+    
+    @State private var regName: String = "X"
+
     func shapeStr( _ rows: Int, _ cols: Int ) -> String {
         if rows*cols == 1 {
             return ""
@@ -147,31 +151,50 @@ struct AuxRegisterView: View {
         return "[\(rows) x \(cols)]"
     }
     
+    
     var body: some View {
-        let register = regX
-        
-        let value = model.state.Xtv
-        
-        let ( _, rows, cols ) = value.getShape()
-        
-        let nameStr = CalcState.stackRegNames[register]
+        let regSeq: [Int] = [regZ, regY, regX]
 
         VStack {
             AuxHeaderView( theme: Theme.lightRed ) {
-                RichText( "\(nameStr) Register  \(shapeStr(rows, cols))", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                RichText( "Register \(regName)", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
             }
             
-            if value.isSimple {
-                // Non-matrix value
-                AuxSimpleValueView( reg: register, tv: value  )
+            ScrollViewReader { proxy in
+                ScrollView(.vertical) {
+                    LazyVStack {
+                        
+                        ForEach( regSeq.indices, id: \.self ) { x in
+                            
+                            let register = regSeq[x]
+                            
+                            let value = model.state.stack[register]
+
+                            VStack {
+                                if value.isSimple {
+                                    // Non-matrix value
+                                    AuxSimpleValueView( reg: register, tv: value  )
+                                }
+                                else if value.rows == 1 {
+                                    // Row matrix
+                                    AuxRowMatrixView( tv: value )
+                                }
+                                else {
+                                    // Matrix view
+                                    AuxMatrixView( tv: value )
+                                }
+                            }
+                            .id( x )
+                            .containerRelativeFrame(.vertical, count: 1, spacing: 0)
+                        }
+                    }
+                    .scrollTargetLayout()
+                }
+                .scrollTargetBehavior(.viewAligned)
+                .scrollPosition( id: $position )
             }
-            else if value.rows == 1 {
-                // Row matrix
-                AuxRowMatrixView( tv: value )
-            }
-            else {
-                // Matrix view
-                AuxMatrixView( tv: value )
+            .onChange( of: position ) {
+                regName = CalcState.stackRegNames[position ?? 0]
             }
         }
     }
