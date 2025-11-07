@@ -139,7 +139,9 @@ struct AuxRegisterView: View {
     
     @StateObject var model: CalculatorModel
     
-    @State private var position: Int? = 2
+    @State private var position = ScrollPosition( edge: .bottom)
+    
+    @State private var currentId: Int? = nil
     
     @State private var regName: String = "X"
 
@@ -191,10 +193,13 @@ struct AuxRegisterView: View {
                     .scrollTargetLayout()
                 }
                 .scrollTargetBehavior(.viewAligned)
-                .scrollPosition( id: $position )
-            }
-            .onChange( of: position ) {
-                regName = CalcState.stackRegNames[position ?? 0]
+                .scrollPosition( $position )
+                .scrollPosition( id: $currentId )
+                .onChange( of: currentId ) {
+                    if let reg = currentId {
+                        regName = CalcState.stackRegNames[2 - reg]
+                    }
+                }
             }
         }
     }
