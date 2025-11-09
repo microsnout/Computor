@@ -71,7 +71,7 @@ struct KeyAssignPopup: View, KeyPressHandler {
         .frame( maxWidth: .infinity )
         .accentColor( .black )
         .onAppear() {
-            kcAssigned = tag.kc
+            // kcAssigned = tag.kc
         }
         .background() {
             

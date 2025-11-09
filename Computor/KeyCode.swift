@@ -73,9 +73,9 @@ enum KeyCode: Int, Codable {
     case unitEnd = 399
     
     // *********
-    // Sym chars: 26+26+24+10+5 = 91 chars - 2 digits
+    // Sym chars: 26+26+24+10+12+26 = 124 chars - 3 digits
     
-    case symbolCharStart = 400
+    case symbolCharNull = 400
          
     case a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
 

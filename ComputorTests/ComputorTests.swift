@@ -38,7 +38,7 @@ func getRandomSymbol() -> SymbolTag {
         
         // Generate random list of key codes
         for _ in 1...len {
-            let rv = Int.random( in: (KeyCode.symbolCharStart.rawValue+1)...(KeyCode.symbolCharEnd.rawValue-1) )
+            let rv = Int.random( in: (KeyCode.symbolCharNull.rawValue+1)...(KeyCode.symbolCharEnd.rawValue-1) )
             let kc = KeyCode( rawValue: rv )
             kcList.append( kc ?? .noop )
         }

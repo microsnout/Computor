@@ -10,29 +10,46 @@ import SwiftUI
 
 struct SymbolTag: Hashable, Codable, Equatable, CustomStringConvertible {
     
-    var tag: Int
+    var tag: UInt64
 }
 
 
 typealias SymbolSet = Set<SymbolTag>
 
 
-extension SymbolTag {
+func symCodeToKeyCode( _ symCode: UInt64 ) -> KeyCode? {
     
-    static let modShift = 100000000000
+    if Int(symCode) >= KeyCode.symbolCharEnd.rawValue {
+        return nil
+    }
+    let kc = KeyCode( rawValue:  Int(symCode) + KeyCode.symbolCharNull.rawValue )
+    return kc
+}
+
+
+func keyCodeToSymCode( _ kc: KeyCode ) -> UInt64 {
+    
+    if kc.rawValue > KeyCode.symbolCharNull.rawValue && kc.rawValue < KeyCode.symbolCharEnd.rawValue {
+        
+        let code = UInt64(kc.rawValue - KeyCode.symbolCharNull.rawValue)
+        return code
+    }
+    return 0
+}
+
+
+extension SymbolTag {
     
     // Starting mod values for User modules and builtin system modules
     static let firstUserMod  = 0
     static let firstSysMod = 100
     static let localMemMod = 1
     
-    var kc: KeyCode { KeyCode(rawValue: (tag % 1000000000)) ?? KeyCode.noop }
+    var isNull: Bool { self.tag == 0 }
     
-    var isNull: Bool { self.kc == .null }
+    var isSingleChar: Bool { (tag & Const.Symbol.firstCharMask != 0) && (tag & ~Const.Symbol.firstCharMask == 0) }
     
-    var isSingleChar: Bool { (tag % 1000000000) < 1000 }
-    
-    var mod: Int { tag / SymbolTag.modShift }
+    var mod: Int { Int(tag >> Const.Symbol.modShift & Const.Symbol.byteMask) }
     
     var isUserMod: Bool { self.mod < 100 }
     var isSysMod: Bool { self.mod >= 100 }
@@ -84,6 +101,7 @@ extension SymbolTag {
         return ""
     }
     
+    
     func getSymSpecs() -> ( String, [KeyCode], Int, Int, Int ) {
         
         if isNull {
@@ -91,29 +109,31 @@ extension SymbolTag {
         }
         
         if isSingleChar {
+            let code = self.tag & Const.Symbol.byteMask
+            let kc = symCodeToKeyCode(code) ?? KeyCode.null
             let s = kc.str
             return ( String(s), [kc], 0, 0, mod )
         }
         else {
             // Eliminate mod from tag
-            var code = (tag % SymbolTag.modShift)
+            var code = (tag & Const.Symbol.modMask)
             var symS = ""
             var kcA: [KeyCode] = []
             
             for _ in 1...3 {
-                let y = code % 1000
+                let y = code & Const.Symbol.byteMask
                 
                 if y != 0 {
-                    guard let kc = KeyCode( rawValue: y) else { assert(false) }
+                    let kc = symCodeToKeyCode(y) ?? KeyCode.null
                     symS.append( kc.str )
                     kcA.append( kc )
                 }
                 
-                code /= 1000
+                code >>= Const.Symbol.charBits
             }
             
-            let superPt: Int = code % 10
-            let subPt: Int   = code / 10
+            let superPt: Int = Int( code & Const.Symbol.superMask )
+            let subPt: Int   = Int( code >> Const.Symbol.superBits & Const.Symbol.superMask )
             
             return (symS, kcA, subPt, superPt, mod)
         }
@@ -126,27 +146,29 @@ extension SymbolTag {
         }
         
         if isSingleChar {
+            let code = self.tag & Const.Symbol.byteMask
+            let kc = symCodeToKeyCode(code) ?? KeyCode.null
             let s = kc.str
             return s
         }
         else {
             // Eliminate mod value from tag
-            var code = (tag % 100000000000)
+            var code = (tag & Const.Symbol.modMask)
             var symS = ""
             
             for _ in 1...3 {
-                let y = code % 1000
-                
+                let y = code & Const.Symbol.byteMask
+
                 if y != 0 {
-                    guard let kc = KeyCode( rawValue: y) else { assert(false) }
+                    let kc = symCodeToKeyCode(y) ?? KeyCode.null
                     symS.append( kc.str )
                 }
                 
-                code /= 1000
+                code >>= Const.Symbol.charBits
             }
             
-            let superPt: Int = code % 10
-            let subPt: Int   = code / 10
+            let superPt: Int = Int( code & Const.Symbol.superMask )
+            let subPt: Int   = Int( code >> Const.Symbol.superBits & Const.Symbol.superMask )
             
             return getSymbolText(symName: symS, subPt: subPt, superPt: superPt)
         }
@@ -156,7 +178,8 @@ extension SymbolTag {
     init( _ localTag: SymbolTag, mod: Int ) {
         
         // Create a remote reference tag by adding a module index
-        self.tag = (localTag.tag % SymbolTag.modShift) + mod * SymbolTag.modShift
+        let modValue = UInt64(mod)
+        self.tag = localTag.tag & Const.Symbol.modMask | modValue << Const.Symbol.modShift
     }
     
     
@@ -174,9 +197,12 @@ extension SymbolTag {
             // Split .F1 KeyCode to [.F, .d1]
             self.tag = fnTag.tag
         }
+        else if kc.rawValue > KeyCode.symbolCharNull.rawValue && kc.rawValue < KeyCode.symbolCharEnd.rawValue {
+            self.tag = UInt64(kc.rawValue - KeyCode.symbolCharNull.rawValue)
+        }
         else {
-            // Store raw KeyCode as tag
-            self.tag = kc.rawValue
+            // Can't encode a general key code
+            self.tag = 0
         }
     }
    
@@ -197,16 +223,18 @@ extension SymbolTag {
         assert( symA.count > 0 && symA.count <= 3 && subPt*superPt == 0 && subPt+superPt <= 3 && subPt+superPt != 1 )
         assert( mod >= 0 && mod < 100 )
         
-        var tag: Int = 0
-        var mul: Int = 1
+        var tag: UInt64 = 0
         
-        for kc in symA {
+        for kc in symA.reversed() {
             
-            tag += kc.rawValue * mul
-            mul *= 1000
+            let code = keyCodeToSymCode(kc)
+            tag <<= Const.Symbol.charBits
+            tag |= code
         }
         
-        tag += (mod*100 + subPt*10 + superPt) * 1000000000
+        tag |= UInt64(mod) << Const.Symbol.modShift
+        tag |= UInt64(subPt) << Const.Symbol.subShift
+        tag |= UInt64(superPt) << Const.Symbol.superShift
         
         self.tag = tag
     }

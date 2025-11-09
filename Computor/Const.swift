@@ -66,4 +66,29 @@ enum Const {
         
         static let stdlib = SymbolTag.firstSysMod + 0
     }
+    
+    enum Symbol {
+        
+        static let maxChars = 3
+        
+        static let charBits = 8
+        
+        static let superBits = 3
+        
+        static let superMask: UInt64 = 0x07
+        
+        static let modBits = 8
+        
+        static let superShift = Self.maxChars*Self.charBits
+
+        static let subShift = Self.maxChars*Self.charBits + Self.superBits
+
+        static let modShift = Self.maxChars*Self.charBits + 2*Self.superBits
+        
+        static let byteMask: UInt64 = 0xFF
+        
+        static let modMask: UInt64 = ~(0xFFFFFFFFFFFF << Self.modShift)
+        
+        static let firstCharMask: UInt64 = 0xFF
+    }
 }
