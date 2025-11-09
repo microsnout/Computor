@@ -80,7 +80,7 @@ struct AuxMatrixView: View {
             Spacer()
             ScrollView {
                 ScrollView( [.horizontal, .vertical] ) {
-                    Grid {
+                    Grid( horizontalSpacing: 0) {
                         GridRow {
                             HStack {
                                 RichText( "ç{LineNoText}={ }ç{}", size: .small )
@@ -122,6 +122,9 @@ struct AuxMatrixView: View {
                                     }
                                     .padding( 2)
                                 }
+                            }
+                            .if ( isEven(r+1) ) { view in
+                                view.background( Color("SuperLightGray") )
                             }
                         }
                     }
