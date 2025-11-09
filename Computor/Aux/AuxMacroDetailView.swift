@@ -13,10 +13,6 @@ struct MacroDetailView: View {
     
     @StateObject var model: CalculatorModel
     
-    @State private var editSheet   = false
-    
-    @State private var symbolSheet = false
-    
     @State private var refreshView = false
     
     var body: some View {
@@ -27,10 +23,6 @@ struct MacroDetailView: View {
         let modSymName = model.aux.macroMod.name
         
         let modZero = modSymName == modZeroSym
-        
-        let kcFn: KeyCode? = model.getKeyAssignment(for: symTag, in: model.aux.macroMod)
-        
-        let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
         
         VStack( spacing: 0 ) {
             let captionTxt = modZero ? "\(symName)" : "\(modSymName)ç{ModText}/ç{}\(symName)"
@@ -62,135 +54,182 @@ struct MacroDetailView: View {
             HStack( spacing: 0 ) {
                 
                 // List of macro ops with line numbers
-                VStack {
-                    
-                    ScrollView {
-                        ScrollViewReader { proxy in
-                            let list = mr.opSeq
-                            
-                            VStack(spacing: 1) {
-                                ForEach (list.indices, id: \.self) { x in
-                                    let op: MacroOp = list[x]
-                                    let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
-                                    let text = op.getRichText(model)
-                                    
-                                    HStack {
-                                        RichText( line, size: .small )
-                                        RichText( text, size: .small, weight: .bold )
-                                        Spacer()
-                                    }
-                                    .frame( height: 18 )
-                                    .frame( maxWidth: .infinity )
-                                    .if ( isEven(x+1) ) { view in
-                                        view.background( Color("SuperLightGray") )
-                                    }
-                                }
-                                .onChange( of: list.count ) {
-                                    if list.count > 1 {
-                                        proxy.scrollTo( list.indices[list.endIndex - 1] )
-                                    }
-                                }
-                            }
-                            .padding([.leading, .trailing], 2)
-                            .padding([.top, .bottom], 10)
-                        }
-                    }
-                }
-                .frame( width: 150 )
-                // .border(.blue)
-                // .showSizes([.current])
+                MacroCodeListing( mr: mr, model: model )
                 
                 Divider()
                 
                 // Right panel fields
-                HStack {
-                    let caption = mr.caption ?? "ç{GrayText}-caption-"
-                    
-                    let modSymStr = model.aux.macroMod.name
-                    
-                    VStack( alignment: .leading, spacing: 10 ) {
-                        
-                        Spacer().frame( height: 5 )
-                        
-                        // SYMBOL
-                        HStack( spacing: 0 ) {
-                            RichText("ç{GrayText}Symbol:", size: .small, weight: .regular).padding( [.trailing], 5 )
-                            RichText( symName, size: .small, weight: .bold )
-                            Spacer()
-                            
-                            // PENCIL EDIT BUTTON
-                            Button {
-                                editSheet = true
-                            } label: {
-                                Image( systemName: "square.and.pencil")
-                            }
-                        }.onTapGesture {
-                            symbolSheet = true
-                        }
-                        
-                        // CAPTION
-                        RichText( "ƒ{1.2}ç{UnitText}\(caption)", size: .small, weight: .bold )
-                            .onTapGesture {
-                                editSheet = true
-                            }
-
-                        // Assigned Key
-                        HStack( spacing: 0 ) {
-                            RichText("ç{GrayText}Key:", size: .small, weight: .regular).padding( [.trailing], 5 )
-                            RichText( fnText, size: .small, weight: .bold )
-                            Spacer()
-                        }
-                        
-                        // Module name
-                        HStack( spacing: 0 ) {
-                            RichText("ç{GrayText}Module:", size: .small, weight: .regular).padding( [.trailing], 5 )
-                            RichText( "ƒ{0.9} \(modSymStr)", size: .small, weight: .bold )
-                            Spacer()
-                        }
-                        
-                        Spacer()
-                        
-                        // RECORDING EDIT CONTROLS
-                        HStack( spacing: 25 ) {
-                            
-                            // RECORD
-                            Button {
-                                _ = model.keyPress( KeyEvent(.macroRecord) )
-                            } label: {
-                                Image( systemName: "record.circle.fill").frame( minWidth: 0 )
-                            }
-                            .accentColor( Color("RedMenuIcon") )
-                            .disabled( model.aux.recState != .stop )
-                            
-                            // PLAY
-                            Button {
-                                _ = model.playMacroSeq( mr.opSeq, in: model.aux.macroMod )
-                            } label: {
-                                Image( systemName: "play.fill").frame( minWidth: 0 )
-                            }
-                            .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
-                            
-                            // STOP
-                            Button {
-                                _ = model.keyPress( KeyEvent(.macroStop) )
-                            } label: {
-                                Image( systemName: "stop.fill").frame( minWidth: 0 )
-                            }
-                            .disabled( !model.aux.recState.isRecording  )
-                            
-                        }
-                        .frame( maxWidth: .infinity )
-                        .padding( [.bottom], 5 )
-                    }
-                    Spacer()
-                }
-                .id(refreshView)
-                .padding( [.leading], 10)
-                // .border(.red)
-                // .showSizes([.current])
+                MacroDetailRightPanel( mr: mr, model: model )
             }
         }
         .padding( [.bottom, .leading, .trailing], 5 )
+    }
+}
+
+
+struct MacroCodeListing: View {
+    
+    /// ** Macro Code Listing **
+    
+    var mr: MacroRec
+    
+    @StateObject var model: CalculatorModel
+    
+    var body: some View {
+        
+        VStack {
+            
+            ScrollView {
+                ScrollViewReader { proxy in
+                    let list = mr.opSeq
+                    
+                    VStack(spacing: 1) {
+                        ForEach (list.indices, id: \.self) { x in
+                            let op: MacroOp = list[x]
+                            let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
+                            let text = op.getRichText(model)
+                            
+                            HStack {
+                                RichText( line, size: .small )
+                                RichText( text, size: .small, weight: .bold )
+                                Spacer()
+                            }
+                            .frame( height: 18 )
+                            .frame( maxWidth: .infinity )
+                            .if ( isEven(x+1) ) { view in
+                                view.background( Color("SuperLightGray") )
+                            }
+                        }
+                        .onChange( of: list.count ) {
+                            if list.count > 1 {
+                                proxy.scrollTo( list.indices[list.endIndex - 1] )
+                            }
+                        }
+                    }
+                    .padding([.leading, .trailing], 2)
+                    .padding([.top, .bottom], 10)
+                }
+            }
+        }
+        .frame( width: Const.UI.auxCodeListingWidth )
+        // .border(.blue)
+        // .showSizes([.current])
+    }
+}
+
+
+struct MacroDetailRightPanel: View {
+    
+    /// ** Macro Detail Right Panel **
+    
+    var mr: MacroRec
+    
+    @StateObject var model: CalculatorModel
+    
+    @State private var editSheet   = false
+    
+    @State private var symbolSheet = false
+    
+    @State private var refreshView = false
+    
+
+    var body: some View {
+        let symTag: SymbolTag = mr.symTag
+        
+        let symName  = symTag.getRichText()
+        
+        let kcFn: KeyCode? = model.getKeyAssignment(for: symTag, in: model.aux.macroMod)
+        
+        let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
+
+        HStack {
+            let caption = mr.caption ?? "ç{GrayText}-caption-"
+            
+            let modSymStr = model.aux.macroMod.name
+            
+            VStack( alignment: .leading, spacing: 5 ) {
+                
+                Spacer().frame( height: 5 )
+                
+                HStack {
+                    Spacer()
+                    
+                    // PENCIL EDIT BUTTON
+                    Button {
+                        editSheet = true
+                    } label: {
+                        Image( systemName: "square.and.pencil")
+                    }
+                }
+                
+                // SYMBOL
+                HStack( spacing: 0 ) {
+                    RichText("ç{GrayText}Symbol:", size: .small, weight: .regular).padding( [.trailing], 5 )
+                    RichText( symName, size: .small, weight: .bold )
+                    Spacer()
+                }.onTapGesture {
+                    // TODO: Consider eliminating this symbol sheet
+                    symbolSheet = true
+                }
+                
+                // CAPTION
+                RichText( "ƒ{1.2}ç{UnitText}\(caption)", size: .small, weight: .bold )
+                    .onTapGesture {
+                        editSheet = true
+                    }
+                
+                // Assigned Key
+                HStack( spacing: 0 ) {
+                    RichText("ç{GrayText}Key:", size: .small, weight: .regular).padding( [.trailing], 5 )
+                    RichText( fnText, size: .small, weight: .bold )
+                    Spacer()
+                }
+                
+                // Module name
+                HStack( spacing: 0 ) {
+                    RichText("ç{GrayText}Module:", size: .small, weight: .regular).padding( [.trailing], 5 )
+                    RichText( "ƒ{0.9} \(modSymStr)", size: .small, weight: .bold )
+                    Spacer()
+                }
+                
+                Spacer()
+                
+                // RECORDING EDIT CONTROLS
+                HStack( spacing: 25 ) {
+                    
+                    // RECORD
+                    Button {
+                        _ = model.keyPress( KeyEvent(.macroRecord) )
+                    } label: {
+                        Image( systemName: "record.circle.fill").frame( minWidth: 0 )
+                    }
+                    .accentColor( Color("RedMenuIcon") )
+                    .disabled( model.aux.recState != .stop )
+                    
+                    // PLAY
+                    Button {
+                        _ = model.playMacroSeq( mr.opSeq, in: model.aux.macroMod )
+                    } label: {
+                        Image( systemName: "play.fill").frame( minWidth: 0 )
+                    }
+                    .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
+                    
+                    // STOP
+                    Button {
+                        _ = model.keyPress( KeyEvent(.macroStop) )
+                    } label: {
+                        Image( systemName: "stop.fill").frame( minWidth: 0 )
+                    }
+                    .disabled( !model.aux.recState.isRecording  )
+                    
+                }
+                .frame( maxWidth: .infinity )
+                .padding( [.bottom], 5 )
+            }
+            Spacer()
+        }
+        .id(refreshView)
+        .padding( [.leading], 10)
         
         // Macro Edit Sheet
         .sheet(isPresented: $editSheet) {
@@ -215,307 +254,9 @@ struct MacroDetailView: View {
             .presentationDetents([.fraction(0.5)])
             .presentationBackground( Color("ControlBack") )
         }
+        
+        // .border(.red)
+        // .showSizes([.current])
     }
 }
 
-
-struct SheetHeaderText: View {
-    
-    var txt: String
-    
-    var body: some View {
-        
-        RichText( "ƒ{1.2}\(txt)", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
-            .padding( [.top], 10 )
-    }
-}
-
-
-struct SheetTextField: View {
-    
-    var label: String
-    
-    var placeholder: String
-    
-    @Binding var text: String
-    
-    var body: some View {
-        
-        VStack( alignment: .leading, spacing: 5 ) {
-            SheetHeaderText( txt: label )
-            
-            TextField( placeholder, text: $text )
-                .textFieldStyle(.roundedBorder)
-                .padding( [.top], 0)
-                .foregroundColor(.black)
-        }
-    }
-}
-
-
-typealias SheetContinuationClosure = ( _ str: String ) -> Void
-
-typealias KeyCodeContinuationClosure = ( _ kc: KeyCode ) -> Void
-
-
-struct KeyAssignPopup: View, KeyPressHandler {
-    
-    var tag: SymbolTag
-    var kccc: KeyCodeContinuationClosure
-    
-    @State private var kcAssigned: KeyCode = .null
-
-    
-    func keyPress(_ event: KeyEvent ) -> KeyPressResult {
-        
-        kcAssigned = event.kc
-        kccc( event.kc )
-        return KeyPressResult.noOp
-    }
-    
-    var body: some View {
-        
-        VStack( alignment: .center ) {
-            
-            KeypadView( padSpec: psFnUn, keyPressHandler: self )
-                .padding( [.leading, .trailing, .bottom, .top] )
-        }
-        .frame( maxWidth: .infinity )
-        .accentColor( .black )
-        .onAppear() {
-            kcAssigned = tag.kc
-        }
-        .background() {
-            
-            Color( "SuperLightGray")
-                .cornerRadius(10)
-                .padding( [.leading, .trailing], 20 )
-                .padding( [.top], 5 )
-                .padding( [.bottom], 0 )
-        }
-    }
-}
-
-
-struct MacroEditSheet: View {
-    
-    /// Sheet editor for maco definitions with collapsible sub views
-    
-    @Environment(\.dismiss) var dismiss
-    
-    @State var mr: MacroRec
-    @State var caption: String
-
-    @StateObject var model: CalculatorModel
-    
-    var scc: SheetContinuationClosure
-    
-    @State private var symName: String = ""
-    @State private var kcAssigned: KeyCode? = nil
-    
-    struct MacroMoveRec {
-        // Information to present to confirmation dialog
-        var targetMod: ModuleRec
-    }
-
-    @State private var moveDialog = false
-    @State private var moveRec = MacroMoveRec( targetMod: ModuleRec( name: "" ) )
-
-    var body: some View {
-        let kcFn: KeyCode? = model.getKeyAssignment( for: mr.symTag, in: model.aux.macroMod)
-        let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
-        let modSymStr = model.aux.macroMod.name
-
-        VStack( alignment: .leading ) {
-            
-            // DONE Button
-            HStack {
-                Spacer()
-                
-                // DONE
-                Button( action: { dismiss() } ) {
-                    RichText( "Done", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
-                }
-            }
-            .padding( [.top], 5 )
-            
-            // Symbol Editor
-            SheetCollapsibleView( label: "={Symbol: }\(symName)" ) {
-                
-                NewSymbolPopup( tag: mr.symTag ) { newTag in
-                    model.changeMacroSymbol( old: mr.symTag, new: newTag)
-                    symName = newTag.getRichText()
-                }
-            }
-            
-            // Caption Editor
-            SheetTextField( label: "Caption:", placeholder: "-caption-", text: $caption )
-            
-            // Assigned Key Editor
-            SheetCollapsibleView( label: "={Assigned Key: }\(fnText)" ) {
-                
-                KeyAssignPopup( tag: mr.symTag ) { kc in
-                    
-                    // Update state variable to display key
-                    kcAssigned = kc
-                    
-                    // If macroMod is mod0 this will not change the tag
-                    let remTag = model.db.getRemoteSymbolTag( for: mr.symTag, to: model.aux.macroMod /*from mod0*/ )
-                    
-                    model.assignKey( kc, to: remTag )
-                }
-            }
-            
-            // Module Editor
-            SheetCollapsibleView( label: "={Module: }\(modSymStr)" ) {
-                
-                SelectModulePopup( db: model.db ) { mod in
-                    
-                    // Present the mod info to dialog to display the name
-                    moveRec = MacroMoveRec( targetMod: mod )
-                    moveDialog = true
-                }
-            }
-            
-            Spacer()
-        }
-        .padding( [.leading, .trailing], 40 )
-        .presentationBackground( Color.black.opacity(0.7) )
-        .presentationDetents( [.fraction(0.8), .large] )
-        .onAppear() {
-            symName = mr.symTag.getRichText()
-            kcAssigned = model.kstate.keyMap.keyAssignment(mr.symTag)
-        }
-        .onSubmit {
-            scc( caption )
-            dismiss()
-        }
-        
-        // MOVE MACRO SHEET
-        .confirmationDialog("Confirm Deletion", isPresented: $moveDialog, presenting: moveRec ) { mmr in
-            
-            Button("Move to Module: \(mmr.targetMod.name)") {
-                
-                // Move the macro and set aux display to destination mod
-                model.moveMacro( mr.symTag, from: model.aux.macroMod, to: moveRec.targetMod )
-                model.aux.macroMod = moveRec.targetMod
-            }
-            
-            Button("Copy to Module: \(mmr.targetMod.name)") {
-                
-                // Copy the macro and leave aux display on source mod
-                model.copyMacro( mr.symTag, from: model.aux.macroMod, to: moveRec.targetMod )
-            }
-            
-            
-            Button("Cancel", role: .cancel) {
-                // Nothing to do
-            }
-        }
-    }
-}
-
-
-// **************
-
-
-struct ModuleKeyView: View {
-    
-    /// A view of a single module key
-    
-    @AppStorage(.settingsSerifFontKey)
-    private var serifFont = false
-    
-    let modSym: String
-    let keySpec: KeySpec
-    
-    var body: some View {
-        
-        let keyW = keySpec.width
-        
-        VStack {
-            
-            Rectangle()
-                .foregroundColor( Color(keySpec.keyColor) )
-                .frame( width: keyW, height: keySpec.height )
-                .cornerRadius( keySpec.radius )
-                .overlay(
-                    RichText( modSym, size: .normal, weight: .regular, defaultColor: keySpec.textColor)
-                )
-        }
-        .frame( width: keyW, height: keySpec.height )
-    }
-}
-
-
-typealias ModSelectClosure = ( _ mfr: ModuleRec ) -> Void
-
-
-struct SelectModulePopup: View {
-    
-    /// Select from list of existing symbol tags, could be memories or macros
-    
-    @EnvironmentObject var model: CalculatorModel
-    @EnvironmentObject var keyData: KeyData
-
-    let keySpec: KeySpec = ksModuleKey
-    let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
-    
-    // Parameters
-    var db: Database
-    var msc: ModSelectClosure
-    
-    var body: some View {
-        let modRowList: [[ModuleRec]] = db.modList.chunked(into: 3)
-        
-        VStack( alignment: .center, spacing: 0) {
-            
-            ScrollView( [.vertical] ) {
-                
-                VStack( alignment: .center ) {
-                    Grid {
-                        
-                        ForEach ( modRowList.indices, id: \.self ) { r in
-                            let row = modRowList[r]
-                            
-                            GridRow {
-                                let n = row.count
-                                
-                                ForEach ( row.indices, id: \.self ) { c in
-                                    let sym = row[c].name
-                                    
-                                    ModuleKeyView( modSym: sym, keySpec: keySpec )
-                                        .onTapGesture {
-                                            hapticFeedback.impactOccurred()
-                                            msc( row[c] )
-                                        }
-                                }
-                                
-                                // Pad the row to 4 col so the frame doesn't shrink
-                                if n < 3 {
-                                    ForEach ( 1 ... 3-n, id: \.self ) { _ in
-                                        Color.clear
-                                            .frame( width: keySpec.width, height: keySpec.height )
-                                    }
-                                }
-                            }
-                            .padding( .top, 5 )
-                        }
-                    }
-                }
-                .padding( 15)
-            }
-            .accentColor( .black )
-            .background() {
-                
-                Color( "SuperLightGray")
-                    .cornerRadius(10)
-                    .padding( [.leading, .trailing], 0 )
-                    .padding( [.top, .bottom], 5 )
-            }
-        }
-        .frame( maxWidth: .infinity )
-        .padding( [.leading, .trailing], 20 )
-        // .frame( maxHeight: 340 )
-    }
-}

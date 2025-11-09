@@ -34,7 +34,11 @@ enum Const {
     }
     
     enum UI {
+        // Height of of Aux display colored banners
         static let auxFrameHeight = 24.0
+        
+        // Width of code listing panel in macro detail view
+        static let auxCodeListingWidth = 165.0
     }
     
     enum Placeholder {
