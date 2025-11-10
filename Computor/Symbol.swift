@@ -85,23 +85,34 @@ extension SymbolTag {
             return "\(symA[0])\(op){\(symA[1])}"
         }
         
-        if symN == 3 {
-            assert( (subPt*superPt == 0) && (subPt+superPt >= 2) )
+        // symN is 4...6
+        assert( (subPt*superPt == 0) && (subPt+superPt >= 2) )
+        assert( symN <= 6 )
+        
+        let op = subPt > 0 ? "_" : "^"
+        let pt = subPt + superPt
+        
+        var str = "\(symA[0])"
+        var x = 1
+
+        while x < pt-1 {
             
-            // Sub or Super operator and starting point
-            let op = subPt > 0 ? "_" : "^"
-            let pt = subPt + superPt
-            
-            // Sub or superscript point starting at position 2 or 3
-            return pt == 2 ? "\(symA[0])\(op){\(symA[1])\(symA[2])}" : "\(symA[0])\(symA[1])\(op){\(symA[2])}"
+            str += String(symA[x])
+            x += 1
         }
         
-        // Invalid
-//        assert(false)
-        return ""
+        str += "\(op){"
+        
+        while x < symN {
+            
+            str += String(symA[x])
+            x += 1
+        }
+        str += "}"
+        return str
     }
     
-    
+
     func getSymSpecs() -> ( String, [KeyCode], Int, Int, Int ) {
         
         if isNull {
@@ -120,7 +131,7 @@ extension SymbolTag {
             var symS = ""
             var kcA: [KeyCode] = []
             
-            for _ in 1...3 {
+            for _ in 1...Const.Symbol.maxChars {
                 let y = code & Const.Symbol.byteMask
                 
                 if y != 0 {
@@ -156,7 +167,7 @@ extension SymbolTag {
             var code = (tag & Const.Symbol.modMask)
             var symS = ""
             
-            for _ in 1...3 {
+            for _ in 1...Const.Symbol.maxChars {
                 let y = code & Const.Symbol.byteMask
 
                 if y != 0 {
@@ -220,7 +231,8 @@ extension SymbolTag {
         //   bbb - middle sym
         //   ccc - first sym
         
-        assert( symA.count > 0 && symA.count <= 3 && subPt*superPt == 0 && subPt+superPt <= 3 && subPt+superPt != 1 )
+        assert( symA.count > 0 && symA.count <= Const.Symbol.maxChars )
+        assert( subPt*superPt == 0 && subPt+superPt <= Const.Symbol.maxChars && subPt+superPt != 1 )
         assert( mod >= 0 && mod < 100 )
         
         var tag: UInt64 = 0
@@ -329,8 +341,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
     let setLabels = ["ABC", "abc", "\u{03b1}\u{03b2}\u{03b3}", "\u{1D4D0}\u{1D4D1}\u{1D4D2}", "123"]
     
     func keyPress(_ event: KeyEvent ) -> KeyPressResult {
-        if symN < 3 {
-            // Max three char in symbol
+        if symN < Const.Symbol.maxChars {
             let ch = event.kc.str
             symName.append(ch)
             symArray.append( event.kc )
@@ -349,17 +360,21 @@ struct NewSymbolPopup: View, KeyPressHandler {
     }
     
     
+    let dashStr: [String] = [
+        "------", "-----", "----", "---", "--", "-", ""
+    ]
+    
+    
     func getSymbolText() -> String {
         
         if symN == 0 {
             // Placeholder text
-            return "ƒ{2.0}ç{GrayText}---"
+            return "ƒ{2.0}ç{GrayText}\(dashStr[0])"
         }
         
         if symN == 1 || (subPt == 0 && superPt == 0) {
             // No sub or superscripts
-            let dash = symN == 1 ? "--" : (symN == 2 ? "-" : "")
-            return "ƒ{2.0}\(symName)ç{GrayText}\(dash)"
+            return "ƒ{2.0}\(symName)ç{GrayText}\(dashStr[symN])"
         }
         
         let symA = Array(symName)
@@ -369,23 +384,34 @@ struct NewSymbolPopup: View, KeyPressHandler {
             
             let op = subPt > 0 ? "_" : "^"
             
-            return "ƒ{2.0}\(symA[0])\(op){\(symA[1])}ç{GrayText}\(op){-}"
+            return "ƒ{2.0}\(symA[0])\(op){\(symA[1])}ç{GrayText}\(op){\(dashStr[symN])}"
         }
         
-        if symN == 3 {
-            assert( (subPt*superPt == 0) && (subPt+superPt >= 2) )
+        // symN is 4...6
+        assert( (subPt*superPt == 0) && (subPt+superPt >= 2) )
+        assert( symN <= Const.Symbol.maxChars )
+        
+        let op = subPt > 0 ? "_" : "^"
+        let pt = subPt + superPt
+        
+        var str = "\(symA[0])"
+        var x = 1
+        
+        while x < pt-1 {
             
-            // Sub or Super operator and starting point
-            let op = subPt > 0 ? "_" : "^"
-            let pt = subPt + superPt
-            
-            // Sub or superscript point starting at position 2 or 3
-            return pt == 2 ? "ƒ{2.0}\(symA[0])\(op){\(symA[1])\(symA[2])}" : "ƒ{2.0}\(symA[0])\(symA[1])\(op){\(symA[2])}"
+            str += String(symA[x])
+            x += 1
         }
         
-        // Invalid
-        assert(false)
-        return ""
+        str += "\(op){"
+        
+        while x < symN {
+            
+            str += String(symA[x])
+            x += 1
+        }
+        str += "}"
+        return "ƒ{2.0}\(str)ç{GrayText}\(op){\(dashStr[symN])}"
     }
     
     var body: some View {
@@ -469,7 +495,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
                         symName.removeLast()
                         symArray.removeLast()
                         
-                        if subPt+superPt == 3 {
+                        if subPt+superPt > symN {
                             // BugFix
                             subPt = 0
                             superPt = 0

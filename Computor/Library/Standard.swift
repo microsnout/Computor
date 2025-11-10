@@ -12,15 +12,8 @@ import Foundation
 // **************************
 
 var stdGroup = LibraryGroup(
-    name: "Std",
+    name: "Interpolation",
     functions: [
-        
-        LibraryFunction(
-            sym: SymbolTag( [.scriptQ, .f], subPt: 2 ),
-            caption: "Quadratic Formula",
-            require: [ .X([.real]), .Y([.real]), .Z([.real])], where: { s0 in s0.Xt == s0.Yt && s0.Yt == s0.Zt && s0.Xt == tagUntyped },
-            libQuadraticFormula(_:)
-        ),
         
         LibraryFunction(
             sym: SymbolTag( [.scriptP, .N], subPt: 2 ),
@@ -31,9 +24,16 @@ var stdGroup = LibraryGroup(
     ])
 
 var rootGroup = LibraryGroup(
-    name: "Root",
+    name: "Root Finding",
     functions: [
         
+        LibraryFunction(
+            sym: SymbolTag( [.scriptQ, .f], subPt: 2 ),
+            caption: "Quadratic Formula",
+            require: [ .X([.real]), .Y([.real]), .Z([.real])], where: { s0 in s0.Xt == s0.Yt && s0.Yt == s0.Zt && s0.Xt == tagUntyped },
+            libQuadraticFormula(_:)
+        ),
+
         LibraryFunction(
             sym: SymbolTag( [.scriptR, .B], subPt: 2 ),
             caption: "Bisection Method",

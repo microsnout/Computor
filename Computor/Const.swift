@@ -69,7 +69,7 @@ enum Const {
     
     enum Symbol {
         
-        static let maxChars = 3
+        static let maxChars = 6
         
         static let charBits = 8
         
@@ -87,7 +87,7 @@ enum Const {
         
         static let byteMask: UInt64 = 0xFF
         
-        static let modMask: UInt64 = ~(0xFFFFFFFFFFFF << Self.modShift)
+        static let modMask: UInt64 = ~(0xFFFFFFFFFFFFFFFF << Self.modShift)
         
         static let firstCharMask: UInt64 = 0xFF
     }
