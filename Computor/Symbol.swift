@@ -47,6 +47,22 @@ extension SymbolTag {
     
     var isNull: Bool { self.tag == 0 }
     
+    var length: Int {
+        var chrs: UInt64 = self.tag & Const.Symbol.chrMask
+        
+        if chrs == 0 { return 0 }
+        
+        for n in 1 ..< Const.Symbol.maxChars {
+            chrs >>= Const.Symbol.charBits
+            if chrs & Const.Symbol.byteMask == 0 {
+                return n
+            }
+        }
+        return Const.Symbol.maxChars
+    }
+    
+    var isShortSym: Bool { self.length < 4 }
+    
     var isSingleChar: Bool { (tag & Const.Symbol.firstCharMask != 0) && (tag & ~Const.Symbol.firstCharMask == 0) }
     
     var mod: Int { Int(tag >> Const.Symbol.modShift & Const.Symbol.byteMask) }

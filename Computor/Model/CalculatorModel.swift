@@ -994,7 +994,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             if let fTag = kstate.keyMap.tagAssignment(kc) {
                 
                 // A SymbolTag is assigned to this key
-                return (fTag.getRichText(), .symbol)
+                let tagText: String = fTag.getRichText()
+                let text = fTag.isShortSym ? tagText : "ƒ{0.6}\(tagText)"
+                return (text, .symbol)
             }
             
             // Disabled key, no macro

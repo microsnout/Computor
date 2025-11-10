@@ -22,7 +22,9 @@ struct MemoryKeyView: View {
         let keyW = keySpec.width
         
         VStack {
-            let text: String = mTag.getRichText()
+            // Reduce font size for symbols over 3 chars
+            let tagText: String = mTag.getRichText()
+            let text = mTag.isShortSym ? tagText : "ƒ{0.6}\(tagText)"
             
             // This is the key itself
             Rectangle()

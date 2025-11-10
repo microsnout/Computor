@@ -90,5 +90,7 @@ enum Const {
         static let modMask: UInt64 = ~(0xFFFFFFFFFFFFFFFF << Self.modShift)
         
         static let firstCharMask: UInt64 = 0xFF
+        
+        static let chrMask: UInt64 = ~(0xFFFFFFFFFFFFFFFF << (Self.maxChars*Self.charBits))
     }
 }
