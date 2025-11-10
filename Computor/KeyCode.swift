@@ -24,7 +24,7 @@ enum KeyCode: Int, Codable {
     
     case log = 80, ln, log2, logY
     
-    case tenExp = 90, eExp, exp, quad, lib
+    case tenExp = 90, eExp, twoExp, lib
     
     // Complex operations
     case zRe = 100, zIm, zArg, zConj, zNorm

@@ -255,6 +255,7 @@ func initKeyLayout() {
                        keys: [
                         Key(.tenExp, "10^{x}"),
                         Key(.eExp, "e^{x}"),
+                        Key(.twoExp, "2^{x}"),
                         Key(.y2x, "y^{x}"),
                        ]
     )
@@ -471,7 +472,7 @@ func initKeyLayout() {
                        keys: [
                         Key(.pi,  "ƒ{1.3}\u{1d6d1}",  caption: "Pi"),
                         Key(.phi, "ƒ{1.2}\u{1d6d7}",  caption: "Golden Ratio"),
-                        Key(.exp, "ƒ{1.3}\u{1d486}",  caption: "Euler Number"),
+                        Key(.e, "ƒ{1.3}\u{1d486}",  caption: "Euler Number"),
                        ],
                        caption: "Constants"
     )

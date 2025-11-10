@@ -49,10 +49,11 @@ extension CalculatorModel {
         .logY:  BinaryOpReal( { y, x in log10(x)/log10(y) } ),
         
         .tenExp: UnaryOp( parm: tagUntyped, result: tagUntyped, { x in pow(10.0, x) } ),
+        .twoExp: UnaryOp( parm: tagUntyped, result: tagUntyped, { x in pow(2.0, x) } ),
         .eExp: UnaryOp( parm: tagUntyped, result: tagUntyped, { x in exp(x) } ),
 
         .pi:    Constant( Double.pi ),
-        .exp:   Constant( exp(1.0) ),
+        .e:   Constant( exp(1.0) ),
         .phi:   Constant( (1.0 + Double.sqrt(5.0)) / 2.0 ),
         
         .abs:   UnaryOp( { x in abs(x) } ),
