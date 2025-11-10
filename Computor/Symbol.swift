@@ -97,7 +97,7 @@ extension SymbolTag {
         }
         
         // Invalid
-        assert(false)
+//        assert(false)
         return ""
     }
     

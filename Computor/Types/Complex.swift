@@ -127,6 +127,18 @@ func installComplex( _ model: CalculatorModel ) {
     ])
     
     
+    CalculatorModel.defineOpPatterns( .sqrt, [
+        
+        OpPattern( [ .X([.real]) ], where: { $0.X < 0.0 } ) { s0 in
+            
+            // Square root of negative real value, return a complex
+            var s1 = s0
+            let z = Comp(0.0, sqrt( -s0.X ) )
+            s1.setComplexValue(z)
+            return (KeyPressResult.stateChange, s1)
+        }
+    ])
+
     CalculatorModel.defineOpPatterns( .x2, [
         
         OpPattern( [ .X([.complex])] ) { s0 in

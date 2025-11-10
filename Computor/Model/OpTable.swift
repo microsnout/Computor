@@ -159,8 +159,8 @@ extension CalculatorModel {
 
         .sqrt:
             CustomOp { s0 in
-                guard s0.Xtv.isReal else {
-                    // Real values only
+                guard s0.Xtv.isReal && s0.X >= 0.0 else {
+                    // Positive Real values only
                     return nil
                 }
                 
