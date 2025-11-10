@@ -433,6 +433,19 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
+        OpPattern( [ .X([.polar]), .Y([.polar])], where: { $0.Xt == $0.Yt } ) { s0 in
+            
+            // Multiply Polars which could by considered complex values
+            var s1 = s0
+            s1.stackDrop()
+            
+            let (rx, wx) = s0.Xtv.getPolar()
+            let (ry, wy) = s0.Ytv.getPolar()
+
+            s1.setPolarValue( rx*ry, wx+wy, tag: s0.Yt, fmt: s0.Yfmt )
+            return (KeyPressResult.stateChange, s1)
+        },
+
         OpPattern( [ .X([.real]), .Y([.vector3D])], where: { $0.Xt == tagUntyped } ) { s0 in
             
             // Scale 3D vector
@@ -460,6 +473,23 @@ func installVector( _ model: CalculatorModel ) {
         },
     ])
     
+    
+    CalculatorModel.defineOpPatterns( .divide, [
+        
+        OpPattern( [ .X([.polar]), .Y([.polar])], where: { $0.Xt == $0.Yt } ) { s0 in
+            
+            // Divide Polars which could by considered complex values
+            var s1 = s0
+            s1.stackDrop()
+            
+            let (rx, wx) = s0.Xtv.getPolar()
+            let (ry, wy) = s0.Ytv.getPolar()
+            
+            s1.setPolarValue( ry/rx, wy-wx, tag: s0.Yt, fmt: s0.Yfmt )
+            return (KeyPressResult.stateChange, s1)
+        },
+    ])
+
 
     CalculatorModel.defineOpPatterns( .dotProduct, [
         
