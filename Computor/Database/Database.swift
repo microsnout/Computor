@@ -8,15 +8,12 @@ import SwiftUI
 
 
 let modZeroSym = "mod0"
-let docZeroSym = "doc0"
 
 
 // ********************************************************* //
 
 
 class Database {
-    
-    var docTable = ObjectTable<DocumentRec>( tableName: "Computor", objZeroName: "doc0" )
     
     var modTable = ObjectTable<ModuleRec>( tableName: "Module", objZeroName: "mod0" )
 }
@@ -32,23 +29,10 @@ extension Database {
         modTable.getObjectFileRec(id: uuid)
     }
     
-    func getDocumentFileRec( name: String ) -> DocumentRec? {
-        docTable.getObjectFileRec(name)
-    }
-    
-    func getDocumentFileRec( id uuid: UUID ) -> DocumentRec? {
-        docTable.getObjectFileRec(id: uuid)
-    }
-    
-    func getDocZero() -> DocumentRec {
-        docTable.getObjZero()
-    }
-    
     func getModZero() -> ModuleRec {
         modTable.getObjZero()
     }
     
-    var docList: [DocumentRec] { docTable.objTable }
     var modList: [ModuleRec] { modTable.objTable }
 
     // *** File system paths ***
@@ -82,7 +66,6 @@ extension Database {
         
         /// ** Load Library **
         modTable.loadObjectTable()
-        docTable.loadObjectTable()
     }
     
     
@@ -298,67 +281,5 @@ extension Database {
         modDest.changeMacroTag(from: oldTag, to: newTag)
 
         modTable.saveTable()
-    }
-    
-    
-    // **************************
-    // *** Document Functions ***
-    
-    
-    func loadDocument( _ dfr: DocumentRec ) -> DocumentFile {
-        
-        // TODO: Should we eliminate this func
-        
-        /// ** Load Module **
-        return dfr.loadDocument()
-    }
-    
-    
-    func saveDocument( _ dfr: DocumentRec ) {
-        
-        // TODO: Should we eliminate this func
-        
-        /// ** Save Module **
-        dfr.saveDocument()
-    }
-
-    func deleteDocument( _ dfr: DocumentRec ) {
-        
-        /// ** Delete Document **
-        docTable.deleteObject(dfr)
-    }
-    
-    
-    func createNewDocument( symbol: String, caption: String? = nil ) -> DocumentRec? {
-        
-        /// ** Create New Document File **
-        ///     Create a new Document file Index entry with unique symbol and a new UUID
-        ///     Don't create a DocumentFile until needed
-        
-        docTable.createNewObject(name: symbol, caption: caption)
-    }
-    
-    
-    func setDocumentSymbolandCaption( _ dfr: DocumentRec, newSym: String, newCaption: String? = nil ) {
-        
-        /// ** Set Document Symbol and Caption **
-        
-        docTable.setObjectNameAndCaption(dfr, newName: newSym, newCaption: newCaption)
-    }
-    
-    
-    func documentExists( _ name: String ) -> Bool {
-        
-        /// ** Document Exists **
-        
-        if let _ = docTable.getObjectFileRec(name) {
-            return true
-        }
-        return false
-    }
-    
-    
-    func getDocumentRec( _ name: String ) -> DocumentRec? {
-        docTable.objTable.first( where: { $0.name == name } )
     }
 }

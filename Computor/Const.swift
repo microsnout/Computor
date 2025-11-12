@@ -56,6 +56,11 @@ enum Const {
         static let chevronDn = "chevron.down"
         static let chevronUp = "chevron.up"
         
+        static let cntlModules  = "document.on.document"
+        static let cntlSettings = "slider.horizontal.3"
+        static let cntlHelp     = "books.vertical"
+        static let cntlDebug    = "wrench.and.screwdriver"
+        
         // ** Unused **
         static let detail = "list.bullet.circle"
         static let gridBox = "square.grid.3x3.square"

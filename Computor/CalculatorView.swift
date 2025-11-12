@@ -59,13 +59,13 @@ struct CalculatorView: View {
                                     .frame( maxHeight: 8)
                                 
                                 HStack {
-                                    let docName = model.activeDocName == docZeroSym ? "" : model.activeDocName
+                                    let modName = model.activeModName == modZeroSym ? "" : model.activeModName
                                     
                                     Text(Const.Str.appName).foregroundColor(Color("Frame"))/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/().italic()
                                     
                                     Spacer()
                                     
-                                    RichText( docName, size: .small, weight: .bold, design: .default, defaultColor: "AccentText" )
+                                    RichText( modName, size: .small, weight: .bold, design: .default, defaultColor: "AccentText" )
                                     Button {
                                         presentSettings = true
                                     } label: {
@@ -146,7 +146,7 @@ struct CalculatorView: View {
             model.db.loadDatabase()
             
             // Activate doc0
-            model.loadDocument( docZeroSym )
+            model.loadModule( modZeroSym )
             
             // Set aux display view to mod zero
             model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleRec( name: "?")

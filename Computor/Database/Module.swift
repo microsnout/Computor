@@ -7,6 +7,29 @@
 import SwiftUI
 
 
+class MemoryRec: Codable, Identifiable, Hashable, Equatable {
+    var tag:     SymbolTag
+    var caption: String? = nil
+    var tv:      TaggedValue
+    
+    var id: SymbolTag { tag }
+    
+    init( tag: SymbolTag, caption: String? = nil, tv: TaggedValue = TaggedValue() ) {
+        self.tag = tag
+        self.caption = caption
+        self.tv = tv
+    }
+    
+    func hash( into hasher: inout Hasher) {
+        hasher.combine(tag)
+    }
+    
+    static func == ( lhs: MemoryRec, rhs: MemoryRec ) -> Bool {
+        return lhs.tag == rhs.tag
+    }
+}
+
+
 class MacroRec: Codable, Identifiable, TaggedItem {
     var symTag:     SymbolTag
     var caption:    String? = nil
@@ -34,6 +57,44 @@ class MacroRec: Codable, Identifiable, TaggedItem {
 }
 
 
+struct KeyMapRec: Codable {
+    
+    var fnRow: [ KeyCode : SymbolTag ] = [:]
+    
+    func tagAssignment( _ kc: KeyCode ) -> SymbolTag? {
+        fnRow[kc]
+    }
+    
+    func keyAssignment( _ tag: SymbolTag ) -> KeyCode? {
+        if tag.isNull {
+            // Null tag, no key
+            return nil
+        }
+        
+        // Find the Fn key to which this sym is assigned if any
+        if let index = fnRow.firstIndex( where: { $0.value == tag } ) {
+            return fnRow[index].key
+        }
+        return nil
+    }
+    
+    func isAssigned( _ kc: KeyCode ) -> Bool {
+        self.tagAssignment(kc) != nil
+    }
+    
+    mutating func clearKeyAssignment( _ kc: KeyCode ) {
+        fnRow.removeValue( forKey: kc)
+    }
+    
+    mutating func assign( _ kc: KeyCode, tag: SymbolTag ) {
+        // TODO: Eventually add UnRow for unit row keys
+        fnRow[kc] = tag
+    }
+    
+    // Could add unitRow here
+}
+
+
 typealias GroupId = Int
 
 
@@ -49,16 +110,28 @@ class ModuleFile: DataObjectFile {
     // List of macro definitions in this module - a macro must have a SymbolTag to be in this list
     var macroTable: [MacroRec] = []
     
+    // Calculator session state
+    var state:     CalcState
+    var unitData:  UserUnitData
+    var keyMap:    KeyMapRec
+    
     private enum CodingKeys: String, CodingKey {
         case groupTable
         case macroTable
+        
+        case state
+        case unitData
+        case keyMap
     }
     
     init( _ mfr: ModuleRec ) {
         
         self.groupTable = [mfr.id]
         self.macroTable = []
-        
+        self.state = CalcState()
+        self.unitData = UserUnitData()
+        self.keyMap = KeyMapRec()
+
         super.init()
     }
     
@@ -66,7 +139,10 @@ class ModuleFile: DataObjectFile {
         
         self.groupTable = [UUID()]
         self.macroTable = []
-        
+        self.state = CalcState()
+        self.unitData = UserUnitData()
+        self.keyMap = KeyMapRec()
+
         super.init()
     }
     
@@ -74,7 +150,10 @@ class ModuleFile: DataObjectFile {
         
         self.groupTable = [obj.id]
         self.macroTable = []
-        
+        self.state = CalcState()
+        self.unitData = UserUnitData()
+        self.keyMap = KeyMapRec()
+
         super.init(obj)
     }
     
@@ -83,7 +162,10 @@ class ModuleFile: DataObjectFile {
         let container = try decoder.container( keyedBy: CodingKeys.self)
         self.groupTable = try container.decode( [UUID].self, forKey: .groupTable)
         self.macroTable = try container.decode( [MacroRec].self, forKey: .macroTable)
-        
+        self.state = try container.decode( CalcState.self, forKey: .state)
+        self.unitData = try container.decode( UserUnitData.self, forKey: .unitData)
+        self.keyMap = try container.decode( KeyMapRec.self, forKey: .keyMap)
+
         try super.init(from: decoder)
     }
     
@@ -91,7 +173,10 @@ class ModuleFile: DataObjectFile {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(groupTable, forKey: .groupTable)
         try container.encode(macroTable, forKey: .macroTable)
-        
+        try container.encode(state,      forKey: .state)
+        try container.encode(unitData,   forKey: .unitData)
+        try container.encode(keyMap,     forKey: .keyMap)
+
         try super.encode(to: encoder)
     }
 }
@@ -174,6 +259,22 @@ extension ModuleRec {
         saveObject()
     }
     
+    
+    func readModule( _ readFunc: (ModuleFile) -> Void ) {
+        
+        /// ** Read Document **
+        
+        readObject(readFunc)
+    }
+    
+    
+    func writeModule( _ writeFunc: (ModuleFile) -> Void ) {
+        
+        /// ** Write Document **
+        
+        writeObject(writeFunc)
+    }
+
     
     var macroList: [MacroRec] {
         

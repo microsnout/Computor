@@ -221,7 +221,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     @Published var db     = Database()
     
     // Currently active calculator document
-    @Published var activeDocName: String = ""
+    @Published var activeModName: String = ""
 
     @AppStorage(.settingsModalConfirmation)
     var modalConfirmation = true
@@ -585,9 +585,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func saveDocument() {
         
-        if let docRec = db.getDocumentFileRec(name: self.activeDocName) {
+        if let docRec = db.getModuleFileRec( sym: self.activeModName) {
             
-            docRec.writeDocument() { obj in
+            docRec.writeModule() { obj in
                 obj.state = self.state
                 obj.keyMap = self.kstate.keyMap
                 obj.unitData = UserUnitData.uud
@@ -596,16 +596,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
-    func loadDocument( _ name: String ) {
+    func loadModule( _ name: String ) {
         
-        if name != self.activeDocName {
+        if name != self.activeModName {
             
             // Save any changes before loading new doc
             saveDocument()
             
-            if let docRec = db.getDocumentFileRec(name: name) {
+            if let modRec = db.getModuleFileRec( sym: name) {
                 
-                docRec.readDocument() { obj in
+                modRec.readModule() { obj in
                     
                     self.state = obj.state
                     self.kstate.keyMap = obj.keyMap
@@ -614,10 +614,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     UnitDef.reIndexUserUnits()
                     TypeDef.reIndexUserTypes()
                     
-                    self.activeDocName = name
+                    self.activeModName = name
                     
                     // Reset aux display to memory page
                     self.aux.activeView = .memoryView
+                    
+                    // and Macro list page to current mod
+                    self.aux.macroMod = modRec
                 }
             }
         }

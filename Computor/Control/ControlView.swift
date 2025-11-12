@@ -16,30 +16,25 @@ struct ControlView: View {
         TabView {
             
             Group {
-                DocumentView( model: model, list: $model.db.docTable.objTable)
-                    .tabItem {
-                        Label( "Documents", systemImage: "document.on.document" )
-                    }
-                
                 ModuleView( model: model, list: $model.db.modTable.objTable )
                     .tabItem {
-                        Label( "Modules", systemImage: "book.pages" )
+                        Label( "Modules", systemImage: Const.Icon.cntlModules )
                     }
                 
                 SettingsView()
                     .tabItem {
-                        Label( "Settings", systemImage: "slider.horizontal.3" )
+                        Label( "Settings", systemImage: Const.Icon.cntlSettings )
                     }
                 
                 HelpView()
                     .tabItem {
-                        Label( "Help", systemImage: "books.vertical" )
+                        Label( "Help", systemImage: Const.Icon.cntlHelp )
                     }
                 
 #if DEBUG
                 DebugView( model: model )
                     .tabItem {
-                        Label( "Debug", systemImage: "wrench.and.screwdriver" )
+                        Label( "Debug", systemImage: Const.Icon.cntlDebug )
                     }
 #endif
                 

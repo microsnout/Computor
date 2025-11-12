@@ -10,6 +10,8 @@ import SwiftUI
 
 struct ModuleView: View {
     
+   @Environment(\.dismiss) private var dismiss
+    
     @StateObject var model: CalculatorModel
     
     // Open macro module edit sheet for adding or creating new modules
@@ -36,6 +38,12 @@ struct ModuleView: View {
                             
                             Spacer()
                             
+                            // LOAD - Calculator Icon to load this document
+                            Button( action: { loadModule(mfr) } ) {
+                                Image( systemName: Const.Icon.document )
+                            }
+                            .padding( [.trailing], 10 )
+
                             // DOT DOT DOT ellipsis menu
                             ActionMenu( editItem: $editItem, mfr: mfr )
                         }
@@ -109,6 +117,12 @@ struct ModuleView: View {
             }
 #endif
         }
+    }
+    
+    
+    func loadModule( _ mr: ModuleRec ) {
+        model.loadModule( mr.name )
+        dismiss()
     }
     
     

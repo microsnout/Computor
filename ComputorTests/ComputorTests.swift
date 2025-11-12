@@ -60,26 +60,26 @@ func withLoadedModel( _ proc: ( _ model: CalculatorModel ) throws -> Void ) thro
 }
 
 
-func withNewDoc( in model: CalculatorModel, _ proc: ( _ doc: DocumentRec ) throws -> Void ) throws {
+func withNewDoc( in model: CalculatorModel, _ proc: ( _ mod: ModuleRec ) throws -> Void ) throws {
     
     let db = model.db
-    let docName = Lorem.word
+    let modName = Lorem.word
     let caption = Lorem.words(3)
     
     // Delete doc if it exists
-    if let doc = db.getDocumentRec(docName) {
-        db.deleteDocument(doc)
+    if let mod = db.getModuleFileRec( sym: modName) {
+        db.deleteModule(mod)
     }
     
-    try #require( db.documentExists(docName) == false )
+    try #require( db.moduleExists(modName) == false )
     
-    let docT = db.createNewDocument( symbol: docName, caption: caption )
+    let modT = db.createNewModule( symbol: modName, caption: caption )
     
-    let doc = try #require(docT)
+    let mod = try #require(modT)
     
-    try proc(doc)
+    try proc(mod)
     
-    db.deleteDocument(doc)
+    db.deleteModule(mod)
 }
 
 
@@ -145,20 +145,20 @@ struct ComputorTests {
                 let db = model.db
                 
                 // Delete doc if it exists
-                if let doc = db.getDocumentRec(docName) {
-                    db.deleteDocument(doc)
+                if let doc = db.getModuleFileRec( sym: docName) {
+                    db.deleteModule(doc)
                 }
                 
-                try #require( db.documentExists(docName) == false )
+                try #require( db.moduleExists(docName) == false )
                 
-                let docT = db.createNewDocument( symbol: docName, caption: caption )
+                let docT = db.createNewModule( symbol: docName, caption: caption )
                 
                 let doc = try #require(docT)
                 let capStr = try #require(doc.caption)
                 
                 print( "DocTest1 created document:\(doc.name) caption='\(capStr)'" )
                 
-                doc.saveDocument()
+                doc.saveModule()
             }
             
             // Persistence test - reload database
@@ -166,16 +166,16 @@ struct ComputorTests {
                 
                 let db = model.db
 
-                try #require( db.documentExists(docName) )
+                try #require( db.moduleExists(docName) )
                 
-                if let doc = db.getDocumentRec(docName) {
+                if let doc = db.getModuleFileRec( sym: docName) {
                     #expect( doc.name == docName && doc.caption == caption )
                     
                     print( "DocTest1: name=\(docName) caption='\(caption)'")
                     
-                    db.deleteDocument(doc)
+                    db.deleteModule(doc)
                     
-                    try #require( db.documentExists(docName) == false )
+                    try #require( db.moduleExists(docName) == false )
                 }
             }
         }
