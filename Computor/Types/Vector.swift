@@ -403,11 +403,12 @@ func installVector( _ model: CalculatorModel ) {
         },
     ])
 
+    // MULTIPLICATION
     CalculatorModel.defineOpPatterns( .times, [
         
         /// Multiplication of vector by a scalar real
         
-        OpPattern( [ .X([.real]), .Y([.vector])], where: { $0.Xt == tagUntyped } ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.vector])] ) { s0 in
             
             // Scale 2D vector
             var s1 = s0
@@ -416,7 +417,9 @@ func installVector( _ model: CalculatorModel ) {
             let s: Double = s0.X
             let (x, y) = s0.Ytv.getVector()
             
-            s1.setVectorValue( s*x, s*y, tag: s0.Yt, fmt: s0.Yfmt )
+            if let (tagProd, ratio) = typeProduct(s0.Yt, s0.Xt ) {
+                s1.setVectorValue( s*x*ratio, s*y*ratio, tag: tagProd, fmt: s0.Yfmt )
+            }
             return (KeyPressResult.stateChange, s1)
         },
 
