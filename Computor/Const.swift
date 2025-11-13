@@ -57,6 +57,7 @@ enum Const {
         static let chevronUp = "chevron.up"
         
         static let cntlModules  = "document.on.document"
+        static let cntlUnits    = "ruler"
         static let cntlSettings = "slider.horizontal.3"
         static let cntlHelp     = "books.vertical"
         static let cntlDebug    = "wrench.and.screwdriver"
@@ -70,6 +71,7 @@ enum Const {
         // System Library module codes - not for User modules
         
         static let stdlib = SymbolTag.firstSysMod + 0
+        static let cntlLib = SymbolTag.firstSysMod + 1
     }
     
     enum Symbol {

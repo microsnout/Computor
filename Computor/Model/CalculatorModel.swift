@@ -203,6 +203,17 @@ struct KeyState {
     
     // F1 .. F6 key mappings
     var keyMap: KeyMapRec = KeyMapRec()
+    
+    init() {
+        // Need to cycle all 3 possible values here to
+        // overcome lazy evaluation of global let constants
+        // and ensure that all keys are registered on time
+        self.func2R = psFunctions2Ro
+        self.func2R = psFunctions2Rc
+        self.func2R = psFunctions2R
+
+        self.keyMap = KeyMapRec()
+    }
 }
 
 

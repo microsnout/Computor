@@ -127,6 +127,7 @@ class BlockRecord : EventContext {
             
             // Record the key event
             model.recordKeyEvent(event)
+            model.aux.refresh.toggle()
             return KeyPressResult.recordOnly
         }
     }

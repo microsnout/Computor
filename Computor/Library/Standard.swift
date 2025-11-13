@@ -11,6 +11,20 @@ import Foundation
 // Standard Library Functions
 // **************************
 
+
+var flowGroup = LibraryGroup(
+    name: "Control Flow",
+    functions: [
+        
+        LibraryFunction(
+            sym: SymbolTag( [.L, .o, .o, .p, .G, .T] ),
+            caption: "Loop while Greater Than",
+            require: [ .X([.real]) ], where: { isInt($0.X) && $0.X > 0 },
+            modals: 1,
+            libLoopGT(_:)
+        ),
+    ])
+
 var stdGroup = LibraryGroup(
     name: "Interpolation",
     functions: [
@@ -38,6 +52,7 @@ var rootGroup = LibraryGroup(
             sym: SymbolTag( [.scriptR, .B], subPt: 2 ),
             caption: "Bisection Method",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            modals: 1,
             libBisection(_:)
         ),
         
@@ -45,6 +60,7 @@ var rootGroup = LibraryGroup(
             sym: SymbolTag( [.scriptR, .S], subPt: 2 ),
             caption: "Secant Method",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            modals: 1,
             libSecant(_:)
         ),
         
@@ -52,6 +68,7 @@ var rootGroup = LibraryGroup(
             sym: SymbolTag( [.scriptR, .B, .r], subPt: 2 ),
             caption: "Brent Method",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            modals: 1,
             libBrent(_:)
         ),
     ])
@@ -64,6 +81,7 @@ var integralGroup = LibraryGroup(
             sym: SymbolTag( [.integralSym, .T], subPt: 2 ),
             caption: "Trapezoid Rule",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            modals: 1,
             libTrapezoidalRule(_:)
         ),
         
@@ -71,6 +89,7 @@ var integralGroup = LibraryGroup(
             sym: SymbolTag( [.integralSym, .S], subPt: 2 ),
             caption: "Simpson's Rule",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            modals: 1,
             libSimpsonsRule(_:)
         ),
         
@@ -78,9 +97,35 @@ var integralGroup = LibraryGroup(
             sym: SymbolTag( [.integralSym, .R], subPt: 2 ),
             caption: "Romberg Method",
             require: [ .X([.real]), .Y([.real]) ], where: { s0 in s0.Xt == s0.Yt },
+            modals: 1,
             libRombergRule(_:)
         ),
     ])
+
+
+func libLoopGT( _ model: CalculatorModel ) -> OpResult {
+    
+    return model.withModalProc( prompt: "ç{UnitText}Loop while x>0 :  ƒ()", regLabels: ["N max"] ) { model, proc in
+        
+        var nMax = Int(model.state.X)
+        
+        assert( nMax > 0 )
+        
+        model.state.stackDrop()
+        
+        var test = 0.0
+        
+        repeat {
+            test = proc()
+            nMax -= 1
+        }
+        while test > 0.0 && nMax > 0
+                
+        let s1 = model.state
+        
+        return (KeyPressResult.stateChange, s1)
+    }
+}
 
 
 func libQuadraticFormula( _ model: CalculatorModel ) -> OpResult {

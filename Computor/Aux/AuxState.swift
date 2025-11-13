@@ -42,6 +42,8 @@ struct AuxState {
     
     // State of macro detail view - only significant if macroRec is not nil
     var recState: MacroRecState = .stop
+    
+    var refresh: Bool = false
 }
 
 

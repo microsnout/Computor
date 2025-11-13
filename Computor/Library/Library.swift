@@ -11,6 +11,7 @@ func installFunctions( _ model: CalculatorModel ) {
     
     /// ** Install Fuctions **
     
+    SystemLibrary.addGroup( flowGroup )
     SystemLibrary.addGroup( stdGroup )
     SystemLibrary.addGroup( rootGroup )
     SystemLibrary.addGroup( integralGroup )
@@ -104,19 +105,22 @@ class LibraryFunction: TaggedItem {
     var symTag: SymbolTag
     var caption: String? = nil
     var regPattern: RegisterPattern = RegisterPattern()
+    var nModalParm: Int = 0
     var libFunc: LibFuncClosure
     
-    init( sym localSym: SymbolTag, caption: String,  require pattern: [RegisterSpec], where test: StateTest? = nil, _ libFunc: @escaping LibFuncClosure ) {
+    init( sym localSym: SymbolTag, caption: String,  require pattern: [RegisterSpec], where test: StateTest? = nil, modals: Int = 0, _ libFunc: @escaping LibFuncClosure ) {
         
         self.symTag = SymbolTag( localSym, mod: Const.LibMod.stdlib )
         self.caption = caption
         self.regPattern = RegisterPattern(pattern, test)
+        self.nModalParm = modals
         self.libFunc = libFunc
     }
 }
 
 
 typealias FunctionX = ( _ x: Double ) -> Double
+typealias Procedure = () -> Double
 
 
 class LibraryFunctionContext : ModalContext {
@@ -155,6 +159,61 @@ class LibraryFunctionContext : ModalContext {
         }
         return opRes
     }
+    
+    override func onModelSet() {
+        
+        super.onModelSet()
+        
+        guard let model = self.model else { assert(false); return }
+        
+        if let labels = regLabels {
+            model.status.setRegisterLabels(labels)
+        }
+    }
+    
+    override func onDeactivate( lastEvent: KeyEvent ) {
+        
+        super.onDeactivate(lastEvent: lastEvent)
+        
+        guard let model = self.model else { assert(false); return }
+        
+        model.status.clearRegisterLabels()
+    }
+}
+
+
+class LibraryProcedureContext : ModalContext {
+    
+    var prompt: String
+    var regLabels: [String]?
+    
+    var block: ( _ model: CalculatorModel, _ proc: Procedure ) -> OpResult
+    
+    init( prompt: String, regLabels labels: [String]? = nil, block: @escaping ( _ model: CalculatorModel, _ proc: Procedure ) -> OpResult ) {
+        self.prompt = prompt
+        self.regLabels = labels
+        self.block = block
+    }
+    
+    override var statusString: String? { self.prompt }
+    
+    override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        let p: Procedure = {
+            let _ = self.executeFn(event)
+            let value = model.state.X
+            return value
+        }
+        
+        let (opRes, opState) = self.block(model, p)
+        
+        if let newState = opState {
+            model.state = newState
+        }
+        return opRes
+    }
 
     override func onModelSet() {
         
@@ -187,6 +246,19 @@ extension CalculatorModel {
         /// Passes the entred function to the block
         
         let ctx = LibraryFunctionContext( prompt: prompt, regLabels: labels, block: block )
+        
+        self.pushContext(ctx)
+        
+        return (KeyPressResult.modalFunction, nil)
+    }
+
+    func withModalProc( prompt: String, regLabels labels: [String]? = nil, block: @escaping (_ model: CalculatorModel, _ p: Procedure) -> OpResult )-> OpResult {
+        
+        /// ** With Modal Func **
+        /// Delays execution of 'block' until the user enters a function, either single key or a {..} block
+        /// Passes the entred function to the block
+        
+        let ctx = LibraryProcedureContext( prompt: prompt, regLabels: labels, block: block )
         
         self.pushContext(ctx)
         

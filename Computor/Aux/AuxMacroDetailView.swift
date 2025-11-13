@@ -75,6 +75,71 @@ struct MacroCodeListing: View {
     
     @StateObject var model: CalculatorModel
     
+    func getIndentList( _ opList: MacroOpSeq ) -> [Int] {
+        
+        var indent = 0
+        
+        var lastOpModal: Bool = false
+        
+        var iList: [Int] = []
+        
+        let modalKeyCodes: Set<KeyCode> = [.mapX, .mapXY, .reduce]
+        
+        for op in opList {
+            
+            iList.append(indent)
+            
+            if let mEvent = op as? MacroEvent {
+                
+                let evt = mEvent.event
+                
+                switch evt.kc {
+                    
+                case .lib:
+                    if let tag = evt.mTag {
+                        
+                        if tag.isSysMod {
+                            
+                            if let lf = SystemLibrary.getLibFunction( for: tag ) {
+                                
+                                if lf.nModalParm > 0 {
+                                    lastOpModal = true
+                                    indent += 1
+                                }
+                            }
+                        }
+                    }
+
+                case .openBrace:
+                    lastOpModal = false
+                    
+                case .closeBrace:
+                    lastOpModal = false
+                    indent -= 1
+                    
+                default:
+                    if modalKeyCodes.contains(evt.kc) {
+                        lastOpModal = true
+                        indent += 1
+                    }
+                    else {
+                        if lastOpModal {
+                            indent -= 1
+                        }
+                        lastOpModal = false
+                    }
+                }
+            }
+        }
+        return iList
+    }
+    
+    
+    func getIndentStr( _ n: Int ) -> String {
+        let str  = [Character]( repeating: "\u{00B7}", count: n )
+        return String(str)
+    }
+    
     var body: some View {
         
         VStack {
@@ -82,15 +147,21 @@ struct MacroCodeListing: View {
             ScrollView {
                 ScrollViewReader { proxy in
                     let list = mr.opSeq
+                    let indents = getIndentList(list)
                     
                     VStack(spacing: 1) {
                         ForEach (list.indices, id: \.self) { x in
                             let op: MacroOp = list[x]
+                            let level = indents[x]
                             let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
                             let text = op.getRichText(model)
+                            let indentStr = getIndentStr(level)
                             
                             HStack {
                                 RichText( line, size: .small )
+                                if level > 0 {
+                                    RichText( "={\(indentStr)}", size: .small )
+                                }
                                 RichText( text, size: .small, weight: .bold )
                                 Spacer()
                             }
