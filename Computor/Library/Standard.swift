@@ -17,11 +17,26 @@ var flowGroup = LibraryGroup(
     functions: [
         
         LibraryFunction(
+            sym: SymbolTag( [.L, .o, .o, .p] ),
+            caption: "Loop X times",
+            require: [ .X([.real]) ], where: { isInt($0.X) && $0.X > 0 },
+            modals: 1,
+            libLoop(_:)
+        ),
+
+        LibraryFunction(
             sym: SymbolTag( [.L, .o, .o, .p, .G, .T] ),
             caption: "Loop while Greater Than",
             require: [ .X([.real]) ], where: { isInt($0.X) && $0.X > 0 },
             modals: 1,
             libLoopGT(_:)
+        ),
+
+        LibraryFunction(
+            sym: SymbolTag( [.I, .n, .d, .e, .x] ),
+            caption: "Recall Loop Index 1..N",
+            require: [],
+            libLoopIndex(_:)
         ),
     ])
 
@@ -103,6 +118,39 @@ var integralGroup = LibraryGroup(
     ])
 
 
+// Loop Index local memory tags - private tag - actual local tags cannot be uppercase symbols
+let tagL1 = SymbolTag( [.L, .d1], mod: 1 )
+
+
+func libLoop( _ model: CalculatorModel ) -> OpResult {
+    
+    return model.withModalProc( prompt: "ç{UnitText}Loop N times :  ƒ()", regLabels: ["N max"] ) { model, proc in
+        
+        var nMax = Int(model.state.X)
+        
+        assert( nMax > 0 )
+        
+        model.state.stackDrop()
+        
+        var index = 1
+        
+        repeat {
+            // Store loop index as local var .L1
+            let tvIndex = TaggedValue( reg: Double(index) )
+            model.storeRegister(tagL1, tvIndex)
+            
+            _ = proc()
+            nMax -= 1
+            index += 1
+        }
+        while nMax > 0
+                
+        let s1 = model.state
+        return (KeyPressResult.stateChange, s1)
+    }
+}
+
+
 func libLoopGT( _ model: CalculatorModel ) -> OpResult {
     
     return model.withModalProc( prompt: "ç{UnitText}Loop while x>0 :  ƒ()", regLabels: ["N max"] ) { model, proc in
@@ -114,17 +162,34 @@ func libLoopGT( _ model: CalculatorModel ) -> OpResult {
         model.state.stackDrop()
         
         var test = 0.0
+        var index = 1
         
         repeat {
+            // Store loop index as local var .L1
+            let tvIndex = TaggedValue( reg: Double(index) )
+            model.storeRegister(tagL1, tvIndex)
+            
             test = proc()
             nMax -= 1
+            index += 1
         }
         while test > 0.0 && nMax > 0
                 
         let s1 = model.state
-        
         return (KeyPressResult.stateChange, s1)
     }
+}
+
+
+func libLoopIndex( _ model: CalculatorModel ) -> OpResult {
+    
+    if let tv = model.rclLocalMemory(tagL1) {
+        
+        var s1 = model.state
+        s1.pushValue(tv)
+        return (KeyPressResult.stateChange, s1)
+    }
+    return (KeyPressResult.stateError, nil)
 }
 
 

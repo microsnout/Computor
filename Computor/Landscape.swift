@@ -13,9 +13,18 @@ struct LandscapeView : View {
 
     var body: some View {
         ZStack {
+            Color( Color("SafeBack") )
+                .edgesIgnoringSafeArea( .all )
+            
             Rectangle()
                 .fill(Color("Background"))
-                .edgesIgnoringSafeArea( .all )
+                .cornerRadius(15)
+                .padding( [.leading, .trailing], 15 )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 15)
+                        .stroke(Color.black, lineWidth: 1)
+                        .padding( [.leading, .trailing], 15 )
+                )
             
             KeyStack( keyPressHandler: model ) {
                 
@@ -26,7 +35,11 @@ struct LandscapeView : View {
                         .padding( .top, 4 )
                         .frame( maxHeight: 8)
                 }
+                .padding(.horizontal, 30)
+                .padding(.vertical, 5)
+                .background( Color("Background"))
             }
+            .ignoresSafeArea(.keyboard)
         }
     }
 }

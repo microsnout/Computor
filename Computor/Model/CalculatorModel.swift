@@ -251,6 +251,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // Storage of memories local to a block {..}
     var currentLVF: LocalVariableFrame? = nil
     
+    func pushLocalVariableFrame() {
+        currentLVF = LocalVariableFrame( currentLVF )
+    }
+    
+    func popLocalVariableFrame() {
+        currentLVF = currentLVF?.prevLVF
+    }
+    
     var currentMEC: ModuleExecutionContext? = nil
     
     var inLocalContext: Bool { currentLVF != nil }
@@ -549,48 +557,68 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
-    func storeRegister( _ event: KeyEvent, _ tv: TaggedValue ) {
+    func storeRegister( _ mTag: SymbolTag, _ tv: TaggedValue ) {
         
-        if let mTag = event.mTag {
+        if mTag.isLocalMemoryTag {
             
-            if mTag.isLocalMemoryTag {
+            if let lvf = currentLVF {
                 
-                if let lvf = currentLVF {
-                    
-                    // Local block {..} memory
-                    lvf.local[mTag] = tv
-                }
-            }
-            else {
-                // Global memory
-                
-                if currentLVF == nil {
-                    // Only push the state if not running or recording a macro
-                    // Running or recording will push the state before the operation
-                    pushState()
-                }
-                
-                if let index = state.memory.firstIndex( where: { $0.tag == mTag }) {
-                    
-                    // Existing global memory
-                    state.memory[index].tv = tv
-                }
-                else {
-                    // New global memory
-                    let mr   = newGlobalMemory( mTag )
-                    mr.tv = tv
-                }
-                
-                if currentLVF == nil {
-                    // Scroll aux display to memory list
-                    // Don't change the view unless top level key press
-                    aux.activeView = .memoryView
-                }
+                // Local block {..} memory
+                lvf.local[mTag] = tv
             }
         }
         else {
-            assert(false)
+            // Global memory
+            
+            if currentLVF == nil {
+                // Only push the state if not running or recording a macro
+                // Running or recording will push the state before the operation
+                pushState()
+            }
+            
+            if let index = state.memory.firstIndex( where: { $0.tag == mTag }) {
+                
+                // Existing global memory
+                state.memory[index].tv = tv
+            }
+            else {
+                // New global memory
+                let mr   = newGlobalMemory( mTag )
+                mr.tv = tv
+            }
+            
+            if currentLVF == nil {
+                // Scroll aux display to memory list
+                // Don't change the view unless top level key press
+                aux.activeView = .memoryView
+            }
         }
+    }
+    
+    
+    func rclLocalMemory( _ mTag: SymbolTag ) -> TaggedValue? {
+        
+        if mTag.isLocalMemoryTag {
+            
+            // Local memory tag recall
+            var lvfOptional = currentLVF
+                
+            while let lvf = lvfOptional {
+                
+                if let val = lvf.local[mTag] {
+                    
+                    // Local block memory found
+                    return val
+                }
+                
+                lvfOptional = lvf.prevLVF
+            }
+            
+            return nil
+        }
+        
+        assert(false)
+        return untypedZero
     }
 
     
@@ -687,14 +715,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             state.noLift = true
             
         case .popX:
-            storeRegister( KeyEvent( .popX, mTag: SymbolTag(.X) ), state.Xtv)
+            storeRegister( SymbolTag(.X), state.Xtv)
             state.stackDrop()
 
         case .popXY:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( .popXY, mTag: SymbolTag(.X) ), state.Xtv)
-            storeRegister( KeyEvent( .popXY, mTag: SymbolTag(.Y) ), state.Ytv)
+            storeRegister( SymbolTag(.X), state.Xtv)
+            storeRegister( SymbolTag(.Y), state.Ytv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
@@ -702,22 +730,28 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         case .popXYZ:
             pushState()
             pauseUndoStack()
-            storeRegister( KeyEvent( .popXYZ, mTag: SymbolTag(.X) ), state.Xtv)
-            storeRegister( KeyEvent( .popXYZ, mTag: SymbolTag(.Y) ), state.Ytv)
-            storeRegister( KeyEvent( .popXYZ, mTag: SymbolTag(.Z) ), state.Ztv)
+            storeRegister( SymbolTag(.X), state.Xtv)
+            storeRegister( SymbolTag(.Y), state.Ytv)
+            storeRegister( SymbolTag(.Z), state.Ztv)
             resumeUndoStack()
             state.stackDrop()
             state.stackDrop()
             state.stackDrop()
 
         case .stoX:
-            storeRegister( event, state.Xtv )
+            if let mTag = event.mTag {
+                storeRegister( mTag, state.Xtv )
+            }
             
         case .stoY:
-            storeRegister( event, state.Ytv )
+            if let mTag = event.mTag {
+                storeRegister( mTag, state.Ytv )
+            }
             
         case .stoZ:
-            storeRegister( event, state.Ztv )
+            if let mTag = event.mTag {
+                storeRegister( mTag, state.Ztv )
+            }
 
         case .rcl:
             if let mTag = event.mTag {
@@ -727,8 +761,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 if mTag.isLocalMemoryTag {
                     
                     // Local memory tag recall
-                    if let lvf = currentLVF,
-                       let val = lvf.local[mTag]
+                    if let val = rclLocalMemory(mTag)
                     {
                         // Local block memory found
                         tv = val

@@ -192,9 +192,15 @@ class ModalContext : EventContext {
             model.pauseUndoStack()
             model.pauseRecording()
             
+            // Push a new local variable store
+            model.pushLocalVariableFrame()
+
             // ModalExecute runs with Undo stack paused
             let result =  modalExecute( event )
             
+            // Pop the local variable storage, restoring prev
+            model.popLocalVariableFrame()
+
             if result == .stateError {
                 model.popState()
             }

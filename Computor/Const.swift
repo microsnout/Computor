@@ -10,7 +10,7 @@ import Foundation
 enum Const {
     
     enum Log {
-        static let model = false
+        static let model = true
     }
     
     enum Str {
