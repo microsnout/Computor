@@ -17,6 +17,8 @@ struct CalculatorView: View {
 
     @StateObject var model = CalculatorModel()
     
+    @State private var timer: Timer?
+    
     
     var body: some View {
         
@@ -38,6 +40,14 @@ struct CalculatorView: View {
             
             // Set aux display view to mod zero
             model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleRec( name: "?")
+        }
+        .onAppear() {
+            // Create regular timer pulse - 1 sec
+            timer = Timer.scheduledTimer( withTimeInterval: Const.Model.clockTick, repeats: true) { _ in
+                DispatchQueue.main.async {
+                    _ = model.keyPress( KeyEvent(.clockTick) )
+                }
+            }
         }
         .onChange(of: scenePhase) { oldPhase, phase in
             if phase == .inactive {

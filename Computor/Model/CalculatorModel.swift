@@ -285,6 +285,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     func queueEvent( _ evt: KeyEvent ) {
         eventQ.append(evt)
     }
+    
+    private var lastKeyTick: Int
+    
+    func getTimeTick() -> Int {
+        
+        // Return time in seconds since 1970
+        let currentDate = Date()
+        let secondsSince1970 = currentDate.timeIntervalSince1970
+        return Int(secondsSince1970)
+    }
 
     init() {
         self.state  = CalcState()
@@ -293,6 +303,10 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         self.status = StatusState()
         
         self.undoStack   = UndoStack()
+        
+        let currentDate = Date()
+        let secondsSince1970 = currentDate.timeIntervalSince1970
+        self.lastKeyTick = Int(secondsSince1970)
         
         pushContext( NormalContext() )
         
@@ -991,6 +1005,20 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func keyPress(_ keyEvent: KeyEvent) -> KeyPressResult {
         
+        if keyEvent.kc == .clockTick {
+            
+            let now = getTimeTick()
+            
+            if (now - lastKeyTick) > Const.Model.autosaveInterval {
+                
+                print( "Autosave" )
+                saveDocument()
+                lastKeyTick = now
+            }
+            
+            return KeyPressResult.noOp
+        }
+        
         // Add this to the back of the Q just in case there is already some queued events that must go first
         eventQ.append( keyEvent )
         
@@ -1006,6 +1034,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 eventQ.insert( evt, at: 0 )
             }
         }
+        
+        // Timestamp this event
+        lastKeyTick = getTimeTick()
         
         return result
     }

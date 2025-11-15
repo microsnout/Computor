@@ -7,7 +7,7 @@
 import Foundation
 
 enum KeyCode: Int, Codable {
-    case null = 0
+    case null = 0, clockTick
     
     case plus = 15, minus, times, divide
     

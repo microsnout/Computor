@@ -25,6 +25,12 @@ enum Const {
         // Specifications for CalculatorModel
         
         static let stackSize = 16
+        
+        // Autosave after this many seconds of inactivity
+        static let autosaveInterval = 10
+        
+        // Send clockTick event every second
+        static let clockTick = 1.0
     }
     
     enum Limit {
