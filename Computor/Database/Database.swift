@@ -208,7 +208,6 @@ extension Database {
         /// ** Add Macro **
         
         mod.addMacro(mr)
-        modTable.saveTable()
     }
     
     

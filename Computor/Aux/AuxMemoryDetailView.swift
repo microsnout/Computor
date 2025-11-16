@@ -141,6 +141,10 @@ struct MemoryDetailView: View {
                     mr.tag = newTag
                     mr.caption = newtxt.isEmpty ? nil : newtxt
                     refreshView.toggle()
+                    
+                    // Save changes to memory tag and caption immediately
+                    model.changed()
+                    model.saveDocument()
                 }
             }
         }

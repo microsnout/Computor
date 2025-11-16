@@ -170,6 +170,19 @@ extension CalculatorModel {
     }
     
     
+    func changeMacroCaption( to newCap: String, for mTag: SymbolTag, in mod: ModuleRec ) {
+        
+        // Find this sym in the given module
+        if let mr = mod.getLocalMacro(mTag) {
+            
+            // Update the caption
+            mr.caption = newCap
+            mod.touched = true
+            mod.saveModule()
+        }
+    }
+    
+    
     func assignKey( _ kc: KeyCode, to tag: SymbolTag ) {
         
         /// ** Assign Key **
@@ -196,6 +209,7 @@ extension CalculatorModel {
         }
         
         // Save now - don't wait for app losing focus
+        changed()
         saveDocument()
     }
     

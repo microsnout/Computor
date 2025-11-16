@@ -286,6 +286,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         eventQ.append(evt)
     }
     
+    // *** Clock Timer ***
+    
     private var lastKeyTick: Int
     
     func getTimeTick() -> Int {
@@ -295,6 +297,18 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         let secondsSince1970 = currentDate.timeIntervalSince1970
         return Int(secondsSince1970)
     }
+    
+    // *** Change Counter ***
+    
+    var changeCount: Int = 0
+    
+    var isChanged: Bool { self.changeCount > 0 }
+    
+    func changed() { self.changeCount += 1 }
+    
+    func resetChanges() { self.changeCount = 0 }
+    
+    // ***
 
     init() {
         self.state  = CalcState()
@@ -307,6 +321,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         let currentDate = Date()
         let secondsSince1970 = currentDate.timeIntervalSince1970
         self.lastKeyTick = Int(secondsSince1970)
+        
+        self.changeCount = 0
         
         pushContext( NormalContext() )
         
@@ -525,6 +541,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         pushState()
         entry.clearEntry()
         state.deleteMemoryRecords( tags: set )
+        changed()
     }
     
     
@@ -594,11 +611,13 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                 
                 // Existing global memory
                 state.memory[index].tv = tv
+                changed()
             }
             else {
                 // New global memory
                 let mr   = newGlobalMemory( mTag )
                 mr.tv = tv
+                changed()
             }
             
             if currentLVF == nil {
@@ -638,13 +657,19 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     
     func saveDocument() {
         
-        if let docRec = db.getModuleFileRec( sym: self.activeModName) {
-            
-            docRec.writeModule() { obj in
-                obj.state = self.state
-                obj.keyMap = self.kstate.keyMap
-                obj.unitData = UserUnitData.uud
+        if isChanged {
+            print( "Autosave" )
+
+            if let docRec = db.getModuleFileRec( sym: self.activeModName) {
+                
+                docRec.writeModule() { obj in
+                    obj.state = self.state
+                    obj.keyMap = self.kstate.keyMap
+                    obj.unitData = UserUnitData.uud
+                }
             }
+            
+            resetChanges()
         }
     }
     
@@ -674,6 +699,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     
                     // and Macro list page to current mod
                     self.aux.macroMod = modRec
+                    
+                    resetChanges()
                 }
             }
         }
@@ -685,6 +712,9 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // **********************************************************************
     
     func execute( _ event: KeyEvent ) -> KeyPressResult {
+        
+        // Consider state changed if this func is called
+        changed()
         
         let keyCode = event.kc
         
@@ -1011,7 +1041,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             
             if (now - lastKeyTick) > Const.Model.autosaveInterval {
                 
-                print( "Autosave" )
                 saveDocument()
                 lastKeyTick = now
             }
@@ -1038,6 +1067,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         // Timestamp this event
         lastKeyTick = getTimeTick()
         
+        // State has likely changed
+        changed()
         return result
     }
     
@@ -1095,12 +1126,14 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
             assert(false)
             pushValue(tv)
         }
+        changed()
     }
     
     
     func enterRealValue( _ r: Double ) {
         let tv = TaggedValue( reg: r )
         enterValue(tv)
+        changed()
     }
 
     
@@ -1109,6 +1142,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         state.stackLift()
         state.Xtv = tv
         state.noLift = false
+        changed()
     }
 }
 

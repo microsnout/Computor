@@ -306,8 +306,8 @@ struct MacroDetailRightPanel: View {
         .sheet(isPresented: $editSheet) {
             
             MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) { newCaption in
-                mr.caption = newCaption
                 
+                model.changeMacroCaption( to: newCaption, for: mr.symTag, in: model.aux.macroMod)
                 refreshView.toggle()
             }
         }
