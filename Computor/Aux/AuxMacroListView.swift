@@ -97,7 +97,7 @@ struct MacroListView: View {
                                             RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
 
                                             // Caption text
-                                            RichText( caption, size: .normal, weight: .regular, design: .serif, defaultColor: color )
+                                            RichText( caption, size: .small, weight: .regular, design: .serif, defaultColor: color )
                                         }
                                         
                                         // Second line of row

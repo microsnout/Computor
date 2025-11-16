@@ -244,7 +244,7 @@ struct MacroDetailRightPanel: View {
                 }
                 
                 // CAPTION
-                RichText( "ƒ{1.2}ç{UnitText}\(caption)", size: .small, weight: .bold )
+                RichText( "ç{UnitText}\(caption)", size: .small, weight: .medium )
                     .onTapGesture {
                         editSheet = true
                     }
