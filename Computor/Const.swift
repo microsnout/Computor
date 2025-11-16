@@ -10,7 +10,8 @@ import Foundation
 enum Const {
     
     enum Log {
-        static let model = true
+        // Enable or disable model logging
+        static let model = false
     }
     
     enum Str {

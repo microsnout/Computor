@@ -9,7 +9,7 @@ import Foundation
 import Numerics
 import OSLog
 
-let logE = Logger(subsystem: "com.microsnout.calculator", category: "entry")
+let logE = Logger( category: "entry" )
 
 
 struct EntryState {
