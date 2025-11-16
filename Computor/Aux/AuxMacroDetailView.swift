@@ -15,6 +15,8 @@ struct MacroDetailView: View {
     
     @State private var refreshView = false
     
+    @State private var editSheet   = false
+
     var body: some View {
         let symTag: SymbolTag = mr.symTag
         
@@ -47,6 +49,17 @@ struct MacroDetailView: View {
                     Spacer()
                     RichText(captionTxt, size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                     Spacer()
+                    
+                    HStack {
+                        Spacer()
+                        
+                        // PENCIL EDIT BUTTON
+                        Button {
+                            editSheet = true
+                        } label: {
+                            Image( systemName: "square.and.pencil")
+                        }
+                    }
                 }
             }
             
@@ -59,10 +72,20 @@ struct MacroDetailView: View {
                 Divider()
                 
                 // Right panel fields
-                MacroDetailRightPanel( mr: mr, model: model )
+                MacroDetailRightPanel( mr: mr, model: model, refreshView: $refreshView )
             }
         }
         .padding( [.bottom, .leading, .trailing], 5 )
+        
+        // Macro Edit Sheet
+        .sheet(isPresented: $editSheet) {
+            
+            MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) { newCaption in
+                
+                model.changeMacroCaption( to: newCaption, for: mr.symTag, in: model.aux.macroMod)
+                refreshView.toggle()
+            }
+        }
     }
 }
 
@@ -197,11 +220,9 @@ struct MacroDetailRightPanel: View {
     
     @StateObject var model: CalculatorModel
     
-    @State private var editSheet   = false
-    
     @State private var symbolSheet = false
     
-    @State private var refreshView = false
+    @Binding var refreshView: Bool
     
 
     var body: some View {
@@ -222,17 +243,6 @@ struct MacroDetailRightPanel: View {
                 
                 Spacer().frame( height: 5 )
                 
-                HStack {
-                    Spacer()
-                    
-                    // PENCIL EDIT BUTTON
-                    Button {
-                        editSheet = true
-                    } label: {
-                        Image( systemName: "square.and.pencil")
-                    }
-                }
-                
                 // SYMBOL
                 HStack( spacing: 0 ) {
                     RichText("ç{GrayText}Symbol:", size: .small, weight: .regular).padding( [.trailing], 5 )
@@ -245,9 +255,6 @@ struct MacroDetailRightPanel: View {
                 
                 // CAPTION
                 RichText( "ç{UnitText}\(caption)", size: .small, weight: .medium )
-                    .onTapGesture {
-                        editSheet = true
-                    }
                 
                 // Assigned Key
                 HStack( spacing: 0 ) {
@@ -301,16 +308,6 @@ struct MacroDetailRightPanel: View {
         }
         .id(refreshView)
         .padding( [.leading], 10)
-        
-        // Macro Edit Sheet
-        .sheet(isPresented: $editSheet) {
-            
-            MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) { newCaption in
-                
-                model.changeMacroCaption( to: newCaption, for: mr.symTag, in: model.aux.macroMod)
-                refreshView.toggle()
-            }
-        }
         
         // Symbol Change Symbol
         .sheet( isPresented: $symbolSheet ) {
