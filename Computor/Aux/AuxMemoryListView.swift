@@ -80,7 +80,7 @@ struct MemoryListView: View {
                                         }
                                             
                                         // Memory value display
-                                        TypedRegister( text: txt, size: .small ).padding( .horizontal, 20)
+                                        RichText( "ƒ{0.9}\(txt)", size: .small, weight: .bold, design: .serif ).padding([.leading], 10)
                                     }
                                     .padding( [.leading ], 20)
                                     .frame( height: 30 )

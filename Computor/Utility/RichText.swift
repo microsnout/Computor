@@ -34,7 +34,7 @@ let textSpecTable: [TextSize: TextSizeSpec] = [
 ]
 
 func getTextSpec( _ size: TextSize ) -> TextSizeSpec {
-    return textSpecTable[size] ?? (14.0, 10.0, 6.0)
+    return textSpecTable[size] ?? (14.0, 10.0, 5.0)
 }
 
 

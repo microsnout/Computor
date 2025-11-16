@@ -535,6 +535,8 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         default:
             break
         }
+        
+        changed()
     }
     
     func deleteMemoryRecords( set: SymbolSet ) {
