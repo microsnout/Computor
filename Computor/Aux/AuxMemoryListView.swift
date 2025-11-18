@@ -93,14 +93,14 @@ struct MemoryListView: View {
                                         
                                         // ARROW DOWN
                                         Button( action: { model.memoryOp( key: .rclMem, tag: mr.tag ) } ) {
-                                            Image( systemName: "arrowshape.down" )
+                                            Image( systemName: Const.Icon.arrowDown )
                                         }
                                         
                                         // TRASH CAN
                                         Button( action: {
                                             model.deleteMemoryRecords( set: [mr.tag] )
                                         } ) {
-                                            Image( systemName: "trash" )
+                                            Image( systemName: Const.Icon.trash )
                                         }
                                     }.padding( [.trailing], 20 )
                                 }

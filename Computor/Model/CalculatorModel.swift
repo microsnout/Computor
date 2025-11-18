@@ -175,7 +175,7 @@ class EventContext {
 
 
 class LocalVariableFrame {
-    let prevLVF: LocalVariableFrame?
+    var prevLVF: LocalVariableFrame?
     
     var local: [SymbolTag : TaggedValue] = [:]
     
@@ -251,8 +251,16 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     // Storage of memories local to a block {..}
     var currentLVF: LocalVariableFrame? = nil
     
-    func pushLocalVariableFrame() {
-        currentLVF = LocalVariableFrame( currentLVF )
+    func pushLocalVariableFrame( _ lvf: LocalVariableFrame? = nil ) {
+        
+        if let lvfGiven = lvf {
+            lvfGiven.prevLVF = currentLVF
+            currentLVF = lvfGiven
+        }
+        else {
+            // Allocate a new frame
+            currentLVF = LocalVariableFrame( currentLVF )
+        }
     }
     
     func popLocalVariableFrame() {
@@ -837,7 +845,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                let (mr, mfr) = getMacroFunction(tag) {
                 
                 // Macro tag assigned to Fn key
-                result = playMacroSeq(mr.opSeq, in: mfr)
+                (result, _) = playMacroSeq(mr.opSeq, in: mfr)
             }
             
             if result == KeyPressResult.stateError {
@@ -857,7 +865,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
                     if let (mr, mfr) = getMacroFunction(tag) {
                         
                         // Macro tag selected from popup
-                        result = playMacroSeq(mr.opSeq, in: mfr)
+                        (result, _) = playMacroSeq(mr.opSeq, in: mfr)
                     }
                 }
                 else {

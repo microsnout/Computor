@@ -11,7 +11,7 @@ let logAux = Logger(subsystem: "com.microsnout.calculator", category: "aux")
 
 
 enum MacroRecState: Int {
-    case stop = 0, record, recModal, recNestedModal, play, playSlow
+    case stop = 0, record, recModal, recNestedModal, play, playStep
     
     var isRecording: Bool {
         switch self {
@@ -43,6 +43,12 @@ struct AuxState {
     // State of macro detail view - only significant if macroRec is not nil
     var recState: MacroRecState = .stop
     
+    // Cursor into op sequence in macro - for stepping and editing
+    var opCursor: Int = 0
+    
+    var auxLVF: LocalVariableFrame? = nil
+    
+    // View refresh toggle value
     var refresh: Bool = false
 }
 
@@ -63,14 +69,7 @@ extension AuxState {
     }
     
     
-    mutating func stopMacroRecorder() {
-        
-        /// ** Stop Macro Recorder **
-        /// This will retrun Aux display to Macro List
-        
-        macroRec = nil
-        recState = .stop
-    }
+    // *** Macro Recorder Functions ***
     
     
     mutating func loadMacro( _ mr: MacroRec ) {
@@ -81,12 +80,48 @@ extension AuxState {
         switch recState {
             
         case .stop:
-            macroRec = mr
-            recState = .stop
+            // Set macro detail view to mr and switch to macro view pane
+            macroRec   = mr
             activeView = .macroView
-            
+            opCursor   = 0
+
         default:
             assert(false)
+        }
+    }
+
+    mutating func stopMacroRecorder() {
+        
+        /// ** Stop Macro Recorder **
+        /// This will retrun Aux display to Macro List
+        
+        macroRec = nil
+        recState = .stop
+        opCursor = 0
+    }
+    
+    
+    mutating func stepForward() {
+        
+        switch recState {
+            
+        case .stop:
+            auxLVF = LocalVariableFrame()
+            opCursor = 0
+            recState = .playStep
+            fallthrough
+            
+        case .playStep:
+            assert( auxLVF != nil )
+            
+            if let op = macroRec?.opSeq[opCursor] {
+                
+                
+                opCursor += 1
+            }
+            
+        default:
+            break
         }
     }
     

@@ -230,9 +230,10 @@ extension CalculatorModel {
     }
     
     
-    func playMacroSeq( _ seq: MacroOpSeq, in mod: ModuleRec ) -> KeyPressResult {
+    func playMacroSeq( _ seq: MacroOpSeq, in mod: ModuleRec ) -> (KeyPressResult, Int ) {
         
         /// ** Play Macro Seq **
+        /// Returns number of Op macros successfully executed
         
         acceptTextEntry()
         
@@ -249,6 +250,8 @@ extension CalculatorModel {
         // Create new module execution context for resolving macro references
         pushMEC(mod)
         
+        var index = 0
+        
         for op in seq {
             
             if op.execute(self) == KeyPressResult.stateError {
@@ -259,8 +262,10 @@ extension CalculatorModel {
                 popState()
                 
                 logM.debug( "playMacroSeq: ERROR \(String( describing: op.getRichText(self) ))")
-                return KeyPressResult.stateError
+                return (KeyPressResult.stateError, index)
             }
+            
+            index += 1
         }
         
         popMEC()
@@ -271,7 +276,18 @@ extension CalculatorModel {
         
         popContext( KeyEvent(.macroPlay) )
         
-        return KeyPressResult.stateChange
+        return (KeyPressResult.stateChange, index)
+    }
+    
+    
+    func playSingleOp( _ op: MacroOp, in mod: ModuleRec, with lvf: LocalVariableFrame ) {
+        
+        pushContext( PlaybackContext() )
+        pushLocalVariableFrame( aux.auxLVF )
+        
+        
+        popLocalVariableFrame()
+        popContext( KeyEvent(.macroPlay) )
     }
     
     

@@ -98,6 +98,8 @@ struct MacroCodeListing: View {
     
     @StateObject var model: CalculatorModel
     
+    @State private var xSelect: Int = 0
+    
     func getIndentList( _ opList: MacroOpSeq ) -> [Int] {
         
         var indent = 0
@@ -175,8 +177,8 @@ struct MacroCodeListing: View {
                     VStack(spacing: 1) {
                         ForEach (list.indices, id: \.self) { x in
                             let op: MacroOp = list[x]
-                            let level = indents[x]
                             let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
+                            let level = indents[x]
                             let text = op.getRichText(model)
                             let indentStr = getIndentStr(level)
                             
@@ -187,9 +189,17 @@ struct MacroCodeListing: View {
                                 }
                                 RichText( text, size: .small, weight: .bold )
                                 Spacer()
+                                
+                                if x == xSelect {
+                                    RichText( "\u{23f4}", size: .large ).padding( [.trailing], 10 )
+                                }
                             }
                             .frame( height: 18 )
                             .frame( maxWidth: .infinity )
+                            .contentShape(Rectangle())
+                            .onTapGesture() {
+                                xSelect = x
+                            }
                             .if ( isEven(x+1) ) { view in
                                 view.background( Color("SuperLightGray") )
                             }
@@ -273,33 +283,59 @@ struct MacroDetailRightPanel: View {
                 Spacer()
                 
                 // RECORDING EDIT CONTROLS
-                HStack( spacing: 25 ) {
-                    
-                    // RECORD
-                    Button {
-                        _ = model.keyPress( KeyEvent(.macroRecord) )
-                    } label: {
-                        Image( systemName: "record.circle.fill").frame( minWidth: 0 )
+                VStack( spacing: 15 ) {
+                    HStack( spacing: 25 ) {
+                        
+                        // STEP BACKWARD
+                        Button {
+                        } label: {
+                            Image( systemName: Const.Icon.stepBackward).frame( minWidth: 0 )
+                        }
+                        .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
+                        
+                        // Delete Step
+                        Button {
+                        } label: {
+                            Image( systemName: Const.Icon.trash).frame( minWidth: 0 )
+                        }
+                        .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
+                        
+                        // STEP FORWARD
+                        Button {
+                        } label: {
+                            Image( systemName: Const.Icon.stepForward).frame( minWidth: 0 )
+                        }
+                        .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
                     }
-                    .accentColor( Color("RedMenuIcon") )
-                    .disabled( model.aux.recState != .stop )
                     
-                    // PLAY
-                    Button {
-                        _ = model.playMacroSeq( mr.opSeq, in: model.aux.macroMod )
-                    } label: {
-                        Image( systemName: "play.fill").frame( minWidth: 0 )
+                    HStack( spacing: 25 ) {
+                        
+                        // RECORD
+                        Button {
+                            _ = model.keyPress( KeyEvent(.macroRecord) )
+                        } label: {
+                            Image( systemName: "record.circle.fill").frame( minWidth: 0 )
+                        }
+                        .accentColor( Color("RedMenuIcon") )
+                        .disabled( model.aux.recState != .stop )
+                        
+                        // PLAY
+                        Button {
+                            let (kpr, count) = model.playMacroSeq( mr.opSeq, in: model.aux.macroMod )
+                        } label: {
+                            Image( systemName: "play.fill").frame( minWidth: 0 )
+                        }
+                        .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
+                        
+                        // STOP
+                        Button {
+                            _ = model.keyPress( KeyEvent(.macroStop) )
+                        } label: {
+                            Image( systemName: "stop.fill").frame( minWidth: 0 )
+                        }
+                        .disabled( !model.aux.recState.isRecording  )
+                        
                     }
-                    .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
-                    
-                    // STOP
-                    Button {
-                        _ = model.keyPress( KeyEvent(.macroStop) )
-                    } label: {
-                        Image( systemName: "stop.fill").frame( minWidth: 0 )
-                    }
-                    .disabled( !model.aux.recState.isRecording  )
-                    
                 }
                 .frame( maxWidth: .infinity )
                 .padding( [.bottom], 5 )

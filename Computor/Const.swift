@@ -55,6 +55,7 @@ enum Const {
     enum Icon {
         // System Names from SF Symbols app
         
+        static let trash    = "trash"
         static let document = "candybarphone"
         
         static let bulletList = "list.bullet"
@@ -69,6 +70,16 @@ enum Const {
         static let cntlHelp     = "books.vertical"
         static let cntlDebug    = "wrench.and.screwdriver"
         
+        // Macro Debug Controls
+        static let playPause    = "playpause.circle"
+        static let stepForward  = "forward.frame"
+        static let stepBackward = "backward.frame"
+        
+        static let arrowUp      = "arrowshape.up"
+        static let arrowDown    = "arrowshape.down"
+        static let arrowLeft    = "arrowshape.left"
+        static let arrowRight   = "arrowshape.right"
+
         // ** Unused **
         static let detail = "list.bullet.circle"
         static let gridBox = "square.grid.3x3.square"
