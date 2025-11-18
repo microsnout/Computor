@@ -33,8 +33,8 @@ struct MacroDetailView: View {
                 
                 // Header bar definition
                 HStack {
-                    // Navigation Back button
-                    Image( systemName: "chevron.left")
+                    // Navigate back to Macro List view
+                    Image( systemName: Const.Icon.chevronLeft )
                         .padding( [.leading], 5 )
                         .onTapGesture {
                             if mr.isEmpty {
@@ -42,7 +42,8 @@ struct MacroDetailView: View {
                             }
                             
                             withAnimation {
-                                model.aux.stopMacroRecorder()
+                                // Return macro recorder to Inactive state
+                                model.aux.deactivateMacroRecorder()
                             }
                         }
                     
@@ -97,8 +98,6 @@ struct MacroCodeListing: View {
     var mr: MacroRec
     
     @StateObject var model: CalculatorModel
-    
-    @State private var xSelect: Int = 0
     
     func getIndentList( _ opList: MacroOpSeq ) -> [Int] {
         
@@ -173,6 +172,7 @@ struct MacroCodeListing: View {
                 ScrollViewReader { proxy in
                     let list = mr.opSeq
                     let indents = getIndentList(list)
+                    let cursorStr = model.aux.errorFlag ? "ç{CursorText}\u{23f4}\u{23f4}ç{}" : "\u{23f4}"
                     
                     VStack(spacing: 1) {
                         ForEach (list.indices, id: \.self) { x in
@@ -190,15 +190,16 @@ struct MacroCodeListing: View {
                                 RichText( text, size: .small, weight: .bold )
                                 Spacer()
                                 
-                                if x == xSelect {
-                                    RichText( "\u{23f4}", size: .large ).padding( [.trailing], 10 )
+                                if x == model.aux.opCursor {
+                                    // Add Cursor Pointer at end
+                                    RichText( cursorStr, size: .large ).padding( [.trailing], 10 )
                                 }
                             }
                             .frame( height: 18 )
                             .frame( maxWidth: .infinity )
                             .contentShape(Rectangle())
                             .onTapGesture() {
-                                xSelect = x
+                                model.aux.opCursor = x
                             }
                             .if ( isEven(x+1) ) { view in
                                 view.background( Color("SuperLightGray") )
@@ -288,10 +289,11 @@ struct MacroDetailRightPanel: View {
                         
                         // STEP BACKWARD
                         Button {
+                            model.stepBackward()
                         } label: {
                             Image( systemName: Const.Icon.stepBackward).frame( minWidth: 0 )
                         }
-                        .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
+                        .disabled( model.aux.macroRec?.opSeq.isEmpty ?? true || model.aux.opCursor == 0 )
                         
                         // Delete Step
                         Button {
@@ -302,17 +304,18 @@ struct MacroDetailRightPanel: View {
                         
                         // STEP FORWARD
                         Button {
+                            model.stepForward()
                         } label: {
                             Image( systemName: Const.Icon.stepForward).frame( minWidth: 0 )
                         }
-                        .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
+                        .disabled( model.aux.macroRec?.opSeq.isEmpty ?? true )
                     }
                     
                     HStack( spacing: 25 ) {
                         
                         // RECORD
                         Button {
-                            _ = model.keyPress( KeyEvent(.macroRecord) )
+                            model.startMacroRec()
                         } label: {
                             Image( systemName: "record.circle.fill").frame( minWidth: 0 )
                         }
@@ -321,7 +324,7 @@ struct MacroDetailRightPanel: View {
                         
                         // PLAY
                         Button {
-                            let (kpr, count) = model.playMacroSeq( mr.opSeq, in: model.aux.macroMod )
+                            model.playMacro()
                         } label: {
                             Image( systemName: "play.fill").frame( minWidth: 0 )
                         }
@@ -329,11 +332,11 @@ struct MacroDetailRightPanel: View {
                         
                         // STOP
                         Button {
-                            _ = model.keyPress( KeyEvent(.macroStop) )
+                            model.stopMacroRec()
                         } label: {
                             Image( systemName: "stop.fill").frame( minWidth: 0 )
                         }
-                        .disabled( !model.aux.recState.isRecording  )
+                        .disabled( !(model.aux.recState.isRecording || model.aux.recState == .playStep) )
                         
                     }
                 }

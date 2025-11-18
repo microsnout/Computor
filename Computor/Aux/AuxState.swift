@@ -11,7 +11,7 @@ let logAux = Logger(subsystem: "com.microsnout.calculator", category: "aux")
 
 
 enum MacroRecState: Int {
-    case stop = 0, record, recModal, recNestedModal, play, playStep
+    case inactive = 0, stop, record, recModal, recNestedModal, play, playStep
     
     var isRecording: Bool {
         switch self {
@@ -41,10 +41,12 @@ struct AuxState {
     var macroRec: MacroRec? = nil
     
     // State of macro detail view - only significant if macroRec is not nil
-    var recState: MacroRecState = .stop
+    var recState: MacroRecState = .inactive
     
     // Cursor into op sequence in macro - for stepping and editing
     var opCursor: Int = 0
+    
+    var errorFlag: Bool = false
     
     var auxLVF: LocalVariableFrame? = nil
     
@@ -79,47 +81,66 @@ extension AuxState {
         
         switch recState {
             
-        case .stop:
+        case .inactive, .stop:
             // Set macro detail view to mr and switch to macro view pane
             macroRec   = mr
             activeView = .macroView
             opCursor   = 0
+            auxLVF     = nil
+            recState   = .stop
+            errorFlag  = false
 
         default:
             assert(false)
         }
     }
+    
+    
+    mutating func setError( at index: Int ) {
+        opCursor = index
+        errorFlag = true
+    }
+    
+    
+    mutating func clearError() {
+        errorFlag = false
+    }
+    
 
     mutating func stopMacroRecorder() {
         
         /// ** Stop Macro Recorder **
         /// This will retrun Aux display to Macro List
         
-        macroRec = nil
-        recState = .stop
-        opCursor = 0
+        auxLVF    = nil
+        opCursor  = 0
+        recState  = .stop
+        errorFlag = false
     }
     
     
-    mutating func stepForward() {
+    mutating func deactivateMacroRecorder() {
+        
+        /// ** Deactivate Macro Recorder **
+        
+        stopMacroRecorder()
+        macroRec   = nil
+        recState   = .inactive
+        errorFlag  = false
+    }
+
+    
+    mutating func startPlayStep() {
         
         switch recState {
             
         case .stop:
+            // Establich a local variable frame and switch to play/stop debug mode
             auxLVF = LocalVariableFrame()
-            opCursor = 0
-            recState = .playStep
-            fallthrough
-            
-        case .playStep:
-            assert( auxLVF != nil )
-            
-            if let op = macroRec?.opSeq[opCursor] {
-                
-                
-                opCursor += 1
-            }
-            
+            opCursor   = 0
+            errorFlag  = false
+            recState   = .playStep
+
         default:
             break
         }
@@ -130,11 +151,14 @@ extension AuxState {
         
         switch recState {
             
-        case .stop:
+        case .inactive:
             macroMod = mfr
-            macroRec = mr
-            mr.opSeq.clear()
+            loadMacro(mr)
             activeView = .macroView
+            fallthrough
+            
+        case .stop:
+            mr.opSeq.clear()
             recState = .record
             
             // Log debug output
@@ -152,7 +176,7 @@ extension AuxState {
         
         switch recState {
             
-        case .stop:
+        case .inactive, .stop:
             // Create new macro rec for modal func
             macroRec = MacroRec()
             activeView = .macroView
@@ -177,8 +201,11 @@ extension AuxState {
         
         switch recState {
             
+        case .playStep:
+            stopMacroRecorder()
+            
         case .record:
-            recState = .stop
+            stopMacroRecorder()
             
             // Re-enable all recording keys
             SubPadSpec.disableList.removeAll()

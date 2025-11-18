@@ -61,9 +61,11 @@ enum Const {
         static let bulletList = "list.bullet"
         static let gridList   = "square.grid.2x2"
         
-        static let chevronDn = "chevron.down"
-        static let chevronUp = "chevron.up"
-        
+        static let chevronRight = "chevron.right"
+        static let chevronLeft  = "chevron.left"
+        static let chevronDn    = "chevron.down"
+        static let chevronUp    = "chevron.up"
+
         static let cntlModules  = "document.on.document"
         static let cntlUnits    = "ruler"
         static let cntlSettings = "slider.horizontal.3"

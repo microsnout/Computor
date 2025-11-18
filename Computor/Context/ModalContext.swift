@@ -39,7 +39,7 @@ class ModalContext : EventContext {
         logM.debug( "Run Macro: \(String( describing: self.macroFn.getDebugText() ))")
         
         // Push a new local variable store
-        model.currentLVF = LocalVariableFrame( model.currentLVF )
+        model.pushLocalVariableFrame()
         
         for op in macroFn {
             if op.execute( model ) == KeyPressResult.stateError {
@@ -47,15 +47,15 @@ class ModalContext : EventContext {
                 logM.debug( "Run Macro: ERROR")
                 
                 // Pop the local variable storage, restoring prev
-                model.currentLVF = model.currentLVF?.prevLVF
+                model.popLocalVariableFrame()
                 
                 return KeyPressResult.stateError
             }
         }
         
         // Pop the local variable storage, restoring prev
-        model.currentLVF = model.currentLVF?.prevLVF
-        
+        model.popLocalVariableFrame()
+
         return KeyPressResult.stateChange
     }
     

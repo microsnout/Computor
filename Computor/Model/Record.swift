@@ -242,7 +242,7 @@ extension CalculatorModel {
         pushContext( PlaybackContext() )
         
         // Push a new local variable store
-        currentLVF = LocalVariableFrame( currentLVF )
+        pushLocalVariableFrame()
         
         // Don't maintain undo stack during playback ops
         pauseUndoStack()
@@ -257,7 +257,7 @@ extension CalculatorModel {
             if op.execute(self) == KeyPressResult.stateError {
                 popMEC()
                 resumeUndoStack()
-                currentLVF = currentLVF?.prevLVF
+                popLocalVariableFrame()
                 popContext()
                 popState()
                 
@@ -272,7 +272,7 @@ extension CalculatorModel {
         resumeUndoStack()
         
         // Pop the local variable storage, restoring prev
-        currentLVF = currentLVF?.prevLVF
+        popLocalVariableFrame()
         
         popContext( KeyEvent(.macroPlay) )
         
@@ -280,14 +280,16 @@ extension CalculatorModel {
     }
     
     
-    func playSingleOp( _ op: MacroOp, in mod: ModuleRec, with lvf: LocalVariableFrame ) {
+    func playSingleOp( _ op: MacroOp, in mod: ModuleRec, with lvf: LocalVariableFrame ) -> KeyPressResult {
         
         pushContext( PlaybackContext() )
         pushLocalVariableFrame( aux.auxLVF )
         
-        
+        let kpr = op.execute(self)
+
         popLocalVariableFrame()
         popContext( KeyEvent(.macroPlay) )
+        return kpr
     }
     
     
@@ -482,6 +484,101 @@ extension CalculatorModel {
         }
     }
     
-
     
+    func startMacroRec() {
+        
+        // Switch to recording context
+        pushContext( RecordingContext(), lastEvent: KeyEvent(.macroRecord) )
+    }
+    
+    
+    func stopMacroRec() {
+        
+        // Stop recorder
+        aux.recordStop()
+        
+        if aux.recState.isRecording {
+            
+            // Save current state of macro
+            aux.macroMod.saveModule()
+            
+            // Restore normal context
+            popContext( KeyEvent(.macroStop) )
+        }
+    }
+    
+    
+    func playMacro() {
+        
+        /// ** Play Macro **
+        /// Run the macro currently loaded in recorder
+        
+        if let mr = aux.macroRec {
+            
+            let (kpr, count) = playMacroSeq( mr.opSeq, in: aux.macroMod )
+            
+            if kpr == .stateError {
+                
+                let opSeq = mr.opSeq
+                
+                aux.startPlayStep()
+                
+                if let lvf = aux.auxLVF {
+                    
+                    for x in 0 ..< count {
+                        let op = opSeq[x]
+                        let kpr = playSingleOp(op, in: aux.macroMod, with: lvf)
+                        
+                        if kpr == .stateError {
+                            break
+                        }
+                    }
+                    
+                    aux.setError( at: count )
+                }
+            }
+        }
+    }
+    
+    
+    func stepForward() {
+        
+        aux.startPlayStep()
+        
+        if let mr = aux.macroRec,
+           let lvf = aux.auxLVF {
+            
+            let opSeq = mr.opSeq
+            let x = aux.opCursor
+            
+            if x < opSeq.count {
+                
+                let op = opSeq[x]
+                let kpr = playSingleOp(op, in: aux.macroMod, with: lvf)
+                
+                if kpr == .stateError {
+                    aux.setError(at: x)
+                }
+                else {
+                    aux.opCursor += 1
+                    
+                    if aux.opCursor == opSeq.count {
+                        stopMacroRec()
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    func stepBackward() {
+        
+        let x = aux.opCursor
+        
+        if x > 0 {
+            popState()
+            aux.opCursor -= 1
+            aux.clearError()
+        }
+    }
 }

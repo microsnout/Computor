@@ -160,6 +160,7 @@ class EventContext {
     
     func enterValue( _ tv: TaggedValue ) {
         if let model = self.model {
+            model.pushState()
             model.pushValue(tv)
         }
     }
@@ -362,6 +363,7 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
         if let oldContext = previousContext {
             
             eventContext?.onDeactivate( lastEvent: event )
+            
             self.eventContext = oldContext
             
             // Run the continuation closure if there is one

@@ -16,6 +16,8 @@ class RecordingContext : EventContext {
     
     override func onActivate(lastEvent: KeyEvent) {
         
+        /// ** On Activate Recording Context **
+        
         guard let model = self.model else { return }
         
         if let kcFn = lastEvent.kcTop {
@@ -40,7 +42,18 @@ class RecordingContext : EventContext {
         }
         
         // Push a new local variable store
-        model.currentLVF = LocalVariableFrame( model.currentLVF )
+        model.pushLocalVariableFrame()
+    }
+    
+    
+    override func onDeactivate(lastEvent: KeyEvent) {
+        
+        /// ** On Deactivate Recording Context **
+        
+        guard let model = self.model else { return }
+        
+        // Remove local variable frame that was added by onActivate
+        model.popLocalVariableFrame()
     }
     
     
@@ -58,9 +71,6 @@ class RecordingContext : EventContext {
             model.aux.recordStop()
             model.clearRecordingFnKey(kcFn)
             model.popContext( event )
-            
-            // Pop the local variable storage, restoring prev
-            model.currentLVF = model.currentLVF?.prevLVF
             return KeyPressResult.cancelRecording
             
         case .editFn, .recFn, .openBrace, .closeBrace:
@@ -82,13 +92,10 @@ class RecordingContext : EventContext {
                 return model.execute( event )
             }
             
-        case .stopFn, .macroStop:
+        case .stopFn:
             model.aux.macroMod.saveModule()
             model.aux.recordStop()
             model.popContext( event )
-            
-            // Pop the local variable storage, restoring prev
-            model.currentLVF = model.currentLVF?.prevLVF
             return KeyPressResult.macroOp
             
         case .backUndo:
@@ -102,9 +109,6 @@ class RecordingContext : EventContext {
                 // Cancel the recording
                 model.aux.recordStop()
                 model.popContext( event )
-                
-                // Pop the local variable storage, restoring prev
-                model.currentLVF = model.currentLVF?.prevLVF
                 return KeyPressResult.cancelRecording
             }
             else {
