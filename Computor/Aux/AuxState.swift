@@ -147,6 +147,8 @@ extension AuxState {
     }
     
     
+    // *** Matched Functions ***
+
     mutating func record( _ mr: MacroRec, in mfr: ModuleRec ) {
         
         switch recState {
@@ -232,11 +234,14 @@ extension AuxState {
         
         switch recState {
             
-        case .recModal, .recNestedModal:
-            recState = recState == .recNestedModal ? .record : .stop
+        case .recModal:
+            recState = .stop
             
             // Re-enable all recording keys
             SubPadSpec.disableList.removeAll()
+
+        case .recNestedModal:
+            recState = .record
 
         default:
             // Should not happen
