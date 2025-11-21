@@ -172,31 +172,6 @@ extension AuxState {
     }
     
     
-    mutating func recordModal() {
-        
-        switch recState {
-            
-        case .inactive, .stop:
-            // Create new macro rec for modal func
-            macroRec = MacroRec()
-            activeView = .macroView
-            disableAllFnSubmenu()
-            recState = .recModal
-            
-        case .record:
-            recState = .recNestedModal
-            
-        case .recModal, .recNestedModal:
-            break
-            
-        default:
-            // Should not happen
-            assert(false)
-            break
-        }
-    }
-    
-    
     mutating func recordStop() {
         
         switch recState {
@@ -226,12 +201,24 @@ extension AuxState {
     }
     
     
-    mutating func modalRecStop() {
+    // *** Matched Functions ***
+    
+    mutating func recordModalBlock() {
         
         switch recState {
             
+        case .inactive, .stop:
+            // Create new macro rec for modal func
+            macroRec = MacroRec()
+            activeView = .macroView
+            disableAllFnSubmenu()
+            recState = .recModal
+            
+        case .record:
+            recState = .recNestedModal
+            
         case .recModal, .recNestedModal:
-            recState = recState == .recNestedModal ? .record : .stop
+            break
             
         default:
             // Should not happen
@@ -239,6 +226,26 @@ extension AuxState {
             break
         }
     }
+
+    
+    mutating func recordModalBlockEnd() {
+        
+        switch recState {
+            
+        case .recModal, .recNestedModal:
+            recState = recState == .recNestedModal ? .record : .stop
+            
+            // Re-enable all recording keys
+            SubPadSpec.disableList.removeAll()
+
+        default:
+            // Should not happen
+            assert(false)
+            break
+        }
+    }
+    
+    // ***
     
     
     func getDebugText() -> String {

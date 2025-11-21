@@ -112,8 +112,6 @@ class ModalContext : EventContext {
                         // Now record the closing brace of the block
                         model.recordKeyEvent( endEvent )
                         
-                        model.aux.modalRecStop()
-                        
                         // Queue a .macro event to execute it
                         model.queueEvent( KeyEvent(.macro) )
                     }
@@ -129,9 +127,6 @@ class ModalContext : EventContext {
                     
                     // Capture the block macro
                     self.macroFn = mr.opSeq
-                    
-                    // Stop recording the Block {}
-                    model.aux.modalRecStop()
                     
                     // Queue a .macro event to execute it
                     model.queueEvent( KeyEvent(.macro) )

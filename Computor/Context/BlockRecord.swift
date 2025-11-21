@@ -15,29 +15,27 @@ class BlockRecord : EventContext {
     
     var openCount   = 0
     var macroIndex  = 0
-    var fnRecording = false
     
     override func onActivate(lastEvent: KeyEvent) {
         guard let model = self.model else { assert(false); return }
         
-        if model.aux.isRec {
-            // Already recording an Fn key
-            // Remember that we were recording on enty - record the open brace
-            model.aux.recordModal()
-            fnRecording = true
-        }
-        else {
-            // Start recording but remember we were not on entry
-            fnRecording = false
-            model.aux.recordModal()
-        }
-        
+        // Start recording 
+        model.aux.recordModalBlock()
+       
         // Save the starting macro index
         macroIndex = model.markMacroIndex()
         
         // Enable the close brace key on keyboard
         model.kstate.func2R = psFunctions2Rc
     }
+    
+    
+    override func onDeactivate(lastEvent: KeyEvent) {
+        guard let model = self.model else { assert(false); return }
+        
+        model.aux.recordModalBlockEnd()
+    }
+    
     
     override func event( _ event: KeyEvent ) -> KeyPressResult {
         
@@ -86,7 +84,6 @@ class BlockRecord : EventContext {
                 model.kstate.func2R = psFunctions2R
                 
                 // Cancel both BlockRecord context and the ModalContext that spawned it
-                model.aux.modalRecStop()
                 model.popContext( event, runCCC: false )
                 model.popContext( event, runCCC: false )
                 return KeyPressResult.stateUndo
