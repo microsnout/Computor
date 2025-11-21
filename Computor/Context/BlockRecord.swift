@@ -13,7 +13,6 @@ import SwiftUI
 ///
 class BlockRecord : EventContext {
     
-    var openCount   = 0
     var macroIndex  = 0
     
     override func onActivate(lastEvent: KeyEvent) {
@@ -55,28 +54,15 @@ class BlockRecord : EventContext {
         case .clrFn, .stopFn, .recFn, .editFn:
             return KeyPressResult.noOp
             
-        case .openBrace:
-            openCount += 1
-            model.recordKeyEvent(event)
-            return KeyPressResult.recordOnly
-            
         case .closeBrace:
             // Disable braces
             model.kstate.func2R = psFunctions2R
             
-            if openCount == 0 {
-                // Restore the modal context and pass the .macro event
-                model.saveRollback( to: mr.opSeq.count )
-                
-                // Pop back to the modal function state
-                model.popContext( event )
-                return KeyPressResult.recordOnly
-            }
+            // Restore the modal context and pass the .macro event
+            model.saveRollback( to: mr.opSeq.count )
             
-            openCount -= 1
-            
-            // Record the close brace and continue
-            model.recordKeyEvent(event)
+            // Pop back to the modal function state
+            model.popContext( event )
             return KeyPressResult.recordOnly
             
         case .backUndo:
