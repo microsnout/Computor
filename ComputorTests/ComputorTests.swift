@@ -107,27 +107,40 @@ func withNewMod( in model: CalculatorModel, _ proc: ( _ mod: ModuleRec ) throws 
 }
 
 
+extension CalculatorModel {
+    
+    func play( _ kcList: [KeyCode] ) {
+        
+        for kc in kcList {
+            _ = keyPress( KeyEvent(kc) )
+        }
+    }
+}
+
+
 struct ComputorTests {
 
     @Suite("Basic") struct basicSuite {
         
         
-        @Test("Basic Stack Ops") func testStackOps() async throws {
+        @Test("Basic Stack Ops") func testStackOps() throws {
             
-            let model = CalculatorModel()
-            _ = model.keyPress( KeyEvent( .d5 ) )
-            _ = model.keyPress( KeyEvent( .enter ))
-            
-            #expect( model.state.X == 5.0 )
+            try withLoadedModel() { model in
+                _ = model.keyPress( KeyEvent( .d5 ) )
+                _ = model.keyPress( KeyEvent( .enter ))
+                
+                #expect( model.state.X == 5.0 )
+            }
         }
         
-        @Test("Basic Stack Ops 2") func testTwo() async throws {
+        @Test("Basic Stack Ops 2") func testTwo() throws {
             
-            let model = CalculatorModel()
-            _ = model.keyPress( KeyEvent( .d3 ))
-            _ = model.keyPress( KeyEvent( .plus ))
-            
-            #expect( model.state.X == 3.0 )
+            try withLoadedModel() { model in
+                _ = model.keyPress( KeyEvent( .d3 ))
+                _ = model.keyPress( KeyEvent( .plus ))
+                
+                #expect( model.state.X == 3.0 )
+            }
         }
     }
  
@@ -205,6 +218,21 @@ struct ComputorTests {
                 #expect( model.state.X == 5.0 )
                 
                 db.deleteMacro(s1, from: mod0)
+            }
+        }
+    }
+    
+    
+    @Suite("Modal Functions") struct modalSuite {
+        
+        @Test("ModalTest1") func testModal1() throws {
+            
+            try withLoadedModel() { model in
+                
+                model.enterRealValue(5.0)
+                model.play( [.range, .d0, .xy, .reduce, .plus] )
+                
+                #expect( model.state.X == 15.0 )
             }
         }
     }
