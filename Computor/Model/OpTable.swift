@@ -55,7 +55,12 @@ extension CalculatorModel {
         .pi:    Constant( Double.pi ),
         .e:   Constant( exp(1.0) ),
         .phi:   Constant( (1.0 + Double.sqrt(5.0)) / 2.0 ),
-        
+
+        .pi2:    Constant( Double.pi/2.0 ),
+        .pi3:    Constant( Double.pi/3.0 ),
+        .pi4:    Constant( Double.pi/4.0 ),
+        .pi6:    Constant( Double.pi/6.0 ),
+
         .abs:   UnaryOp( { x in abs(x) } ),
         .chs:  UnaryOp( { x in -x }),
         

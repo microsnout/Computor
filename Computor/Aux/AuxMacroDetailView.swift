@@ -199,7 +199,7 @@ struct MacroCodeListing: View {
                             .frame( maxWidth: .infinity )
                             .contentShape(Rectangle())
                             .onTapGesture() {
-                                model.aux.opCursor = x
+                                model.tapMacroLine(x)
                             }
                             .if ( isEven(x+1) ) { view in
                                 view.background( Color("SuperLightGray") )

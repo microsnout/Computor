@@ -413,8 +413,8 @@ func initKeyLayout() {
     SubPadSpec.define( .sqrt,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.sqrt,    "\u{221a}x"),
-                        Key(.root3,   "ƒ{1.5}\u{221b}ƒ{}x"),
+                        Key(.sqrt,    "ƒ{1.2}\u{221a}ƒ{}x"),
+                        Key(.root3,   "ƒ{1.2}\u{221b}ƒ{}x"),
                        ]
     )
 
@@ -470,7 +470,10 @@ func initKeyLayout() {
     SubPadSpec.define( .pi,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.pi,  "ƒ{1.3}\u{1d6d1}",  caption: "Pi"),
+                        Key(.pi2,  "ƒ{1.3}\u{1d6d1}ƒ{}/2",  caption: "Pi over 2"),
+                        Key(.pi3,  "ƒ{1.3}\u{1d6d1}ƒ{}/3",  caption: "Pi over 3"),
+                        Key(.pi4,  "ƒ{1.3}\u{1d6d1}ƒ{}/4",  caption: "Pi over 4"),
+                        Key(.pi6,  "ƒ{1.3}\u{1d6d1}ƒ{}/6",  caption: "Pi over 6"),
                         Key(.phi, "ƒ{1.2}\u{1d6d7}",  caption: "Golden Ratio"),
                         Key(.e, "ƒ{1.3}\u{1d486}",  caption: "Euler Number"),
                        ],

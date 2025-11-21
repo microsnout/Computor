@@ -130,14 +130,14 @@ extension AuxState {
     }
 
     
-    mutating func startPlayStep() {
+    mutating func startPlayStep( at line: Int = 0 ) {
         
         switch recState {
             
         case .stop:
             // Establich a local variable frame and switch to play/stop debug mode
             auxLVF = LocalVariableFrame()
-            opCursor   = 0
+            opCursor   = line
             errorFlag  = false
             recState   = .playStep
 

@@ -581,4 +581,10 @@ extension CalculatorModel {
             aux.clearError()
         }
     }
+    
+    
+    func tapMacroLine( _ n: Int ) {
+        
+        aux.startPlayStep( at: n )
+    }
 }
