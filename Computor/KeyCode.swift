@@ -7,11 +7,18 @@
 import Foundation
 
 enum KeyCode: Int, Codable {
-    case null = 0, clockTick
     
+    // Special Keycodes
+    case null = 0, clockTick, enter, backUndo
+    
+    // Entry mode keys, chs is also a function
+    case dot = 10, chs, eex, d000
+    
+    // Arithmetic Ops
     case plus = 15, minus, times, divide
     
-    case dot = 20, enter, clearX, clearY, clearZ, clearReg, backUndo, chs, eex, d000
+    // Clear functions
+    case clearX = 20, clearY, clearZ, clearReg
     
     case fixL = 30, fixR, roll, xy, xz, yz, lastx, percent, deltaPercent, totalPercent
     
@@ -154,6 +161,13 @@ enum KeyCode: Int, Codable {
     
     var isScriptAlpha: Bool
     { return self.rawValue >= KeyCode.scriptA.rawValue && self.rawValue <= KeyCode.scriptZ.rawValue }
+    
+    
+    // Set of keys that cause data entry mode to begin, digits and dot
+    static let entryStartKeys = KeyCode.digitSet.union( Set<KeyCode>([.dot]) )
+    
+    // Set of keys valid in data entry mode, all of above plus sign, back and enter exp
+    static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.chs, .backUndo, .eex, .d000]) )
 
     static let digitSet:Set<KeyCode> = [.d0, .d1, .d2, .d3, .d4, .d5, .d6, .d7, .d8, .d9]
 

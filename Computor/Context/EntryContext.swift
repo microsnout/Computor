@@ -20,7 +20,7 @@ class EntryContext : EventContext {
         
         guard let model = self.model else { return KeyPressResult.null }
         
-        if !CalculatorModel.entryKeys.contains(event.keyCode) {
+        if !KeyCode.entryKeys.contains(event.keyCode) {
             
             // Return to invoking context, either Normal or Recording
             model.popContext( event )

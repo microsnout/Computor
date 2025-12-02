@@ -94,7 +94,7 @@ class BlockRecord : EventContext {
             }
             
         default:
-            if CalculatorModel.entryStartKeys.contains(event.kc) {
+            if KeyCode.entryStartKeys.contains(event.kc) {
                 
                 model.pushContext( EntryContext(), lastEvent: event ) { exitEvent in
                     

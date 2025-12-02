@@ -581,13 +581,6 @@ class CalculatorModel: ObservableObject, KeyPressHandler {
     }
     
     
-    // Set of keys that cause data entry mode to begin, digits and dot
-    static let entryStartKeys = KeyCode.digitSet.union( Set<KeyCode>([.dot]) )
-    
-    // Set of keys valid in data entry mode, all of above plus sign, back and enter exp
-    static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.chs, .backUndo, .eex, .d000]) )
-    
-    
     func newGlobalMemory( _ mTag: SymbolTag, caption: String? = nil ) -> MemoryRec {
         
         /// ** New Global Memory **

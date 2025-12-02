@@ -127,7 +127,7 @@ class RecordingContext : EventContext {
             
         default:
             
-            if CalculatorModel.entryStartKeys.contains(event.keyCode) {
+            if KeyCode.entryStartKeys.contains(event.keyCode) {
                 
                 // Start data entry mode, save current state and lift stack to make room for new data
                 model.pushState()
