@@ -373,6 +373,102 @@ func installMatrix( _ model: CalculatorModel ) {
     ])
 
     
+    CalculatorModel.defineOpPatterns( .minX, [
+        
+        OpPattern( [.X([.real], .matrix)], where: { $0.Xtv.cols > 1 } ) { s0 in
+            
+            var s1 = s0
+            s1.stackDrop()
+            
+            let (_, rows, cols) = s0.Xtv.getShape()
+            
+            var minX: Double = s0.Xtv.getReal( r: 1, c: 1 )
+            
+            for col in 2...cols {
+                minX = min( minX, s0.Xtv.getReal( r: 1, c: col ) )
+            }
+            
+            s1.pushRealValue(minX)
+            return (KeyPressResult.stateChange, s1)
+        },
+    ])
+
+    
+    CalculatorModel.defineOpPatterns( .maxX, [
+        
+        OpPattern( [.X([.real], .matrix)], where: { $0.Xtv.cols > 1 } ) { s0 in
+            
+            var s1 = s0
+            s1.stackDrop()
+            
+            let (_, rows, cols) = s0.Xtv.getShape()
+            
+            var maxX: Double = s0.Xtv.getReal( r: 1, c: 1 )
+            
+            for col in 2...cols {
+                maxX = max( maxX, s0.Xtv.getReal( r: 1, c: col ) )
+            }
+            
+            s1.pushRealValue(maxX)
+            return (KeyPressResult.stateChange, s1)
+        },
+    ])
+
+    
+    CalculatorModel.defineOpPatterns( .stdDev, [
+        
+        /// Standard Deviation
+        
+        OpPattern( [.X([.real], .matrix)] ) { s0 in
+            
+            var s1 = s0
+            s1.stackDrop()
+            
+            let (_, rows, cols) = s0.Xtv.getShape()
+            
+            let n = Double(cols)
+            
+            // Find the mean
+            var sum: Double = 0.0
+            
+            for col in 1...cols {
+                sum += s0.Xtv.getReal( r: 1, c: col )
+            }
+            let mean = sum/n
+            
+            var dev = 0.0
+            
+            for col in 1...cols {
+                dev += pow(s0.Xtv.getReal( r: 1, c: col) - mean, 2.0)
+            }
+            
+            s1.pushRealValue( sqrt(dev / Double(cols-1)) )
+            return (KeyPressResult.stateChange, s1)
+        },
+    ])
+
+    
+    CalculatorModel.defineOpPatterns( .mean, [
+        
+        OpPattern( [.X([.real], .matrix)] ) { s0 in
+            
+            var s1 = s0
+            s1.stackDrop()
+            
+            let (_, rows, cols) = s0.Xtv.getShape()
+            
+            var sum: Double = 0.0
+            
+            for col in 1...cols {
+                sum += s0.Xtv.getReal( r: 1, c: col )
+            }
+            
+            s1.pushRealValue(sum / Double(cols))
+            return (KeyPressResult.stateChange, s1)
+        },
+    ])
+    
+
     // *** UNIT Conversions ***
 
     CalculatorModel.defineUnitConversions([

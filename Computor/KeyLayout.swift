@@ -425,7 +425,7 @@ func initKeyLayout() {
                         Key(.zIm,  "ƒ{0.9}Im(x)",       caption: "Imaginary(x)"),
                         Key(.abs,  "|x|",               caption: "Abs(x)"),
                         Key(.zArg, "ƒ{0.9}Arg(x)",      caption: "Argument(x)"),
-                        Key(.zConj,"ƒ{1.2}x\u{0305}",   caption: "Conjugate(x)"),
+                        Key(.zConj,"ƒ{0.9}Conj(x)",   caption: "Conjugate(x)"),
                         Key(.zNorm,"ƒ{0.7}Norm(x)",     caption: "Normal(x)"),
                        ],
                        caption: "Complex Operations"
@@ -442,9 +442,15 @@ func initKeyLayout() {
     SubPadSpec.define( .percent,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.deltaPercent, "\u{2206}%"),
-                        Key(.totalPercent, "%T"),
-                       ]
+                        Key(.minX,   "ƒ{0.9}min(x)",    caption: "Minimum"),
+                        Key(.maxX,   "ƒ{0.9}max(x)",    caption: "Maximum"),
+                        Key(.stdDev, "ƒ{1.2}\u{1d42c}", caption: "Standard Deviation"),
+                        Key(.mean,   "ƒ{1.2}x\u{0305}", caption: "Mean"),
+                        
+                        Key(.deltaPercent, "\u{2206}%", caption: "Percent Difference x of y"),
+                        Key(.totalPercent, "%T",        caption: "x Percent of Total y"),
+                       ],
+                       caption: "Percentage and Statistics"
     )
 
     SubPadSpec.define( .stoX,
@@ -470,10 +476,10 @@ func initKeyLayout() {
     SubPadSpec.define( .pi,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.pi2,  "ƒ{1.3}\u{1d6d1}ƒ{}/2",  caption: "Pi over 2  90\u{00b0}"),
-                        Key(.pi3,  "ƒ{1.3}\u{1d6d1}ƒ{}/3",  caption: "Pi over 3  60\u{00b0}"),
-                        Key(.pi4,  "ƒ{1.3}\u{1d6d1}ƒ{}/4",  caption: "Pi over 4  45\u{00b0}"),
-                        Key(.pi6,  "ƒ{1.3}\u{1d6d1}ƒ{}/6",  caption: "Pi over 6  30\u{00b0}"),
+                        Key(.pi2,  "ƒ{1.3}\u{1d6d1}ƒ{}/2",  caption: "Pi/2  90\u{00b0}"),
+                        Key(.pi3,  "ƒ{1.3}\u{1d6d1}ƒ{}/3",  caption: "Pi/3  60\u{00b0}"),
+                        Key(.pi4,  "ƒ{1.3}\u{1d6d1}ƒ{}/4",  caption: "Pi/4  45\u{00b0}"),
+                        Key(.pi6,  "ƒ{1.3}\u{1d6d1}ƒ{}/6",  caption: "Pi/6  30\u{00b0}"),
                         Key(.phi, "ƒ{1.2}\u{1d6d7}",  caption: "Golden Ratio"),
                         Key(.e, "ƒ{1.3}\u{1d486}",  caption: "Euler Number"),
                        ],

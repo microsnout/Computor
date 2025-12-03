@@ -9,80 +9,93 @@ import Foundation
 enum KeyCode: Int, Codable {
     
     // Special Keycodes
-    case null = 0, clockTick, enter, backUndo
+    case null = 0, clockTick, enter, backUndo, lib
     
     // Entry mode keys, chs is also a function
     case dot = 10, chs, eex, d000
     
     // Arithmetic Ops
-    case plus = 15, minus, times, divide
+    case plus = 20, minus, times, divide
     
     // Clear functions
-    case clearX = 20, clearY, clearZ, clearReg
+    case clearX = 30, clearY, clearZ, clearReg
     
-    case fixL = 30, fixR, roll, xy, xz, yz, lastx, percent, deltaPercent, totalPercent
+    // Display Format
+    case fixL = 40, fixR
     
-    case y2x = 40, inv, x2, sqrt, abs, x3, root3
+    // Register Exchange and other ops
+    case xy, xz, yz, lastx, roll
     
-    case sin = 50, cos, tan, asin, acos, atan, atan2, csc, sec, cot, acsc, asec, acot, sinh, cosh, tanh, asinh, acosh, atanh
+    // Percentage and Statistical Functions
+    case percent = 50, deltaPercent, totalPercent, mean, minX, maxX, stdDev
+    
+    case y2x = 60, inv, x2, sqrt, abs, x3, root3
+    
+    // Trigonometric Functions
+    case sin = 70, cos, tan, asin, acos, atan, atan2, csc, sec, cot, acsc, asec, acot, sinh, cosh, tanh, asinh, acosh, atanh
     
     // Integer Operations
-    case floor = 70, ceiling, round, factorial, sign, intDivide, modulo, gcd, lcm, hcf
+    case floor = 90, ceiling, round, factorial, sign, intDivide, modulo, gcd, lcm, hcf
     
-    case log = 80, ln, log2, logY
+    // Logarithmic Functions
+    case log = 100, ln, log2, logY
     
-    case tenExp = 90, eExp, twoExp, lib, pi2, pi3, pi4, pi6
+    // Exponential Functions
+    case tenExp = 110, eExp, twoExp
+    
+    // Constants
+    case pi2 = 120, pi3, pi4, pi6
     
     // Complex operations
-    case zRe = 100, zIm, zArg, zConj, zNorm
+    case zRe = 200, zIm, zArg, zConj, zNorm
     
     // Format
-    case fix = 120, sci, eng
+    case fix = 220, sci, eng
     
     // Softkeys - Top row F1..F6 and Unit row U1..U6
-    case F0 = 160, F1, F2, F3, F4, F5, F6, U1, U2, U3, U4, U5, U6
+    case F0 = 260, F1, F2, F3, F4, F5, F6, U1, U2, U3, U4, U5, U6
     
     // Macro Op
-    case macroOp = 180, clrFn, recFn, stopFn, editFn, braceKey, openBrace, closeBrace, macro
+    case macroOp = 280, clrFn, recFn, stopFn, editFn, braceKey, openBrace, closeBrace, macro
     
     // Multi valued types
-    case multiValue = 190, rational, vector, polar, complex, vector3D, spherical
+    case multiValue = 290, rational, vector, polar, complex, vector3D, spherical
     
     // Matrix operations
-    case matrix = 200, range, seq, mapX, mapXY, reduce, addRow, addCol, dotProduct, crossProduct, transpose, identity
+    case matrix = 300, range, seq, mapX, mapXY, reduce, addRow, addCol, dotProduct, crossProduct, transpose, identity
     
     // Memory operations
-    case noop = 220, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem, noopBrace
+    case noop = 320, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem, noopBrace
     
     // Macro recorder operations
-    case macroRecord = 240, macroStop, macroPlay, macroSlowPlay, macroStep, macroRename
+    case macroRecord = 340, macroStop, macroPlay, macroSlowPlay, macroStep, macroRename
 
-    case unitStart = 300
+    case unitStart = 400
     
     // Length
-    case km = 301, mm, cm, metre, inch, ft, yd, mi
+    case km = 401, mm, cm, metre, inch, ft, yd, mi
     
     // Time
-    case second = 310, min, hr, day, yr, ms, us
+    case second = 410, min, hr, day, yr, ms, us
     
     // Angles
-    case deg = 320, rad, dms, dm, minA
+    case deg = 420, rad, dms, dm, minA
     
     // Mass
-    case kg = 330, mg, gram, tonne, lb, oz, ton, stone
+    case kg = 430, mg, gram, tonne, lb, oz, ton, stone
     
     // Capacity
-    case mL = 340, liter, floz, cup, pint, quart, us_gal, gal
+    case mL = 440, liter, floz, cup, pint, quart, us_gal, gal
     
     // Temperature
-    case degC = 350, degF
+    case degC = 450, degF
     
-    case unitEnd = 399
+    case unitEnd = 499
     
     // *********
     // Sym chars: 26+26+24+10+12+26 = 124 chars - 3 digits
     
-    case symbolCharNull = 400
+    case symbolCharNull = 500
          
     case a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
 
@@ -102,7 +115,7 @@ enum KeyCode: Int, Codable {
     
     // *********
     
-    case newMacro = 600
+    case newMacro = 700
     
     case lastCode = 999
     
