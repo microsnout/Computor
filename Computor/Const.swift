@@ -73,10 +73,17 @@ enum Const {
         static let cntlDebug    = "wrench.and.screwdriver"
         
         // Macro Debug Controls
+        static let play         = "play.fill"
+        static let stop         = "stop.fill"
+        static let record       = "record.circle.fill"
         static let playPause    = "playpause.circle"
         static let stepForward  = "forward.frame"
         static let stepBackward = "backward.frame"
-        
+        static let stepUndo     = "arrowshape.turn.up.left"
+        static let recExecute   = "play.circle"
+        static let recPlay      = "play.fill"
+        static let recNoPlay    = "play.slash.fill"
+
         static let arrowUp      = "arrowshape.up"
         static let arrowDown    = "arrowshape.down"
         static let arrowLeft    = "arrowshape.left"

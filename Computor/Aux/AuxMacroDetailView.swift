@@ -317,7 +317,7 @@ struct MacroDetailRightPanel: View {
                         Button {
                             model.startMacroRec()
                         } label: {
-                            Image( systemName: "record.circle.fill").frame( minWidth: 0 )
+                            Image( systemName: Const.Icon.record).frame( minWidth: 0 )
                         }
                         .accentColor( Color("RedMenuIcon") )
                         .disabled( model.aux.recState != .stop )
@@ -326,7 +326,7 @@ struct MacroDetailRightPanel: View {
                         Button {
                             model.playMacro()
                         } label: {
-                            Image( systemName: "play.fill").frame( minWidth: 0 )
+                            Image( systemName: Const.Icon.play).frame( minWidth: 0 )
                         }
                         .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
                         
@@ -334,7 +334,7 @@ struct MacroDetailRightPanel: View {
                         Button {
                             model.stopMacroRec()
                         } label: {
-                            Image( systemName: "stop.fill").frame( minWidth: 0 )
+                            Image( systemName: Const.Icon.stop).frame( minWidth: 0 )
                         }
                         .disabled( !(model.aux.recState.isRecording || model.aux.recState == .playStep) )
                         
