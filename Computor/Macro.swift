@@ -23,6 +23,13 @@ protocol MacroOp {
 typealias CodableMacroOp = MacroOp & Codable
 
 
+struct DummyOp: CodableMacroOp {
+    func execute( _ model: CalculatorModel ) -> KeyPressResult { KeyPressResult.noOp }
+    func getRichText( _ model: CalculatorModel ) -> String { "" }
+    func getPlainText() -> String { "" }
+}
+
+
 struct MacroEvent: CodableMacroOp {
     var event: KeyEvent
     
@@ -139,6 +146,10 @@ struct MacroOpSeq: Codable, Sequence {
     mutating func clear() { self.opList = [] }
 
     mutating func append( _ op: MacroOp ) { opList.append(op) }
+    
+    mutating func insert( _ op: MacroOp, at i: Int ) {
+        opList.insert( op, at: i )
+    }
     
     mutating func removeLast() { opList.removeLast() }
     

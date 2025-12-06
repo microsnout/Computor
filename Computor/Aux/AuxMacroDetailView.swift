@@ -155,6 +155,8 @@ struct MacroCodeListing: View {
                 }
             }
         }
+        
+        iList.append(0)
         return iList
     }
     
@@ -173,10 +175,12 @@ struct MacroCodeListing: View {
                     let list = mr.opSeq
                     let indents = getIndentList(list)
                     let cursorStr = model.aux.errorFlag ? "ç{CursorText}\u{23f4}\u{23f4}ç{}" : model.aux.recState.isRecording ? "ç{CursorText}\u{23f4}ç{}" : "\u{23f4}"
+                    let n = mr.opSeq.count
+                    let indexList = list.indices + [n]
                     
                     VStack(spacing: 1) {
-                        ForEach (list.indices, id: \.self) { x in
-                            let op: MacroOp = list[x]
+                        ForEach ( indexList, id: \.self) { x in
+                            let op: MacroOp =  x == n ? DummyOp() : list[x]
                             let line = String( format: "ç{LineNoText}={%3d }ç{}", x+1)
                             let level = indents[x]
                             let text = op.getRichText(model)
@@ -201,7 +205,7 @@ struct MacroCodeListing: View {
                             .onTapGesture() {
                                 model.macroTapLine(x)
                             }
-                            .if ( isEven(x+1) ) { view in
+                            .if ( isEven(x) ) { view in
                                 view.background( Color("SuperLightGray") )
                             }
                         }

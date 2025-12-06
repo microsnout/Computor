@@ -106,14 +106,20 @@ extension AuxState {
         errorFlag = false
     }
     
+    
+    mutating func resetMacroCursor() {
+        
+        /// ** Reset Macro Cursor **
+        
+        opCursor  = 0
+    }
+    
 
     mutating func stopMacroRecorder() {
         
         /// ** Stop Macro Recorder **
-        /// This will retrun Aux display to Macro List
         
         auxLVF    = nil
-        opCursor  = 0
         recState  = .stop
         errorFlag = false
     }
@@ -122,7 +128,8 @@ extension AuxState {
     mutating func deactivateMacroRecorder() {
         
         /// ** Deactivate Macro Recorder **
-        
+        /// This will retrun Aux display to Macro List
+
         stopMacroRecorder()
         macroRec   = nil
         recState   = .inactive
@@ -130,7 +137,7 @@ extension AuxState {
     }
 
     
-    mutating func startPlayStep( at line: Int = 0 ) {
+    mutating func startDebug( at line: Int = 0 ) {
         
         switch recState {
             

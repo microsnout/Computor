@@ -397,8 +397,9 @@ extension CalculatorModel {
                 }
             }
             // Otherwise record the key
-            mr.opSeq.append( MacroEvent( event ) )
-            
+            mr.opSeq.insert( MacroEvent( event ), at: aux.opCursor )
+            aux.opCursor += 1
+
         case .backUndo:
             // Backspace, need to remove last op or possibly undo a unit tag
             if let last = mr.opSeq.last {
@@ -410,6 +411,7 @@ extension CalculatorModel {
                         
                         // No unit tag, just remove the value
                         mr.opSeq.removeLast()
+                        aux.opCursor -= 1
                     }
                     else {
                         // A tagged value, remove the tag
@@ -417,11 +419,13 @@ extension CalculatorModel {
                         var tv = value.tv
                         tv.tag = tagUntyped
                         mr.opSeq.append( MacroValue( tv: tv))
+                        aux.opCursor += 1
                     }
                 }
                 else {
                     // Last op id just a key op
                     mr.opSeq.removeLast()
+                    aux.opCursor -= 1
                 }
             }
             
@@ -436,8 +440,10 @@ extension CalculatorModel {
                         
                         var tv = value.tv
                         mr.opSeq.removeLast()
+                        aux.opCursor -= 1
                         tv.tag = tag
-                        mr.opSeq.append( MacroValue( tv: tv))
+                        mr.opSeq.insert( MacroEvent( event ), at: aux.opCursor )
+                        aux.opCursor += 1
                         break
                     }
                 }
@@ -450,12 +456,14 @@ extension CalculatorModel {
                 if let tag = kstate.keyMap.tagAssignment(event.kc) {
                     // There is a macro assigned to this key, record the macro tag not the key code
                     mr.opSeq.append( MacroEvent( KeyEvent( .lib, mTag: tag ) ) )
+                    aux.opCursor += 1
                     break
                 }
             }
             
             // Not an Fn Key or an Fn key with no macro assignment
-            mr.opSeq.append( MacroEvent( event ) )
+            mr.opSeq.insert( MacroEvent( event ), at: aux.opCursor )
+            aux.opCursor += 1
         }
         
         // Log debug output
@@ -509,7 +517,7 @@ extension CalculatorModel {
                 
                 let opSeq = mr.opSeq
                 
-                aux.startPlayStep()
+                aux.startDebug()
                 
                 if let lvf = aux.auxLVF {
                     
@@ -533,6 +541,7 @@ extension CalculatorModel {
         
         // Stop recorder
         aux.recordStop()
+        aux.resetMacroCursor()
         
         if aux.recState.isRecording {
             
@@ -547,7 +556,7 @@ extension CalculatorModel {
     
     func macroStep() {
         
-        aux.startPlayStep()
+        aux.startDebug()
         
         if let mr = aux.macroRec,
            let lvf = aux.auxLVF {
@@ -594,6 +603,39 @@ extension CalculatorModel {
     
     func macroTapLine( _ n: Int ) {
         
-        aux.startPlayStep( at: n )
+        switch aux.recState {
+            
+        case .stop:
+            aux.startDebug( at: n )
+
+        case .record:
+            aux.opCursor = n
+            
+        case .debug:
+            aux.opCursor = n
+
+        default:
+            break
+        }
+    }
+    
+    
+    func switchDebugToRecord( _ evt: KeyEvent ) {
+        
+        assert( aux.recState == .debug )
+        assert( eventContext is DebugContext  )
+        
+        popContext(evt, runCCC: false)
+        pushContext( RecordingContext(), lastEvent: evt )
+    }
+
+    
+    func switchRecordToDebug( _ evt: KeyEvent ) {
+        
+        assert( aux.recState.isRecording )
+        assert( eventContext is RecordingContext )
+        
+        popContext(evt, runCCC: false)
+        pushContext( DebugContext(), lastEvent: evt )
     }
 }
