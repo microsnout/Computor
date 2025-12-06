@@ -11,7 +11,7 @@ let logAux = Logger(subsystem: "com.microsnout.calculator", category: "aux")
 
 
 enum MacroRecState: Int {
-    case inactive = 0, stop, record, recModal, recNestedModal, play, playStep
+    case inactive = 0, stop, record, recModal, recNestedModal, play, debug
     
     var isRecording: Bool {
         switch self {
@@ -139,7 +139,7 @@ extension AuxState {
             auxLVF = LocalVariableFrame()
             opCursor   = line
             errorFlag  = false
-            recState   = .playStep
+            recState   = .debug
 
         default:
             break
@@ -178,7 +178,7 @@ extension AuxState {
         
         switch recState {
             
-        case .playStep:
+        case .debug:
             stopMacroRecorder()
             
         case .record:

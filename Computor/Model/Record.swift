@@ -485,30 +485,18 @@ extension CalculatorModel {
     }
     
     
-    func startMacroRec() {
+    // *******************************
+    // Macro Recorder Button Functions
+    // ***
+    
+    func macroRecord() {
         
         // Switch to recording context
         pushContext( RecordingContext(), lastEvent: KeyEvent(.macroRecord) )
     }
     
     
-    func stopMacroRec() {
-        
-        // Stop recorder
-        aux.recordStop()
-        
-        if aux.recState.isRecording {
-            
-            // Save current state of macro
-            aux.macroMod.saveModule()
-            
-            // Restore normal context
-            popContext( KeyEvent(.macroStop) )
-        }
-    }
-    
-    
-    func playMacro() {
+    func macroPlay() {
         
         /// ** Play Macro **
         /// Run the macro currently loaded in recorder
@@ -541,7 +529,23 @@ extension CalculatorModel {
     }
     
     
-    func stepForward() {
+    func macroStop() {
+        
+        // Stop recorder
+        aux.recordStop()
+        
+        if aux.recState.isRecording {
+            
+            // Save current state of macro
+            aux.macroMod.saveModule()
+            
+            // Restore normal context
+            popContext( KeyEvent(.macroStop) )
+        }
+    }
+
+    
+    func macroStep() {
         
         aux.startPlayStep()
         
@@ -563,7 +567,7 @@ extension CalculatorModel {
                     aux.opCursor += 1
                     
                     if aux.opCursor == opSeq.count {
-                        stopMacroRec()
+                        macroStop()
                     }
                 }
             }
@@ -571,7 +575,12 @@ extension CalculatorModel {
     }
     
     
-    func stepBackward() {
+    func macroRecExecute() {
+        
+    }
+    
+    
+    func macroBack() {
         
         let x = aux.opCursor
         
@@ -583,7 +592,7 @@ extension CalculatorModel {
     }
     
     
-    func tapMacroLine( _ n: Int ) {
+    func macroTapLine( _ n: Int ) {
         
         aux.startPlayStep( at: n )
     }

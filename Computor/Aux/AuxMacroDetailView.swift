@@ -172,7 +172,7 @@ struct MacroCodeListing: View {
                 ScrollViewReader { proxy in
                     let list = mr.opSeq
                     let indents = getIndentList(list)
-                    let cursorStr = model.aux.errorFlag ? "ç{CursorText}\u{23f4}\u{23f4}ç{}" : "\u{23f4}"
+                    let cursorStr = model.aux.errorFlag ? "ç{CursorText}\u{23f4}\u{23f4}ç{}" : model.aux.recState.isRecording ? "ç{CursorText}\u{23f4}ç{}" : "\u{23f4}"
                     
                     VStack(spacing: 1) {
                         ForEach (list.indices, id: \.self) { x in
@@ -199,7 +199,7 @@ struct MacroCodeListing: View {
                             .frame( maxWidth: .infinity )
                             .contentShape(Rectangle())
                             .onTapGesture() {
-                                model.tapMacroLine(x)
+                                model.macroTapLine(x)
                             }
                             .if ( isEven(x+1) ) { view in
                                 view.background( Color("SuperLightGray") )
@@ -289,7 +289,7 @@ struct MacroDetailRightPanel: View {
                         
                         // STEP BACKWARD
                         Button {
-                            model.stepBackward()
+                            model.macroBack()
                         } label: {
                             Image( systemName: Const.Icon.stepBackward).frame( minWidth: 0 )
                         }
@@ -297,6 +297,7 @@ struct MacroDetailRightPanel: View {
                         
                         // Delete Step
                         Button {
+                            model.macroRecExecute()
                         } label: {
                             Image( systemName: Const.Icon.trash).frame( minWidth: 0 )
                         }
@@ -304,7 +305,7 @@ struct MacroDetailRightPanel: View {
                         
                         // STEP FORWARD
                         Button {
-                            model.stepForward()
+                            model.macroStep()
                         } label: {
                             Image( systemName: Const.Icon.stepForward).frame( minWidth: 0 )
                         }
@@ -315,7 +316,7 @@ struct MacroDetailRightPanel: View {
                         
                         // RECORD
                         Button {
-                            model.startMacroRec()
+                            model.macroRecord()
                         } label: {
                             Image( systemName: Const.Icon.record).frame( minWidth: 0 )
                         }
@@ -324,7 +325,7 @@ struct MacroDetailRightPanel: View {
                         
                         // PLAY
                         Button {
-                            model.playMacro()
+                            model.macroPlay()
                         } label: {
                             Image( systemName: Const.Icon.play).frame( minWidth: 0 )
                         }
@@ -332,11 +333,11 @@ struct MacroDetailRightPanel: View {
                         
                         // STOP
                         Button {
-                            model.stopMacroRec()
+                            model.macroStop()
                         } label: {
                             Image( systemName: Const.Icon.stop).frame( minWidth: 0 )
                         }
-                        .disabled( !(model.aux.recState.isRecording || model.aux.recState == .playStep) )
+                        .disabled( !(model.aux.recState.isRecording || model.aux.recState == .debug) )
                         
                     }
                 }
