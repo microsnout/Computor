@@ -231,6 +231,9 @@ struct MacroDetailRightPanel: View {
     
     /// ** Macro Detail Right Panel **
     
+    @AppStorage(.settingsRecordExecute)
+    private var recordExecute = true
+    
     var mr: MacroRec
     
     @StateObject var model: CalculatorModel
@@ -239,6 +242,72 @@ struct MacroDetailRightPanel: View {
     
     @Binding var refreshView: Bool
     
+    
+    func enablePlay() -> Bool {
+        
+        let state = model.aux.recState
+        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
+        let count = opseq.count
+        let opcur = model.aux.opCursor
+        
+        return (state == .stop || state == .debug) && opcur < count
+    }
+
+    
+    func enableStop() -> Bool {
+        
+        let state = model.aux.recState
+        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
+        let count = opseq.count
+        let opcur = model.aux.opCursor
+        
+        return state == .record || state == .debug
+    }
+
+    
+    func enableRecord() -> Bool {
+        
+        let state = model.aux.recState
+        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
+        let count = opseq.count
+        let opcur = model.aux.opCursor
+        
+        return true
+    }
+
+    
+    func enableStep() -> Bool {
+        
+        let state = model.aux.recState
+        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
+        let count = opseq.count
+        let opcur = model.aux.opCursor
+        
+        return (state == .stop || state == .debug) && opcur < count
+    }
+
+    
+    func enableBack() -> Bool {
+        
+        let state = model.aux.recState
+        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
+        let count = opseq.count
+        let opcur = model.aux.opCursor
+        
+        return (state == .record || state == .debug) && opcur > 0
+    }
+    
+    
+    func enableExecute() -> Bool {
+        
+        let state = model.aux.recState
+        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
+        let count = opseq.count
+        let opcur = model.aux.opCursor
+        
+        return state == .record
+    }
+
 
     var body: some View {
         let symTag: SymbolTag = mr.symTag
@@ -253,6 +322,8 @@ struct MacroDetailRightPanel: View {
             let caption = mr.caption ?? "ç{GrayText}-caption-"
             
             let modSymStr = model.aux.macroMod.name
+            
+            let executeSym = recordExecute ? Const.Icon.recExecute : Const.Icon.recNoPlay
             
             VStack( alignment: .leading, spacing: 5 ) {
                 
@@ -297,15 +368,16 @@ struct MacroDetailRightPanel: View {
                         } label: {
                             Image( systemName: Const.Icon.stepBackward).frame( minWidth: 0 )
                         }
-                        .disabled( model.aux.macroRec?.opSeq.isEmpty ?? true || model.aux.opCursor == 0 )
+                        .disabled( !enableBack() )
                         
-                        // Delete Step
+                        // Toggle Execute
                         Button {
-                            model.macroRecExecute()
+                            recordExecute.toggle()
+                            model.macroRecExecute( recordExecute )
                         } label: {
-                            Image( systemName: Const.Icon.trash).frame( minWidth: 0 )
+                            Image( systemName: executeSym).frame( minWidth: 0 )
                         }
-                        .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
+                        .disabled( !enableExecute() )
                         
                         // STEP FORWARD
                         Button {
@@ -313,7 +385,7 @@ struct MacroDetailRightPanel: View {
                         } label: {
                             Image( systemName: Const.Icon.stepForward).frame( minWidth: 0 )
                         }
-                        .disabled( model.aux.macroRec?.opSeq.isEmpty ?? true )
+                        .disabled( !enableStep() )
                     }
                     
                     HStack( spacing: 25 ) {
@@ -324,8 +396,8 @@ struct MacroDetailRightPanel: View {
                         } label: {
                             Image( systemName: Const.Icon.record).frame( minWidth: 0 )
                         }
-                        .accentColor( Color("RedMenuIcon") )
-                        .disabled( model.aux.recState != .stop )
+                        .accentColor( model.aux.recState.isRecording ? Color("RedMenuIcon") : Color("MenuIcon") )
+                        .disabled( !enableRecord() )
                         
                         // PLAY
                         Button {
@@ -333,7 +405,7 @@ struct MacroDetailRightPanel: View {
                         } label: {
                             Image( systemName: Const.Icon.play).frame( minWidth: 0 )
                         }
-                        .disabled( model.aux.recState != .stop || model.aux.macroRec?.opSeq.isEmpty ?? true )
+                        .disabled( !enablePlay() )
                         
                         // STOP
                         Button {
@@ -341,7 +413,7 @@ struct MacroDetailRightPanel: View {
                         } label: {
                             Image( systemName: Const.Icon.stop).frame( minWidth: 0 )
                         }
-                        .disabled( !(model.aux.recState.isRecording || model.aux.recState == .debug) )
+                        .disabled( !enableStop() )
                         
                     }
                 }

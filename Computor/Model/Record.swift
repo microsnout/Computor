@@ -484,8 +484,9 @@ extension CalculatorModel {
                 return
             }
             
-            mr.opSeq.append( MacroValue( tv: tv) )
-            
+            mr.opSeq.insert( MacroValue( tv: tv), at: aux.opCursor )
+            aux.opCursor += 1
+
             // Log debug output
             let auxTxt = aux.getDebugText()
             logAux.debug( "recordValueFn: \(auxTxt)" )
@@ -499,8 +500,15 @@ extension CalculatorModel {
     
     func macroRecord() {
         
-        // Switch to recording context
-        pushContext( RecordingContext(), lastEvent: KeyEvent(.macroRecord) )
+        switch aux.recState {
+            
+        case .record:
+            break
+            
+        default:
+            // Switch to recording context
+            pushContext( RecordingContext(), lastEvent: KeyEvent(.macroRecord) )
+        }
     }
     
     
@@ -584,7 +592,7 @@ extension CalculatorModel {
     }
     
     
-    func macroRecExecute() {
+    func macroRecExecute( _ enable: Bool ) {
         
     }
     

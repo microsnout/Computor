@@ -15,6 +15,7 @@ extension String {
     static var settingsSoftkeyUnits : String { "settings.softkeyUnits" }
     static var settingsKeyCaptions : String { "settings.keyCaptions" }
     static var settingsModalConfirmation : String { "settings.modalConfirmation" }
+    static var settingsRecordExecute : String { "settings.recordExecute" }
 }
 
 enum SoftkeyUnits: Int, Hashable {
@@ -56,7 +57,10 @@ struct SettingsView: View {
 
     @AppStorage(.settingsModalConfirmation)
     private var modalConfirmation = true
-    
+
+    @AppStorage(.settingsRecordExecute)
+    private var recordExecute = true
+
     var body: some View {
         NavigationStack {
             VStack {
