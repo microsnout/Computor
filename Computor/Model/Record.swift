@@ -22,6 +22,7 @@ extension CalculatorModel {
             // Test if we are deleting the macro currently being viewed in Aux dispaly
             if mod == aux.macroMod && mr === aux.macroRec {
                 aux.stopMacroRecorder()
+                aux.deactivateMacroRecorder()
             }
             
             // Now delete the macro and save file
@@ -83,6 +84,9 @@ extension CalculatorModel {
             assert(false)
             return
         }
+        
+        // Reset macro recorder before reloading
+        aux.deactivateMacroRecorder()
             
         // Macro will be in this module
         let recMod = aux.macroMod
@@ -547,18 +551,15 @@ extension CalculatorModel {
     
     func macroStop() {
         
+        // Save current state of macro
+        aux.macroMod.saveModule()
+        
         // Stop recorder
         aux.recordStop()
         aux.resetMacroCursor()
         
-        if aux.recState.isRecording {
-            
-            // Save current state of macro
-            aux.macroMod.saveModule()
-            
-            // Restore normal context
-            popContext( KeyEvent(.macroStop) )
-        }
+        // This will restore normal context only if we are in recording context
+        _ = keyPress( KeyEvent(.macroStop) )
     }
 
     

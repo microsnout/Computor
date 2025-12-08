@@ -61,15 +61,6 @@ extension AuxState {
     
     var isRec: Bool { AuxState.recStates.contains( self.recState ) }
     
-    func disableAllFnSubmenu( except kc: KeyCode = .null ) {
-        // Disable all Fn key submenus except the one recording
-        for key in KeyCode.fnSet {
-            if key != kc {
-                SubPadSpec.disableList.insert(key)
-            }
-        }
-    }
-    
     
     // *** Macro Recorder Functions ***
     
@@ -92,6 +83,7 @@ extension AuxState {
 
         default:
             assert(false)
+            break
         }
     }
     
@@ -191,9 +183,6 @@ extension AuxState {
         case .record:
             stopMacroRecorder()
             
-            // Re-enable all recording keys
-            SubPadSpec.disableList.removeAll()
-            
         case .recNestedModal:
             // Cancel recording as modal rec is incomplete
             stopMacroRecorder()
@@ -220,7 +209,7 @@ extension AuxState {
             // Create new macro rec for modal func
             macroRec = MacroRec()
             activeView = .macroView
-            disableAllFnSubmenu()
+            SubPadSpec.disableAllFnSubmenu()
             recState = .recModal
             
         case .record:
@@ -243,9 +232,6 @@ extension AuxState {
             
         case .recModal:
             recState = .stop
-            
-            // Re-enable all recording keys
-            SubPadSpec.disableList.removeAll()
 
         case .recNestedModal:
             recState = .record

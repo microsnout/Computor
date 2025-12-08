@@ -11,7 +11,7 @@ enum Const {
     
     enum Log {
         // Enable or disable model logging
-        static let model = false
+        static let model = true
     }
     
     enum Str {

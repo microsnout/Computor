@@ -169,6 +169,10 @@ class EventContext {
         // Override if needed
     }
     
+    func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
+        // Default action - none are disabled
+        return []
+    }
     
     static var rollbackPoints: [Int : EventContext] = [:]
     

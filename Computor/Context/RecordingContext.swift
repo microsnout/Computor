@@ -20,10 +20,10 @@ class RecordingContext : EventContext {
         
         guard let model = self.model else { return }
         
-        if let kcFn = lastEvent.kcTop {
+        if let kc = lastEvent.kcTop {
             
             // Start recording the indicated Fn key
-            self.kcFn = kcFn
+            self.kcFn = kc
             
             model.startRecordingFnKey(kcFn)
         }
@@ -41,6 +41,9 @@ class RecordingContext : EventContext {
             }
         }
         
+        // A Disable
+        SubPadSpec.disableAllFnSubmenu( except: self.kcFn )
+
         // Push a new local variable store
         model.pushLocalVariableFrame()
     }
@@ -52,11 +55,20 @@ class RecordingContext : EventContext {
         
         guard let model = self.model else { return }
         
+        // B Re-enable
+        SubPadSpec.enableAllFnSubmenu()
+        
         // Remove local variable frame that was added by onActivate
         model.popLocalVariableFrame()
     }
     
     
+    override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
+        // Disable Rec and Edit
+        return [.recFn, .editFn]
+    }
+    
+
     override func event( _ event: KeyEvent ) -> KeyPressResult {
         
         guard let model = self.model else { return KeyPressResult.null }
@@ -68,7 +80,6 @@ class RecordingContext : EventContext {
         switch event.keyCode {
             
         case .clrFn:
-            model.aux.recordStop()
             model.clearRecordingFnKey(kcFn)
             model.popContext( event )
             return KeyPressResult.cancelRecording
@@ -93,11 +104,14 @@ class RecordingContext : EventContext {
             }
             
         case .stopFn:
-            model.aux.macroMod.saveModule()
-            model.aux.recordStop()
-            model.popContext( event )
+            model.macroStop()
             return KeyPressResult.macroOp
             
+        case .macroStop:
+            // Restore normal context
+            model.popContext( KeyEvent(.macroStop) )
+            return KeyPressResult.macroOp
+
         case .backUndo:
             guard let mr = model.aux.macroRec else {
                 assert(false)

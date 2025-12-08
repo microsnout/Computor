@@ -98,6 +98,23 @@ struct Key: Identifiable {
 
 extension Key {
     
+    static func disableKey( _ kc: KeyCode, _ disabled: Bool = true ) {
+        
+        if disabled {
+            Key.disableList.insert(kc)
+        }
+        else {
+            Key.disableList.remove(kc)
+        }
+    }
+    
+    static func isDisabled( _ kc: KeyCode ) -> Bool {
+        Key.disableList.contains(kc)
+    }
+    
+    // Disable the key if the keycode is in this set
+    static var disableList: Set<KeyCode> = []
+
     static var modalKeyList: [ KeyCode : ModalKey ] = [:]
     
     static func getModalKey( _ kc: KeyCode ) -> ModalKey? {
@@ -156,6 +173,20 @@ extension SubPadSpec {
             }
         }
     }
+    
+    static func disableAllFnSubmenu( except kc: KeyCode = .null ) {
+        
+        // Disable all Fn key submenus except the one recording
+        for key in KeyCode.fnSet {
+            if key != kc {
+                SubPadSpec.disableList.insert(key)
+            }
+        }
+    }
+    
+    static func enableAllFnSubmenu() {
+        SubPadSpec.disableList.removeAll()
+    }
 }
 
 
@@ -194,6 +225,8 @@ class KeyData : ObservableObject {
     var selSubkey: Key?     = nil
     var selSubIndex: Int    = -1
     var modalPad: PadSpec   = PadSpec()
+    
+    var disabledKeys: Set<KeyCode> = []
 
     @Published var dragPt   = CGPoint.zero
     @Published var keyDown  = false
@@ -222,6 +255,7 @@ struct ModalBlock: View {
                     keyData.pressedKey = nil
                     keyData.modalPad = PadSpec()
                     keyData.modalKey = .none
+                    keyData.disabledKeys = []
                 }
         }
     }
@@ -251,6 +285,7 @@ struct SubPopMenu: View {
             let zOrigin = keyData.zFrame.origin
             let popCaptionH = keyCaptions ? 13.0 : 0.0
             let popH = keyData.subPad.caption == nil ? keyH + keyInset : keyH + keyInset + popCaptionH
+            let disableList = keyData.disabledKeys
             
             Rectangle()
                 .frame( width: w + keyInset, height: popH)
@@ -284,6 +319,7 @@ struct SubPopMenu: View {
                                 ForEach(nkeys, id: \.self) { kn in
                                     let r = keySet[kn].offsetBy(dx: hframe.origin.x, dy: hframe.origin.y)
                                     let key = subkeys[kn]
+                                    let color = disableList.contains(key.kc) ? "GrayText" : "PopText"
                                 
                                     Rectangle()
                                         .frame( width: r.width, height: r.height )
@@ -296,7 +332,7 @@ struct SubPopMenu: View {
                                                     size: .small,
                                                     weight: .bold,
                                                     design: serifFont ? .serif : .default,
-                                                    defaultColor: "PopText")
+                                                    defaultColor: color)
                                             )
                                         }
                                         .if ( key.image != nil ) { view in
@@ -656,7 +692,9 @@ struct KeyView: View {
                     else {
                         
                         // Subpop menu key event
-                        _ = keyPressHandler.keyPress( KeyEvent( key.kc, kcTop: keyData.pressedKey?.kc))
+                        if Key.isDisabled(key.kc) == false {
+                            _ = keyPressHandler.keyPress( KeyEvent( key.kc, kcTop: keyData.pressedKey?.kc))
+                        }
                         
                         // Cannot clear this value in the modal subpad case above so do it here
                         keyData.pressedKey = nil
@@ -709,6 +747,7 @@ struct KeyView: View {
                                 keyData.subPad = subpad
                                 keyData.keyOrigin = vframe.origin
                                 keyData.pressedKey = key
+                                keyData.disabledKeys = model.eventContext?.getDisableSet( topKey: key.kc ) ?? []
                                 
                                 computeSubpadGeometry()
                                                                 

@@ -12,6 +12,29 @@ import SwiftUI
 ///
 class NormalContext : EventContext {
     
+    override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
+        
+        guard let model = self.model else { return [] }
+        
+        // Always disable Stop in normal context - only Record context enables
+        var disableSet: Set<KeyCode> = [.stopFn]
+        
+        if let tag = model.kstate.keyMap.tagAssignment(topKey),
+           let (_, _) = model.getMacroFunction(tag) {
+            
+            // Disable Rec if there is already a macro - must Clear first
+            disableSet.insert(.recFn)
+        }
+        else {
+            // No macro exists, cannot Edit or Clear it
+            disableSet.insert(.clrFn)
+            disableSet.insert(.editFn)
+        }
+
+        return disableSet
+    }
+
+    
     override func event( _ event: KeyEvent ) -> KeyPressResult {
         
         guard let model = self.model else { return KeyPressResult.null }

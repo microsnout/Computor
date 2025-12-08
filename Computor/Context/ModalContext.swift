@@ -29,6 +29,11 @@ class ModalContext : EventContext {
         }
     }
     
+    override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
+        // Disable Rec and Edit
+        return [.clrFn, .recFn, .stopFn, .editFn]
+    }
+
     // Key event handler for modal function
     func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
         return KeyPressResult.null

@@ -35,7 +35,11 @@ class BlockRecord : EventContext {
         model.aux.recordModalBlockEnd()
     }
     
-    
+    override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
+        // Disable Rec and Edit
+        return [.clrFn, .recFn, .stopFn, .editFn]
+    }
+
     override func event( _ event: KeyEvent ) -> KeyPressResult {
         
         guard let model = self.model else { return KeyPressResult.null }
