@@ -502,7 +502,7 @@ extension CalculatorModel {
     // Macro Recorder Button Functions
     // ***
     
-    func macroRecord() {
+    func macroRecord( execute: Bool ) {
         
         switch aux.recState {
             
@@ -511,7 +511,7 @@ extension CalculatorModel {
             
         default:
             // Switch to recording context
-            pushContext( RecordingContext(), lastEvent: KeyEvent(.macroRecord) )
+            pushContext( RecordingContext( exeflag: execute ), lastEvent: KeyEvent(.macroRecord) )
         }
     }
     
@@ -595,6 +595,10 @@ extension CalculatorModel {
     
     func macroRecExecute( _ enable: Bool ) {
         
+        if let ctx = eventContext as? RecordingContext {
+            
+            ctx.exeflag = enable
+        }
     }
     
     
@@ -635,7 +639,7 @@ extension CalculatorModel {
         assert( eventContext is DebugContext  )
         
         popContext(evt, runCCC: false)
-        pushContext( RecordingContext(), lastEvent: evt )
+        pushContext( RecordingContext( exeflag: true ), lastEvent: evt )
     }
 
     

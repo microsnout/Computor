@@ -166,6 +166,9 @@ extension AuxState {
             let auxTxt = getDebugText()
             logAux.debug( "startRecFn: \(auxTxt)" )
             
+        case .debug:
+            recState = .record
+            
         default:
             assert(false)
             break

@@ -12,7 +12,13 @@ import SwiftUI
 ///
 class RecordingContext : EventContext {
     
-    var kcFn = KeyCode.null
+    var kcFn: KeyCode
+    var exeflag: Bool
+    
+    init( exeflag: Bool) {
+        self.kcFn = KeyCode.null
+        self.exeflag = exeflag
+    }
     
     override func onActivate(lastEvent: KeyEvent) {
         
@@ -166,7 +172,8 @@ class RecordingContext : EventContext {
             }
             
             // Record key and execute it
-            let result = model.execute( event )
+            let result = exeflag ? model.execute( event ) : KeyPressResult.noOp
+            
             if result != .stateError {
                 model.recordKeyEvent( event )
             }

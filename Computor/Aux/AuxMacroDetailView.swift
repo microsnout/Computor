@@ -392,7 +392,7 @@ struct MacroDetailRightPanel: View {
                         
                         // RECORD
                         Button {
-                            model.macroRecord()
+                            model.macroRecord( execute: recordExecute )
                         } label: {
                             Image( systemName: Const.Icon.record).frame( minWidth: 0 )
                         }

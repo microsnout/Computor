@@ -78,7 +78,7 @@ class NormalContext : EventContext {
                 
         case .macroRecord:
             // Record menu from Fn key or record op from macro detail view
-            model.pushContext( RecordingContext(), lastEvent: event )
+            model.pushContext( RecordingContext( exeflag: true ), lastEvent: event )
             return KeyPressResult.macroOp
             
         default:
