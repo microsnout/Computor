@@ -71,6 +71,21 @@ struct DebugView: View {
                     model.db.deleteAllMacros()
                 }
                 
+                DebugButton( label: "Print Macro Table" ) {
+                    
+                    let mod = model.aux.macroMod
+                        
+                    print( "Mod: \(mod.name):" )
+                    
+                    print( "Symlist: \(String( describing: mod.symList))" )
+                    
+                    for mr in mod.macroList {
+                        
+                        print( "    \(mr.symTag.getRichText())" )
+                    }
+                        
+                }
+                
                 DebugButton( label: "Delete ALL Module files") {
                     
                     
@@ -101,7 +116,7 @@ struct DebugView: View {
                 }
                 
                 
-                DebugButton( label: "Print Macro Table" ) {
+                DebugButton( label: "Print Module Table" ) {
                     
                     let n = model.db.modTable.objTable.count
                     

@@ -176,7 +176,9 @@ struct MacroCodeListing: View {
                     let indents = getIndentList(list)
                     let cursorStr = model.aux.errorFlag ? "ç{CursorText}\u{23f4}\u{23f4}ç{}" : model.aux.recState.isRecording ? "ç{CursorText}\u{23f4}ç{}" : "\u{23f4}"
                     let n = mr.opSeq.count
-                    let indexList = list.indices + [n]
+                    
+                    // Include blank line at end x == n in rec states Record and Debug
+                    let indexList = list.indices + (Set<MacroRecState>([.debug, .record]).contains(model.aux.recState) ? [n] : [])
                     
                     VStack(spacing: 1) {
                         ForEach ( indexList, id: \.self) { x in

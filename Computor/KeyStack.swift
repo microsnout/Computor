@@ -433,7 +433,7 @@ struct MemorySelectPopup: View, KeyPressHandler {
             SelectSymbolPopup( tagGroupList: tags, title: "Select Memory" ) {
                 
                 // Footer content that goes below the tag list box
-                if keyData.pressedKey?.kc != .rcl && !model.inLocalContext {
+                if keyData.pressedKey?.kc != .rcl  {
                     
                     HStack( spacing: 20 ) {
                         

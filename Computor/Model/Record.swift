@@ -583,10 +583,6 @@ extension CalculatorModel {
                 }
                 else {
                     aux.opCursor += 1
-                    
-                    if aux.opCursor == opSeq.count {
-                        macroStop()
-                    }
                 }
             }
         }
