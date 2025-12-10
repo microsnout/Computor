@@ -554,12 +554,14 @@ extension CalculatorModel {
         // Save current state of macro
         aux.macroMod.saveModule()
         
+        if aux.recState.isRecording {
+            // Restore normal context only if we are in recording context - not Debug state
+            _ = keyPress( KeyEvent(.macroStop) )
+        }
+
         // Stop recorder
         aux.recordStop()
         aux.resetMacroCursor()
-        
-        // This will restore normal context only if we are in recording context
-        _ = keyPress( KeyEvent(.macroStop) )
     }
 
     

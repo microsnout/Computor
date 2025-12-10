@@ -20,6 +20,8 @@ enum Const {
         static let appName = "Computor"
         
         static let record = "ç{StatusRedText}RECç{}"
+        
+        static let debug  = "ç{DebugText}DEBUGç{}"
     }
     
     enum Model {
