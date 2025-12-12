@@ -85,7 +85,7 @@ struct DisplayView: View {
 //struct DisplayView_Previews: PreviewProvider {
 //    
 //    static var previews: some View {
-//        @StateObject  var model = CalculatorModel()
+//        @State var model = CalculatorModel()
 //        
 //        ZStack {
 //            Rectangle()

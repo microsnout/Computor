@@ -211,7 +211,8 @@ enum ModalKey: Int {
     case none = 0, selectMemory, newMemory, localMemory, globalMemory, selectMacro
 }
 
-class KeyData : ObservableObject {
+@Observable
+class KeyData {
     //    Origin of pressed key rect
     //    Rect of outer ZStack
     //    Point of dragged finger
@@ -228,9 +229,9 @@ class KeyData : ObservableObject {
     
     var disabledKeys: Set<KeyCode> = []
 
-    @Published var dragPt   = CGPoint.zero
-    @Published var keyDown  = false
-    @Published var modalKey = ModalKey.none
+    /*Published*/ var dragPt   = CGPoint.zero
+    /*Published*/ var keyDown  = false
+    /*Published*/ var modalKey = ModalKey.none
 }
 
 
@@ -243,7 +244,7 @@ let captionFont   = 12.0
 
 
 struct ModalBlock: View {
-    @EnvironmentObject var keyData: KeyData
+    @Environment(KeyData.self) var keyData
 
     var body: some View {
         if keyData.keyDown || keyData.modalKey != .none  {
@@ -269,7 +270,7 @@ struct SubPopMenu: View {
     @AppStorage(.settingsKeyCaptions)
     private var keyCaptions = true
 
-    @EnvironmentObject var keyData: KeyData
+    @Environment(KeyData.self) var keyData
     
     var body: some View {
         if keyData.keyDown {
@@ -358,7 +359,7 @@ struct CustomModalPopup<Content: View>: View {
     
     let myModalKey: ModalKey
     
-    @EnvironmentObject var keyData: KeyData
+    @Environment(KeyData.self) var keyData
 
     @ViewBuilder let content: Content
     
@@ -382,7 +383,7 @@ struct MemorySelectPopup: View, KeyPressHandler {
     /// Select an existing memory if there are any or go directly to new memory popup
     
     @Environment(CalculatorModel.self) var model
-    @EnvironmentObject var keyData: KeyData
+    @Environment(KeyData.self) var keyData
     
     @State private var memorySheet: Bool = false
     
@@ -476,7 +477,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
     /// Select an existing memory if there are any or go directly to new memory popup
     
     @Environment(CalculatorModel.self) var model
-    @EnvironmentObject var keyData: KeyData
+    @Environment(KeyData.self) var keyData
     
     @State private var libSource: LibrarySource = .user
     
@@ -546,7 +547,7 @@ struct localMemoryPopup: View, KeyPressHandler {
     @AppStorage(.settingsKeyCaptions)
     private var greekKeys = false
     
-    @EnvironmentObject var keyData: KeyData
+    @Environment(KeyData.self) var keyData
     
     @State private var memoryOp: KeyCode = .noop
 
@@ -593,8 +594,8 @@ struct KeyView: View {
     let key: Key
     let keyPressHandler: KeyPressHandler
 
-    @EnvironmentObject var keyData: KeyData
     @Environment(CalculatorModel.self) var model
+    @Environment(KeyData.self) var keyData
 
     @AppStorage(.settingsKeyCaptions)
     private var keyCaptions = true
@@ -841,7 +842,7 @@ struct KeypadView: View {
        
     let keyPressHandler: KeyPressHandler
  
-    @EnvironmentObject var keyData: KeyData
+    @Environment(KeyData.self) var keyData
 
     private func partitionKeylist( keys: [Key], rowMax: Int ) -> [[Key]] {
         /// Breakup list of keys into list of rows
@@ -908,7 +909,7 @@ struct KeyStack<Content: View>: View {
     
     let keyPressHandler: KeyPressHandler
     
-    @StateObject var keyData = KeyData()
+    @State var keyData = KeyData()
     
     @ViewBuilder let content: Content
     
@@ -925,9 +926,8 @@ struct KeyStack<Content: View>: View {
         .onGeometryChange( for: CGRect.self, of: {proxy in proxy.frame(in: .global)} ) { newValue in
             keyData.zFrame = newValue
         }
-//        .border(.brown)
         .padding()
         .alignmentGuide(HorizontalAlignment.leading) { _ in  0 }
-        .environmentObject(keyData)
+        .environment(keyData)
     }
 }

@@ -244,7 +244,7 @@ struct SelectModulePopup: View {
     /// Select from list of existing symbol tags, could be memories or macros
     
     @Environment(CalculatorModel.self) var model
-    @EnvironmentObject var keyData: KeyData
+    @Environment(KeyData.self) var keyData
     
     let keySpec: KeySpec = ksModuleKey
     let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)

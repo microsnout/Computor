@@ -79,7 +79,7 @@ struct SelectSymbolPopup<Content: View>: View {
     /// Select from list of existing symbol tags, could be memories or macros
     
     @Environment(CalculatorModel.self) var model
-    @EnvironmentObject var keyData: KeyData
+    @Environment(KeyData.self) var keyData
     
     let keySpec: KeySpec = ksSoftkey
     
