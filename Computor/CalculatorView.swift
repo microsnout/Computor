@@ -15,7 +15,7 @@ struct CalculatorView: View {
     @Environment(\.horizontalSizeClass) var hSizeClass
     @Environment(\.verticalSizeClass) var vSizeClass
 
-    @StateObject var model = CalculatorModel()
+    @State var model = CalculatorModel()
     
     @State private var timer: Timer?
     
@@ -30,17 +30,17 @@ struct CalculatorView: View {
                 PortraitView( model: model )
             }
         }
-        .environmentObject(model)
-        .task {
-            // Load calculator documents and macro modules
-            model.db.loadDatabase()
-            
-            // Activate doc0
-            model.loadModule( modZeroSym )
-            
-            // Set aux display view to mod zero
-            model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleRec( name: "?")
-        }
+        .environment(model)
+//        .task {
+//            // Load calculator documents and macro modules
+//            model.db.loadDatabase()
+//            
+//            // Activate doc0
+//            model.loadModule( modZeroSym )
+//            
+//            // Set aux display view to mod zero
+//            model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleRec( name: "?")
+//        }
         .onAppear() {
             // Create regular timer pulse - 1 sec
             timer = Timer.scheduledTimer( withTimeInterval: Const.Model.clockTick, repeats: true) { _ in
@@ -62,7 +62,7 @@ struct CalculatorView: View {
 
 struct PortraitView : View {
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     @State private var presentSettings: Bool = false
 

@@ -8,7 +8,7 @@ import SwiftUI
 
 
 struct AuxMemoryView: View {
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     var body: some View {
         
@@ -28,7 +28,7 @@ struct AuxMemoryView: View {
 
 
 struct MemoryListView: View {
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
 
     var body: some View {
         VStack {

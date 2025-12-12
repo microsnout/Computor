@@ -381,7 +381,7 @@ struct MemorySelectPopup: View, KeyPressHandler {
     
     /// Select an existing memory if there are any or go directly to new memory popup
     
-    @EnvironmentObject var model: CalculatorModel
+    @Environment(CalculatorModel.self) var model
     @EnvironmentObject var keyData: KeyData
     
     @State private var memorySheet: Bool = false
@@ -475,7 +475,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
     
     /// Select an existing memory if there are any or go directly to new memory popup
     
-    @EnvironmentObject var model: CalculatorModel
+    @Environment(CalculatorModel.self) var model
     @EnvironmentObject var keyData: KeyData
     
     @State private var libSource: LibrarySource = .user
@@ -541,7 +541,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
 
 struct localMemoryPopup: View, KeyPressHandler {
     
-    @EnvironmentObject var model: CalculatorModel
+    @Environment(CalculatorModel.self) var model
     
     @AppStorage(.settingsKeyCaptions)
     private var greekKeys = false
@@ -594,7 +594,7 @@ struct KeyView: View {
     let keyPressHandler: KeyPressHandler
 
     @EnvironmentObject var keyData: KeyData
-    @EnvironmentObject var model: CalculatorModel
+    @Environment(CalculatorModel.self) var model
 
     @AppStorage(.settingsKeyCaptions)
     private var keyCaptions = true

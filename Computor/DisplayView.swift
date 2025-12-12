@@ -21,7 +21,7 @@ struct TypedRegister: View {
 
 
 struct StatusView: View {
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
 
     var body: some View {
         
@@ -45,7 +45,7 @@ struct StatusView: View {
 
 
 struct DisplayView: View {
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     @AppStorage(.settingsPriDispTextSize)
     private var priDispTextSize = TextSize.normal

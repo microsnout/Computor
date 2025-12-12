@@ -226,20 +226,21 @@ struct KeyState {
 // ***********************************************************
 // ***********************************************************
 
-class CalculatorModel: ObservableObject, KeyPressHandler {
+@Observable
+class CalculatorModel: KeyPressHandler {
     
     // Current Calculator State
-    @Published var state  = CalcState()
-    @Published var entry  = EntryState()
-    @Published var aux    = AuxState()
-    @Published var status = StatusState()
-    @Published var kstate = KeyState()
-    @Published var db     = Database()
+    var state  = CalcState()
+    var entry  = EntryState()
+    var aux    = AuxState()
+    var status = StatusState()
+    var kstate = KeyState()
+    var db     = Database()
     
     // Currently active calculator document
-    @Published var activeModName: String = ""
+    var activeModName: String = ""
 
-    @AppStorage(.settingsModalConfirmation)
+    // Pause for confirmation of some functions
     var modalConfirmation = true
     
     // Pause recording when value greater than 0

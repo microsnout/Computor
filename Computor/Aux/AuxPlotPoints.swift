@@ -40,7 +40,7 @@ struct PlotPointsView: View {
     
     
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     var body: some View {
         let tv = model.state.Xtv
@@ -141,7 +141,7 @@ struct PlotPointsView: View {
 
 struct PlotMultiPointView: View {
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     let colorSeq = [Color.black, Color.blue, Color.red, Color.green, Color.orange]
 

@@ -94,7 +94,7 @@ struct MacroEditSheet: View {
     @State var mr: MacroRec
     @State var caption: String
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     var scc: SheetContinuationClosure
     
@@ -243,7 +243,7 @@ struct SelectModulePopup: View {
     
     /// Select from list of existing symbol tags, could be memories or macros
     
-    @EnvironmentObject var model: CalculatorModel
+    @Environment(CalculatorModel.self) var model
     @EnvironmentObject var keyData: KeyData
     
     let keySpec: KeySpec = ksModuleKey

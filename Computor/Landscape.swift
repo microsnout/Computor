@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LandscapeView : View {
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
 
     var body: some View {
         ZStack {

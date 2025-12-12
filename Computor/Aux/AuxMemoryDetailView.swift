@@ -8,7 +8,7 @@ import SwiftUI
 
 
 struct MemoryDetailView: View {
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     @Binding var memRec: MemoryRec?
     
@@ -162,7 +162,7 @@ struct MemoryEditSheet: View {
     @State var mTag: SymbolTag = SymbolTag.Null
     @State var caption: String = ""
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     var scc: MemorySheetContinuationClosure
     

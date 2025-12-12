@@ -126,7 +126,7 @@ extension GraphicsContext {
 
 struct PlotVectorView : View {
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     
     private func getSpecs( _ tv: TaggedValue ) -> (Double, Double, Double, Double) {

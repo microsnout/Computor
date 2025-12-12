@@ -11,7 +11,7 @@ struct MacroDetailView: View {
     
     var mr: MacroRec
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     @State private var refreshView = false
     
@@ -97,7 +97,7 @@ struct MacroCodeListing: View {
     
     var mr: MacroRec
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     func getIndentList( _ opList: MacroOpSeq ) -> [Int] {
         
@@ -238,7 +238,7 @@ struct MacroDetailRightPanel: View {
     
     var mr: MacroRec
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     @State private var symbolSheet = false
     

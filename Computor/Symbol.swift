@@ -312,7 +312,7 @@ typealias SymbolContinuationClosure = ( _ symTag: SymbolTag ) -> Void
 
 struct NewSymbolPopup: View, KeyPressHandler {
     
-    @EnvironmentObject var model: CalculatorModel
+    @Environment(CalculatorModel.self) var model
     @EnvironmentObject var keyData: KeyData
     
     @AppStorage(.settingsKeyCaptions)

@@ -12,7 +12,7 @@ struct ModuleView: View {
     
    @Environment(\.dismiss) private var dismiss
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     // Open macro module edit sheet for adding or creating new modules
     @State private var addItem:    Bool = false

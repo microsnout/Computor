@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ControlView: View {
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
 
     var body: some View {
         

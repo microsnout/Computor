@@ -23,7 +23,7 @@ struct PlotPattern {
 
 struct AuxPlotView : View {
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     static var plotPatternTable: [PlotPattern] = [
         

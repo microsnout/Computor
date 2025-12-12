@@ -8,7 +8,7 @@ import SwiftUI
 
 
 struct AuxMacroView: View {
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     var body: some View {
         
@@ -30,7 +30,7 @@ struct AuxMacroView: View {
 
 
 struct MacroListView: View {
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     @State private var deleteDialog = false
     
@@ -176,7 +176,7 @@ struct ModuleSelectSheet: View {
     
     @Environment(\.dismiss) var dismiss
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     var body: some View {
         

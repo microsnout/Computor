@@ -140,7 +140,7 @@ struct AuxMatrixView: View {
 
 struct AuxRegisterView: View {
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     @State private var position = ScrollPosition( edge: .bottom)
     

@@ -35,7 +35,7 @@ struct AuxiliaryDisplayView: View {
     /// Auxiliary Display - above the primary display
     ///  Horizontal scroll view of 4 panes: memorys, macros, registers and plots
     
-    @StateObject var model: CalculatorModel
+    @State var model: CalculatorModel
     
     @Binding var auxView: AuxDispView
     
