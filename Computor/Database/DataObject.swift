@@ -84,21 +84,16 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
     
     // Not coded
     var objFile: FileT?
-    var touched: Bool
     
     var isObjZero: Bool {
         self.name == objZeroName
-    }
-    
-    var isTouched: Bool {
-        self.touched
     }
     
     private enum CodingKeys: String, CodingKey {
         case id
         case name
         case caption
-        // objFile, touched not coded
+        // objFile not coded
     }
 
     // DataObject computed properties
@@ -114,7 +109,6 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
         self.name = name
         self.caption = caption
         self.objFile = nil
-        self.touched = true
     }
 
     required init( id uuid: UUID, name: String, caption: String? = nil ) {
@@ -123,7 +117,6 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
         self.name = name
         self.caption = caption
         self.objFile = nil
-        self.touched = true
     }
     
     required init(from decoder: any Decoder) throws {
@@ -131,7 +124,6 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
         self.id = try container.decode(UUID.self, forKey: DataObjectRec<FileT>.CodingKeys.id)
         self.name = try container.decode(String.self, forKey: DataObjectRec<FileT>.CodingKeys.name)
         self.caption = try container.decodeIfPresent(String.self, forKey: DataObjectRec<FileT>.CodingKeys.caption)
-        self.touched = false
     }
 
     var objDirName: String { get {""} }
@@ -168,7 +160,6 @@ extension DataObjectRec {
                 print( "saveObject: file: \(self.filename) error: \(error.localizedDescription)")
             }
         }
-        self.touched = false
     }
 
     
@@ -194,7 +185,6 @@ extension DataObjectRec {
             
             // Successful load
             self.objFile = obj
-            self.touched = false
             return obj
         }
         catch {
@@ -205,7 +195,6 @@ extension DataObjectRec {
             let dof = FileT(self)
             self.objFile = dof
             saveObject()
-            self.touched = false
             return dof
         }
     }
@@ -265,7 +254,6 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
     
     var tableName: String
     var objZeroName: String
-    var touched: Bool
     
     var objTable: [ObjRecT]
     
@@ -273,7 +261,6 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
         
         self.tableName = tableName
         self.objZeroName = objZeroName
-        self.touched = true
         self.objTable = []
     }
     
@@ -281,8 +268,6 @@ class ObjectTable<ObjRecT: ObjectRecProtocol> {
 
 
 extension ObjectTable {
-    
-    var isTouched: Bool { self.touched }
     
     func getObjectFileRec( _ name: String ) -> ObjRecT? {
         objTable.first( where: { $0.name == name } )
@@ -349,8 +334,6 @@ extension ObjectTable {
             print( "LoadTable: '\(self.tableFilename)' Not found: set to []" )
             print( "LoadTable Error: \(error.localizedDescription)" )
         }
-        
-        self.touched = false
     }
     
     
@@ -359,18 +342,15 @@ extension ObjectTable {
         
         /// ** Save Table **
         
-        if isTouched {
-            do {
-                let data = try JSONEncoder().encode(objTable)
-                let outfile = Database.documentDirectoryURL().appendingPathComponent( self.tableFilename )
-                try data.write(to: outfile)
-                self.touched = false
-                
-                print( "Save Table: ../\( findPathTail(outfile.path(), from: "Documents" ) )" )
-            }
-            catch {
-                print( "Save Table: Error - \(error.localizedDescription)")
-            }
+        do {
+            let data = try JSONEncoder().encode(objTable)
+            let outfile = Database.documentDirectoryURL().appendingPathComponent( self.tableFilename )
+            try data.write(to: outfile)
+            
+            print( "Save Table: ../\( findPathTail(outfile.path(), from: "Documents" ) )" )
+        }
+        catch {
+            print( "Save Table: Error - \(error.localizedDescription)")
         }
     }
 
@@ -560,7 +540,6 @@ extension ObjectTable {
         
         // Add to Index and save
         objTable.append(rec)
-        self.touched = true
         
         saveTable()
         return rec
@@ -581,7 +560,6 @@ extension ObjectTable {
         let rec = ObjRecT( id: uuid, name: name, caption: nil )
         
         objTable.append(rec)
-        self.touched = true
         
         let mf = rec.loadObject()
         
@@ -620,7 +598,6 @@ extension ObjectTable {
         
         // Remove this module from the index
         objTable.removeAll( where: { $0.name == rec.name || $0.id == rec.id })
-        self.touched = true
         saveTable()
     }
     
@@ -649,7 +626,6 @@ extension ObjectTable {
         
         saveObject(rec)
         
-        self.touched = true
         saveTable()
     }
 

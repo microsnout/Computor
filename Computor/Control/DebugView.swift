@@ -44,6 +44,10 @@ struct DebugView: View {
                 
                 DebugButton( label: "Clear Key Assignments") {
                     model.kstate.keyMap.fnRow.removeAll()
+                    model.aux.macroMod.saveModule()
+                    
+                    model.changed()
+                    model.saveDocument()
                 }
                 
                 DebugButton( label: "Print Key Assignments") {

@@ -181,7 +181,6 @@ extension CalculatorModel {
             
             // Update the caption
             mr.caption = newCap
-            mod.touched = true
             mod.saveModule()
         }
     }
