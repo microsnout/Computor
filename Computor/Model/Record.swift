@@ -546,6 +546,37 @@ extension CalculatorModel {
             }
         }
     }
+
+    
+    func macroPlay( _ mr: MacroRec ) {
+        
+        /// ** Play Macro **
+        /// Run the macro currently loaded in recorder
+        
+        let (kpr, count) = playMacroSeq( mr.opSeq, in: aux.macroMod )
+        
+        if kpr == .stateError {
+            
+            let opSeq = mr.opSeq
+            
+            aux.loadMacro(mr)
+            aux.startDebug()
+            
+            if let lvf = aux.auxLVF {
+                
+                for x in 0 ..< count {
+                    let op = opSeq[x]
+                    let kpr = playSingleOp(op, in: aux.macroMod, with: lvf)
+                    
+                    if kpr == .stateError {
+                        break
+                    }
+                }
+                
+                aux.setError( at: count )
+            }
+        }
+    }
     
     
     func macroStop() {

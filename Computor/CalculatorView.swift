@@ -87,7 +87,7 @@ class AppInitializer {
             model.db.loadDatabase()
 
             // Activate doc0
-            model.loadModule( modZeroSym )
+            model.loadDocument( modZeroSym )
 
             // Set aux display view to mod zero
             model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleRec( name: "?")

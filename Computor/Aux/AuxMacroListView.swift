@@ -65,7 +65,7 @@ struct MacroListView: View {
                 }
             }
 
-            if model.aux.macroMod.symList.isEmpty {
+            if model.aux.macroMod.macroList.isEmpty {
                 Spacer()
                 VStack {
                     // Placeholder for empty macro list
@@ -112,7 +112,7 @@ struct MacroListView: View {
                                     HStack( spacing: 20 ) {
                                         
                                         // PLAY
-                                        Button( action: {  } ) {
+                                        Button( action: { model.macroPlay(mr) } ) {
                                             Image( systemName: "play" )
                                         }
                                         

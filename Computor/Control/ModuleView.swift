@@ -121,7 +121,7 @@ struct ModuleView: View {
     
     
     func loadModule( _ mr: ModuleRec ) {
-        model.loadModule( mr.name )
+        model.loadDocument( mr.name )
         dismiss()
     }
     

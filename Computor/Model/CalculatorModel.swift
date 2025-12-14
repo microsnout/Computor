@@ -665,26 +665,12 @@ class CalculatorModel: KeyPressHandler {
     }
 
     
-    func saveDocument() {
+    // ****************
+    // Paired Functions
+    
+    func loadDocument( _ name: String ) {
         
-        if isChanged {
-            print( "Autosave" )
-
-            if let docRec = db.getModuleFileRec( sym: self.activeModName) {
-                
-                docRec.writeModule() { obj in
-                    obj.state = self.state
-                    obj.keyMap = self.kstate.keyMap
-                    obj.unitData = UserUnitData.uud
-                }
-            }
-            
-            resetChanges()
-        }
-    }
-    
-    
-    func loadModule( _ name: String ) {
+        /// ** Load Document **
         
         if name != self.activeModName {
             
@@ -715,10 +701,31 @@ class CalculatorModel: KeyPressHandler {
             }
         }
     }
+    
+    
+    func saveDocument() {
+        
+        /// ** Save Document **
+        
+        if isChanged {
+            print( "Autosave" )
+            
+            if let docRec = db.getModuleFileRec( sym: self.activeModName) {
+                
+                docRec.writeModule() { obj in
+                    obj.state = self.state
+                    obj.keyMap = self.kstate.keyMap
+                    obj.unitData = UserUnitData.uud
+                }
+            }
+            
+            resetChanges()
+        }
+    }
+
+    // ****************
 
     
-    // **********************************************************************
-    // **********************************************************************
     // **********************************************************************
     
     func execute( _ event: KeyEvent ) -> KeyPressResult {
