@@ -37,9 +37,9 @@ struct AuxState {
     // Currently viewed macro module file
     var macroMod: ModuleRec = ModuleRec( name: "_" )
 
-    // Currently selected macro record - if non-nil displays macro detail view
-    var macroRec: MacroRec? = nil
-    
+    // Currently selected macro record - if non-null displays macro detail view
+    var macroTag: SymbolTag = SymbolTag.Null
+   
     // State of macro detail view - only significant if macroRec is not nil
     var recState: MacroRecState = .inactive
     
@@ -52,6 +52,8 @@ struct AuxState {
     
     // View refresh toggle value
     var refresh: Bool = false
+    
+    static var saveTag: SymbolTag = SymbolTag.Null
 }
 
 
@@ -61,6 +63,19 @@ extension AuxState {
     
     var isRec: Bool { AuxState.recStates.contains( self.recState ) }
     
+    var macroRec: MacroRec? {
+        get {
+            macroMod.getLocalMacro(macroTag)
+        }
+        set {
+            if let mr = newValue {
+                macroTag = mr.symTag
+            }
+            else {
+                macroTag = SymbolTag.Null
+            }
+        }
+    }
     
     // *** Macro Recorder Functions ***
     
@@ -74,7 +89,7 @@ extension AuxState {
             
         case .inactive, .stop:
             // Set macro detail view to mr and switch to macro view pane
-            macroRec   = mr
+            macroTag   = mr.symTag
             activeView = .macroView
             opCursor   = 0
             auxLVF     = nil
@@ -123,7 +138,7 @@ extension AuxState {
         /// This will retrun Aux display to Macro List
 
         stopMacroRecorder()
-        macroRec   = nil
+        macroTag   = SymbolTag.Null
         recState   = .inactive
         errorFlag  = false
     }
@@ -210,7 +225,8 @@ extension AuxState {
             
         case .inactive, .stop:
             // Create new macro rec for modal func
-            macroRec = MacroRec()
+            AuxState.saveTag = macroTag
+            macroTag = SymbolTag.Modal
             activeView = .macroView
             SubPadSpec.disableAllFnSubmenu()
             recState = .recModal
@@ -234,6 +250,8 @@ extension AuxState {
         switch recState {
             
         case .recModal:
+            macroMod.deleteMacro( SymbolTag.Modal )
+            macroTag = AuxState.saveTag
             recState = .stop
 
         case .recNestedModal:

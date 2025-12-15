@@ -297,7 +297,19 @@ extension ModuleRec {
         /// ** Get Macro **
         
         let mf = loadModule()
-        return mf.macroTable.first( where: { $0.symTag == sTag } )
+        
+        if let mr = mf.macroTable.first( where: { $0.symTag == sTag } ) {
+            return mr
+        }
+        
+        if sTag == SymbolTag.Modal {
+            // Create macro record for modal function recording
+            let mr = MacroRec( tag: sTag, caption: "Modal" )
+            addMacro(mr)
+            return mr
+        }
+        
+        return nil
     }
     
     

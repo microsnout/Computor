@@ -47,7 +47,8 @@ extension SymbolTag {
     
     var isNull: Bool { self.tag == 0 }
     var isBlank: Bool { self == SymbolTag.Blank }
-    
+    var isModal: Bool { self == SymbolTag.Modal }
+
     var length: Int {
         var chrs: UInt64 = self.tag & Const.Symbol.chrMask
         
@@ -132,7 +133,7 @@ extension SymbolTag {
 
     func getSymSpecs() -> ( String, [KeyCode], Int, Int, Int ) {
         
-        if isNull || isBlank {
+        if isNull || isBlank || isModal {
             return ( "", [], 0, 0, mod )
         }
         
@@ -169,7 +170,7 @@ extension SymbolTag {
     
     func getRichText() -> String {
         
-        if isNull || isBlank {
+        if isNull || isBlank || isModal {
             return ""
         }
         
@@ -304,6 +305,7 @@ extension SymbolTag {
     
     static var Null: SymbolTag { SymbolTag(.null) }
     static var Blank: SymbolTag { SymbolTag(.blankChar) }
+    static var Modal: SymbolTag { SymbolTag(.modalChar) }
 }
 
 

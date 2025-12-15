@@ -111,7 +111,7 @@ enum KeyCode: Int, Codable {
     case scriptA, scriptB, scriptC, scriptD, scriptE, scriptF, scriptG, scriptH, scriptI, scriptJ, scriptK, scriptL, scriptM
     case scriptN, scriptO, scriptP, scriptQ, scriptR, scriptS, scriptT, scriptU, scriptV, scriptW, scriptX, scriptY, scriptZ
     
-    case blankChar
+    case blankChar, modalChar
     
     case symbolCharEnd
     

@@ -32,7 +32,7 @@ class BlockRecord : EventContext {
     override func onDeactivate(lastEvent: KeyEvent) {
         guard let model = self.model else { assert(false); return }
         
-        model.aux.recordModalBlockEnd()
+        // model.aux.recordModalBlockEnd()
     }
     
     override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {

@@ -133,6 +133,11 @@ class ModalContext : EventContext {
                     // Capture the block macro
                     self.macroFn = mr.opSeq
                     
+                    model.aux.recordModalBlockEnd()
+                    
+                    // model.aux.macroMod.deleteMacro( SymbolTag.Modal )
+                    // model.aux.macroTag = AuxState.saveTag
+                    
                     // Queue a .macro event to execute it
                     model.queueEvent( KeyEvent(.macro) )
                 }
