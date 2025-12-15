@@ -143,7 +143,7 @@ extension CalculatorModel {
         // A blank macro record
         let mr = MacroRec()
         
-        // Bind to null symbol for now - replacing any currently bound
+        // Bind to blank symbol for now - replacing any currently bound
         db.addMacro( mr, to: aux.macroMod )
         
         // Load into recorder

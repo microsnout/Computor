@@ -53,7 +53,7 @@ struct MacroListView: View {
                     }
                     Spacer()
                     
-                    // New macro creation button
+                    // NEW macro creation button
                     Image( systemName: "plus")
                         .foregroundColor( Color("AuxHeaderText") )
                         .padding( [.trailing], 5 )
