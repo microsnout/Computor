@@ -85,6 +85,28 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
     // Not coded
     var objFile: FileT?
     
+#if DEBUG
+    // Not Coded
+    var objLog: [String] = []
+#endif
+    
+    func log( _ str: String ) {
+#if DEBUG
+        self.objLog.append(str)
+#endif
+    }
+    
+    func dumpLog() {
+#if DEBUG
+        print("\nObject Log")
+        for str in objLog {
+            print(str)
+        }
+        print("End Object Log\n")
+        objLog.removeAll()
+#endif
+    }
+
     var isObjZero: Bool {
         self.name == objZeroName
     }
@@ -109,6 +131,8 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
         self.name = name
         self.caption = caption
         self.objFile = nil
+        
+        log("init new id=\(id.uuidString) name=[\(name)]")
     }
 
     required init( id uuid: UUID, name: String, caption: String? = nil ) {
@@ -117,6 +141,8 @@ class DataObjectRec<FileT: DataObjectFile>: ObjectRecProtocol {
         self.name = name
         self.caption = caption
         self.objFile = nil
+        
+        log("init existing id=\(id.uuidString) name=[\(name)]")
     }
     
     required init(from decoder: any Decoder) throws {
@@ -154,14 +180,19 @@ extension DataObjectRec {
                 
                 try data.write(to: outfile)
                 
-                print( "saveObject: wrote out: \(self.filename)")
+                log( "saveObject: wrote out: \(self.filename)")
             }
             catch {
-                print( "saveObject: file: \(self.filename) error: \(error.localizedDescription)")
+                log( "saveObject: file: \(self.filename) error: \(error.localizedDescription)")
             }
         }
+        else {
+            log( "saveObject nil" )
+        }
+        
+        dumpLog()
     }
-
+    
     
     func loadObject() -> FileT {
         
@@ -171,6 +202,7 @@ extension DataObjectRec {
             
             // Object file already loaded
             // print( "loadObject: \(dof.name) already loaded" )
+            log("loadObject already loaded")
             return dof
         }
         
@@ -181,7 +213,7 @@ extension DataObjectRec {
             
             assert( self.id == obj.id && self.name == obj.name )
             
-            print( "loadObject: \(self.name) - \(self.id.uuidString) Loaded" )
+            log( "loadObject: \(self.name) - \(self.id.uuidString) Loaded" )
             
             // Successful load
             self.objFile = obj
@@ -189,7 +221,7 @@ extension DataObjectRec {
         }
         catch {
             // Missing file or bad file - create empty file
-            print( "Creating Object file for index: \(self.description)" )
+            log( "Creating Object file for index: \(self.description)" )
             
             // Create new object file for rec and save it
             let dof = FileT(self)
@@ -202,34 +234,22 @@ extension DataObjectRec {
     
     func readObject( _ readFunc: ( FileT ) -> Void ) {
         
-        if let obj = self.objFile {
-            // Already loaded
-            readFunc(obj)
-        }
-        else {
-            // Load, read, unload
-            let obj = loadObject()
-            readFunc(obj)
-            self.objFile = nil
-        }
+        // Load, read, unload
+        let obj = loadObject()
+        readFunc(obj)
+        
+        log("readObject")
     }
     
     
     func writeObject( _ writeFunc: (FileT) -> Void ) {
         
-        if let obj = self.objFile {
-            // Already loaded
-            writeFunc(obj)
-            saveObject()
-        }
-        else {
-            // Load, write, unload
-            let obj = loadObject()
-            writeFunc(obj)
-            saveObject()
-            self.objFile = nil
-
-        }
+        // Load, write, unload
+        let obj = loadObject()
+        writeFunc(obj)
+        saveObject()
+        
+        log("writeObject")
     }
 }
 

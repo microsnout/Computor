@@ -223,6 +223,8 @@ final class ModuleRec: DataObjectRec<ModuleFile> {
         self.symList = try container.decode( [SymbolTag].self, forKey: .symList)
         
         try super.init( from: decoder)
+        
+        log("init decode id=\(id.uuidString) name=[\(name)] symList=\(String(describing: symList))")
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -230,6 +232,8 @@ final class ModuleRec: DataObjectRec<ModuleFile> {
         try container.encode( symList, forKey: .symList)
         
         try super.encode(to: encoder)
+        
+        log("encode id=\(id.uuidString) name=[\(name)] symList=\(String(describing: symList))")
     }
 
     static func == ( lhs: ModuleRec, rhs: ModuleRec ) -> Bool {
@@ -256,6 +260,9 @@ extension ModuleRec {
     func saveModule() {
         
         /// ** Save Module **
+        
+        log("saveModule name=[\(name)] symList=\(String(describing: symList))")
+        
         saveObject()
     }
     
@@ -299,6 +306,8 @@ extension ModuleRec {
         /// ** Delete Macro **
         ///     Delete a macro from module with given tag
         ///     The null tag is a valid tag for the one allowed Unnamed macro
+        
+        log("deleteMacro \(String(describing: sTag))")
         
         let mf = loadModule()
         mf.macroTable.removeAll( where: { $0.symTag == sTag } )
@@ -352,6 +361,8 @@ extension ModuleRec {
         
         /// ** Change Macro Tag **
         
+        log( "changeMacroTag from[\(String(describing: oldTag))] to[\(String(describing: newTag))]" )
+        
         if let mr = getLocalMacro(oldTag) {
             
             // TODO: check for newTag already in use
@@ -363,10 +374,14 @@ extension ModuleRec {
                 
                 // Update symbol list in mfr rec
                 self.symList[x] = newTag
+                
+                log("changeMacroTag update existing")
             }
             else {
                 // Sym is missing, add it
                 self.symList.append(newTag)
+                
+                log("changeMacroTag append")
                 
                 // assert(false)
             }
