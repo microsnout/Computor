@@ -48,20 +48,6 @@ extension Database {
     
     // ***************
     
-    func loadModule( _ mfr: ModuleRec ) -> ModuleFile {
-        
-        /// ** Load Module **
-        return mfr.loadModule()
-    }
-    
-    
-    func saveModule( _ mfr: ModuleRec ) {
-        
-        /// ** Save Module **
-        mfr.saveModule()
-    }
-    
-    
     func loadDatabase() {
         
         /// ** Load Library **
@@ -190,7 +176,7 @@ extension Database {
         let mf0 = mod0.loadModule()
         mf0.macroTable = []
         mf0.groupTable = [mod0.id]
-        saveModule(mod0)
+        mod0.saveModule()
     }
     
     

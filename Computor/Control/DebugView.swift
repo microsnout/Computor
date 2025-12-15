@@ -101,7 +101,7 @@ struct DebugView: View {
                     model.aux.macroRec = nil
                     
                     let mod0 = model.db.getModZero()
-                    let _ = model.db.loadModule(mod0)
+                    let _ = mod0.loadModule()
                     
                     model.db.modTable.saveTable()
                     
