@@ -272,34 +272,37 @@ func initKeyLayout() {
     SubPadSpec.define( .hr,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.us,  "\u{03BC}s"),
-                        Key(.ms,  "ms"),
-                        Key(.second, "sec"),
-                        Key(.min, "min"),
-                        Key(.hr,  "hr"),
-                        Key(.day, "day"),
-                        Key(.yr,  "yr"),
-                       ]
+                        Key(.us,  "\u{03BC}s",  caption: "Microseconds"),
+                        Key(.ms,  "ms",         caption: "Milliseconds"),
+                        Key(.second, "sec",     caption: "Seconds"),
+                        Key(.min, "min",        caption: "Minutes"),
+                        Key(.hr,  "hr",         caption: "Hours"),
+                        Key(.day, "day",        caption: "Days"),
+                        Key(.yr,  "yr",         caption: "Years"),
+                       ],
+                       caption: "Time"
     )
 
     SubPadSpec.define( .km,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.mm, "mm"),
-                        Key(.cm, "cm"),
-                        Key(.metre,  "m"),
-                        Key(.km, "km"),
-                       ]
+                        Key(.mm, "mm",      caption: "Millimeters"),
+                        Key(.cm, "cm",      caption: "Centimeters"),
+                        Key(.metre,  "m",   caption: "Meters"),
+                        Key(.km, "km",      caption: "Kilometers"),
+                       ],
+                       caption: "Distance"
     )
 
     SubPadSpec.define( .mi,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.inch, "in"),
-                        Key(.ft, "ft"),
-                        Key(.yd,  "yd"),
-                        Key(.mi, "mi"),
-                       ]
+                        Key(.inch, "in",    caption: "Inches"),
+                        Key(.ft, "ft",      caption: "Feet"),
+                        Key(.yd,  "yd",     caption: "Yards"),
+                        Key(.mi, "mi",      caption: "Miles"),
+                       ],
+                       caption: "Distance"
     )
 
     SubPadSpec.define( .clearX,
@@ -316,45 +319,49 @@ func initKeyLayout() {
     SubPadSpec.define( .deg,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.dm,   "dm"),
-                        Key(.dms,  "dms"),
-                        Key(.rad,  "rad"),
-                        Key(.minA, "min"),
-                       ]
+                        Key(.dm,   "dm",  caption: "Deg:Min"),
+                        Key(.dms,  "dms", caption: "Deg:Min:Sec"),
+                        Key(.rad,  "rad", caption: "Radians"),
+                        Key(.minA, "min", caption: ":Min:"),
+                       ],
+                       caption: "Angles"
     )
 
     SubPadSpec.define( .kg,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.mg,    "mg"),
-                        Key(.gram,  "g"),
-                        Key(.kg,    "kg"),
-                        Key(.tonne, "tn"),
-                       ]
+                        Key(.mg,    "mg",   caption: "Milligrams"),
+                        Key(.gram,  "g",    caption: "Grams"),
+                        Key(.kg,    "kg",   caption: "Kilograms"),
+                        Key(.tonne, "tn",   caption: "Metric Tonnes"),
+                       ],
+                       caption: "Mass"
     )
 
     SubPadSpec.define( .lb,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.oz,    "oz"),
-                        Key(.lb,    "lb"),
-                        Key(.stone, "st"),
-                        Key(.ton,   "ton"),
-                       ]
+                        Key(.oz,    "oz",   caption: "Ounces"),
+                        Key(.lb,    "lb",   caption: "Pounds"),
+                        Key(.stone, "st",   caption: "Stones"),
+                        Key(.ton,   "ton",  caption: "Tons"),
+                       ],
+                       caption: "Weight"
     )
 
     SubPadSpec.define( .mL,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.mL,    "mL"),
-                        Key(.liter, "L"),
-                        Key(.floz,  "fl-oz"),
-                        Key(.cup,   "cup"),
-                        Key(.pint,  "pint"),
-                        Key(.quart, "quart"),
-                        Key(.us_gal,"ƒ{0.9}US-gal"),
-                        Key(.gal,   "gal"),
-                       ]
+                        Key(.mL,    "mL",           caption: "Millilitres"),
+                        Key(.liter, "L",            caption: "Litres"),
+                        Key(.floz,  "fl-oz",        caption: "Fluid Oz"),
+                        Key(.cup,   "cup",          caption: "Cups"),
+                        Key(.pint,  "pint",         caption: "Pints"),
+                        Key(.quart, "quart",        caption: "Quarts"),
+                        Key(.us_gal,"ƒ{0.9}US-gal", caption: "U.S. Gallons"),
+                        Key(.gal,   "gal",          caption: "Imperial Gallons"),
+                       ],
+                       caption: "Volume"
     )
     
     SubPadSpec.define( .multiValue,
