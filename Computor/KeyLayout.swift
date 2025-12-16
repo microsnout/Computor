@@ -97,9 +97,9 @@ let psSoftkeyR = PadSpec (
 let psUnitsL = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
-    keys: [ Key(.mL, "mL"),
-            Key(.lb, "lb"),
-            Key(.kg, "kg")
+    keys: [ Key(.unit, "ƒ{0.9}Unit"),
+            Key(.mL,   "mL"),
+            Key(.kg,   "kg")
           ]
 )
 
@@ -331,28 +331,19 @@ func initKeyLayout() {
                        keySpec: ksSubpad,
                        keys: [
                         Key(.mg,    "mg",   caption: "Milligrams"),
-                        Key(.gram,  "g",    caption: "Grams"),
+                        Key(.gram,  "g",    caption: "grams"),
                         Key(.kg,    "kg",   caption: "Kilograms"),
+                        Key(.lb,    "lb",   caption: "Pounds"),
+                        Key(.oz,    "oz",   caption: "Ounces"),
+                        Key(.ton,   "ton",  caption: "Tons"),
                         Key(.tonne, "tn",   caption: "Metric Tonnes"),
                        ],
                        caption: "Mass"
     )
 
-    SubPadSpec.define( .lb,
-                       keySpec: ksSubpad,
-                       keys: [
-                        Key(.oz,    "oz",   caption: "Ounces"),
-                        Key(.lb,    "lb",   caption: "Pounds"),
-                        Key(.stone, "st",   caption: "Stones"),
-                        Key(.ton,   "ton",  caption: "Tons"),
-                       ],
-                       caption: "Weight"
-    )
-
     SubPadSpec.define( .mL,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.mL,    "mL",           caption: "Millilitres"),
                         Key(.liter, "L",            caption: "Litres"),
                         Key(.floz,  "fl-oz",        caption: "Fluid Oz"),
                         Key(.cup,   "cup",          caption: "Cups"),

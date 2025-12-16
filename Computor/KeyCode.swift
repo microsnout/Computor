@@ -9,7 +9,7 @@ import Foundation
 enum KeyCode: Int, Codable {
     
     // Special Keycodes
-    case null = 0, clockTick, enter, backUndo, lib
+    case null = 0, clockTick, enter, backUndo, lib, unit
     
     // Entry mode keys, chs is also a function
     case dot = 10, chs, eex, d000
