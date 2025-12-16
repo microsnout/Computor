@@ -101,6 +101,8 @@ struct MacroEditSheet: View {
     @State private var symName: String = ""
     @State private var kcAssigned: KeyCode? = nil
     
+    @State var dropCode = 0
+    
     struct MacroMoveRec {
         // Information to present to confirmation dialog
         var targetMod: ModuleRec
@@ -108,6 +110,10 @@ struct MacroEditSheet: View {
     
     @State private var moveDialog = false
     @State private var moveRec = MacroMoveRec( targetMod: ModuleRec( name: "" ) )
+    
+    let codeSymbol = 1
+    let codeKey    = 2
+    let codeModule = 3
     
     var body: some View {
         let kcFn: KeyCode? = model.getKeyAssignment( for: mr.symTag, in: model.aux.macroMod)
@@ -128,7 +134,7 @@ struct MacroEditSheet: View {
             .padding( [.top], 5 )
             
             // Symbol Editor
-            SheetCollapsibleView( label: "={Symbol: }\(symName)" ) {
+            SheetCollapsibleView( code: codeSymbol, label: "={Symbol: }\(symName)", drop: $dropCode ) {
                 
                 NewSymbolPopup( tag: mr.symTag ) { newTag in
                     model.changeMacroSymbol( old: mr.symTag, new: newTag)
@@ -140,7 +146,7 @@ struct MacroEditSheet: View {
             SheetTextField( label: "Caption:", placeholder: "-caption-", text: $caption )
             
             // Assigned Key Editor
-            SheetCollapsibleView( label: "={Assigned Key: }\(fnText)" ) {
+            SheetCollapsibleView( code: codeKey, label: "={Assigned Key: }\(fnText)", drop: $dropCode ) {
                 
                 KeyAssignPopup( tag: mr.symTag ) { kc in
                     
@@ -155,7 +161,7 @@ struct MacroEditSheet: View {
             }
             
             // Module Editor
-            SheetCollapsibleView( label: "={Module: }\(modSymStr)" ) {
+            SheetCollapsibleView( code: codeModule, label: "={Module: }\(modSymStr)", drop: $dropCode ) {
                 
                 SelectModulePopup( db: model.db ) { mod in
                     

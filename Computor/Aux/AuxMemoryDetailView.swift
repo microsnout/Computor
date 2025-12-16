@@ -168,6 +168,8 @@ struct MemoryEditSheet: View {
     
     @State private var symName: String = ""
     
+    @State var dropCode: Int = 0
+    
     var body: some View {
         
         VStack( alignment: .leading ) {
@@ -183,7 +185,7 @@ struct MemoryEditSheet: View {
             .padding( [.top], 5 )
             
             // Symbol Editor
-            SheetCollapsibleView( label: "={Symbol: }\(symName)" ) {
+            SheetCollapsibleView( code: 1, label: "={Symbol: }\(symName)", drop: $dropCode ) {
                 
                 NewSymbolPopup( tag: mTag ) { newTag in
                     mTag = newTag

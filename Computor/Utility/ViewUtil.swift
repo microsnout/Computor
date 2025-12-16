@@ -28,7 +28,10 @@ extension View {
 
 struct SheetCollapsibleView<Content: View>: View {
     
+    var code: Int
     var label: String
+    
+    @Binding var drop: Int
     
     @ViewBuilder var content: Content
     
@@ -45,14 +48,21 @@ struct SheetCollapsibleView<Content: View>: View {
                 
                 Button( "", systemImage: isCollapsed ? Const.Icon.chevronDn : Const.Icon.chevronUp ) {
                     
-                    withAnimation {
-                        isCollapsed.toggle()
+                    if drop == code {
+                        withAnimation {
+                            drop = 0
+                        }
+                    }
+                    else {
+                        withAnimation {
+                            drop = code
+                        }
                     }
                 }
             }
             .padding(0)
             
-            if !isCollapsed {
+            if drop == code {
                 content
                     .transition( .asymmetric( insertion: .push(from: .top), removal: .push( from: .bottom)) )
             }
