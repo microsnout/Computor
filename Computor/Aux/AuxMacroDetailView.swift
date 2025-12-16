@@ -242,6 +242,8 @@ struct MacroDetailRightPanel: View {
     
     @State private var symbolSheet = false
     
+    @State private var confirmRec = false
+    
     @Binding var refreshView: Bool
     
     
@@ -394,7 +396,12 @@ struct MacroDetailRightPanel: View {
                         
                         // RECORD
                         Button {
-                            model.macroRecord( execute: recordExecute )
+                            if model.aux.recState == .stop {
+                                confirmRec = true
+                            }
+                            else {
+                                model.macroRecord( execute: recordExecute )
+                            }
                         } label: {
                             Image( systemName: Const.Icon.record).frame( minWidth: 0 )
                         }
@@ -441,8 +448,24 @@ struct MacroDetailRightPanel: View {
             .presentationBackground( Color("ControlBack") )
         }
         
-        // .border(.red)
-        // .showSizes([.current])
+        .confirmationDialog("Confirm Deletion", isPresented: $confirmRec ) {
+            
+            Button("Re-record macro?") {
+                
+                model.macroRecord( execute: recordExecute )
+            }
+            
+            Button("Insert at beginning?") {
+                
+                model.aux.startDebug()
+                model.macroRecord( execute: recordExecute )
+            }
+            
+            Button("Cancel", role: .cancel) {
+                // Nothing to do
+            }
+        }
+
     }
 }
 
