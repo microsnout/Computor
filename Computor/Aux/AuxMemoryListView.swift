@@ -38,7 +38,7 @@ struct MemoryListView: View {
                 
                 HStack {
                     Spacer()
-                    RichText( "Memory List", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                    RichText( "Memory", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                     Spacer()
                 }
             }
@@ -47,7 +47,7 @@ struct MemoryListView: View {
                 Spacer()
                 VStack {
                     // Placeholder for empty memory list
-                    Text("Memory List")
+                    Text("Memory")
                         .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
                 }
                 Spacer()

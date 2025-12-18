@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-
+@Observable
 class MemoryRec: Codable, Identifiable, Hashable, Equatable {
     var tag:     SymbolTag
     var caption: String? = nil
@@ -30,6 +30,7 @@ class MemoryRec: Codable, Identifiable, Hashable, Equatable {
 }
 
 
+@Observable
 class MacroRec: Codable, Identifiable, TaggedItem {
     var symTag:     SymbolTag
     var caption:    String? = nil
