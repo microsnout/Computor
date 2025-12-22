@@ -397,7 +397,15 @@ struct MacroDetailRightPanel: View {
                         // RECORD
                         Button {
                             if model.aux.recState == .stop {
-                                confirmRec = true
+                                if model.aux.macroRec?.isEmpty ?? false {
+                                    
+                                    // Empty macro - start recording
+                                    model.macroRecord( execute: recordExecute )
+                                }
+                                else {
+                                    // Confirm replacement of existing macro
+                                    confirmRec = true
+                                }
                             }
                             else {
                                 model.macroRecord( execute: recordExecute )

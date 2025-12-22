@@ -343,7 +343,6 @@ class CalculatorModel: KeyPressHandler {
         installMatrix(self)
         installComplex(self)
         installVector(self)
-        installFunctions(self)
     }
     
     

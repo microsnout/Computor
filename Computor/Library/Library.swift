@@ -7,7 +7,7 @@
 import Foundation
 
 
-func installFunctions( _ model: CalculatorModel ) {
+func installFunctions() {
     
     /// ** Install Fuctions **
     
