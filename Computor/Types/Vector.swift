@@ -7,34 +7,34 @@
 import Foundation
 
 
-func installVector( _ model: CalculatorModel ) {
+func installVector() {
     
     CalculatorModel.defineOpPatterns( .chs, [
         
         /// Sign change +/-  Invert direction of vector
         
-        OpPattern( [ .X([.vector]) ] ) { s0 in
+        OpPattern( [ .X([.vector]) ] ) { model, s0 in
             var s1 = s0
             let (x, y) = s0.Xtv.getVector()
             s1.setVectorValue( -x,-y, tag: s0.Xt, fmt: s0.Xfmt )
             return (KeyPressResult.stateChange, s1)
         },
         
-        OpPattern( [ .X([.vector3D]) ] ) { s0 in
+        OpPattern( [ .X([.vector3D]) ] ) { model, s0 in
             var s1 = s0
             let (x, y, z) = s0.Xtv.getVector3D()
             s1.setVector3DValue( -x,-y,-z, tag: s0.Xt, fmt: s0.Xfmt )
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.polar]) ] ) { s0 in
+        OpPattern( [ .X([.polar]) ] ) { model, s0 in
             var s1 = s0
             let (r, w) = s0.Xtv.getPolar()
             s1.setPolarValue( r, w >= Double.pi ? (w - Double.pi) : (w + Double.pi), tag: s0.Xt, fmt: s0.Xfmt )
             return (KeyPressResult.stateChange, s1)
         },
         
-        OpPattern( [ .X([.spherical]) ] ) { s0 in
+        OpPattern( [ .X([.spherical]) ] ) { model, s0 in
             var s1 = s0
             let (x, y, z) = s0.Xtv.getVector3D()
             let (r, w, p) = rect2spherical(x,y,z)
@@ -47,14 +47,14 @@ func installVector( _ model: CalculatorModel ) {
         
         /// Absolute value of vector - length
         
-        OpPattern( [ .X([.vector, .polar]) ] ) { s0 in
+        OpPattern( [ .X([.vector, .polar]) ] ) { model, s0 in
             var s1 = s0
             let (r, _) = s0.Xtv.getPolar()
             s1.setRealValue( abs(r), tag: s0.Xt, fmt: s0.Xfmt )
             return (KeyPressResult.stateChange, s1)
         },
         
-        OpPattern( [ .X([.vector3D, .spherical]) ] ) { s0 in
+        OpPattern( [ .X([.vector3D, .spherical]) ] ) { model, s0 in
             var s1 = s0
             let (r, _, _) = s0.Xtv.getSpherical()
             s1.setRealValue( abs(r), tag: s0.Xt, fmt: s0.Xfmt )
@@ -64,7 +64,7 @@ func installVector( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .zArg, [
         
-        OpPattern( [ .X([.vector, .polar]) ] ) { s0 in
+        OpPattern( [ .X([.vector, .polar]) ] ) { model, s0 in
             var s1 = s0
             let (_, w) = s0.Xtv.getPolar()
             
@@ -82,7 +82,7 @@ func installVector( _ model: CalculatorModel ) {
         
         /// Make 2D vector from 2 reals, one polar vector or a complex number
         
-        OpPattern( [ .X([.real]), .Y([.real])], where: { $0.Xt == $0.Yt } ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.real])], where: { $0.Xt == $0.Yt } ) { model, s0 in
             
             // Create 2D vector value
             var s1 = s0
@@ -93,7 +93,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.polar]) ] ) { s0 in
+        OpPattern( [ .X([.polar]) ] ) { model, s0 in
             
             // Convert polar to rect co-ords
             var s1 = s0
@@ -103,7 +103,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Convert complex to vector
             var s1 = s0
@@ -122,7 +122,7 @@ func installVector( _ model: CalculatorModel ) {
         
         ///  Make a polar vector from 2 reals, a 2D vector or a complex number
         
-        OpPattern( [ .X([.real]), .Y([.real])], where: degTestY ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.real])], where: degTestY ) { model, s0 in
             
             // Create 2D polar value
             var s1 = s0
@@ -145,7 +145,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.vector]) ] ) { s0 in
+        OpPattern( [ .X([.vector]) ] ) { model, s0 in
             
             // Convert 2D vector to polar
             var s1 = s0
@@ -155,7 +155,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Convert complex to polar
             var s1 = s0
@@ -171,7 +171,7 @@ func installVector( _ model: CalculatorModel ) {
         /// Make a 3D vector from 3 reals (all of the same type) or a spherical vector
         
         OpPattern( [ .X([.real]), .Y([.real]), .Z([.real]) ],
-                   where: { $0.Xt == $0.Yt  &&  $0.Yt == $0.Zt } ) { s0 in
+                   where: { $0.Xt == $0.Yt  &&  $0.Yt == $0.Zt } ) { model, s0 in
             
             // Create 2D vector value
             var s1 = s0
@@ -184,7 +184,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.spherical]) ] ) { s0 in
+        OpPattern( [ .X([.spherical]) ] ) { model, s0 in
             
             // Convert polar to rect co-ords
             var s1 = s0
@@ -203,7 +203,7 @@ func installVector( _ model: CalculatorModel ) {
         /// Make a spherical vector from 3 reals or a 3D vector
         
         OpPattern( [ .X([.real]), .Y([.real]), .Z([.real]) ],
-                   where: { degTestY($0) && degTestZ($0) } ) { s0 in
+                   where: { degTestY($0) && degTestZ($0) } ) { model, s0 in
                        
            // Create 2D vector value
            var s1 = s0
@@ -229,7 +229,7 @@ func installVector( _ model: CalculatorModel ) {
            return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.vector3D]) ] ) { s0 in
+        OpPattern( [ .X([.vector3D]) ] ) { model, s0 in
             
             // Convert rect to spherical
             var s1 = s0
@@ -245,7 +245,7 @@ func installVector( _ model: CalculatorModel ) {
         
         /// Addition of vectors
         
-        OpPattern( [ .X([.vector, .polar]), .Y([.vector])] ) { s0 in
+        OpPattern( [ .X([.vector, .polar]), .Y([.vector])] ) { model, s0 in
             
             // 2D vector ADDITION
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
@@ -263,7 +263,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateError, nil)
         },
         
-        OpPattern( [ .X([.polar, .vector]), .Y([.polar])] ) { s0 in
+        OpPattern( [ .X([.polar, .vector]), .Y([.polar])] ) { model, s0 in
             
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
                 var s1 = s0
@@ -283,7 +283,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateError, nil)
         },
 
-        OpPattern( [ .X([.vector3D, .spherical]), .Y([.vector3D])] ) { s0 in
+        OpPattern( [ .X([.vector3D, .spherical]), .Y([.vector3D])] ) { model, s0 in
             
             // 3D vector ADDITION
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
@@ -301,7 +301,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateError, nil)
         },
         
-        OpPattern( [ .X([.spherical, .vector3D]), .Y([.spherical])] ) { s0 in
+        OpPattern( [ .X([.spherical, .vector3D]), .Y([.spherical])] ) { model, s0 in
             
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
                 var s1 = s0
@@ -326,7 +326,7 @@ func installVector( _ model: CalculatorModel ) {
         
         /// Vector Subtraction operations
         
-        OpPattern( [ .X([.vector, .polar]), .Y([.vector])] ) { s0 in
+        OpPattern( [ .X([.vector, .polar]), .Y([.vector])] ) { model, s0 in
             
             // 2D vector subtraction
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
@@ -344,7 +344,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateError, nil)
         },
         
-        OpPattern( [ .X([.polar, .vector]), .Y([.polar])] ) { s0 in
+        OpPattern( [ .X([.polar, .vector]), .Y([.polar])] ) { model, s0 in
             
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
                 var s1 = s0
@@ -364,7 +364,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateError, nil)
         },
 
-        OpPattern( [ .X([.vector3D, .spherical]), .Y([.vector3D])] ) { s0 in
+        OpPattern( [ .X([.vector3D, .spherical]), .Y([.vector3D])] ) { model, s0 in
             
             // 3D vector ADDITION
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
@@ -382,7 +382,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateError, nil)
         },
         
-        OpPattern( [ .X([.spherical, .vector3D]), .Y([.spherical])] ) { s0 in
+        OpPattern( [ .X([.spherical, .vector3D]), .Y([.spherical])] ) { model, s0 in
             
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
                 var s1 = s0
@@ -408,7 +408,7 @@ func installVector( _ model: CalculatorModel ) {
         
         /// Multiplication of vector by a scalar real
         
-        OpPattern( [ .X([.real]), .Y([.vector])] ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.vector])] ) { model, s0 in
             
             // Scale 2D vector
             var s1 = s0
@@ -423,7 +423,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.real]), .Y([.polar])], where: { $0.Xt == tagUntyped } ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.polar])], where: { $0.Xt == tagUntyped } ) { model, s0 in
             
             // Scale 2D vector
             var s1 = s0
@@ -436,7 +436,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.polar]), .Y([.polar])], where: { $0.Xt == $0.Yt } ) { s0 in
+        OpPattern( [ .X([.polar]), .Y([.polar])], where: { $0.Xt == $0.Yt } ) { model, s0 in
             
             // Multiply Polars which could by considered complex values
             var s1 = s0
@@ -449,7 +449,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.real]), .Y([.vector3D])], where: { $0.Xt == tagUntyped } ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.vector3D])], where: { $0.Xt == tagUntyped } ) { model, s0 in
             
             // Scale 3D vector
             var s1 = s0
@@ -462,7 +462,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.real]), .Y([.spherical])], where: { $0.Xt == tagUntyped } ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.spherical])], where: { $0.Xt == tagUntyped } ) { model, s0 in
             
             // Scale spherical vector
             var s1 = s0
@@ -479,7 +479,7 @@ func installVector( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .divide, [
         
-        OpPattern( [ .X([.polar]), .Y([.polar])], where: { $0.Xt == $0.Yt } ) { s0 in
+        OpPattern( [ .X([.polar]), .Y([.polar])], where: { $0.Xt == $0.Yt } ) { model, s0 in
             
             // Divide Polars which could by considered complex values
             var s1 = s0
@@ -498,7 +498,7 @@ func installVector( _ model: CalculatorModel ) {
         
         /// Vector  dot product
         
-        OpPattern( [ .X([.vector, .polar]), .Y([.vector, .polar])] ) { s0 in
+        OpPattern( [ .X([.vector, .polar]), .Y([.vector, .polar])] ) { model, s0 in
             
             // 2D vector dot product
             if let (tag, ratio) = typeProduct( s0.Yt, s0.Xt) {
@@ -516,7 +516,7 @@ func installVector( _ model: CalculatorModel ) {
             return (KeyPressResult.stateError, nil)
         },
         
-        OpPattern( [ .X([.vector3D, .spherical]), .Y([.vector3D, .spherical])] ) { s0 in
+        OpPattern( [ .X([.vector3D, .spherical]), .Y([.vector3D, .spherical])] ) { model, s0 in
             
             // 2D vector dot product
             if let (tag, ratio) = typeProduct( s0.Yt, s0.Xt) {
@@ -542,7 +542,7 @@ func installVector( _ model: CalculatorModel ) {
     CalculatorModel.defineOpPatterns( .matrix, [
         
         OpPattern( [ .X([.real]), .Y([.vector, .complex]) ],
-                   where: { s0 in isInt(s0.X) } ) { s0 in
+                   where: { s0 in isInt(s0.X) } ) { model, s0 in
                        
                        let n = Int(s0.X)
                        
@@ -560,7 +560,7 @@ func installVector( _ model: CalculatorModel ) {
                    },
 
         OpPattern( [ .X([.real]), .Y([.polar]) ],
-                   where: { s0 in isInt(s0.X) } ) { s0 in
+                   where: { s0 in isInt(s0.X) } ) { model, s0 in
                        
                        let n = Int(s0.X)
                        
@@ -588,7 +588,7 @@ func installVector( _ model: CalculatorModel ) {
         // TODO: Add index op for spherical
 
         OpPattern( [ .X([.real]), .Y([.vector3D]) ],
-                   where: { s0 in isInt(s0.X) } ) { s0 in
+                   where: { s0 in isInt(s0.X) } ) { model, s0 in
                        
                        let n = Int(s0.X)
                        

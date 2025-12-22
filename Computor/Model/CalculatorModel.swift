@@ -123,7 +123,7 @@ protocol StateOperatorEx {
     
     /// Extended version of StateOperator that returns a key press result as well as a possible new state
     
-    func transition(_ s0: CalcState ) -> (KeyPressResult, CalcState?)
+    func transition( _ model: CalculatorModel, _ s0: CalcState ) -> (KeyPressResult, CalcState?)
 }
 
 // *********** *********** *********** *********** *********** *********** *********** ***********
@@ -339,10 +339,6 @@ class CalculatorModel: KeyPressHandler {
         self.changeCount = 0
         
         pushContext( NormalContext() )
-        
-        installMatrix(self)
-        installComplex(self)
-        installVector(self)
     }
     
     
@@ -947,7 +943,7 @@ class CalculatorModel: KeyPressHandler {
                         
                         // Transition to new calculator state based on operation
                         
-                        let (opResult, opState): (_: KeyPressResult, _: CalcState?) = pattern.transition(state)
+                        let (opResult, opState): (_: KeyPressResult, _: CalcState?) = pattern.transition(self, state)
                         
                         if let newState = opState {
                             

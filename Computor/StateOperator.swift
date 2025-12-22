@@ -8,19 +8,22 @@ import SwiftUI
 import OSLog
 
 
+typealias OpPatternClosure = (CalculatorModel, CalcState) -> (KeyPressResult, CalcState?)
+
+
 struct OpPattern : StateOperatorEx {
     
     let regPattern: RegisterPattern
     
-    let block: (CalcState) -> (KeyPressResult, CalcState?)
+    let block: OpPatternClosure
     
-    init( _ pattern: [RegisterSpec], where test: StateTest? = nil, _ block: @escaping (CalcState) -> (KeyPressResult, CalcState?) ) {
+    init( _ pattern: [RegisterSpec], where test: StateTest? = nil, _ block: @escaping OpPatternClosure ) {
         self.regPattern = RegisterPattern(pattern, test)
         self.block = block
     }
 
-    func transition(_ s0: CalcState ) -> (KeyPressResult, CalcState?) {
-        return block(s0)
+    func transition(_ model: CalculatorModel, _ s0: CalcState ) -> (KeyPressResult, CalcState?) {
+        return block(model, s0)
     }
 }
 

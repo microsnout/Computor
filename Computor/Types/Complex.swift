@@ -8,7 +8,7 @@ import Foundation
 import Numerics
 
 
-func installComplex( _ model: CalculatorModel ) {
+func installComplex() {
     
     // Set of allowed types
     let zSet: ValueTypeSet = [.complex, .real, .rational]
@@ -18,7 +18,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .plus, [
         
-        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { s0 in
+        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { model, s0 in
             
             // Complex ADDITION
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
@@ -42,7 +42,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .chs, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             var s1 = s0
             let z = s0.Xtv.getComplex()
             s1.setComplexValue( Comp(-z.real, -z.imaginary), tag: s0.Xt, fmt: s0.Xfmt )
@@ -53,7 +53,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .minus, [
         
-        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { s0 in
+        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { model, s0 in
             
             // Complex SUBTRACTION
             if let ratio = typeAddable( s0.Yt, s0.Xt) {
@@ -78,7 +78,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .times, [
         
-        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { s0 in
+        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { model, s0 in
             
             // Complex MULTIPLICATION
             if let (tagProduct, ratio) = typeProduct(s0.Yt, s0.Xt ) {
@@ -102,7 +102,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .divide, [
         
-        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { s0 in
+        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { model, s0 in
             
             // Complex DIVISION
             if let (tagProduct, ratio) = typeProduct(s0.Yt, s0.Xt, quotient: true ) {
@@ -129,7 +129,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .sqrt, [
         
-        OpPattern( [ .X([.real]) ], where: { $0.X < 0.0 } ) { s0 in
+        OpPattern( [ .X([.real]) ], where: { $0.X < 0.0 } ) { model, s0 in
             
             // Square root of negative real value, return a complex
             var s1 = s0
@@ -141,7 +141,7 @@ func installComplex( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .x2, [
         
-        OpPattern( [ .X([.complex])] ) { s0 in
+        OpPattern( [ .X([.complex])] ) { model, s0 in
             
             // Complex SQUARE
             if let (tagProduct, _) = typeProduct(s0.Xt, s0.Xt ) {
@@ -162,7 +162,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .x3, [
         
-        OpPattern( [ .X([.complex])] ) { s0 in
+        OpPattern( [ .X([.complex])] ) { model, s0 in
             
             // Complex SQUARE
             if let (tagProduct, _) = typeProduct(s0.Xt, s0.Xt ) {
@@ -183,7 +183,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .abs, [
         
-        OpPattern( [ .X([.complex])] ) { s0 in
+        OpPattern( [ .X([.complex])] ) { model, s0 in
             
             // Complex ABSOLUTE
             var s1 = s0
@@ -198,7 +198,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .zRe, [
         
-        OpPattern( [ .X([.complex])] ) { s0 in
+        OpPattern( [ .X([.complex])] ) { model, s0 in
             
             // Complex REAL value
             var s1 = s0
@@ -211,7 +211,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .zIm, [
         
-        OpPattern( [ .X([.complex])] ) { s0 in
+        OpPattern( [ .X([.complex])] ) { model, s0 in
             
             // Complex REAL value
             var s1 = s0
@@ -224,7 +224,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .zArg, [
         
-        OpPattern( [ .X([.complex])] ) { s0 in
+        OpPattern( [ .X([.complex])] ) { model, s0 in
             
             // Complex IMAGINARY value
             var s1 = s0
@@ -237,7 +237,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .zConj, [
         
-        OpPattern( [ .X([.complex])] ) { s0 in
+        OpPattern( [ .X([.complex])] ) { model, s0 in
             
             // Complex CONJUGATE
             var s1 = s0
@@ -250,7 +250,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .zNorm, [
         
-        OpPattern( [ .X([.complex])] ) { s0 in
+        OpPattern( [ .X([.complex])] ) { model, s0 in
             
             // Complex CONJUGATE
             var s1 = s0
@@ -268,7 +268,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .inv, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex RECIPROCOL
             if let (tagProduct, _) = typeProduct(tagUntyped, s0.Xt, quotient: true ) {
@@ -291,7 +291,7 @@ func installComplex( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .eExp, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex exponential
             var s1 = s0
@@ -304,7 +304,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .cosh, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex cosh
             var s1 = s0
@@ -317,7 +317,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .sinh, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex sinh
             var s1 = s0
@@ -330,7 +330,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .tanh, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex tanh
             var s1 = s0
@@ -343,7 +343,7 @@ func installComplex( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .cos, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex cos
             var s1 = s0
@@ -356,7 +356,7 @@ func installComplex( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .sin, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex sin
             var s1 = s0
@@ -369,7 +369,7 @@ func installComplex( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .tan, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex tan
             var s1 = s0
@@ -384,7 +384,7 @@ func installComplex( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .log, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex log
             var s1 = s0
@@ -397,7 +397,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .acosh, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex acosh
             var s1 = s0
@@ -410,7 +410,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .asinh, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex asinh
             var s1 = s0
@@ -423,7 +423,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .atanh, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex atanh
             var s1 = s0
@@ -436,7 +436,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .acos, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex acos
             var s1 = s0
@@ -449,7 +449,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .asin, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex asin
             var s1 = s0
@@ -462,7 +462,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .atan, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex atan
             var s1 = s0
@@ -477,7 +477,7 @@ func installComplex( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .y2x, [
         
-        OpPattern( [ .X([.complex]), .Y([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]), .Y([.complex]) ] ) { model, s0 in
             
             // Complex pow y2x
             var s1 = s0
@@ -488,7 +488,7 @@ func installComplex( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.real]), .Y([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.real]), .Y([.complex]) ] ) { model, s0 in
             
             // Complex pow y2x
             var s1 = s0
@@ -511,7 +511,7 @@ func installComplex( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .sqrt, [
         
-        OpPattern( [ .X([.complex]) ] ) { s0 in
+        OpPattern( [ .X([.complex]) ] ) { model, s0 in
             
             // Complex square root
             var s1 = s0
@@ -526,7 +526,7 @@ func installComplex( _ model: CalculatorModel ) {
 
     CalculatorModel.defineOpPatterns( .complex, [
         
-        OpPattern( [ .X([.vector])] ) { s0 in
+        OpPattern( [ .X([.vector])] ) { model, s0 in
             
             // Vector to Complex
             var s1 = s0
@@ -538,7 +538,7 @@ func installComplex( _ model: CalculatorModel ) {
             return (KeyPressResult.stateChange, s1)
         },
 
-        OpPattern( [ .X([.polar]) ] ) { s0 in
+        OpPattern( [ .X([.polar]) ] ) { model, s0 in
             
             // Polar to Complex
             var s1 = s0

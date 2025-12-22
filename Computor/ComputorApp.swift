@@ -19,6 +19,12 @@ struct ComputorApp: App {
         UnitDef.buildStdUnitData()
         TypeDef.buildStdTypeData()
         
+        // Install Types
+        installMatrix()
+        installComplex()
+        installVector()
+
+        // Install Library Functions
         installFunctions()
     }
     

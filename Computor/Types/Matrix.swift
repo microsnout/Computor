@@ -88,13 +88,13 @@ extension TaggedValue {
 }
 
 
-func installMatrix( _ model: CalculatorModel ) {
+func installMatrix() {
     
     let allTypes: Set<ValueType> = [.real, .rational, .complex, .vector, .vector3D, .polar, .spherical]
     
     CalculatorModel.defineOpPatterns( .seq, [
         
-        OpPattern( [ .X([.real]), .Y(allTypes), .Z(allTypes) ], where: { s0 in isInt(s0.X) } ) { s0 in
+        OpPattern( [ .X([.real]), .Y(allTypes), .Z(allTypes) ], where: { s0 in isInt(s0.X) } ) { model, s0 in
                        
             model.withModalConfirmation( prompt: "Sequence", regLabels: ["Number", "Inc", "Initial"] ) { model in
                 
@@ -148,7 +148,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .range, [
         
-        OpPattern( [ .X([.real]) ], where: { s0 in isInt(s0.X) } ) { s0 in
+        OpPattern( [ .X([.real]) ], where: { s0 in isInt(s0.X) } ) { model, s0 in
             
             var s1 = s0
             let n = Int(floor(s0.X))
@@ -167,7 +167,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .mapX, [
         
-        OpPattern( [ .X(allTypes, .matrix) ], where: { s0 in s0.Xtv.rows == 1 } ) { s0 in
+        OpPattern( [ .X(allTypes, .matrix) ], where: { s0 in s0.Xtv.rows == 1 } ) { model, s0 in
             
             // Create a Reduce function obj capturing the value list and mode reference
             let mapFn = MapFunctionX( valueList: s0.Xtv )
@@ -182,7 +182,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .mapXY, [
         
-        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .matrix) ], where: { s0 in s0.Xtv.rows == 1 && s0.Ytv.rows == 1 } ) { s0 in
+        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .matrix) ], where: { s0 in s0.Xtv.rows == 1 && s0.Ytv.rows == 1 } ) { model, s0 in
             
             // Create a Reduce function obj capturing the value list and mode reference
             let mapFn = MapFunctionXY( valueListX: s0.Xtv, valueListY: s0.Ytv )
@@ -197,7 +197,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .reduce, [
         
-        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .simple) ], where: { s0 in s0.Xtv.rows == 1 } ) { s0 in
+        OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .simple) ], where: { s0 in s0.Xtv.rows == 1 } ) { model, s0 in
             
             // Create a Reduce function obj capturing the value list and mode reference
             let reduceFn = ReduceFunction( valueList: s0.Xtv )
@@ -213,7 +213,7 @@ func installMatrix( _ model: CalculatorModel ) {
     CalculatorModel.defineOpPatterns( .addRow, [
         
         OpPattern( [ .X(allTypes, .any), .Y(allTypes, .any) ],
-                   where: { s0 in s0.Xtv.cols == s0.Ytv.cols && s0.Xtv.vtp == s0.Ytv.vtp && s0.Xtv.rows == 1 } ) { s0 in
+                   where: { s0 in s0.Xtv.cols == s0.Ytv.cols && s0.Xtv.vtp == s0.Ytv.vtp && s0.Xtv.rows == 1 } ) { model, s0 in
                        
                        let rowsY = s0.Ytv.rows
                        
@@ -230,7 +230,7 @@ func installMatrix( _ model: CalculatorModel ) {
     CalculatorModel.defineOpPatterns( .addCol, [
         
         OpPattern( [ .X(allTypes, .any), .Y(allTypes, .any) ],
-                   where: { s0 in s0.Xtv.rows == s0.Ytv.rows && s0.Xtv.vtp == s0.Ytv.vtp && s0.Xtv.cols == 1 } ) { s0 in
+                   where: { s0 in s0.Xtv.rows == s0.Ytv.rows && s0.Xtv.vtp == s0.Ytv.vtp && s0.Xtv.cols == 1 } ) { model, s0 in
             
                        let colsY = s0.Ytv.cols
                        
@@ -247,7 +247,7 @@ func installMatrix( _ model: CalculatorModel ) {
     CalculatorModel.defineOpPatterns( .dotProduct, [
         
         OpPattern( [.X([.real], .matrix), .Y([.real], .matrix)],
-                   where: { $0.Xtv.isRowMatrix && $0.Ytv.isRowMatrix && $0.Xtv.cols == $0.Ytv.cols  } ) { s0 in
+                   where: { $0.Xtv.isRowMatrix && $0.Ytv.isRowMatrix && $0.Xtv.cols == $0.Ytv.cols  } ) { model, s0 in
                        var s1 = s0
                        s1.stackDrop()
                        
@@ -263,7 +263,7 @@ func installMatrix( _ model: CalculatorModel ) {
                    },
 
         OpPattern( [.X([.real], .matrix), .Y([.real], .matrix)],
-                   where: { $0.Xtv.isColMatrix && $0.Ytv.isColMatrix && $0.Xtv.rows == $0.Ytv.rows  } ) { s0 in
+                   where: { $0.Xtv.isColMatrix && $0.Ytv.isColMatrix && $0.Xtv.rows == $0.Ytv.rows  } ) { model, s0 in
                        var s1 = s0
                        s1.stackDrop()
 
@@ -283,7 +283,7 @@ func installMatrix( _ model: CalculatorModel ) {
     CalculatorModel.defineOpPatterns( .times, [
         
         OpPattern( [.X([.real], .matrix), .Y([.real], .matrix)],
-                   where: { $0.Xtv.rows == $0.Ytv.cols && $0.Xvtp == $0.Yvtp  } ) { s0 in
+                   where: { $0.Xtv.rows == $0.Ytv.cols && $0.Xvtp == $0.Yvtp  } ) { model, s0 in
                        
                        var s1 = s0
                        s1.stackDrop()
@@ -312,7 +312,7 @@ func installMatrix( _ model: CalculatorModel ) {
                    },
         
         
-        OpPattern( [.X([.real]), .Y([.real], .matrix)] ) { s0 in
+        OpPattern( [.X([.real]), .Y([.real], .matrix)] ) {model, s0 in
             
             /// Multiply any matrix by a real scalar
             
@@ -332,7 +332,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .transpose, [
         
-        OpPattern( [.X(allTypes, .matrix)] ) { s0 in
+        OpPattern( [.X(allTypes, .matrix)] ) { model, s0 in
             
             var s1 = s0
             let (_, rows, cols) = s0.Xtv.getShape()
@@ -357,7 +357,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .identity, [
         
-        OpPattern( [.X([.real])], where: { isInt($0.X) } ) { s0 in
+        OpPattern( [.X([.real])], where: { isInt($0.X) } ) { model, s0 in
             
             var s1 = s0
             
@@ -375,7 +375,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .minX, [
         
-        OpPattern( [.X([.real], .matrix)], where: { $0.Xtv.cols > 1 } ) { s0 in
+        OpPattern( [.X([.real], .matrix)], where: { $0.Xtv.cols > 1 } ) { model, s0 in
             
             var s1 = s0
             s1.stackDrop()
@@ -396,7 +396,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .maxX, [
         
-        OpPattern( [.X([.real], .matrix)], where: { $0.Xtv.cols > 1 } ) { s0 in
+        OpPattern( [.X([.real], .matrix)], where: { $0.Xtv.cols > 1 } ) { model, s0 in
             
             var s1 = s0
             s1.stackDrop()
@@ -419,7 +419,7 @@ func installMatrix( _ model: CalculatorModel ) {
         
         /// Standard Deviation
         
-        OpPattern( [.X([.real], .matrix)] ) { s0 in
+        OpPattern( [.X([.real], .matrix)] ) { model, s0 in
             
             var s1 = s0
             s1.stackDrop()
@@ -450,7 +450,7 @@ func installMatrix( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .mean, [
         
-        OpPattern( [.X([.real], .matrix)] ) { s0 in
+        OpPattern( [.X([.real], .matrix)] ) { model, s0 in
             
             var s1 = s0
             s1.stackDrop()
@@ -508,7 +508,7 @@ func installMatrix( _ model: CalculatorModel ) {
         
         // X must be integer, Y must be matrix, any type
         OpPattern( [ .X([.real]), .Y([.real, .rational, .complex, .vector, .polar, .vector3D, .spherical], .matrix) ],
-                   where: { s0 in isInt(s0.X) } ) { s0 in
+                   where: { s0 in isInt(s0.X) } ) { model, s0 in
             
            let ( _, rows, cols ) = s0.Ytv.getShape()
             

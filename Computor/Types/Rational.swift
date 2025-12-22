@@ -7,7 +7,7 @@
 import Foundation
 
 
-func installRational( _ model: CalculatorModel ) {
+func installRational() {
     
     // Set of allowed types
     let zSet: ValueTypeSet = [.real, .rational]
@@ -17,7 +17,7 @@ func installRational( _ model: CalculatorModel ) {
     
     CalculatorModel.defineOpPatterns( .plus, [
         
-        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { s0 in
+        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { model, s0 in
             
             // Rational addition
             var s1 = s0
