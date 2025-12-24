@@ -612,7 +612,7 @@ class CalculatorModel: KeyPressHandler {
                 pushState()
             }
             
-            if let index = state.memory.firstIndex( where: { $0.tag == mTag }) {
+            if let index = state.memory.firstIndex( where: { $0.symTag == mTag }) {
                 
                 // Existing global memory
                 state.memory[index].tv = tv
@@ -823,7 +823,7 @@ class CalculatorModel: KeyPressHandler {
                         tv = val
                     }
                 }
-                else if let index = state.memory.firstIndex(where: { $0.tag == mTag }) {
+                else if let index = state.memory.firstIndex(where: { $0.symTag == mTag }) {
                     
                     // Global memory found
                     tv = state.memory[index].tv

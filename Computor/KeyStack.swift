@@ -394,7 +394,7 @@ struct MemorySelectPopup: View, KeyPressHandler {
     
     func getTagGroups() -> [SymbolTagGroup] {
         
-        let globalGroup = SymbolTagGroup( label: "Global Memories", tagList: model.state.memory.map( { $0.tag } ) )
+        let globalGroup = SymbolTagGroup( label: "Global Memories", itemList: model.state.memory )
         
         if let lvf = model.currentLVF {
             
@@ -496,10 +496,8 @@ struct MacroLibraryPopup: View, KeyPressHandler {
                 model.db.modList.map { remMod in
                     SymbolTagGroup(
                         label: remMod.name,
-                        tagList:
-                            remMod.symList.compactMap { tag in
-                                tag.isNull ? nil : model.db.getRemoteSymbolTag(for: tag, to: remMod )
-                            }
+                        model: model,
+                        mod: remMod
                     )
                 }
             
@@ -523,6 +521,8 @@ struct MacroLibraryPopup: View, KeyPressHandler {
             let tagGroupList = getMacroTags(libSource)
             
             SelectSymbolPopup( tagGroupList: tagGroupList, title: popupTitle[libSource] ?? "" ) {
+                
+                // Bottom Content
                 
                 // User Lib or System Lib picker
                 Picker("", selection: $libSource) {

@@ -52,6 +52,16 @@ struct SymbolTagGroup: Identifiable {
         }
     }
     
+    struct CachedItem: TaggedItem {
+        var symTag: SymbolTag
+        var caption: String?
+        
+        init( tag: SymbolTag, cap: String? ) {
+            self.symTag = tag
+            self.caption = cap
+        }
+    }
+    
     var label: String
     var itemList: [any TaggedItem]
     var id: UUID = UUID()
@@ -70,6 +80,18 @@ struct SymbolTagGroup: Identifiable {
     init( label: String, itemList: [any TaggedItem]) {
         self.label = label
         self.itemList = itemList
+    }
+    
+    init( label: String, model: CalculatorModel, mod: ModuleRec ) {
+        self.label = label
+        
+        self.itemList = mod.macroList.map {
+            
+            CachedItem(
+                tag: model.db.getRemoteSymbolTag( for: $0.symTag, to: mod ),
+                cap: $0.caption
+            )
+        }
     }
 }
 
@@ -119,8 +141,12 @@ struct SelectSymbolPopup<Content: View>: View {
                             
                             Spacer()
                             
-                            Button( "", systemImage: isExpanded.contains(tg.label) ? defIcon : expIcon ) {
+                            // BUTTON for Expanded (one per line with caption) vs Icon (4 per line) View of Symbols
+                            Button( "", systemImage: isExpanded.contains(tg.label) ? expIcon : defIcon ) {
+                                
+                                // Toggle Expanded state of tag group tg
                                 withAnimation {
+                                    
                                     if isExpanded.contains(tg.label) {
                                         _ = isExpanded.remove(tg.label)
                                     }

@@ -58,7 +58,7 @@ struct MemoryDetailView: View {
                                 
                                 ForEach( model.state.memory ) { mr in
                                     
-                                    let sym = mr.tag.getRichText()
+                                    let sym = mr.symTag.getRichText()
                                     let caption = mr.caption ?? "-Unnamed-"
                                     let (valueStr, _) = mr.tv.renderRichText()
                                     let color = mr.caption != nil ? "UnitText" : "GrayText"
@@ -75,7 +75,7 @@ struct MemoryDetailView: View {
                                         
                                         TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
                                     }
-                                    .id( mr.tag )
+                                    .id( mr.symTag )
                                     .containerRelativeFrame(.vertical, count: 1, spacing: 0)
                                 }
                             }
@@ -90,7 +90,7 @@ struct MemoryDetailView: View {
                         }
                         .onChange(  of: memRec, initial: true ) {
                             if let mr = memRec {
-                                print( "scrollto \(mr.tag)" )
+                                print( "scrollto \(mr.symTag)" )
                                 proxy.scrollTo( mr.id )
                             }
                         }
@@ -102,19 +102,19 @@ struct MemoryDetailView: View {
                 // Detail Edit Controls
                 HStack( spacing: 25 ) {
                     
-                    Button( action: { model.memoryOp( key: .mPlus, tag: mr.tag ) } ) {
+                    Button( action: { model.memoryOp( key: .mPlus, tag: mr.symTag ) } ) {
                         Text( "M+" )
                     }
                     
-                    Button( action: { model.memoryOp( key: .mMinus, tag: mr.tag ) } ) {
+                    Button( action: { model.memoryOp( key: .mMinus, tag: mr.symTag ) } ) {
                         Text( "M-" )
                     }
                     
-                    Button( action: { model.memoryOp( key: .rclMem, tag: mr.tag ) } ) {
+                    Button( action: { model.memoryOp( key: .rclMem, tag: mr.symTag ) } ) {
                         Image( systemName: "arrowshape.down" )
                     }
                     
-                    Button( action: { model.memoryOp( key: .stoMem, tag: mr.tag ) } ) {
+                    Button( action: { model.memoryOp( key: .stoMem, tag: mr.symTag ) } ) {
                         Image( systemName: "arrowshape.up" )
                     }
                     
@@ -137,8 +137,8 @@ struct MemoryDetailView: View {
             // Edit Memory
             .sheet( isPresented: $renameSheet) {
                 
-                MemoryEditSheet( mTag: mr.tag, caption: mr.caption ?? "", model: model ) { newTag, newtxt in
-                    mr.tag = newTag
+                MemoryEditSheet( mTag: mr.symTag, caption: mr.caption ?? "", model: model ) { newTag, newtxt in
+                    mr.symTag = newTag
                     mr.caption = newtxt.isEmpty ? nil : newtxt
                     refreshView.toggle()
                     

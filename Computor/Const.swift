@@ -94,6 +94,8 @@ enum Const {
         // ** Unused **
         static let detail = "list.bullet.circle"
         static let gridBox = "square.grid.3x3.square"
+        static let expand  = "arrow.down.backward.and.arrow.up.forward"
+        static let shrink  = "arrow.down.right.and.arrow.up.left"
     }
     
     enum LibMod {

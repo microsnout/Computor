@@ -53,11 +53,11 @@ extension CalcState {
     }
     
     func memoryIndex( at tag: SymbolTag ) -> Int? {
-        return memory.firstIndex( where: { tag == $0.tag })
+        return memory.firstIndex( where: { tag == $0.symTag })
     }
     
     func memoryAt( tag: SymbolTag ) -> MemoryRec? {
-        return memory.first( where: { tag == $0.tag } )
+        return memory.first( where: { tag == $0.symTag } )
     }
     
     mutating func memorySetValue( at tag: SymbolTag, _ tv: TaggedValue ) {
@@ -81,7 +81,7 @@ extension CalcState {
     }
     
     mutating func deleteMemoryRecords( tags: SymbolSet ) {
-        memory.removeAll( where: { tags.contains($0.tag) } )
+        memory.removeAll( where: { tags.contains($0.symTag) } )
     }
     
     mutating func setRealValue( reg index: Int = regX, _ value: Double,

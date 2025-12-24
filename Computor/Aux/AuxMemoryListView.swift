@@ -59,7 +59,7 @@ struct MemoryListView: View {
                             
                             let (txt, _) = mr.tv.renderRichText()
                             
-                            let sym = mr.tag.getRichText()
+                            let sym = mr.symTag.getRichText()
                             
                             let caption: String = mr.caption ?? "-caption-"
                             
@@ -92,13 +92,13 @@ struct MemoryListView: View {
                                     HStack( spacing: 20 ) {
                                         
                                         // ARROW DOWN
-                                        Button( action: { model.memoryOp( key: .rclMem, tag: mr.tag ) } ) {
+                                        Button( action: { model.memoryOp( key: .rclMem, tag: mr.symTag ) } ) {
                                             Image( systemName: Const.Icon.arrowDown )
                                         }
                                         
                                         // TRASH CAN
                                         Button( action: {
-                                            model.deleteMemoryRecords( set: [mr.tag] )
+                                            model.deleteMemoryRecords( set: [mr.symTag] )
                                         } ) {
                                             Image( systemName: Const.Icon.trash )
                                         }

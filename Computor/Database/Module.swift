@@ -7,25 +7,26 @@
 import SwiftUI
 
 @Observable
-class MemoryRec: Codable, Identifiable, Hashable, Equatable {
-    var tag:     SymbolTag
+class MemoryRec: Codable, Identifiable, Hashable, Equatable, TaggedItem {
+    var symTag:  SymbolTag
     var caption: String? = nil
+    
     var tv:      TaggedValue
     
-    var id: SymbolTag { tag }
+    var id: SymbolTag { symTag }
     
     init( tag: SymbolTag, caption: String? = nil, tv: TaggedValue = TaggedValue() ) {
-        self.tag = tag
+        self.symTag = tag
         self.caption = caption
         self.tv = tv
     }
     
     func hash( into hasher: inout Hasher) {
-        hasher.combine(tag)
+        hasher.combine(symTag)
     }
     
     static func == ( lhs: MemoryRec, rhs: MemoryRec ) -> Bool {
-        return lhs.tag == rhs.tag
+        return lhs.symTag == rhs.symTag
     }
 }
 
@@ -34,6 +35,7 @@ class MemoryRec: Codable, Identifiable, Hashable, Equatable {
 class MacroRec: Codable, Identifiable, TaggedItem {
     var symTag:     SymbolTag
     var caption:    String? = nil
+    
     var opSeq:      MacroOpSeq
     
     var id: SymbolTag { symTag }
