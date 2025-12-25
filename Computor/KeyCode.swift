@@ -73,7 +73,7 @@ enum KeyCode: Int, Codable {
     case unitStart = 400
     
     // Length
-    case km = 401, mm, cm, metre, inch, ft, yd, mi
+    case km = 401, mm, cm, metre, inch, ft, yd, mi, NM
     
     // Time
     case second = 410, min, hr, day, yr, ms, us

@@ -790,6 +790,7 @@ class TypeDef: Codable {
         defineStdType( .length, .mm, "mm",   1000)
         defineStdType( .length, .cm, "cm",   100)
         defineStdType( .length, .km, "km",   0.001)
+        defineStdType( .length, .NM, "NM",   1.0/1852.0)
         
         defineStdType( .length, .inch, "in",   1000/25.4)
         defineStdType( .length, .ft,   "ft",   1000/(12*25.4))
