@@ -148,6 +148,8 @@ extension CalculatorModel {
         
         // Load into recorder
         aux.loadMacro(mr)
+        
+        hapticFeedback.impactOccurred()
     }
     
     
@@ -511,6 +513,7 @@ extension CalculatorModel {
         default:
             // Switch to recording context
             pushContext( RecordingContext( exeflag: execute ), lastEvent: KeyEvent(.macroRecord) )
+            hapticFeedback.impactOccurred()
         }
     }
     
@@ -545,6 +548,7 @@ extension CalculatorModel {
                 }
             }
         }
+        hapticFeedback.impactOccurred()
     }
 
     
@@ -576,6 +580,7 @@ extension CalculatorModel {
                 aux.setError( at: count )
             }
         }
+        hapticFeedback.impactOccurred()
     }
     
     
@@ -592,6 +597,7 @@ extension CalculatorModel {
         // Stop recorder
         aux.recordStop()
         aux.resetMacroCursor()
+        hapticFeedback.impactOccurred()
     }
 
     
@@ -616,6 +622,7 @@ extension CalculatorModel {
                 else {
                     aux.opCursor += 1
                 }
+                hapticFeedback.impactOccurred()
             }
         }
     }
@@ -626,6 +633,7 @@ extension CalculatorModel {
         if let ctx = eventContext as? RecordingContext {
             
             ctx.exeflag = enable
+            hapticFeedback.impactOccurred()
         }
     }
     
@@ -638,6 +646,7 @@ extension CalculatorModel {
             popState()
             aux.opCursor -= 1
             aux.clearError()
+            hapticFeedback.impactOccurred()
         }
     }
     

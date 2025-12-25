@@ -322,6 +322,7 @@ class CalculatorModel: KeyPressHandler {
     
     func resetChanges() { self.changeCount = 0 }
     
+    let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
     // ***
 
     init() {

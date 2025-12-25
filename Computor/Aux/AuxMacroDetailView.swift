@@ -16,6 +16,8 @@ struct MacroDetailView: View {
     @State private var refreshView = false
     
     @State private var editSheet   = false
+    
+    let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
 
     var body: some View {
         let symTag: SymbolTag = mr.symTag
@@ -44,6 +46,7 @@ struct MacroDetailView: View {
                             withAnimation {
                                 // Return macro recorder to Inactive state
                                 model.aux.deactivateMacroRecorder()
+                                hapticFeedback.impactOccurred()
                             }
                         }
                     
@@ -57,6 +60,7 @@ struct MacroDetailView: View {
                         // PENCIL EDIT BUTTON
                         Button {
                             editSheet = true
+                            hapticFeedback.impactOccurred()
                         } label: {
                             Image( systemName: "square.and.pencil")
                         }

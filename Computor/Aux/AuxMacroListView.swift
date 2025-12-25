@@ -53,7 +53,7 @@ struct MacroListView: View {
                     }
                     Spacer()
                     
-                    // NEW macro creation button
+                    // BUTTON - New macro creation button
                     Image( systemName: "plus")
                         .foregroundColor( Color("AuxHeaderText") )
                         .padding( [.trailing], 5 )
@@ -120,6 +120,7 @@ struct MacroListView: View {
                                         Button( action: {
                                             deleteDialog = true
                                             dialogRec = mr
+                                            model.hapticFeedback.impactOccurred()
                                         } ) {
                                             Image( systemName: "trash" )
                                         }
