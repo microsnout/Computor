@@ -590,6 +590,9 @@ struct KeyView: View {
     @AppStorage(.settingsSerifFontKey)
     private var serifFont = false
 
+    @AppStorage(.settingsYellowDots)
+    private var yellowDots = true
+
     let padSpec: PadSpec
     let key: Key
     let keyPressHandler: KeyPressHandler
@@ -812,7 +815,7 @@ struct KeyView: View {
                                 .foregroundColor( Color(padSpec.keySpec.textColor)), alignment: .center)
                             
                     }
-                    .if( hasSubpad && textCode != .symbol ) { view in
+                    .if( yellowDots && hasSubpad && textCode != .symbol ) { view in
                         // Add subpad indicator dot to key - but not for keys with assigned symbols
                         view.overlay(alignment: .topTrailing) {
                             yellowCircle

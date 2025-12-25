@@ -16,6 +16,7 @@ extension String {
     static var settingsKeyCaptions : String { "settings.keyCaptions" }
     static var settingsModalConfirmation : String { "settings.modalConfirmation" }
     static var settingsRecordExecute : String { "settings.recordExecute" }
+    static var settingsYellowDots : String { "settings.yellowDots" }
 }
 
 enum SoftkeyUnits: Int, Hashable {
@@ -61,6 +62,9 @@ struct SettingsView: View {
     @AppStorage(.settingsRecordExecute)
     private var recordExecute = true
 
+    @AppStorage(.settingsYellowDots)
+    private var yellowDots = true
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -102,6 +106,7 @@ struct SettingsView: View {
                         Group {
                             Toggle("Serif Font", isOn: $serifFont)
                             Toggle("Key help captions", isOn: $keyCaptions)
+                            Toggle("Subkey Yellow Dots", isOn: $yellowDots)
                             Toggle("Parameter Confirmation", isOn: $modalConfirmation)
                         }
                         .tint( Color("Frame"))
