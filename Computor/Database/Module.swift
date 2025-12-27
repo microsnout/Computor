@@ -90,11 +90,8 @@ struct KeyMapRec: Codable {
     }
     
     mutating func assign( _ kc: KeyCode, tag: SymbolTag ) {
-        // TODO: Eventually add UnRow for unit row keys
         fnRow[kc] = tag
     }
-    
-    // Could add unitRow here
 }
 
 
@@ -117,6 +114,7 @@ class ModuleFile: DataObjectFile {
     var state:     CalcState
     var unitData:  UserUnitData
     var keyMap:    KeyMapRec
+    var unitSet:   SoftkeyUnits
     
     private enum CodingKeys: String, CodingKey {
         case groupTable
@@ -125,6 +123,7 @@ class ModuleFile: DataObjectFile {
         case state
         case unitData
         case keyMap
+        case unitSet
     }
     
     init( _ mfr: ModuleRec ) {
@@ -134,6 +133,7 @@ class ModuleFile: DataObjectFile {
         self.state = CalcState()
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
+        self.unitSet = SoftkeyUnits.mixed
 
         super.init()
     }
@@ -145,6 +145,7 @@ class ModuleFile: DataObjectFile {
         self.state = CalcState()
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
+        self.unitSet = SoftkeyUnits.mixed
 
         super.init()
     }
@@ -156,6 +157,7 @@ class ModuleFile: DataObjectFile {
         self.state = CalcState()
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
+        self.unitSet = SoftkeyUnits.mixed
 
         super.init(obj)
     }
@@ -168,6 +170,7 @@ class ModuleFile: DataObjectFile {
         self.state = try container.decode( CalcState.self, forKey: .state)
         self.unitData = try container.decode( UserUnitData.self, forKey: .unitData)
         self.keyMap = try container.decode( KeyMapRec.self, forKey: .keyMap)
+        self.unitSet = try container.decode( SoftkeyUnits.self, forKey: .unitSet)
 
         try super.init(from: decoder)
     }
@@ -179,6 +182,7 @@ class ModuleFile: DataObjectFile {
         try container.encode(state,      forKey: .state)
         try container.encode(unitData,   forKey: .unitData)
         try container.encode(keyMap,     forKey: .keyMap)
+        try container.encode(unitSet,    forKey: .unitSet)
 
         try super.encode(to: encoder)
     }

@@ -731,10 +731,12 @@ struct KeyView: View {
 
         let keyW = padSpec.keySpec.width * Double(key.size) + Double(key.size - 1) * keyHspace
         
-        let hasSubpad = SubPadSpec.getSpec(key.kc) != nil
+        let keycode = model.getMappedKeycode(key.kc)
+        
+        let hasSubpad = SubPadSpec.getSpec(keycode) != nil
         
         VStack {
-            let (keyText, textCode) = model.getKeyText(key.kc)
+            let (keyText, textCode) = model.getKeyText(keycode)
             
             GeometryReader { geometry in
                 let vframe = geometry.frame(in: CoordinateSpace.global)
@@ -746,12 +748,12 @@ struct KeyView: View {
                         switch value {
                             
                         case .second(true, nil):
-                            if let subpad = SubPadSpec.getSpec(key.kc) {
+                            if let subpad = SubPadSpec.getSpec(keycode) {
                                 // Start finger tracking
                                 keyData.subPad = subpad
                                 keyData.keyOrigin = vframe.origin
                                 keyData.pressedKey = key
-                                keyData.disabledKeys = model.eventContext?.getDisableSet( topKey: key.kc ) ?? []
+                                keyData.disabledKeys = model.eventContext?.getDisableSet( topKey: keycode ) ?? []
                                 
                                 computeSubpadGeometry()
                                                                 
@@ -780,7 +782,7 @@ struct KeyView: View {
                             // Keypress event occured, send event
                             hapticFeedback.impactOccurred()
                             
-                            if let modalKey = Key.getModalKey(key.kc) {
+                            if let modalKey = Key.getModalKey(keycode) {
                                 
                                 // Pop up modal key pad
                                 keyData.pressedKey = key
@@ -790,7 +792,7 @@ struct KeyView: View {
                             }
                             else {
                                 // Generate key press event
-                                let result = keyPressHandler.keyPress( KeyEvent(key.kc))
+                                let result = keyPressHandler.keyPress( KeyEvent(keycode))
                                 
                                 if keyData.modalKey != .none && result != .modalPopupContinue {
                                     
@@ -800,7 +802,7 @@ struct KeyView: View {
                                 }
                             }
                         })
-                    .if( keyText != nil && !model.isRecordingKey(key.kc) ) { view in
+                    .if( keyText != nil && !model.isRecordingKey(keycode) ) { view in
                         // Add rich text label to key
                         view.overlay(
                             RichText( keyText!, size: .normal, weight: .bold,
@@ -823,7 +825,7 @@ struct KeyView: View {
                                 .alignmentGuide(.trailing) { $0[.trailing] + 3 }
                         }
                     }
-                    .if( model.isRecordingKey(key.kc) ) { view in
+                    .if( model.isRecordingKey(keycode) ) { view in
                         // Add red recording dot to macro key
                         view.overlay {
                             redCircle

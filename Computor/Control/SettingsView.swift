@@ -19,10 +19,6 @@ extension String {
     static var settingsYellowDots : String { "settings.yellowDots" }
 }
 
-enum SoftkeyUnits: Int, Hashable {
-    case mixed = 0, metric, imperial, physics, electrical, navigation
-}
-
 
 struct SectionHeaderText: View {
     let text: String

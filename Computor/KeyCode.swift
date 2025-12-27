@@ -53,7 +53,8 @@ enum KeyCode: Int, Codable {
     case fix = 220, sci, eng
     
     // Softkeys - Top row F1..F6 and Unit row U1..U6
-    case F0 = 260, F1, F2, F3, F4, F5, F6, U1, U2, U3, U4, U5, U6
+    case F0 = 260, F1, F2, F3, F4, F5, F6
+    case U0 = 270, U1, U2, U3, U4, U5, U6
     
     // Macro Op
     case macroOp = 280, clrFn, recFn, stopFn, editFn, braceKey, openBrace, closeBrace, macro

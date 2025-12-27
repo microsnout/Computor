@@ -41,9 +41,16 @@ func keyCodeToSymCode( _ kc: KeyCode ) -> UInt64 {
 extension SymbolTag {
     
     // Starting mod values for User modules and builtin system modules
+    
+    // User Modules 0 .. 99
     static let firstUserMod  = 0
+    
+    // System Modules 100 .. 199
     static let firstSysMod = 100
-    static let localMemMod = 1
+    
+    // Special Module codes
+    static let localMemMod = 200
+    static let keycodeMod  = 201
     
     var isNull: Bool { self.tag == 0 }
     var isBlank: Bool { self == SymbolTag.Blank }
@@ -76,11 +83,29 @@ extension SymbolTag {
     var isLocalTag: Bool { self.mod == 0 }
     
     // Local memory tag - no conflict with macro symbols
-    var isLocalMemoryTag: Bool { self.mod == 1 }
+    var isLocalMemoryTag: Bool { self.mod == SymbolTag.localMemMod }
     
+    // KeyCode tag - representing one general KeyCode value
+    var isKeycodeTag: Bool { self.mod == SymbolTag.keycodeMod }
+    
+    func getKeycode() -> KeyCode? {
+        if self.isKeycodeTag {
+            // Extract general KeyCode, not just a sym char
+            let code = (tag & Const.Symbol.modMask)
+            return KeyCode( rawValue: Int(code))
+        }
+        return nil
+    }
+
     var description: String { self.getRichText() }
     
     func getSymbolText( symName: String, subPt: Int, superPt: Int ) -> String {
+        
+        if self.isKeycodeTag {
+            let code = (tag & Const.Symbol.modMask)
+            let kc = KeyCode( rawValue: Int(code))
+            return kc?.str ?? ""
+        }
         
         let symN = symName.count
         let symA = Array(symName)
@@ -227,11 +252,11 @@ extension SymbolTag {
             self.tag = fnTag.tag
         }
         else if kc.rawValue > KeyCode.symbolCharNull.rawValue && kc.rawValue < KeyCode.symbolCharEnd.rawValue {
-            self.tag = UInt64(kc.rawValue - KeyCode.symbolCharNull.rawValue)
+            self.tag = keyCodeToSymCode(kc)
         }
         else {
-            // Can't encode a general key code
-            self.tag = 0
+            // Encode a general key code
+            self.tag = UInt64(kc.rawValue + SymbolTag.keycodeMod)
         }
     }
    

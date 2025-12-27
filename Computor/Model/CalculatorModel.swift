@@ -202,12 +202,20 @@ class ModuleExecutionContext {
 }
 
 
+enum SoftkeyUnits: Int, Hashable, Codable {
+    case mixed = 0, metric, imperial, physics, electrical, navigation
+}
+
+
 struct KeyState {
     
     var func2R: PadSpec = psFunctions2R
     
     // F1 .. F6 key mappings
     var keyMap: KeyMapRec = KeyMapRec()
+    
+    // Default Unit set
+    var unitSet: SoftkeyUnits = .mixed
     
     init() {
         // Need to cycle all 3 possible values here to
@@ -218,6 +226,7 @@ struct KeyState {
         self.func2R = psFunctions2R
 
         self.keyMap = KeyMapRec()
+        self.unitSet = .mixed
     }
 }
 
@@ -679,6 +688,7 @@ class CalculatorModel: KeyPressHandler {
                     
                     self.state = obj.state
                     self.kstate.keyMap = obj.keyMap
+                    self.kstate.unitSet = obj.unitSet
                     
                     UserUnitData.uud = obj.unitData
                     UnitDef.reIndexUserUnits()
@@ -712,6 +722,7 @@ class CalculatorModel: KeyPressHandler {
                     obj.state = self.state
                     obj.keyMap = self.kstate.keyMap
                     obj.unitData = UserUnitData.uud
+                    obj.unitSet = self.kstate.unitSet
                 }
             }
             
@@ -720,7 +731,56 @@ class CalculatorModel: KeyPressHandler {
     }
 
     // ****************
-
+    
+    
+    // Default Unit Sets
+    let unitSetMixed: [KeyCode : KeyCode] = [
+        .U2 : .mL, .U3 : .kg, .U4 : .hr, .U5 : .mi, .U6 : .km
+    ]
+    
+    
+    func getDefaultUnitKeycode( _ kcUn: KeyCode ) -> KeyCode? {
+        
+        if KeyCode.UnSet.contains(kcUn) {
+            
+            switch kstate.unitSet {
+                
+            case .mixed:
+                return unitSetMixed[kcUn]
+                
+            default:
+                return nil
+            }
+        }
+        return nil
+    }
+    
+    
+    func getMappedKeycode( _ kc: KeyCode ) -> KeyCode {
+        
+        if KeyCode.UnSet.contains(kc) {
+            
+            // U1..U6
+            if let tag = kstate.keyMap.tagAssignment(kc) {
+                
+                // Un has assigned tag
+                if let kcUn = tag.getKeycode() {
+                    
+                    // It is a KeyCode mapping
+                    return kcUn
+                }
+            }
+            else if let kcUn = getDefaultUnitKeycode(kc) {
+                
+                // An unassigned Un key with default unit code
+                return kcUn
+            }
+        }
+        
+        // No change
+        return kc
+    }
+    
     
     // **********************************************************************
     
@@ -838,20 +898,42 @@ class CalculatorModel: KeyPressHandler {
                 state.Xtv = tv
             }
             
-        case .F1, .F2, .F3, .F4, .F5, .F6:
-            // Macro function execution
-            var result = KeyPressResult.noOp
+        // Function keys and Unit keys
+        case .F1, .F2, .F3, .F4, .F5, .F6, .U1, .U2, .U3, .U4, .U5, .U6:
             
-            // Key F1..F6 pressed
+            // Key F1..F6, U1..U6 pressed
             
             if let tag = kstate.keyMap.tagAssignment(keyCode),
                let (mr, mfr) = getMacroFunction(tag) {
                 
+                // Macro function execution
+                var result = KeyPressResult.noOp
+
                 // Macro tag assigned to Fn key
                 (result, _) = playMacroSeq(mr.opSeq, in: mfr)
+                
+                if result == KeyPressResult.stateError {
+                    return KeyPressResult.stateError
+                }
             }
-            
-            if result == KeyPressResult.stateError {
+            else {
+                // Default Fn, Un functions
+                
+                if KeyCode.fnSet.contains(keyCode) {
+                    // Unassigned Fn keys are no op
+                    return KeyPressResult.noOp
+                }
+                
+                if KeyCode.UnSet.contains(keyCode) {
+                    // Unassigned Un key is a Unit key
+                    if let kc = getDefaultUnitKeycode(keyCode) {
+                        let evt = KeyEvent(kc)
+                        queueEvent(evt)
+                    }
+                    return KeyPressResult.noOp
+                }
+                
+                assert(false)
                 return KeyPressResult.stateError
             }
 
@@ -1087,7 +1169,7 @@ class CalculatorModel: KeyPressHandler {
     
     
     enum KeyTextCode: Int {
-        case none = 0, custom, funcKey, UnitKey, symbol
+        case none = 0, custom, funcKey, unitKey, symbol
     }
     
     
@@ -1110,8 +1192,9 @@ class CalculatorModel: KeyPressHandler {
             return (text, .custom)
         }
 
-        if KeyCode.fnSet.contains(kc) {
+        if KeyCode.fnSet.contains(kc) || KeyCode.UnSet.contains(kc) {
             // F1 to F6
+            // U1 to U6
             
             if let fTag = kstate.keyMap.tagAssignment(kc) {
                 
@@ -1122,6 +1205,26 @@ class CalculatorModel: KeyPressHandler {
             }
             
             // Disabled key, no macro
+            
+            if KeyCode.UnSet.contains(kc) {
+                
+                // Unassigned Un key
+                if let kcUn = getDefaultUnitKeycode(kc) {
+                    
+                    guard let unKey = Key.keyList[kcUn] else {
+                        assert(false)
+                        return (kcUn.str, .unitKey)
+                    }
+                    
+                    if let text = unKey.text {
+                        return (text, .symbol)
+                    }
+                    return (kcUn.str , .unitKey)
+                }
+                return ("ç{GrayText}U\(kc.rawValue % 10)", .funcKey)
+            }
+            
+            // Unassigned Fn key
             return ("ç{GrayText}F\(kc.rawValue % 10)", .funcKey)
         }
     

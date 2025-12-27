@@ -97,18 +97,18 @@ let psSoftkeyR = PadSpec (
 let psUnitsL = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
-    keys: [ Key(.unit, "ƒ{0.9}Unit"),
-            Key(.mL,   "mL"),
-            Key(.kg,   "kg")
+    keys: [ Key(.U1),
+            Key(.U2),
+            Key(.U3),
           ]
 )
 
 let psUnitsR = PadSpec (
     keySpec: ksSoftkey,
     cols: 3,
-    keys: [ Key(.hr,  "hr"),
-            Key(.mi,  "mi"),
-            Key(.km,  "km")
+    keys: [ Key(.U4),
+            Key(.U5),
+            Key(.U6),
           ]
 )
 
@@ -191,6 +191,17 @@ let psFormatR = PadSpec (
 )
 
 func initKeyLayout() {
+   
+    // Extra Unit keys - not on submenus
+    let _: [Key] = [
+        
+        Key(.mL,  "mL"),
+        Key(.kg,  "kg"),
+        Key(.hr,  "hr"),
+        Key(.mi,  "mi"),
+        Key(.km,  "km"),
+    ]
+    
     SubPadSpec.define( .F0,
                        keySpec: ksSubFn,
                        keys: [
@@ -243,8 +254,8 @@ func initKeyLayout() {
     SubPadSpec.define( .log,
                        keySpec: ksSubpad,
                        keys: [
-                        Key(.log, "log"),
-                        Key(.ln, "ln"),
+                        Key(.log,  "log"),
+                        Key(.ln,   "ln"),
                         Key(.log2, "log_{2}"),
                         Key(.logY, "log_{y}x")
                        ]
@@ -405,6 +416,13 @@ func initKeyLayout() {
                        keySpec: ksSubFn,
                        keys: [
                         Key(.d000,    "000"),
+                       ]
+    )
+
+    SubPadSpec.define( .lib,
+                       keySpec: ksSubFn,
+                       keys: [
+                        Key(.unit,    "ƒ{0.9}Unit"),
                        ]
     )
 
