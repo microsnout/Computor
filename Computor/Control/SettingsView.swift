@@ -12,7 +12,7 @@ extension String {
     static var settingsSerifFontKey : String { "settings.serifFont" }
     static var settingsPriDispTextSize : String { "settings.priDispTextSize" }
     static var settingsAuxDispTextSize : String { "settings.auxDispTextSize" }
-    static var settingsSoftkeyUnits : String { "settings.softkeyUnits" }
+    // static var settingsSoftkeyUnits : String { "settings.softkeyUnits" }
     static var settingsKeyCaptions : String { "settings.keyCaptions" }
     static var settingsModalConfirmation : String { "settings.modalConfirmation" }
     static var settingsRecordExecute : String { "settings.recordExecute" }
@@ -34,6 +34,8 @@ struct SectionHeaderText: View {
 
 
 struct SettingsView: View {
+    @State var model: CalculatorModel
+    
     @AppStorage(.settingsDarkModeKey)
     private var darkMode = false
     
@@ -46,8 +48,8 @@ struct SettingsView: View {
     @AppStorage(.settingsAuxDispTextSize)
     private var auxDispTextSize = TextSize.normal
     
-    @AppStorage(.settingsSoftkeyUnits)
-    private var softkeyUnits = SoftkeyUnits.mixed
+    // @AppStorage(.settingsSoftkeyUnits)
+    @State private var softkeyUnits = SoftkeyUnits.mixed
 
     @AppStorage(.settingsKeyCaptions)
     private var keyCaptions = true
@@ -65,56 +67,48 @@ struct SettingsView: View {
         NavigationStack {
             VStack {
                 List {
-                    // SECTION COLORS
-                    Section( header: SectionHeaderText( text: "Colors")  ) {
-                        Toggle("Display Dark Mode", isOn: $darkMode)
+                    Group {
+                        // SECTION COLORS
+                        Section( header: SectionHeaderText( text: "Colors")  ) {
+                            Toggle("Display Dark Mode", isOn: $darkMode)
+                                .tint( Color("Frame"))
+                        }
+                        
+                        // SECTION TEXT
+                        Section( header: SectionHeaderText( text: "Text Size").foregroundColor(Color("DisplayText"))  ) {
+                            
+                            Picker( selection: $priDispTextSize, label: Text("Primary Display")) {
+                                Text("Small").tag(TextSize.small)
+                                Text("Medium").tag(TextSize.normal)
+                                Text("Large").tag(TextSize.large)
+                            }
+                            
+                            Picker( selection: $auxDispTextSize, label: Text("Auxiliary Display")) {
+                                Text("Small").tag(TextSize.small)
+                                Text("Medium").tag(TextSize.normal)
+                                Text("Large").tag(TextSize.large)
+                            }
+                        }
+                        
+                        // SECTION KEYBOARD
+                        Section( header: SectionHeaderText( text: "Keyboard").foregroundColor(Color("DisplayText")) ) {
+                            
+                            Group {
+                                Toggle("Key help captions", isOn: $keyCaptions)
+                                Toggle("Subkey Yellow Dots", isOn: $yellowDots)
+                                Toggle("Parameter Confirmation", isOn: $modalConfirmation)
+                            }
                             .tint( Color("Frame"))
-                    }
-                    .listSectionSeparator(.hidden, edges: .top)
-                    .listSectionSeparatorTint( Color("AccentText"))
-                    
-                    // SECTION PRI DISPLAY
-                    Section( header: SectionHeaderText( text: "Primary Display").foregroundColor(Color("DisplayText"))  ) {
-                        Picker( selection: $priDispTextSize, label: Text("Text Size")) {
-                            Text("Small").tag(TextSize.small)
-                            Text("Medium").tag(TextSize.normal)
-                            Text("Large").tag(TextSize.large)
-                        }
-                        
-                    }
-                    .listSectionSeparator(.hidden, edges: .top)
-                    .listSectionSeparatorTint( Color("AccentText"))
-                    
-                    // SECTION AUX DISPLAY
-                    Section( header: SectionHeaderText( text: "Auxiliary Display").foregroundColor(Color("DisplayText"))  ) {
-                        Picker( selection: $auxDispTextSize, label: Text("Text Size")) {
-                            Text("Small").tag(TextSize.small)
-                            Text("Medium").tag(TextSize.normal)
-                            Text("Large").tag(TextSize.large)
-                        }
-                    }
-                    .listSectionSeparator(.hidden, edges: .top)
-                    .listSectionSeparatorTint( Color("AccentText"))
-                    
-                    // SECTION KEYBOARD
-                    Section( header: SectionHeaderText( text: "Keyboard").foregroundColor(Color("DisplayText")) ) {
-                        
-                        Group {
-                            Toggle("Serif Font", isOn: $serifFont)
-                            Toggle("Key help captions", isOn: $keyCaptions)
-                            Toggle("Subkey Yellow Dots", isOn: $yellowDots)
-                            Toggle("Parameter Confirmation", isOn: $modalConfirmation)
-                        }
-                        .tint( Color("Frame"))
-                        .listRowSeparator(.hidden)
-
-                        Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
-                            Text("Default").tag(SoftkeyUnits.mixed)
-                            Text("Metric").tag(SoftkeyUnits.metric)
-                            Text("Imperial").tag(SoftkeyUnits.imperial)
-                            Text("Physics").tag(SoftkeyUnits.physics)
-                            Text("Electrical").tag(SoftkeyUnits.electrical)
-                            Text("Navigation").tag(SoftkeyUnits.navigation)
+                            .listRowSeparator(.hidden)
+                            
+                           Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
+                                Text("Default").tag(SoftkeyUnits.mixed)
+                                Text("Metric").tag(SoftkeyUnits.metric)
+                                Text("Imperial").tag(SoftkeyUnits.imperial)
+                                Text("Physics").tag(SoftkeyUnits.physics)
+                                Text("Electrical").tag(SoftkeyUnits.electrical)
+                                Text("Navigation").tag(SoftkeyUnits.navigation)
+                            }
                         }
                     }
                     .listSectionSeparator(.hidden, edges: .top)
@@ -133,5 +127,13 @@ struct SettingsView: View {
         .frame( maxWidth: .infinity, maxHeight: .infinity)
         .background(Color("ControlBack"))
         .scrollContentBackground(.hidden)
+        .onAppear() {
+            softkeyUnits = model.kstate.unitSet
+        }
+        .onChange( of: softkeyUnits ) {
+            
+            model.kstate.unitSet = softkeyUnits
+            model.changed()
+        }
     }
 }

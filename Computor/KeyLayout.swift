@@ -200,6 +200,7 @@ func initKeyLayout() {
         Key(.hr,  "hr"),
         Key(.mi,  "mi"),
         Key(.km,  "km"),
+        Key(.NM,  "NM"),
     ]
     
     SubPadSpec.define( .F0,

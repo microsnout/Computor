@@ -202,7 +202,7 @@ class ModuleExecutionContext {
 }
 
 
-enum SoftkeyUnits: Int, Hashable, Codable {
+enum SoftkeyUnits: Int, Equatable, Hashable, Codable {
     case mixed = 0, metric, imperial, physics, electrical, navigation
 }
 
@@ -738,7 +738,14 @@ class CalculatorModel: KeyPressHandler {
         .U2 : .mL, .U3 : .kg, .U4 : .hr, .U5 : .mi, .U6 : .km
     ]
     
+    let unitSetMetric: [KeyCode : KeyCode] = [
+        .U3 : .mL, .U4 : .hr, .U5 : .kg, .U6 : .km
+    ]
     
+    let unitSetNavigation: [KeyCode : KeyCode] = [
+        .U2 : .mL, .U3 : .kg, .U4 : .hr, .U5 : .mi, .U6 : .km
+    ]
+
     func getDefaultUnitKeycode( _ kcUn: KeyCode ) -> KeyCode? {
         
         if KeyCode.UnSet.contains(kcUn) {
@@ -747,6 +754,12 @@ class CalculatorModel: KeyPressHandler {
                 
             case .mixed:
                 return unitSetMixed[kcUn]
+                
+            case .metric:
+                return unitSetMetric[kcUn]
+                
+            case .navigation:
+                return unitSetNavigation[kcUn]
                 
             default:
                 return nil

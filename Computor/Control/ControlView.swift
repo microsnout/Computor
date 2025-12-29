@@ -21,7 +21,7 @@ struct ControlView: View {
                         Label( "Modules", systemImage: Const.Icon.cntlModules )
                     }
                 
-                SettingsView()
+                SettingsView( model: model )
                     .tabItem {
                         Label( "Settings", systemImage: Const.Icon.cntlSettings )
                     }
