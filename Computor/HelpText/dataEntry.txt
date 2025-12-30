@@ -1,0 +1,16 @@
+@@Data Entry Mode
+Entering a digit or decimal point activates Data Entry Mode
+A red underline cursor is displayed on the X register
+####
+ç{AccentText}ƒ{1.3}Entering vectors and complex numbersƒ{}ç{}
+
+ß{Method 1}
+Enter values in reverse order
+    z1 ∆{Enter}
+    y1 ∆{Enter}
+    x1 ∆{<x, y, z>}
+
+ß{Method 2}
+Enter values separated by comma ,
+    x1, y1, z1 ∆{<x, y, z>}
+

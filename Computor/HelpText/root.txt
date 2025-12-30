@@ -3,3 +3,5 @@
 $$Key Functions/keyhelp
 ####
 $$Standard Library Functions/stdlib
+####
+$$Data Entry Mode/dataEntry

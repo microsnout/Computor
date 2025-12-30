@@ -765,7 +765,7 @@ class CalculatorModel: KeyPressHandler {
     ]
     
     let unitSetNavigation: [KeyCode : KeyCode] = [
-        .U2 : .mL, .U3 : .kg, .U4 : .hr, .U5 : .mi, .U6 : .km
+        .U1 : .NM, .U2 : .mL, .U3 : .kg, .U4 : .hr, .U5 : .mi, .U6 : .km
     ]
 
     func getDefaultUnitKeycode( _ kcUn: KeyCode ) -> KeyCode? {
