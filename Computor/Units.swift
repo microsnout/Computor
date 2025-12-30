@@ -800,7 +800,7 @@ class TypeDef: Codable {
         // Angular units
         defineStdType( .angle,  .rad,  "rad",  1)
         defineStdType( .angle,  .deg,  "deg",  180/Double.pi)
-        defineStdType( .angle,  .minA, "minA", 180/Double.pi * 60.0)
+        defineStdType( .angle,  .minA, "min'", 180/Double.pi * 60.0)
 
         defineStdType( .time,  .second,   "sec",  1.0)
         defineStdType( .time,  .min,   "min",  1.0/60)
@@ -1198,4 +1198,4 @@ func lookupTypeTag( _ tc: TypeCode ) -> TypeTag? {
 let tagUntyped = TypeTag(.untyped)
 let tagRad     = TypeDef.tagOf("rad")
 let tagDeg     = TypeDef.tagOf("deg")
-let tagMinA    = TypeDef.tagOf("minA")
+let tagMinA    = TypeDef.tagOf("min'")

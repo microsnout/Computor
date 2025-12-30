@@ -334,7 +334,7 @@ func initKeyLayout() {
                         Key(.dm,   "dm",  caption: "Deg:Min"),
                         Key(.dms,  "dms", caption: "Deg:Min:Sec"),
                         Key(.rad,  "rad", caption: "Radians"),
-                        Key(.minA, "min", caption: ":Min:"),
+                        Key(.minA, "min'", caption: ":Min:"),
                        ],
                        caption: "Angles"
     )
@@ -485,6 +485,7 @@ func initKeyLayout() {
                        keySpec: ksSubFn,
                        keys: [
                         Key(.roll, "R\u{2193}",  caption: "ƒ{0.9}Roll Down"),
+                        Key(.comma, "ƒ{1.4}={,}",   caption: "Value Separator"),
                         Key(.lastx, "LSTx",      caption: "Last \u{1d499}"),
                        ],
                        caption: "Stack Op"

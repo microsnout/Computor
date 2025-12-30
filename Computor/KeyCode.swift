@@ -12,7 +12,7 @@ enum KeyCode: Int, Codable {
     case null = 0, clockTick, enter, backUndo, lib, unit
     
     // Entry mode keys, chs is also a function
-    case dot = 10, chs, eex, d000
+    case dot = 10, chs, eex, d000, comma
     
     // Arithmetic Ops
     case plus = 20, minus, times, divide
@@ -183,7 +183,7 @@ enum KeyCode: Int, Codable {
     static let entryStartKeys = KeyCode.digitSet.union( Set<KeyCode>([.dot]) )
     
     // Set of keys valid in data entry mode, all of above plus sign, back and enter exp
-    static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.chs, .backUndo, .eex, .d000]) )
+    static let entryKeys =  entryStartKeys.union( Set<KeyCode>([.chs, .backUndo, .eex, .d000, .comma]) )
 
     static let digitSet:Set<KeyCode> = [.d0, .d1, .d2, .d3, .d4, .d5, .d6, .d7, .d8, .d9]
 

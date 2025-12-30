@@ -549,6 +549,16 @@ func installComplex() {
             s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
             return (KeyPressResult.stateChange, s1)
         },
+        
+        OpPattern( [ .X([.real], .matrix) ], where: { $0.Xtv.capacity == 2  } ) { model, s0 in
+            
+            // Create complex value value from a row or col matrix of length 2
+            var s1 = s0
+            let (re, im) = s0.Xtv.get2()
+            let z = Comp(re, im)
+            s1.setComplexValue( z, tag: s0.Xt, fmt: s0.Xfmt )
+            return (KeyPressResult.stateChange, s1)
+        },
     ])
     
     

@@ -501,15 +501,37 @@ class CalculatorModel: KeyPressHandler {
             // We are in data entry mode and looking for the X reg
             var text = "ƒ{0.8}ç{RegLetterText}={X  }ç{}ƒ{}"
             
-            text.append( "={\(entry.entryText)}" )
+            var nx = 0
+            var ne: NumericEntry
             
-            if !entry.exponentEntry {
-                text.append( "ç{CursorText}={_}ç{}" )
-            }
-            
-            if entry.exponentEntry {
-                text.append( "^{\(entry.exponentText)}ç{CursorText}^{_}ç{}" )
-            }
+            repeat {
+                ne = entry.entrySet[nx]
+                
+                // This is the last value if it is the 3rd or if the next is empty
+                let last = nx == 2 || entry.entrySet[nx+1].entryText.isEmpty
+                
+                if nx > 0 {
+                    text.append("ç{ModText}={,}ç{}")
+                }
+                
+                text.append( "={\(ne.entryText)}" )
+                
+                if last && nx == entry.nx && !ne.exponentEntry {
+                    text.append( "ç{CursorText}={_}ç{}" )
+                }
+                
+                if last && nx == entry.nx && ne.exponentEntry {
+                    text.append( "^{\(ne.exponentText)}ç{CursorText}^{_}ç{}" )
+                }
+                
+                if last && nx < entry.nx {
+                    // This is the last value but a comma has been entered so another is expected
+                    text.append("ç{ModText}={,}ç{}ç{CursorText}={_}ç{}")
+                }
+
+                nx += 1
+
+            } while nx < 3 && !entry.entrySet[nx].entryText.isEmpty
             
             return text
         }

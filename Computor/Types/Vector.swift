@@ -111,6 +111,15 @@ func installVector() {
             s1.setVectorValue( z.real, z.imaginary, tag: s0.Xt, fmt: s0.Xfmt )
             return (KeyPressResult.stateChange, s1)
         },
+        
+        OpPattern( [ .X([.real], .matrix) ], where: { $0.Xtv.capacity == 2  } ) { model, s0 in
+            
+            // Create 2D vector value from a row or col matrix of length 2
+            var s1 = s0
+            let (x, y) = s0.Xtv.get2()
+            s1.setVectorValue( x,y, tag: s0.Xt, fmt: s0.Xfmt )
+            return (KeyPressResult.stateChange, s1)
+        },
     ])
 
     
@@ -163,6 +172,15 @@ func installVector() {
             s1.setPolarValue( z.length, z.phase, tag: s0.Xt, fmt: s0.Xfmt )
             return (KeyPressResult.stateChange, s1)
         },
+        
+        OpPattern( [ .X([.real], .matrix) ], where: { $0.Xtv.capacity == 2  } ) { model, s0 in
+            
+            // Create polar vector value from a row or col matrix of length 2
+            var s1 = s0
+            let (r, w) = s0.Xtv.get2()
+            s1.setPolarValue( r,w, tag: s0.Xt, fmt: s0.Xfmt )
+            return (KeyPressResult.stateChange, s1)
+        },
     ])
 
     
@@ -190,6 +208,15 @@ func installVector() {
             var s1 = s0
             let (r, w, p) = s0.Xtv.get3()
             let (x, y, z) = spherical2rect(r,w,p)
+            s1.setVector3DValue( x,y,z, tag: s0.Xt, fmt: s0.Xfmt )
+            return (KeyPressResult.stateChange, s1)
+        },
+        
+        OpPattern( [ .X([.real], .matrix) ], where: { $0.Xtv.capacity == 3  } ) { model, s0 in
+            
+            // Create 3D vector value from a row or col matrix of length 3
+            var s1 = s0
+            let (x, y, z) = s0.Xtv.get3()
             s1.setVector3DValue( x,y,z, tag: s0.Xt, fmt: s0.Xfmt )
             return (KeyPressResult.stateChange, s1)
         },
@@ -235,6 +262,15 @@ func installVector() {
             var s1 = s0
             let (x, y, z) = s0.Xtv.get3()
             let (r, w, p) = rect2spherical(x,y,z)
+            s1.setSphericalValue( r,w,p, tag: s0.Xt, fmt: s0.Xfmt )
+            return (KeyPressResult.stateChange, s1)
+        },
+        
+        OpPattern( [ .X([.real], .matrix) ], where: { $0.Xtv.capacity == 3  } ) { model, s0 in
+            
+            // Create spherical vector value from a row or col matrix of length 3
+            var s1 = s0
+            let (r, w, p) = s0.Xtv.get3()
             s1.setSphericalValue( r,w,p, tag: s0.Xt, fmt: s0.Xfmt )
             return (KeyPressResult.stateChange, s1)
         },

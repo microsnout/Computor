@@ -92,6 +92,46 @@ func installMatrix() {
     
     let allTypes: Set<ValueType> = [.real, .rational, .complex, .vector, .vector3D, .polar, .spherical]
     
+    CalculatorModel.defineOpPatterns( .dms, [
+        
+        OpPattern( [ .X([.real], .matrix) ], where: { $0.Xtv.capacity == 3 || $0.Xtv.capacity == 2  } ) { model, s0 in
+            
+            // Convert a row or column matrix of length 2 or 3 to a deg:min:sec value
+            var s1 = s0
+            var deg,min,sec,value: Double
+            
+            if s0.Xtv.capacity == 3 {
+                (deg, min, sec) = s0.Xtv.get3()
+                value = deg + min/60.0 + sec/3600.0
+            }
+            else {
+                (deg, min) = s0.Xtv.get2()
+                value = deg + min/60.0
+            }
+            
+            let tagDeg = TypeDef.tagFromSym("deg") ?? tagUntyped
+            s1.Xtv.setReal( value, tag: tagDeg, fmt: FormatRec( style: .dms) )
+            return (KeyPressResult.stateChange, s1)
+        },
+    ])
+
+    
+    CalculatorModel.defineOpPatterns( .dm, [
+        
+        OpPattern( [ .X([.real], .matrix) ], where: { $0.Xtv.capacity == 2  } ) { model, s0 in
+            
+            // Convert a row or column matrix of length 2 to a deg:min value
+            var s1 = s0
+            
+            let (deg, min) = s0.Xtv.get2()
+            let  value = deg + min/60.0
+            let tagDeg = TypeDef.tagFromSym("deg") ?? tagUntyped
+            s1.Xtv.setReal( value, tag: tagDeg, fmt: FormatRec( style: .dm) )
+            return (KeyPressResult.stateChange, s1)
+        },
+    ])
+    
+                                      
     CalculatorModel.defineOpPatterns( .seq, [
         
         OpPattern( [ .X([.real]), .Y(allTypes), .Z(allTypes) ], where: { s0 in isInt(s0.X) } ) { model, s0 in
