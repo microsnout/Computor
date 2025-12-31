@@ -115,6 +115,7 @@ class ModuleFile: DataObjectFile {
     var unitData:  UserUnitData
     var keyMap:    KeyMapRec
     var unitSet:   SoftkeyUnits
+    var navPolar:  Bool
     
     private enum CodingKeys: String, CodingKey {
         case groupTable
@@ -124,6 +125,7 @@ class ModuleFile: DataObjectFile {
         case unitData
         case keyMap
         case unitSet
+        case navPolar
     }
     
     init( _ mfr: ModuleRec ) {
@@ -134,6 +136,7 @@ class ModuleFile: DataObjectFile {
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
         self.unitSet = SoftkeyUnits.mixed
+        self.navPolar = false
 
         super.init()
     }
@@ -146,6 +149,7 @@ class ModuleFile: DataObjectFile {
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
         self.unitSet = SoftkeyUnits.mixed
+        self.navPolar = false
 
         super.init()
     }
@@ -158,6 +162,7 @@ class ModuleFile: DataObjectFile {
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
         self.unitSet = SoftkeyUnits.mixed
+        self.navPolar = false
 
         super.init(obj)
     }
@@ -171,6 +176,7 @@ class ModuleFile: DataObjectFile {
         self.unitData = try container.decode( UserUnitData.self, forKey: .unitData)
         self.keyMap = try container.decode( KeyMapRec.self, forKey: .keyMap)
         self.unitSet = try container.decode( SoftkeyUnits.self, forKey: .unitSet)
+        self.navPolar = try container.decode( Bool.self, forKey: .navPolar)
 
         try super.init(from: decoder)
     }
@@ -183,6 +189,7 @@ class ModuleFile: DataObjectFile {
         try container.encode(unitData,   forKey: .unitData)
         try container.encode(keyMap,     forKey: .keyMap)
         try container.encode(unitSet,    forKey: .unitSet)
+        try container.encode(navPolar,   forKey: .navPolar)
 
         try super.encode(to: encoder)
     }

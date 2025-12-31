@@ -30,14 +30,20 @@ func isEven( _ x: Int ) -> Bool {
 }
 
 
+// *****
+
+var navigationPolar: Bool = false
+
 func rect2polar( _ x: Double, _ y: Double ) -> (Double, Double) {
-    ( sqrt(x*x + y*y), atan2(y,x) )
+    navigationPolar ? ( sqrt(x*x + y*y), atan2(x,y) ) : ( sqrt(x*x + y*y), atan2(y,x) )
 }
 
 
 func polar2rect( _ r: Double, _ w:  Double ) -> (Double, Double) {
-    ( r*cos(w), r*sin(w) )
+    navigationPolar ? ( r*sin(w), r*cos(w) ) : ( r*cos(w), r*sin(w) )
 }
+
+// *****
 
 
 func rect2spherical( _ x: Double, _ y: Double, _ z: Double ) -> (Double, Double, Double) {

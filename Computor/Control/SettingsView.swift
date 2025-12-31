@@ -12,7 +12,6 @@ extension String {
     static var settingsSerifFontKey : String { "settings.serifFont" }
     static var settingsPriDispTextSize : String { "settings.priDispTextSize" }
     static var settingsAuxDispTextSize : String { "settings.auxDispTextSize" }
-    // static var settingsSoftkeyUnits : String { "settings.softkeyUnits" }
     static var settingsKeyCaptions : String { "settings.keyCaptions" }
     static var settingsModalConfirmation : String { "settings.modalConfirmation" }
     static var settingsRecordExecute : String { "settings.recordExecute" }
@@ -47,9 +46,6 @@ struct SettingsView: View {
     
     @AppStorage(.settingsAuxDispTextSize)
     private var auxDispTextSize = TextSize.normal
-    
-    // @AppStorage(.settingsSoftkeyUnits)
-    @State private var softkeyUnits = SoftkeyUnits.mixed
 
     @AppStorage(.settingsKeyCaptions)
     private var keyCaptions = true
@@ -62,6 +58,9 @@ struct SettingsView: View {
 
     @AppStorage(.settingsYellowDots)
     private var yellowDots = true
+    
+    @State private var softkeyUnits = SoftkeyUnits.mixed
+    @State private var navPolarMode = false
 
     var body: some View {
         NavigationStack {
@@ -100,7 +99,17 @@ struct SettingsView: View {
                             }
                             .tint( Color("Frame"))
                             .listRowSeparator(.hidden)
+                        }
+                        
+                        // SECTION DOCUMENT
+                        Section( header: SectionHeaderText( text: "Module").foregroundColor(Color("DisplayText")) ) {
                             
+                            Group {
+                                Toggle("Navigation Polar Co-ord", isOn: $navPolarMode)
+                            }
+                            .tint( Color("Frame"))
+                            .listRowSeparator(.hidden)
+
                            Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
                                 Text("Default").tag(SoftkeyUnits.mixed)
                                 Text("Metric").tag(SoftkeyUnits.metric)
@@ -134,6 +143,14 @@ struct SettingsView: View {
             
             model.kstate.unitSet = softkeyUnits
             model.changed()
+        }
+        .onAppear() {
+            navPolarMode = model.kstate.navPolar
+        }
+        .onChange(of: navPolarMode ) {
+            model.kstate.navPolar = navPolarMode
+            model.changed()
+            navigationPolar = navPolarMode
         }
     }
 }

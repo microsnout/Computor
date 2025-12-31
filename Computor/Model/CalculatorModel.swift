@@ -216,6 +216,7 @@ struct KeyState {
     
     // Default Unit set
     var unitSet: SoftkeyUnits = .mixed
+    var navPolar: Bool = false
     
     init() {
         // Need to cycle all 3 possible values here to
@@ -227,6 +228,7 @@ struct KeyState {
 
         self.keyMap = KeyMapRec()
         self.unitSet = .mixed
+        self.navPolar = false
     }
 }
 
@@ -711,6 +713,9 @@ class CalculatorModel: KeyPressHandler {
                     self.state = obj.state
                     self.kstate.keyMap = obj.keyMap
                     self.kstate.unitSet = obj.unitSet
+                    self.kstate.navPolar = obj.navPolar
+                    
+                    navigationPolar = obj.navPolar
                     
                     UserUnitData.uud = obj.unitData
                     UnitDef.reIndexUserUnits()
@@ -745,6 +750,7 @@ class CalculatorModel: KeyPressHandler {
                     obj.keyMap = self.kstate.keyMap
                     obj.unitData = UserUnitData.uud
                     obj.unitSet = self.kstate.unitSet
+                    obj.navPolar = self.kstate.navPolar
                 }
             }
             
