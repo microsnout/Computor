@@ -59,8 +59,7 @@ struct SettingsView: View {
     @AppStorage(.settingsYellowDots)
     private var yellowDots = true
     
-    @State private var softkeyUnits = SoftkeyUnits.mixed
-    @State private var navPolarMode = false
+    @State private var modSettings = ModuleSettingRec()
 
     var body: some View {
         NavigationStack {
@@ -105,12 +104,12 @@ struct SettingsView: View {
                         Section( header: SectionHeaderText( text: "Module").foregroundColor(Color("DisplayText")) ) {
                             
                             Group {
-                                Toggle("Navigation Polar Co-ord", isOn: $navPolarMode)
+                                Toggle("Navigation Polar Co-ord", isOn: $modSettings.navPolar)
                             }
                             .tint( Color("Frame"))
                             .listRowSeparator(.hidden)
 
-                           Picker( selection: $softkeyUnits, label: Text("Unit Keys")) {
+                            Picker( selection: $modSettings.unitSet, label: Text("Unit Keys")) {
                                 Text("Default").tag(SoftkeyUnits.mixed)
                                 Text("Metric").tag(SoftkeyUnits.metric)
                                 Text("Imperial").tag(SoftkeyUnits.imperial)
@@ -137,20 +136,14 @@ struct SettingsView: View {
         .background(Color("ControlBack"))
         .scrollContentBackground(.hidden)
         .onAppear() {
-            softkeyUnits = model.kstate.unitSet
+            modSettings = model.kstate.settings
         }
-        .onChange( of: softkeyUnits ) {
+        .onChange( of: modSettings ) {
             
-            model.kstate.unitSet = softkeyUnits
+            model.kstate.settings = modSettings
             model.changed()
-        }
-        .onAppear() {
-            navPolarMode = model.kstate.navPolar
-        }
-        .onChange(of: navPolarMode ) {
-            model.kstate.navPolar = navPolarMode
-            model.changed()
-            navigationPolar = navPolarMode
+            model.saveDocument()
+            navigationPolar = modSettings.navPolar
         }
     }
 }

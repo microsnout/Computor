@@ -215,8 +215,7 @@ struct KeyState {
     var keyMap: KeyMapRec = KeyMapRec()
     
     // Default Unit set
-    var unitSet: SoftkeyUnits = .mixed
-    var navPolar: Bool = false
+    var settings: ModuleSettingRec = ModuleSettingRec()
     
     init() {
         // Need to cycle all 3 possible values here to
@@ -227,8 +226,7 @@ struct KeyState {
         self.func2R = psFunctions2R
 
         self.keyMap = KeyMapRec()
-        self.unitSet = .mixed
-        self.navPolar = false
+        self.settings = ModuleSettingRec()
     }
 }
 
@@ -712,10 +710,9 @@ class CalculatorModel: KeyPressHandler {
                     
                     self.state = obj.state
                     self.kstate.keyMap = obj.keyMap
-                    self.kstate.unitSet = obj.unitSet
-                    self.kstate.navPolar = obj.navPolar
+                    self.kstate.settings = obj.settings
                     
-                    navigationPolar = obj.navPolar
+                    navigationPolar = obj.settings.navPolar
                     
                     UserUnitData.uud = obj.unitData
                     UnitDef.reIndexUserUnits()
@@ -749,8 +746,7 @@ class CalculatorModel: KeyPressHandler {
                     obj.state = self.state
                     obj.keyMap = self.kstate.keyMap
                     obj.unitData = UserUnitData.uud
-                    obj.unitSet = self.kstate.unitSet
-                    obj.navPolar = self.kstate.navPolar
+                    obj.settings = self.kstate.settings
                 }
             }
             
@@ -778,7 +774,7 @@ class CalculatorModel: KeyPressHandler {
         
         if KeyCode.UnSet.contains(kcUn) {
             
-            switch kstate.unitSet {
+            switch kstate.settings.unitSet {
                 
             case .mixed:
                 return unitSetMixed[kcUn]

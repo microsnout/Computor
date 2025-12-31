@@ -95,6 +95,13 @@ struct KeyMapRec: Codable {
 }
 
 
+struct ModuleSettingRec: Codable, Equatable {
+    
+    var unitSet:   SoftkeyUnits = .mixed
+    var navPolar:  Bool = false
+}
+
+
 typealias GroupId = Int
 
 
@@ -114,8 +121,7 @@ class ModuleFile: DataObjectFile {
     var state:     CalcState
     var unitData:  UserUnitData
     var keyMap:    KeyMapRec
-    var unitSet:   SoftkeyUnits
-    var navPolar:  Bool
+    var settings:  ModuleSettingRec
     
     private enum CodingKeys: String, CodingKey {
         case groupTable
@@ -124,8 +130,7 @@ class ModuleFile: DataObjectFile {
         case state
         case unitData
         case keyMap
-        case unitSet
-        case navPolar
+        case settings
     }
     
     init( _ mfr: ModuleRec ) {
@@ -135,8 +140,7 @@ class ModuleFile: DataObjectFile {
         self.state = CalcState()
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
-        self.unitSet = SoftkeyUnits.mixed
-        self.navPolar = false
+        self.settings = ModuleSettingRec()
 
         super.init()
     }
@@ -148,8 +152,7 @@ class ModuleFile: DataObjectFile {
         self.state = CalcState()
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
-        self.unitSet = SoftkeyUnits.mixed
-        self.navPolar = false
+        self.settings = ModuleSettingRec()
 
         super.init()
     }
@@ -161,8 +164,7 @@ class ModuleFile: DataObjectFile {
         self.state = CalcState()
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
-        self.unitSet = SoftkeyUnits.mixed
-        self.navPolar = false
+        self.settings = ModuleSettingRec()
 
         super.init(obj)
     }
@@ -175,8 +177,7 @@ class ModuleFile: DataObjectFile {
         self.state = try container.decode( CalcState.self, forKey: .state)
         self.unitData = try container.decode( UserUnitData.self, forKey: .unitData)
         self.keyMap = try container.decode( KeyMapRec.self, forKey: .keyMap)
-        self.unitSet = try container.decode( SoftkeyUnits.self, forKey: .unitSet)
-        self.navPolar = try container.decode( Bool.self, forKey: .navPolar)
+        self.settings = try container.decode( ModuleSettingRec.self, forKey: .settings)
 
         try super.init(from: decoder)
     }
@@ -188,8 +189,7 @@ class ModuleFile: DataObjectFile {
         try container.encode(state,      forKey: .state)
         try container.encode(unitData,   forKey: .unitData)
         try container.encode(keyMap,     forKey: .keyMap)
-        try container.encode(unitSet,    forKey: .unitSet)
-        try container.encode(navPolar,   forKey: .navPolar)
+        try container.encode(settings,   forKey: .settings)
 
         try super.encode(to: encoder)
     }
