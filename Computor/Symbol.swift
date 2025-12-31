@@ -49,8 +49,9 @@ extension SymbolTag {
     static let firstSysMod = 100
     
     // Special Module codes
-    static let localMemMod = 200
-    static let keycodeMod  = 201
+    static let globalMemMod = 200
+    static let localMemMod  = 201
+    static let keycodeMod   = 202
     
     var isNull:  Bool { self == SymbolTag.Null  }
     var isBlank: Bool { self == SymbolTag.Blank }
@@ -85,6 +86,9 @@ extension SymbolTag {
     // Local memory tag - no conflict with macro symbols
     var isLocalMemoryTag: Bool { self.mod == SymbolTag.localMemMod }
     
+    // Global memory tag
+    var isGlobalMemoryTag: Bool { self.mod == SymbolTag.globalMemMod }
+
     // KeyCode tag - representing one general KeyCode value
     var isKeycodeTag: Bool { self.mod == SymbolTag.keycodeMod }
     
@@ -356,6 +360,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
     
     // Pre-existing symbol can be provided
     var tag: SymbolTag = SymbolTag.Null
+    var modCode: Int   = 0
     
     var radius = 10.0
     var frameWidth = 0.0
@@ -554,7 +559,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
                     
                     if symN > 0 {
                         // Create symbol Tag
-                        let tag = SymbolTag( symArray, subPt: subPt, superPt: superPt )
+                        let tag = SymbolTag( symArray, subPt: subPt, superPt: superPt, mod: modCode )
                         
                         // Process tag in parent view
                         scc( tag )

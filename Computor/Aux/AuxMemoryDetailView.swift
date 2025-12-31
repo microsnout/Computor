@@ -187,7 +187,7 @@ struct MemoryEditSheet: View {
             // Symbol Editor
             SheetCollapsibleView( code: 1, label: "={Symbol: }\(symName)", drop: $dropCode ) {
                 
-                NewSymbolPopup( tag: mTag ) { newTag in
+                NewSymbolPopup( tag: mTag, modCode: SymbolTag.globalMemMod ) { newTag in
                     mTag = newTag
                     symName = mTag.getRichText()
                 }
@@ -195,6 +195,15 @@ struct MemoryEditSheet: View {
             
             // Caption Editor
             SheetTextField( label: "Caption:", placeholder: "-caption-", text: $caption )
+            
+            // Computed Memory Macro Selection
+            SheetCollapsibleView( code: 2, label: "={Computed Memory Macro: }\(symName)", drop: $dropCode ) {
+                
+                let tagGroupList: [SymbolTagGroup] = [SymbolTagGroup( label: model.activeModName, model: model, mod: model.activeModule )]
+
+                SelectSymbolPopup( tagGroupList: tagGroupList, title: "Select Macro" ) {
+                }
+            }
             
             Spacer()
         }

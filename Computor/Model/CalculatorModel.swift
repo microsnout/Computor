@@ -248,6 +248,7 @@ class CalculatorModel: KeyPressHandler {
     
     // Currently active calculator document
     var activeModName: String = ""
+    var activeModule: ModuleRec = ModuleRec( name: "" )
 
     // Pause for confirmation of some functions
     var modalConfirmation = true
@@ -719,6 +720,7 @@ class CalculatorModel: KeyPressHandler {
                     TypeDef.reIndexUserTypes()
                     
                     self.activeModName = name
+                    self.activeModule  = modRec
                     
                     // Reset aux display to memory page
                     self.aux.activeView = .memoryView
