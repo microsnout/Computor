@@ -460,6 +460,8 @@ struct MemorySelectPopup: View, KeyPressHandler {
                 
                 if newTag != SymbolTag.Null {
                     let _ = model.newGlobalMemory( newTag, caption: newtxt.isEmpty ? nil : newtxt )
+                    model.changed()
+                    model.saveDocument()
                 }
             }
         }

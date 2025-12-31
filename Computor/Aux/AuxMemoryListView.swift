@@ -29,6 +29,8 @@ struct AuxMemoryView: View {
 
 struct MemoryListView: View {
     @State var model: CalculatorModel
+    
+    @State private var memorySheet: Bool = false
 
     var body: some View {
         VStack {
@@ -40,6 +42,16 @@ struct MemoryListView: View {
                     Spacer()
                     RichText( "Memory", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                     Spacer()
+                    
+                    // BUTTON - New memory creation button
+                    Image( systemName: "plus")
+                        .foregroundColor( Color("AuxHeaderText") )
+                        .padding( [.trailing], 5 )
+                        .onTapGesture {
+                            withAnimation {
+                                memorySheet = true
+                            }
+                        }
                 }
             }
             
@@ -118,6 +130,18 @@ struct MemoryListView: View {
                     }
                     .padding( .horizontal, 0)
                     .padding( .top, 0)
+                }
+            }
+        }
+        .sheet( isPresented: $memorySheet) {
+            
+            // Edit Memory
+            MemoryEditSheet( model: model ) {  newTag, newtxt in
+                
+                if newTag != SymbolTag.Null {
+                    let _ = model.newGlobalMemory( newTag, caption: newtxt.isEmpty ? nil : newtxt )
+                    model.changed()
+                    model.saveDocument()
                 }
             }
         }

@@ -52,7 +52,7 @@ extension SymbolTag {
     static let localMemMod = 200
     static let keycodeMod  = 201
     
-    var isNull: Bool { self.tag == 0 }
+    var isNull:  Bool { self == SymbolTag.Null  }
     var isBlank: Bool { self == SymbolTag.Blank }
     var isModal: Bool { self == SymbolTag.Modal }
 
@@ -343,9 +343,6 @@ struct NewSymbolPopup: View, KeyPressHandler {
     
     @Environment(CalculatorModel.self) var model
     @Environment(KeyData.self) var keyData
-    
-    @AppStorage(.settingsKeyCaptions)
-    private var greekKeys = false
     
     @State private var charSet = CharSet.upper
     @State private var symName = ""
