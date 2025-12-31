@@ -280,7 +280,7 @@ extension SymbolTag {
         
         assert( symA.count > 0 && symA.count <= Const.Symbol.maxChars )
         assert( subPt*superPt == 0 && subPt+superPt <= Const.Symbol.maxChars && subPt+superPt != 1 )
-        assert( mod >= 0 && mod < 100 )
+        assert( mod >= 0 && mod < 210 )
         
         var tag: UInt64 = 0
         

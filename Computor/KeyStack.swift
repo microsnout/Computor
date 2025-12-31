@@ -425,13 +425,27 @@ struct MemorySelectPopup: View, KeyPressHandler {
     }
     
     
+    func sendKeyEvent( _ tag: SymbolTag ) {
+        
+        if let kcOp = keyData.pressedKey {
+            // Send event for memory op
+            _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )
+            
+        }
+        
+        // Close modal popup
+        keyData.pressedKey = nil
+        keyData.modalKey = .none
+    }
+    
+    
     var body: some View {
         
         CustomModalPopup( keyPressHandler: self, myModalKey: .globalMemory ) {
             
             let tags = getTagGroups()
             
-            SelectSymbolPopup( tagGroupList: tags, title: "Select Memory" ) {
+            SelectSymbolPopup( tagGroupList: tags, title: "Select Memory", sscc: sendKeyEvent ) {
                 
                 // Footer content that goes below the tag list box
                 if keyData.pressedKey?.kc != .rcl  {
@@ -514,6 +528,20 @@ struct MacroLibraryPopup: View, KeyPressHandler {
                 }
         }
     }
+    
+    
+    func sendKeyEvent( _ tag: SymbolTag ) {
+        
+        if let kcOp = keyData.pressedKey {
+            // Send event for memory op
+            _ = model.keyPress( KeyEvent( kcOp.kc, mTag: tag ) )
+            
+        }
+        
+        // Close modal popup
+        keyData.pressedKey = nil
+        keyData.modalKey = .none
+    }
 
     
     var body: some View {
@@ -522,7 +550,7 @@ struct MacroLibraryPopup: View, KeyPressHandler {
             
             let tagGroupList = getMacroTags(libSource)
             
-            SelectSymbolPopup( tagGroupList: tagGroupList, title: popupTitle[libSource] ?? "" ) {
+            SelectSymbolPopup( tagGroupList: tagGroupList, title: popupTitle[libSource] ?? "", sscc: sendKeyEvent ) {
                 
                 // Bottom Content
                 

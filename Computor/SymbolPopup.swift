@@ -101,7 +101,6 @@ struct SelectSymbolPopup<Content: View>: View {
     /// Select from list of existing symbol tags, could be memories or macros
     
     @Environment(CalculatorModel.self) var model
-    @Environment(KeyData.self) var keyData
     
     let keySpec: KeySpec = ksSoftkey
     
@@ -110,6 +109,9 @@ struct SelectSymbolPopup<Content: View>: View {
     // Parameters
     var tagGroupList: [SymbolTagGroup]
     var title: String
+    
+    // Select Symbol Continuation Closure
+    var sscc: ( SymbolTag ) -> Void
     
     @ViewBuilder let footer: Content
     
@@ -169,16 +171,8 @@ struct SelectSymbolPopup<Content: View>: View {
                                     
                                     MemoryKeyView( mTag: item.symTag, keySpec: keySpec )
                                         .onTapGesture {
-                                            if let kcOp = keyData.pressedKey {
-                                                // Send event for memory op
-                                                _ = model.keyPress( KeyEvent( kcOp.kc, mTag: item.symTag ) )
-                                                
-                                                hapticFeedback.impactOccurred()
-                                            }
-                                            
-                                            // Close modal popup
-                                            keyData.pressedKey = nil
-                                            keyData.modalKey = .none
+                                            hapticFeedback.impactOccurred()
+                                            sscc( item.symTag )
                                         }
                                     
                                     Color.clear
@@ -211,16 +205,8 @@ struct SelectSymbolPopup<Content: View>: View {
                                         
                                         MemoryKeyView( mTag: row[c], keySpec: keySpec )
                                             .onTapGesture {
-                                                if let kcOp = keyData.pressedKey {
-                                                    // Send event for memory op
-                                                    _ = model.keyPress( KeyEvent( kcOp.kc, mTag: row[c] ) )
-                                                    
-                                                    hapticFeedback.impactOccurred()
-                                                }
-                                                
-                                                // Close modal popup
-                                                keyData.pressedKey = nil
-                                                keyData.modalKey = .none
+                                                hapticFeedback.impactOccurred()
+                                                sscc( row[c] )
                                             }
                                     }
                                     

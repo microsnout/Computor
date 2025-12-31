@@ -82,23 +82,19 @@ class AppInitializer {
     var state: State = .loading
     
     func initialize( _ model: CalculatorModel ) async {
-        do {
-            // Load calculator documents and macro modules
-            model.db.loadDatabase()
+        
+        // Load calculator documents and macro modules
+        model.db.loadDatabase()
 
-            // Activate doc0
-            model.loadDocument( modZeroSym )
+        // Activate doc0
+        model.loadDocument( modZeroSym )
 
-            // Set aux display view to mod zero
-            model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleRec( name: "?")
-            
-            // Simulate an asynchronous initialization task, e.g., network request, database setup
-            // try await Task.sleep( for: .seconds(2))
-            state = .loaded
-        }
-        catch {
-            state = .failed(error)
-        }
+        // Set aux display view to mod zero
+        model.aux.macroMod = model.db.getModuleFileRec(sym: modZeroSym) ?? ModuleRec( name: "?")
+        
+        // Simulate an asynchronous initialization task, e.g., network request, database setup
+        // try await Task.sleep( for: .seconds(2))
+        state = .loaded
     }
 }
 

@@ -265,20 +265,12 @@ struct MacroDetailRightPanel: View {
     func enableStop() -> Bool {
         
         let state = model.aux.recState
-        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
-        let count = opseq.count
-        let opcur = model.aux.opCursor
         
         return state == .record || state == .debug
     }
 
     
     func enableRecord() -> Bool {
-        
-        let state = model.aux.recState
-        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
-        let count = opseq.count
-        let opcur = model.aux.opCursor
         
         return true
     }
@@ -298,8 +290,6 @@ struct MacroDetailRightPanel: View {
     func enableBack() -> Bool {
         
         let state = model.aux.recState
-        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
-        let count = opseq.count
         let opcur = model.aux.opCursor
         
         return (state == .record || state == .debug) && opcur > 0
@@ -309,9 +299,6 @@ struct MacroDetailRightPanel: View {
     func enableExecute() -> Bool {
         
         let state = model.aux.recState
-        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
-        let count = opseq.count
-        let opcur = model.aux.opCursor
         
         return state == .record
     }

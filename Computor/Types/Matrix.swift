@@ -420,7 +420,7 @@ func installMatrix() {
             var s1 = s0
             s1.stackDrop()
             
-            let (_, rows, cols) = s0.Xtv.getShape()
+            let (_, _, cols) = s0.Xtv.getShape()
             
             var minX: Double = s0.Xtv.getReal( r: 1, c: 1 )
             
@@ -441,7 +441,7 @@ func installMatrix() {
             var s1 = s0
             s1.stackDrop()
             
-            let (_, rows, cols) = s0.Xtv.getShape()
+            let (_, _, cols) = s0.Xtv.getShape()
             
             var maxX: Double = s0.Xtv.getReal( r: 1, c: 1 )
             
@@ -464,7 +464,7 @@ func installMatrix() {
             var s1 = s0
             s1.stackDrop()
             
-            let (_, rows, cols) = s0.Xtv.getShape()
+            let (_, _, cols) = s0.Xtv.getShape()
             
             let n = Double(cols)
             
@@ -495,7 +495,7 @@ func installMatrix() {
             var s1 = s0
             s1.stackDrop()
             
-            let (_, rows, cols) = s0.Xtv.getShape()
+            let (_, _, cols) = s0.Xtv.getShape()
             
             var sum: Double = 0.0
             

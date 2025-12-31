@@ -17,9 +17,12 @@ struct MemoryDetailView: View {
     @State private var position: MemoryRec? = nil
     
     @State private var refreshView = false
+    
+    @State private var computedMem: Bool = false
 
     var body: some View {
         if let mr = model.aux.memRec {
+            
             VStack {
                 
                 // HEADER
@@ -58,11 +61,12 @@ struct MemoryDetailView: View {
                                 
                                 ForEach( model.state.memory ) { mr in
                                     
-                                    let sym = mr.symTag.getRichText()
+                                    let computed: Bool = !mr.symTag.isGlobalMemoryTag
+                                    let sym = computed ? "{\(mr.symTag.getRichText())}" : mr.symTag.getRichText()
                                     let caption = mr.caption ?? "-Unnamed-"
                                     let (valueStr, _) = mr.tv.renderRichText()
                                     let color = mr.caption != nil ? "UnitText" : "GrayText"
-                                    
+
                                     VStack {
                                         //  SYMBOL
                                         RichText("ƒ{1.5}\(sym)", size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
@@ -84,6 +88,7 @@ struct MemoryDetailView: View {
                         .scrollTargetBehavior(.viewAligned)
                         .scrollPosition( id: $position )
                         .onChange( of: position ) { oldRec, newRec in
+                            
                             if newRec != nil  {
                                 model.aux.memRec = newRec
                             }
@@ -105,11 +110,13 @@ struct MemoryDetailView: View {
                     Button( action: { model.memoryOp( key: .mPlus, tag: mr.symTag ) } ) {
                         Text( "M+" )
                     }
-                    
+                    .disabled(computedMem)
+
                     Button( action: { model.memoryOp( key: .mMinus, tag: mr.symTag ) } ) {
                         Text( "M-" )
                     }
-                    
+                    .disabled(computedMem)
+
                     Button( action: { model.memoryOp( key: .rclMem, tag: mr.symTag ) } ) {
                         Image( systemName: "arrowshape.down" )
                     }
@@ -117,7 +124,8 @@ struct MemoryDetailView: View {
                     Button( action: { model.memoryOp( key: .stoMem, tag: mr.symTag ) } ) {
                         Image( systemName: "arrowshape.up" )
                     }
-                    
+                    .disabled(computedMem)
+
                     // PENCIL EDIT BUTTON
                     Button {
                         renameSheet = true
@@ -170,6 +178,14 @@ struct MemoryEditSheet: View {
     
     @State var dropCode: Int = 0
     
+    func selectSym( _ tag: SymbolTag ) {
+        
+        // Set macro tag for computed memory
+        symName = tag.getRichText()
+        mTag = tag
+    }
+    
+    
     var body: some View {
         
         VStack( alignment: .leading ) {
@@ -197,12 +213,11 @@ struct MemoryEditSheet: View {
             SheetTextField( label: "Caption:", placeholder: "-caption-", text: $caption )
             
             // Computed Memory Macro Selection
-            SheetCollapsibleView( code: 2, label: "={Computed Memory Macro: }\(symName)", drop: $dropCode ) {
+            SheetCollapsibleView( code: 2, label: "={Computed Memory:}", drop: $dropCode ) {
                 
                 let tagGroupList: [SymbolTagGroup] = [SymbolTagGroup( label: model.activeModName, model: model, mod: model.activeModule )]
 
-                SelectSymbolPopup( tagGroupList: tagGroupList, title: "Select Macro" ) {
-                }
+                SelectSymbolPopup( tagGroupList: tagGroupList, title: "Select Macro", sscc: selectSym ) { }
             }
             
             Spacer()
