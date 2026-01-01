@@ -72,7 +72,7 @@ struct MemoryListView: View {
                             let (txt, _) = mr.tv.renderRichText()
                             
                             // Either a global memory tag or a macro tag for a computed memory
-                            let sym = mr.symTag.isGlobalMemoryTag ? mr.symTag.getRichText() : "{\(mr.symTag.getRichText())}"
+                            let sym = mr.symTag.isGlobalMemoryTag ? mr.symTag.getRichText() : "ç{AccentText}\(mr.symTag.getRichText())ç{}"
                             
                             let caption: String = mr.caption ?? "-caption-"
                             

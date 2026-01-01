@@ -62,7 +62,7 @@ struct MemoryDetailView: View {
                                 ForEach( model.state.memory ) { mr in
                                     
                                     let computed: Bool = !mr.symTag.isGlobalMemoryTag
-                                    let sym = computed ? "{\(mr.symTag.getRichText())}" : mr.symTag.getRichText()
+                                    let sym = computed ? "ç{AccentText}\(mr.symTag.getRichText())ç{}" : mr.symTag.getRichText()
                                     let caption = mr.caption ?? "-Unnamed-"
                                     let (valueStr, _) = mr.tv.renderRichText()
                                     let color = mr.caption != nil ? "UnitText" : "GrayText"
