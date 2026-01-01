@@ -1,5 +1,5 @@
 //
-//  AuxMacroEditSheet.swift
+//  MacroEditSheet.swift
 //  Computor
 //
 //  Created by Barry Hall on 2025-11-09.

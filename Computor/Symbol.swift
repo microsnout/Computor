@@ -49,9 +49,10 @@ extension SymbolTag {
     static let firstSysMod = 100
     
     // Special Module codes
-    static let globalMemMod = 200
-    static let localMemMod  = 201
-    static let keycodeMod   = 202
+    static let globalMemMod   = 200
+    static let localMemMod    = 201
+    static let computedMemMod = 202
+    static let keycodeMod     = 203
     
     var isNull:  Bool { self == SymbolTag.Null  }
     var isBlank: Bool { self == SymbolTag.Blank }
@@ -88,6 +89,9 @@ extension SymbolTag {
     
     // Global memory tag
     var isGlobalMemoryTag: Bool { self.mod == SymbolTag.globalMemMod }
+    
+    // Global memory tag
+    var isComputedMemoryTag: Bool { self.mod == SymbolTag.computedMemMod }
 
     // KeyCode tag - representing one general KeyCode value
     var isKeycodeTag: Bool { self.mod == SymbolTag.keycodeMod }
