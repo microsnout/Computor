@@ -41,7 +41,7 @@ struct SheetTextField: View {
 }
 
 
-typealias SheetContinuationClosure = ( _ str: String ) -> Void
+typealias SheetContinuationClosure = () -> Void
 
 typealias KeyCodeContinuationClosure = ( _ kc: KeyCode ) -> Void
 
@@ -180,10 +180,10 @@ struct MacroEditSheet: View {
             symName = mr.symTag.getRichText()
             kcAssigned = model.kstate.keyMap.keyAssignment(mr.symTag)
         }
-//        .onSubmit {
-//            scc( caption )
-//            dismiss()
-//        }
+        .onSubmit {
+            // New Caption Entered
+            model.changeMacroCaption(to: caption, for: mr.symTag, in: model.aux.macroMod)
+        }
         
         // MOVE MACRO SHEET
         .confirmationDialog("Confirm Deletion", isPresented: $moveDialog, presenting: moveRec ) { mmr in

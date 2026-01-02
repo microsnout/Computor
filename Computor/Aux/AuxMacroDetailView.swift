@@ -85,9 +85,8 @@ struct MacroDetailView: View {
         // Macro Edit Sheet
         .sheet(isPresented: $editSheet) {
             
-            MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) { newCaption in
+            MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) {
                 
-                model.changeMacroCaption( to: newCaption, for: mr.symTag, in: model.aux.macroMod)
                 refreshView.toggle()
             }
             .presentationDetents([.fraction(0.9)])

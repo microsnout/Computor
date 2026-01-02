@@ -84,16 +84,21 @@ struct NewSymbolPopup: View, KeyPressHandler {
     
     func isAvailable() -> Bool {
         
-        let tag = SymbolTag( symArray, subPt: subPt, superPt: superPt, mod: modCode )
+        let newTag = SymbolTag( symArray, subPt: subPt, superPt: superPt, mod: modCode )
+        
+        if newTag == self.tag {
+            // No change - original tag is available
+            return true
+        }
         
         if modCode == SymbolTag.globalMemMod {
             
-            if let _ = model.getMemory(tag) {
+            if let _ = model.getMemory(newTag) {
                 // Memory already exists with this tag
                 return false
             }
         }
-        else if let _ = model.getLocalMacro(tag) {
+        else if let _ = model.getLocalMacro(newTag) {
             // Macro already exists with this tag
             return false
         }
