@@ -63,11 +63,6 @@ extension CalculatorModel {
     }
     
     
-    func getLocalMacro( _ tag: SymbolTag ) -> MacroRec? {
-        activeModule.getLocalMacro(tag)
-    }
-    
-    
     func newGlobalMemory( _ mTag: SymbolTag, caption: String? = nil ) -> MemoryRec {
         
         /// ** New Global Memory **

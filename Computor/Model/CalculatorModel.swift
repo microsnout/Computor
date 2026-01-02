@@ -353,6 +353,11 @@ class CalculatorModel: KeyPressHandler {
     }
     
     
+    func getLocalMacro( _ tag: SymbolTag ) -> MacroRec? {
+        activeModule.getLocalMacro(tag)
+    }
+
+    
     // *** Event Context functions ***
 
     func pushContext( _ ctx: EventContext, lastEvent: KeyEvent = KeyEvent(.null), _ ccc: ContextContinuationClosure? = nil ) {
