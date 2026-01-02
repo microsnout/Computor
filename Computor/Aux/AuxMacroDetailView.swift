@@ -443,7 +443,7 @@ struct MacroDetailRightPanel: View {
                     refreshView.toggle()
                 }
             }
-            .presentationDetents([.fraction(0.5)])
+            .presentationDetents([.fraction(0.9)])
             .presentationBackground( Color("ControlBack") )
         }
         

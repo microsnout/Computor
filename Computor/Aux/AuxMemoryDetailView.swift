@@ -146,14 +146,17 @@ struct MemoryDetailView: View {
             .sheet( isPresented: $renameSheet) {
                 
                 MemoryEditSheet( mTag: mr.symTag, caption: mr.caption ?? "", model: model ) { newTag, newtxt in
-                    mr.symTag = newTag
-                    mr.caption = newtxt.isEmpty ? nil : newtxt
+                    
+                    model.changeMemorySymbol( from: mr.symTag, to: newTag)
+                    model.setMemoryCaption( of: newTag, to: newtxt.isEmpty ? nil : newtxt )
+                    
                     refreshView.toggle()
                     
                     // Save changes to memory tag and caption immediately
                     model.changed()
                     model.saveDocument()
                 }
+                .presentationDetents([.fraction(0.9)])
             }
         }
     }

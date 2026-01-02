@@ -60,9 +60,10 @@ extension CalcState {
         return memory.first( where: { tag == $0.symTag } )
     }
     
-    mutating func memorySetValue( at tag: SymbolTag, _ tv: TaggedValue ) {
+    mutating func memorySetValue( at tag: SymbolTag, to tv: TaggedValue ) {
         
         if let index = memoryIndex(at: tag) {
+            
             // Modify existing memory
             memory[index].tv = tv
         }
@@ -72,11 +73,27 @@ extension CalcState {
         }
     }
 
-    mutating func memorySetCaption( at tag: SymbolTag, _ str: String ) {
+    mutating func memorySetCaption( at tag: SymbolTag, to str: String? ) {
         
         if let index = memoryIndex(at: tag) {
+            
             // Modify existing memory
             memory[index].caption = str
+        }
+    }
+    
+    mutating func memoryChangeSymbol( from oldTag: SymbolTag, to newTag: SymbolTag  ) {
+        
+        // Find memory with the old tag
+        if let mr = memoryAt( tag: oldTag ) {
+            
+            // Verify there is no memory with the new tag
+            if memory.firstIndex( where: { newTag == $0.symTag } ) == nil {
+                
+                // Change the tag
+                mr.symTag = newTag
+            }
+            
         }
     }
     
