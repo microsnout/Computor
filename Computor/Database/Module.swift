@@ -13,6 +13,9 @@ class MemoryRec: Codable, Identifiable, Hashable, Equatable, TaggedItem {
     
     var tv:      TaggedValue
     
+    // Dependency list - update these memories in order
+    var updateSeq: [SymbolTag] = []
+    
     var id: SymbolTag { symTag }
     
     init( tag: SymbolTag, caption: String? = nil, tv: TaggedValue = TaggedValue() ) {

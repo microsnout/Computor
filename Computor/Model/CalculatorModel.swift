@@ -413,41 +413,20 @@ class CalculatorModel: KeyPressHandler {
         return nil
     }
     
-
-    // *** Entry State control ***
     
-    func acceptTextEntry() {
-        if entry.entryMode {
-            guard let tv = entry.makeTaggedValue() else  {
-                assert(false)
-                entry.clearEntry()
-                return
-            }
-            
-            // Store tagged value in X reg, Record data entry if recording and clear data entry state
-            entry.clearEntry()
-            
-            // Keep new entered X value
-            state.stack[regX] = tv
-            state.lastX = tv
-        }
+    // *** Helper functions
+    
+    func getMemory( _ tag: SymbolTag ) -> MemoryRec? {
+        state.memoryAt(tag: tag)
     }
-
     
-    func grabTextEntry() -> TaggedValue {
-        
-        guard let tv = entry.makeTaggedValue() else  {
-            assert(false)
-            entry.clearEntry()
-            return untypedZero
-        }
-        
-        // Return the value
-        entry.clearEntry()
-        return tv
+    
+    func getLocalMacro( _ tag: SymbolTag ) -> MacroRec? {
+        activeModule.getLocalMacro(tag)
     }
-
     
+    // ***
+
     func pushState() {
         if stackPauseCount == 0 {
             undoStack.push( state )

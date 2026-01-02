@@ -90,6 +90,7 @@ struct MacroDetailView: View {
                 model.changeMacroCaption( to: newCaption, for: mr.symTag, in: model.aux.macroMod)
                 refreshView.toggle()
             }
+            .presentationDetents([.fraction(0.9)])
         }
     }
 }

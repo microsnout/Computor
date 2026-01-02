@@ -180,10 +180,10 @@ struct MacroEditSheet: View {
             symName = mr.symTag.getRichText()
             kcAssigned = model.kstate.keyMap.keyAssignment(mr.symTag)
         }
-        .onSubmit {
-            scc( caption )
-            dismiss()
-        }
+//        .onSubmit {
+//            scc( caption )
+//            dismiss()
+//        }
         
         // MOVE MACRO SHEET
         .confirmationDialog("Confirm Deletion", isPresented: $moveDialog, presenting: moveRec ) { mmr in

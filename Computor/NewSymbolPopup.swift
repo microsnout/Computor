@@ -28,6 +28,8 @@ struct NewSymbolPopup: View, KeyPressHandler {
     
     @State private var symArray: [KeyCode] = []
     
+    @State private var symAvailable: Bool = false
+    
     // Pre-existing symbol can be provided
     var tag: SymbolTag = SymbolTag.Null
     var modCode: Int   = 0
@@ -58,10 +60,12 @@ struct NewSymbolPopup: View, KeyPressHandler {
     let setLabels = ["ABC", "abc", "\u{03b1}\u{03b2}\u{03b3}", "\u{1D4D0}\u{1D4D1}\u{1D4D2}", "123"]
     
     func keyPress(_ event: KeyEvent ) -> KeyPressResult {
+        
         if symN < Const.Symbol.maxChars {
             let ch = event.kc.str
             symName.append(ch)
             symArray.append( event.kc )
+            symAvailable = isAvailable()
         }
         return KeyPressResult.modalPopupContinue
     }
@@ -74,6 +78,28 @@ struct NewSymbolPopup: View, KeyPressHandler {
         symN = 0
         symName = ""
         symArray = []
+        symAvailable = false
+    }
+    
+    
+    func isAvailable() -> Bool {
+        
+        let tag = SymbolTag( symArray, subPt: subPt, superPt: superPt, mod: modCode )
+        
+        if modCode == SymbolTag.globalMemMod {
+            
+            if let _ = model.getMemory(tag) {
+                // Memory already exists with this tag
+                return false
+            }
+        }
+        else if let _ = model.getLocalMacro(tag) {
+            // Macro already exists with this tag
+            return false
+        }
+        
+        // Tag is available
+        return true
     }
     
     
@@ -86,12 +112,12 @@ struct NewSymbolPopup: View, KeyPressHandler {
         
         if symN == 0 {
             // Placeholder text
-            return "ƒ{2.0}ç{GrayText}\(dashStr[0])"
+            return "ƒ{2.0}ç{GrayText}\(dashStr[0])ç{}"
         }
         
         if symN == 1 || (subPt == 0 && superPt == 0) {
             // No sub or superscripts
-            return "ƒ{2.0}\(symName)ç{GrayText}\(dashStr[symN])"
+            return "ƒ{2.0}\(symName)ç{GrayText}\(dashStr[symN])ç{}"
         }
         
         let symA = Array(symName)
@@ -101,7 +127,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
             
             let op = subPt > 0 ? "_" : "^"
             
-            return "ƒ{2.0}\(symA[0])\(op){\(symA[1])}ç{GrayText}\(op){\(dashStr[symN])}"
+            return "ƒ{2.0}\(symA[0])\(op){\(symA[1])}ç{GrayText}\(op){\(dashStr[symN])}ç{}"
         }
         
         // symN is 4...6
@@ -128,13 +154,15 @@ struct NewSymbolPopup: View, KeyPressHandler {
             x += 1
         }
         str += "}"
-        return "ƒ{2.0}\(str)ç{GrayText}\(op){\(dashStr[symN])}"
+        return "ƒ{2.0}\(str)ç{GrayText}\(op){\(dashStr[symN])}ç{}"
     }
     
     var body: some View {
         
+        let symText = (symN == 0 || symAvailable) ? getSymbolText() : "\(getSymbolText()) ƒ{0.8}[Not available]"
+        
         VStack( alignment: .center ) {
-            RichText( getSymbolText(), size: .normal, defaultColor: "BlackText").padding( [.top], 20 )
+            RichText( symText, size: .normal, defaultColor: "BlackText").padding( [.top], 20 )
             
             KeypadView( padSpec: padList[charSet.rawValue], keyPressHandler: self )
                 .padding( [.leading, .trailing, .bottom] )
@@ -179,6 +207,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
                             // Add subscript point
                             subPt = symN
                         }
+                        symAvailable = isAvailable()
                     }
                 })
                 {
@@ -198,6 +227,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
                             // Add superscript point
                             superPt = symN
                         }
+                        symAvailable = isAvailable()
                     }
                 })
                 {
@@ -217,6 +247,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
                             subPt = 0
                             superPt = 0
                         }
+                        symAvailable = isAvailable()
                     }
                 })
                 {
@@ -239,7 +270,7 @@ struct NewSymbolPopup: View, KeyPressHandler {
                     Image( systemName: "checkmark.diamond.fill" )
                 }
                 .accentColor( Color.green )
-                .disabled( symN == 0 || (subPt+superPt == 0) && (symName == "F1" || symName == "F2" || symName == "F3" || symName == "F4" || symName == "F5" || symName == "F6") )
+                .disabled( !symAvailable || (subPt+superPt == 0) && (symName == "F1" || symName == "F2" || symName == "F3" || symName == "F4" || symName == "F5" || symName == "F6") )
                 
             }.padding( [.bottom], 20)
         }

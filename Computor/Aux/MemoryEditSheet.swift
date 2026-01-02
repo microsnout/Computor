@@ -25,11 +25,11 @@ struct MemoryEditSheet: View {
     
     @State var dropCode: Int = 0
     
-    func selectSym( _ tag: SymbolTag ) {
+    func selectComputedMacroSym( _ tag: SymbolTag ) {
         
         // Set macro tag for computed memory
-        symName = tag.getRichText()
-        mTag = tag
+        symName = "\(tag.getRichText())  ƒ{0.8}[Computed]"
+        mTag = SymbolTag(tag, mod: SymbolTag.computedMemMod)
     }
     
     
@@ -64,7 +64,7 @@ struct MemoryEditSheet: View {
                 
                 let tagGroupList: [SymbolTagGroup] = [SymbolTagGroup( label: model.activeModName, model: model, mod: model.activeModule )]
                 
-                SelectSymbolPopup( tagGroupList: tagGroupList, title: "Select Macro", sscc: selectSym ) { }
+                SelectSymbolPopup( tagGroupList: tagGroupList, title: "Select Macro", sscc: selectComputedMacroSym ) { }
             }
             
             Spacer()
@@ -74,10 +74,6 @@ struct MemoryEditSheet: View {
         .presentationDetents( [.fraction(0.7), .large] )
         .onAppear() {
             symName = (mTag == SymbolTag.Null) ? "" : mTag.getRichText()
-        }
-        .onSubmit {
-            scc( mTag, caption )
-            dismiss()
         }
     }
 }

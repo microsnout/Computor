@@ -173,6 +173,11 @@ extension CalculatorModel {
         
         // Change local tag to new local tag within current recording mod
         db.changeMacroTag(from: old, to: new, in: aux.macroMod)
+        
+        // If we are changing the tag of the current aux edit/rec macro, update it
+        if old == aux.macroTag {
+            aux.macroTag = new
+        }
     }
     
     

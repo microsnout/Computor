@@ -357,3 +357,41 @@ struct EntryState {
         return KeyPressResult.dataEntry
     }
 }
+
+
+// Extensions to Calculator model needed for data entry
+extension CalculatorModel {
+
+    // *** Entry State control ***
+    
+    func acceptTextEntry() {
+        if entry.entryMode {
+            guard let tv = entry.makeTaggedValue() else  {
+                assert(false)
+                entry.clearEntry()
+                return
+            }
+            
+            // Store tagged value in X reg, Record data entry if recording and clear data entry state
+            entry.clearEntry()
+            
+            // Keep new entered X value
+            state.stack[regX] = tv
+            state.lastX = tv
+        }
+    }
+    
+    
+    func grabTextEntry() -> TaggedValue {
+        
+        guard let tv = entry.makeTaggedValue() else  {
+            assert(false)
+            entry.clearEntry()
+            return untypedZero
+        }
+        
+        // Return the value
+        entry.clearEntry()
+        return tv
+    }
+}

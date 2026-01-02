@@ -72,7 +72,7 @@ struct MemoryListView: View {
                             let (txt, _) = mr.tv.renderRichText()
                             
                             // Either a global memory tag or a macro tag for a computed memory
-                            let sym = mr.symTag.isGlobalMemoryTag ? mr.symTag.getRichText() : "ç{AccentText}\(mr.symTag.getRichText())ç{}"
+                            let sym = mr.symTag.isComputedMemoryTag ? "ç{AccentText}\(mr.symTag.getRichText())ç{}" : mr.symTag.getRichText()
                             
                             let caption: String = mr.caption ?? "-caption-"
                             
@@ -143,8 +143,11 @@ struct MemoryListView: View {
                     let _ = model.newGlobalMemory( newTag, caption: newtxt.isEmpty ? nil : newtxt )
                     model.changed()
                     model.saveDocument()
+                    
+                    print( "Create Memory: \(newTag.getRichText())" )
                 }
             }
+            .presentationDetents([.fraction(0.9)])
         }
     }
 }
