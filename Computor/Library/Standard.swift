@@ -137,7 +137,7 @@ func libLoop( _ model: CalculatorModel ) -> OpResult {
         repeat {
             // Store loop index as local var .L1
             let tvIndex = TaggedValue( reg: Double(index) )
-            model.storeRegister(tagL1, tvIndex)
+            model.memoryStore(tagL1, tvIndex)
             
             _ = proc()
             nMax -= 1
@@ -167,7 +167,7 @@ func libLoopGT( _ model: CalculatorModel ) -> OpResult {
         repeat {
             // Store loop index as local var .L1
             let tvIndex = TaggedValue( reg: Double(index) )
-            model.storeRegister(tagL1, tvIndex)
+            model.memoryStore(tagL1, tvIndex)
             
             test = proc()
             nMax -= 1

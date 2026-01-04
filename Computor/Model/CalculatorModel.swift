@@ -356,8 +356,93 @@ class CalculatorModel: KeyPressHandler {
     func getLocalMacro( _ tag: SymbolTag ) -> MacroRec? {
         activeModule.getLocalMacro(tag)
     }
-
     
+    
+    // *** Local Memory Access ***
+    
+    func setLocalMemory( tag: SymbolTag, value: TaggedValue ) {
+        
+        assert( tag.isLocalMemoryTag )
+            
+        if let lvf = currentLVF {
+            
+            // Local block {..} memory
+            lvf.local[tag] = value
+        }
+    }
+    
+    
+    func rclLocalMemory( _ mTag: SymbolTag ) -> TaggedValue? {
+        
+        if mTag.isLocalMemoryTag {
+            
+            // Local memory tag recall
+            var lvfOptional = currentLVF
+            
+            while let lvf = lvfOptional {
+                
+                if let val = lvf.local[mTag] {
+                    
+                    // Local block memory found
+                    return val
+                }
+                
+                lvfOptional = lvf.prevLVF
+            }
+            
+            return nil
+        }
+        
+        assert(false)
+        return untypedZero
+    }
+
+    // ***
+    
+    
+    func memoryStore( _ mTag: SymbolTag, _ tv: TaggedValue ) {
+        
+        if mTag.isLocalMemoryTag {
+            
+            setLocalMemory( tag: mTag, value: tv )
+        }
+        else {
+            // Global memory
+            
+            if currentLVF == nil {
+                // Only push the state if not running or recording a macro
+                // Running or recording will push the state before the operation
+                pushState()
+            }
+            
+            setMemoryValue(at: mTag, to: tv)
+            
+            if currentLVF == nil {
+                // Scroll aux display to memory list
+                // Don't change the view unless top level key press
+                aux.activeView = .memoryView
+            }
+        }
+    }
+    
+    
+    func memoryRecall( _ mTag: SymbolTag ) -> TaggedValue? {
+        
+        if mTag.isLocalMemoryTag {
+            
+            // Local Memory
+            return rclLocalMemory(mTag)
+        }
+        else {
+            
+            // Global memory
+            return getMemoryValue( at: mTag)
+        }
+    }
+
+    // ***
+    
+
     // *** Event Context functions ***
 
     func pushContext( _ ctx: EventContext, lastEvent: KeyEvent = KeyEvent(.null), _ ccc: ContextContinuationClosure? = nil ) {
@@ -718,70 +803,34 @@ class CalculatorModel: KeyPressHandler {
             state.noLift = true
             
         case .popX:
-            storeRegister( SymbolTag(.X), state.Xtv)
-            state.stackDrop()
-
-        case .popXY:
-            pushState()
-            pauseUndoStack()
-            storeRegister( SymbolTag(.X), state.Xtv)
-            storeRegister( SymbolTag(.Y), state.Ytv)
-            resumeUndoStack()
-            state.stackDrop()
-            state.stackDrop()
-            
-        case .popXYZ:
-            pushState()
-            pauseUndoStack()
-            storeRegister( SymbolTag(.X), state.Xtv)
-            storeRegister( SymbolTag(.Y), state.Ytv)
-            storeRegister( SymbolTag(.Z), state.Ztv)
-            resumeUndoStack()
-            state.stackDrop()
-            state.stackDrop()
+            memoryStore( SymbolTag(.X), state.Xtv)
             state.stackDrop()
 
         case .stoX:
             if let mTag = event.mTag {
-                storeRegister( mTag, state.Xtv )
+                memoryStore( mTag, state.Xtv )
             }
             
         case .stoY:
             if let mTag = event.mTag {
-                storeRegister( mTag, state.Ytv )
+                memoryStore( mTag, state.Ytv )
             }
             
         case .stoZ:
             if let mTag = event.mTag {
-                storeRegister( mTag, state.Ztv )
+                
+                // Store Memory
+                memoryStore( mTag, state.Ztv )
             }
 
         case .rcl:
             if let mTag = event.mTag {
                 
-                var tv: TaggedValue = untypedZero
-                
-                if mTag.isLocalMemoryTag {
-                    
-                    // Local memory tag recall
-                    if let val = rclLocalMemory(mTag)
-                    {
-                        // Local block memory found
-                        tv = val
-                    }
+                // Recall Memory
+                if let tv = memoryRecall(mTag) {
+                    pushState()
+                    state.pushValue(tv)
                 }
-                else if let index = state.memory.firstIndex(where: { $0.symTag == mTag }) {
-                    
-                    // Global memory found
-                    tv = state.memory[index].tv
-                }
-                else {
-                    return KeyPressResult.stateError
-                }
-                
-                pushState()
-                state.stackLift()
-                state.Xtv = tv
             }
             
         // Function keys and Unit keys

@@ -106,7 +106,8 @@ extension SymbolTag {
     }
 
     var description: String { self.getRichText() }
-    
+    var debugDescription: String { self.getRichText() }
+
     func getSymbolText( symName: String, subPt: Int, superPt: Int ) -> String {
         
         if self.isKeycodeTag {

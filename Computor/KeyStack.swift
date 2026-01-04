@@ -394,7 +394,10 @@ struct MemorySelectPopup: View, KeyPressHandler {
     
     func getTagGroups() -> [SymbolTagGroup] {
         
-        let globalGroup = SymbolTagGroup( label: "Global Memories", itemList: model.state.memory )
+        // You can recall any memory but you can't store computed memories
+        let globalItems = keyData.pressedKey?.kc == .rcl ? model.state.memory : model.state.memory.filter( { $0.symTag.isComputedMemoryTag == false } )
+        
+        let globalGroup = SymbolTagGroup( label: "Global Memories", itemList: globalItems )
         
         if let lvf = model.currentLVF {
             

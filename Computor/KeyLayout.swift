@@ -475,9 +475,6 @@ func initKeyLayout() {
                        keys: [
                         Key(.stoY,    "StoY"),
                         Key(.stoZ,    "StoZ"),
-                        Key(.popX,    "ƒ{0.9}PopX"),
-                        Key(.popXY,   "ƒ{0.9}PopXY"),
-                        Key(.popXYZ,  "ƒ{0.9}PopXYZ"),
                        ]
     )
     

@@ -9,7 +9,7 @@ import SwiftUI
 
 extension CalculatorModel {
     
-
+    
     func memoryOp( key: KeyCode, tag: SymbolTag ) {
         pushState()
         acceptTextEntry()
@@ -18,7 +18,7 @@ extension CalculatorModel {
         switch key {
             
         case .rclMem:
-            if let mr = state.memoryAt( tag: tag ) {
+            if let mr = state.memoryAt( at: tag ) {
                 state.stackLift()
                 state.Xtv = mr.tv
             }
@@ -55,11 +55,11 @@ extension CalculatorModel {
         changed()
     }
     
-
+    
     // *** Memory Helper functions
     
     func getMemory( _ tag: SymbolTag ) -> MemoryRec? {
-        state.memoryAt(tag: tag)
+        state.memoryAt( at: tag)
     }
     
     
@@ -71,6 +71,7 @@ extension CalculatorModel {
         
         let mr = MemoryRec( tag: mTag, caption: caption )
         state.memory.append( mr )
+        setDependencyList(mr)
         return mr
     }
     
@@ -78,6 +79,10 @@ extension CalculatorModel {
     func changeMemorySymbol( from oldTag: SymbolTag, to newTag: SymbolTag ) {
         
         state.memoryChangeSymbol(from: oldTag, to: newTag)
+        
+        if let mr = getMemory(newTag) {
+            setDependencyList(mr)
+        }
     }
     
     
@@ -86,76 +91,80 @@ extension CalculatorModel {
         state.memorySetCaption( at: memTag, to: cap)
     }
     
+    
     func setMemoryValue( at memTag: SymbolTag, to tv: TaggedValue ) {
         
+        // Change memory in current state
         state.memorySetValue(at: memTag, to: tv)
-    }
-    
-    
-    func storeRegister( _ mTag: SymbolTag, _ tv: TaggedValue ) {
         
-        if mTag.isLocalMemoryTag {
-            
-            if let lvf = currentLVF {
-                
-                // Local block {..} memory
-                lvf.local[mTag] = tv
-            }
-        }
-        else {
-            // Global memory
-            
-            if currentLVF == nil {
-                // Only push the state if not running or recording a macro
-                // Running or recording will push the state before the operation
-                pushState()
-            }
-            
-            if let index = state.memory.firstIndex( where: { $0.symTag == mTag }) {
-                
-                // Existing global memory
-                state.memory[index].tv = tv
-                changed()
-            }
-            else {
-                // New global memory
-                let mr   = newGlobalMemory( mTag )
-                mr.tv = tv
-                changed()
-            }
-            
-            if currentLVF == nil {
-                // Scroll aux display to memory list
-                // Don't change the view unless top level key press
-                aux.activeView = .memoryView
-            }
-        }
-    }
-    
-    
-    func rclLocalMemory( _ mTag: SymbolTag ) -> TaggedValue? {
+        // Mark document as changed
+        changed()
         
-        if mTag.isLocalMemoryTag {
+        // Update any dependant computed memories
+        if let mr = getMemory(memTag) {
             
-            // Local memory tag recall
-            var lvfOptional = currentLVF
-            
-            while let lvf = lvfOptional {
+            for upTag in mr.updateSeq {
                 
-                if let val = lvf.local[mTag] {
+                if let macro = getLocalMacro(upTag.localTag) {
                     
-                    // Local block memory found
-                    return val
+                    let (result, _) = playMacroSeq( macro.opSeq, in: activeModule )
+                    
+                    let tv = result == KeyPressResult.stateChange ?  state.Xtv : untypedZero
+                    
+                    // Restore state of stack
+                    popState()
+                    
+                    setMemoryValue( at: upTag, to: tv )
+                }
+            }
+        }
+    }
+    
+    
+    func getMemoryValue( at memTag: SymbolTag ) -> TaggedValue? {
+        
+        // Recall global memory
+        return state.memoryGetValue(at: memTag)
+    }
+    
+    
+    func setDependencyList( _ mr: MemoryRec ) {
+        
+        if mr.symTag.isComputedMemoryTag {
+            
+            if let macro = getLocalMacro(mr.symTag.localTag) {
+                
+                for op in macro.opSeq {
+                    
+                    if let evt = op as? MacroEvent,
+                       let tag = evt.event.mTag {
+                        
+                        if evt.event.kc == .rcl {
+                            
+                            if let depMem = getMemory(tag) {
+                                
+                                if depMem.updateSeq.firstIndex( where: { $0 == mr.symTag } ) == nil {
+                                    
+                                    depMem.updateSeq.append(mr.symTag)
+                                }
+                            }
+                        }
+                    }
                 }
                 
-                lvfOptional = lvf.prevLVF
+                // Evaluate the new computed memory
+                let (result, _) = playMacroSeq( macro.opSeq, in: activeModule )
+                let tv = result == KeyPressResult.stateChange ?  state.Xtv : untypedZero
+                
+                // Restore state of stack
+                popState()
+                
+                setMemoryValue( at: mr.symTag, to: tv )
+                
+                changed()
+                saveDocument()
             }
-            
-            return nil
         }
-        
-        assert(false)
-        return untypedZero
     }
     
 }
