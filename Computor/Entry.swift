@@ -71,9 +71,109 @@ class NumericEntry {
         
         return Double(num)
     }
+
+    func startTextEntry( _ kc: KeyCode ) {
+        reset()
+        entryText = (kc == .dot) ? "0." : String( kc.rawValue - KeyCode.d0.rawValue )
+        digitCount = 1
+        decimalSeen = entryText.contains(".")
+    }
+    
+    
+    func startExpEntry() {
+        appendTextEntry("×10")
+        exponentText = ""
+        exponentEntry = true
+    }
+
+    func appendTextEntry(_ str: String ) {
+        if str == "." {
+            if !decimalSeen {
+                entryText += str
+                decimalSeen = true
+            }
+        }
+        else if EntryState.digits.contains(str) {
+            entryText += str
+            digitCount += 1
+            recommaEntry()
+        }
+        else {
+            entryText += str
+        }
+    }
+    
+    
+    func appendExpEntry(_ str: String ) {
+        exponentText += str
+    }
+
+    
+    func recommaEntry() {
+        
+        // Func is a noop if data entry contains a decimal point
+        if !decimalSeen {
+            if negativeSign {
+                // Temporarily remove the negative sign
+                entryText.removeFirst()
+            }
+            
+            // Remove all commas
+            entryText.removeAll( where: { $0 == "," })
+            
+            if digitCount > 3 {
+                // Work with string as array
+                var seq = Array(entryText)
+                
+                let commaCount = (digitCount - 1) / 3
+                
+                for ix in 1...commaCount {
+                    // The next line is crazy but it works
+                    seq.insert(",", at: (digitCount-1) % 3 + 1 + (ix-1)*4 )
+                }
+                
+                // restore the data string from array
+                entryText = String(seq)
+            }
+            
+            if negativeSign {
+                // reinsert the negative sign if required
+                entryText.insert( "-", at: entryText.startIndex )
+            }
+        }
+    }
+    
+    func flipTextSign() {
+        
+        if entryText.starts( with: "-") {
+            entryText.removeFirst()
+            negativeSign = false
+        }
+        else {
+            entryText.insert( "-", at: entryText.startIndex )
+            negativeSign = true
+        }
+    }
+
+    
+    func backspaceEntry() {
+        
+        let ch = entryText.removeLast()
+        
+        if ch == "." {
+            decimalSeen = false
+        }
+        else if EntryState.digits.contains(ch) {
+            digitCount -= 1
+            recommaEntry()
+        }
+    }
 }
 
 
+// *************************************************************** //
+    
+    
 struct EntryState {
     /// Defines the state of the data entry line while active
     ///
@@ -87,7 +187,7 @@ struct EntryState {
     var ne: NumericEntry = NumericEntry()
     var nx: Int = 0
     
-    let digits: Set<Character> = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    static let digits: Set<Character> = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
     
     var nValues: Int {
         
@@ -126,103 +226,35 @@ struct EntryState {
         return tv
     }
 
+    
     // *** Data Entry Functions ***
     
     mutating func clearEntry() {
+        nx = 0
+        ne = entrySet[nx]
         entrySet[0].reset()
         entrySet[1].reset()
         entrySet[2].reset()
-        
-        nx = 0
-        ne = entrySet[nx]
-        
         entryMode = false
     }
 
     mutating func startTextEntry( _ kc: KeyCode ) {
         clearEntry()
-        
+        ne.startTextEntry(kc)
         entryMode = true
-        
-        ne.entryText = (kc == .dot) ? "0." : String( kc.rawValue - KeyCode.d0.rawValue )
-        ne.digitCount = 1
-        ne.decimalSeen = ne.entryText.contains(".")
     }
     
-    mutating func startExpEntry() {
-        appendTextEntry("×10")
-        ne.exponentText = ""
-        ne.exponentEntry = true
-    }
-    
-    mutating func flipTextSign() {
-        
-        if ne.entryText.starts( with: "-") {
-            ne.entryText.removeFirst()
-            ne.negativeSign = false
-        }
-        else {
-            ne.entryText.insert( "-", at: ne.entryText.startIndex )
-            ne.negativeSign = true
-        }
-    }
-    
-    mutating func recommaEntry() {
-        
-        // Func is a noop if data entry contains a decimal point
-        if !ne.decimalSeen {
-            if ne.negativeSign {
-                // Temporarily remove the negative sign
-                ne.entryText.removeFirst()
-            }
-            
-            // Remove all commas
-            ne.entryText.removeAll( where: { $0 == "," })
-            
-            if ne.digitCount > 3 {
-                // Work with string as array
-                var seq = Array(ne.entryText)
-                
-                let commaCount = (ne.digitCount - 1) / 3
-                
-                for ix in 1...commaCount {
-                    // The next line is crazy but it works
-                    seq.insert(",", at: (ne.digitCount-1) % 3 + 1 + (ix-1)*4 )
-                }
-                
-                // restore the data string from array
-                ne.entryText = String(seq)
-            }
-            
-            if ne.negativeSign {
-                // reinsert the negative sign if required
-                ne.entryText.insert( "-", at: ne.entryText.startIndex )
-            }
-        }
-    }
     
     mutating func appendTextEntry(_ str: String ) {
-        if str == "." {
-            if !ne.decimalSeen {
-                ne.entryText += str
-                ne.decimalSeen = true
-            }
-        }
-        else if digits.contains(str) {
-            ne.entryText += str
-            ne.digitCount += 1
-            recommaEntry()
-        }
-        else {
-            ne.entryText += str
-        }
+        
+        ne.appendTextEntry(str)
         
         let txt = self.ne.entryText
         logE.debug( "AppendTextEntry: '\(str)' -> '\(txt)'")
     }
     
     mutating func appendExpEntry(_ str: String ) {
-        self.ne.exponentText += str
+        ne.appendExpEntry(str)
         
         let txt = self.ne.exponentText
         logE.debug( "AppendExponentEntry: '\(str)' -> '\(txt)'")
@@ -230,7 +262,7 @@ struct EntryState {
     
     mutating func backspaceEntry() {
         
-        if ne.entryText.isEmpty {
+        if ne.validValue == false {
             
             if nx > 0 {
                 
@@ -241,15 +273,7 @@ struct EntryState {
             }
         }
         else {
-            let ch = ne.entryText.removeLast()
-            
-            if ch == "." {
-                ne.decimalSeen = false
-            }
-            else if digits.contains(ch) {
-                ne.digitCount -= 1
-                recommaEntry()
-            }
+            ne.backspaceEntry()
             
             if ne.entryText.isEmpty || ne.entryText == "-" {
                 
@@ -335,10 +359,10 @@ struct EntryState {
                 appendTextEntry(".")
                 
             case .eex:
-                startExpEntry()
+                ne.startExpEntry()
 
             case .chs:
-                flipTextSign()
+                ne.flipTextSign()
 
             case .backUndo:
                 backspaceEntry()
