@@ -392,10 +392,59 @@ struct MemorySelectPopup: View, KeyPressHandler {
     }
     
     
+    func getGlobalMemoryRcl() -> [TaggedItem] {
+        
+        if model.aux.macroTag != SymbolTag.Null &&  model.aux.isRec {
+            
+            // We are recording a macro so we cannot allow Rcl of a computede memory that directly or indirectly references us
+
+            let recTag = model.aux.macroTag
+            
+            var itemList: [TaggedItem] = []
+
+            for memRec in model.state.memory {
+                
+                if memRec.symTag.isComputedMemoryTag {
+                    
+                    let refMemSet = model.activeModule.getMemoryTagsReferenced( by: memRec.symTag)
+                    
+                    let recTagC = SymbolTag( recTag, mod: SymbolTag.computedMemMod)
+                    
+                    if refMemSet.contains( recTagC ) == false && recTagC != memRec.symTag  {
+                        
+                        // We add only memories that are not computed and referencing us
+                        itemList.append(memRec)
+                    }
+                    
+                    
+                }
+                else {
+                    // All regular memories are allowed - as .sto parm
+                    itemList.append(memRec)
+                    
+                }
+            }
+            
+            return itemList
+        }
+        else {
+            // All memories allowed to be recalled if not recording a macro
+            return model.state.memory
+        }
+    }
+    
+    
+    func getGlobalMemorySto() -> [TaggedItem] {
+        
+        // We can store any memnory except computed memories
+        return model.state.memory.filter( { $0.symTag.isComputedMemoryTag == false } )
+    }
+    
+    
     func getTagGroups() -> [SymbolTagGroup] {
         
         // You can recall any memory but you can't store computed memories
-        let globalItems = keyData.pressedKey?.kc == .rcl ? model.state.memory : model.state.memory.filter( { $0.symTag.isComputedMemoryTag == false } )
+        let globalItems = keyData.pressedKey?.kc == .rcl ? getGlobalMemoryRcl() : getGlobalMemorySto()
         
         let globalGroup = SymbolTagGroup( label: "Global Memories", itemList: globalItems )
         

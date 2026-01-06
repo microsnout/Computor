@@ -60,6 +60,29 @@ class MacroRec: Codable, Identifiable, TaggedItem {
         lhs.opSeq.append(rhs)
         return lhs
     }
+    
+    func getReferencedMemoryTags() -> [SymbolTag] {
+        
+        /// ** Get Referenced Memory Tags **
+        /// Get a list of all memory tags recalled by this macro
+        
+        var tagList: [SymbolTag] = []
+        
+        for op in opSeq {
+            
+            if let evt = op as? MacroEvent,
+               let tag = evt.event.mTag {
+                
+                if evt.event.kc == .rcl {
+                    
+                    // Add only Recall references
+                    tagList.append(tag)
+                }
+            }
+        }
+        
+        return tagList
+    }
 }
 
 
@@ -309,9 +332,11 @@ extension ModuleRec {
     }
     
     
-    func getLocalMacro( _ sTag: SymbolTag ) -> MacroRec? {
+    func getLocalMacro( _ tag: SymbolTag ) -> MacroRec? {
         
         /// ** Get Macro **
+        
+        let sTag = tag.localTag
         
         let mf = loadModule()
         
@@ -327,6 +352,31 @@ extension ModuleRec {
         }
         
         return nil
+    }
+    
+    
+    func getMemoryTagsReferenced( by macroTag: SymbolTag ) -> Set<SymbolTag> {
+        
+        if let mr = getLocalMacro(macroTag) {
+            
+            var memSet = Set<SymbolTag>( mr.getReferencedMemoryTags() )
+            
+            for tag in memSet {
+                
+                if tag.isComputedMemoryTag {
+                    
+                    // Recursive call to add all memories referenced by this tag
+                    let subSet = getMemoryTagsReferenced( by: tag)
+                    
+                    memSet.formUnion(subSet)
+                }
+            }
+            
+            return memSet
+        }
+        else {
+            return []
+        }
     }
     
     
