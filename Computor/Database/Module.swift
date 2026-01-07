@@ -13,8 +13,8 @@ class MemoryRec: Codable, Identifiable, Hashable, Equatable, TaggedItem {
     
     var tv:      TaggedValue
     
-    // Dependency list - update these memories in order
-    var updateSeq: [SymbolTag] = []
+    // Dependant list - The following list of tags depend on me - all tags must be computed memories
+    var dependantList: [SymbolTag] = []
     
     var id: SymbolTag { symTag }
     
@@ -59,29 +59,6 @@ class MacroRec: Codable, Identifiable, TaggedItem {
         // Add a new op to the op seq - used by Testing
         lhs.opSeq.append(rhs)
         return lhs
-    }
-    
-    func getReferencedMemoryTags() -> [SymbolTag] {
-        
-        /// ** Get Referenced Memory Tags **
-        /// Get a list of all memory tags recalled by this macro
-        
-        var tagList: [SymbolTag] = []
-        
-        for op in opSeq {
-            
-            if let evt = op as? MacroEvent,
-               let tag = evt.event.mTag {
-                
-                if evt.event.kc == .rcl {
-                    
-                    // Add only Recall references
-                    tagList.append(tag)
-                }
-            }
-        }
-        
-        return tagList
     }
 }
 
@@ -336,6 +313,10 @@ extension ModuleRec {
         
         /// ** Get Macro **
         
+        // A computed memory tag is a macro tag marked as a computed memory
+        assert( tag.isLocalTag || tag.isComputedMemoryTag )
+        
+        // Eliminate the computed memory tag if present
         let sTag = tag.localTag
         
         let mf = loadModule()
@@ -352,31 +333,6 @@ extension ModuleRec {
         }
         
         return nil
-    }
-    
-    
-    func getMemoryTagsReferenced( by macroTag: SymbolTag ) -> Set<SymbolTag> {
-        
-        if let mr = getLocalMacro(macroTag) {
-            
-            var memSet = Set<SymbolTag>( mr.getReferencedMemoryTags() )
-            
-            for tag in memSet {
-                
-                if tag.isComputedMemoryTag {
-                    
-                    // Recursive call to add all memories referenced by this tag
-                    let subSet = getMemoryTagsReferenced( by: tag)
-                    
-                    memSet.formUnion(subSet)
-                }
-            }
-            
-            return memSet
-        }
-        else {
-            return []
-        }
     }
     
     

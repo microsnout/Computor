@@ -128,14 +128,7 @@ struct MacroListView: View {
                                             
                                             Button("Delete", role: .destructive) {
                                                 dialogRec = nil
-                                                
-                                                // Delete this sym from Aux mod
-                                                model.db.deleteMacro( mr.symTag, from: model.aux.macroMod)
-                                                
-                                                // Clear a key assignment for this macro if any
-                                                if let kcFn = model.kstate.keyMap.keyAssignment( mr.symTag ) {
-                                                    model.kstate.keyMap.clearKeyAssignment(kcFn)
-                                                }
+                                                model.deleteMacro( mr.symTag, from: model.aux.macroMod)
                                             }
                                             
                                             Button("Cancel", role: .cancel) {

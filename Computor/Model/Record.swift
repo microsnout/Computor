@@ -693,4 +693,25 @@ extension CalculatorModel {
         popContext(evt, runCCC: false)
         pushContext( DebugContext(), lastEvent: evt )
     }
+    
+    
+    func deleteMacro( _ tag: SymbolTag, from mod: ModuleRec ) {
+        
+        
+        db.deleteMacro( tag, from: mod )
+        
+        // Clear a key assignment for this macro if any
+        if let kcFn = kstate.keyMap.keyAssignment( tag ) {
+            
+            kstate.keyMap.clearKeyAssignment(kcFn)
+        }
+        
+        // Delete a matching computed memory if any
+        let cmTag = SymbolTag( tag, mod: SymbolTag.computedMemMod )
+        
+        if let _ = getMemory(cmTag) {
+            
+            state.deleteMemoryRecords( tags: [cmTag])
+        }
+    }
 }

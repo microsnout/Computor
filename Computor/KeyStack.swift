@@ -406,7 +406,7 @@ struct MemorySelectPopup: View, KeyPressHandler {
                 
                 if memRec.symTag.isComputedMemoryTag {
                     
-                    let refMemSet = model.activeModule.getMemoryTagsReferenced( by: memRec.symTag)
+                    let refMemSet = model.getAllMemoryTagsReferenced( by: memRec.symTag)
                     
                     let recTagC = SymbolTag( recTag, mod: SymbolTag.computedMemMod)
                     
