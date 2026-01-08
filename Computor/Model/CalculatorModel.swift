@@ -654,11 +654,22 @@ class CalculatorModel: KeyPressHandler {
                     self.activeModName = name
                     self.activeModule  = modRec
                     
-                    // Reset aux display to memory page
-                    self.aux.activeView = .memoryView
+                    // Setup AuxState
                     
-                    // and Macro list page to current mod
+                    // Macro list page to current mod
                     self.aux.macroMod = modRec
+
+                    // Reset aux display to memory page
+                    self.aux.activeView = obj.auxSettings.auxDisplay
+                    
+                    if let memRec = getMemory(obj.auxSettings.auxMemTag) {
+                        self.aux.memRec = memRec
+                    }
+                    else {
+                        self.aux.memRec = nil
+                    }
+                    
+                    self.aux.macroTag = obj.auxSettings.auxMacroTag
                     
                     resetChanges()
                 }
@@ -676,11 +687,18 @@ class CalculatorModel: KeyPressHandler {
             
             if let docRec = db.getModuleFileRec( sym: self.activeModName) {
                 
+                var auxSettings = AuxSettingRec()
+                
+                auxSettings.auxDisplay  = aux.activeView
+                auxSettings.auxMemTag   = aux.memRec?.symTag ?? SymbolTag.Null
+                auxSettings.auxMacroTag = aux.macroTag
+                
                 docRec.writeModule() { obj in
                     obj.state = self.state
                     obj.keyMap = self.kstate.keyMap
                     obj.unitData = UserUnitData.uud
                     obj.settings = self.kstate.settings
+                    obj.auxSettings = auxSettings
                 }
             }
             

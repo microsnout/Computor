@@ -52,7 +52,7 @@ class MemoryRec: Codable, Identifiable, Hashable, Equatable, TaggedItem {
 
 
 @Observable
-class MacroRec: Codable, Identifiable, TaggedItem {
+class MacroRec: Codable, Identifiable, TaggedItem, Equatable {
     var symTag:     SymbolTag
     var caption:    String? = nil
     
@@ -76,6 +76,10 @@ class MacroRec: Codable, Identifiable, TaggedItem {
         // Add a new op to the op seq - used by Testing
         lhs.opSeq.append(rhs)
         return lhs
+    }
+    
+    static func == ( lhs: MacroRec, rhs: MacroRec ) -> Bool {
+        return lhs.symTag == rhs.symTag
     }
 }
 
@@ -120,6 +124,15 @@ struct ModuleSettingRec: Codable, Equatable {
     var unitSet:   SoftkeyUnits = .mixed
     var navPolar:  Bool = false
 }
+    
+
+struct AuxSettingRec: Codable, Equatable {
+
+    // Aux Display Settings
+    var auxDisplay: AuxDispView = .memoryView
+    var auxMemTag: SymbolTag    = SymbolTag.Null
+    var auxMacroTag: SymbolTag  = SymbolTag.Null
+}
 
 
 typealias GroupId = Int
@@ -138,10 +151,11 @@ class ModuleFile: DataObjectFile {
     var macroTable: [MacroRec] = []
     
     // Calculator session state
-    var state:     CalcState
-    var unitData:  UserUnitData
-    var keyMap:    KeyMapRec
-    var settings:  ModuleSettingRec
+    var state:       CalcState
+    var unitData:    UserUnitData
+    var keyMap:      KeyMapRec
+    var settings:    ModuleSettingRec
+    var auxSettings: AuxSettingRec
     
     private enum CodingKeys: String, CodingKey {
         case groupTable
@@ -151,6 +165,7 @@ class ModuleFile: DataObjectFile {
         case unitData
         case keyMap
         case settings
+        case auxSettings
     }
     
     init( _ mfr: ModuleRec ) {
@@ -161,6 +176,7 @@ class ModuleFile: DataObjectFile {
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
         self.settings = ModuleSettingRec()
+        self.auxSettings = AuxSettingRec()
 
         super.init()
     }
@@ -173,6 +189,7 @@ class ModuleFile: DataObjectFile {
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
         self.settings = ModuleSettingRec()
+        self.auxSettings = AuxSettingRec()
 
         super.init()
     }
@@ -185,6 +202,7 @@ class ModuleFile: DataObjectFile {
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
         self.settings = ModuleSettingRec()
+        self.auxSettings = AuxSettingRec()
 
         super.init(obj)
     }
@@ -198,18 +216,20 @@ class ModuleFile: DataObjectFile {
         self.unitData = try container.decode( UserUnitData.self, forKey: .unitData)
         self.keyMap = try container.decode( KeyMapRec.self, forKey: .keyMap)
         self.settings = try container.decode( ModuleSettingRec.self, forKey: .settings)
+        self.auxSettings = try container.decode( AuxSettingRec.self, forKey: .auxSettings)
 
         try super.init(from: decoder)
     }
     
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(groupTable, forKey: .groupTable)
-        try container.encode(macroTable, forKey: .macroTable)
-        try container.encode(state,      forKey: .state)
-        try container.encode(unitData,   forKey: .unitData)
-        try container.encode(keyMap,     forKey: .keyMap)
-        try container.encode(settings,   forKey: .settings)
+        try container.encode(groupTable,  forKey: .groupTable)
+        try container.encode(macroTable,  forKey: .macroTable)
+        try container.encode(state,       forKey: .state)
+        try container.encode(unitData,    forKey: .unitData)
+        try container.encode(keyMap,      forKey: .keyMap)
+        try container.encode(settings,    forKey: .settings)
+        try container.encode(auxSettings, forKey: .auxSettings)
 
         try super.encode(to: encoder)
     }

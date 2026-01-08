@@ -12,16 +12,22 @@ struct AuxMemoryView: View {
     
     var body: some View {
         
-        if model.aux.memRec == nil {
-            
-            // List of all available macros
-            MemoryListView(model: model)
-                .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
+        Group {
+            if model.aux.memRec == nil {
+                
+                // List of all available macros
+                MemoryListView(model: model)
+                    .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
+            }
+            else {
+                // Detailed view of selected macro
+                MemoryDetailView( model: model, memRec: $model.aux.memRec )
+                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+            }
         }
-        else {
-            // Detailed view of selected macro
-            MemoryDetailView( model: model, memRec: $model.aux.memRec )
-                .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+        .onChange(of: model.aux.memRec ) { oldValue, newValue in
+            // Force saving of document to persist this value
+            model.changed()
         }
     }
 }

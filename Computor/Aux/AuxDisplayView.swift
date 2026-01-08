@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-enum AuxDispView: String, CaseIterable, Identifiable {
+enum AuxDispView: String, CaseIterable, Identifiable, Codable {
     case memoryView, macroView, registerView, plotView
     
     var id: String {
@@ -72,6 +72,7 @@ struct AuxiliaryDisplayView: View {
             withAnimation() {
                 scrollPos = newView
             }
+            model.changed()
         }
         .onChange( of: scrollPos ) { oldPos, newPos in
             auxView = scrollPos ?? AuxDispView.memoryView

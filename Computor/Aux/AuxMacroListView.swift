@@ -14,16 +14,22 @@ struct AuxMacroView: View {
         
         // if we are recording OR there is a selected symbol, we are in detail view
         
-        if let mr = model.aux.macroRec {
-
-            // Detailed view of selected macro
-            MacroDetailView( mr: mr, model: model )
-                .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+        Group {
+            if let mr = model.aux.macroRec {
+                
+                // Detailed view of selected macro
+                MacroDetailView( mr: mr, model: model )
+                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+            }
+            else {
+                // List of all available macros
+                MacroListView(model: model)
+                    .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
+            }
         }
-        else {
-            // List of all available macros
-            MacroListView(model: model)
-                .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
+        .onChange(of: model.aux.macroRec ) { oldValue, newValue in
+            // Force saving of document to persist this value
+            model.changed()
         }
     }
 }
