@@ -46,6 +46,9 @@ struct AuxState {
     // Cursor into op sequence in macro - for stepping and editing
     var opCursor: Int = 0
     
+    // Index of ValueBrowser register display
+    var valueIndex: Int = 2
+    
     var errorFlag: Bool = false
     
     var auxLVF: LocalVariableFrame? = nil

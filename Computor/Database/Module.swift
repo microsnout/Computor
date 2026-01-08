@@ -132,6 +132,7 @@ struct AuxSettingRec: Codable, Equatable {
     var auxDisplay: AuxDispView = .memoryView
     var auxMemTag: SymbolTag    = SymbolTag.Null
     var auxMacroTag: SymbolTag  = SymbolTag.Null
+    var auxValueIndex: Int      = 0
 }
 
 

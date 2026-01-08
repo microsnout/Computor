@@ -670,6 +670,7 @@ class CalculatorModel: KeyPressHandler {
                     }
                     
                     self.aux.macroTag = obj.auxSettings.auxMacroTag
+                    self.aux.valueIndex = obj.auxSettings.auxValueIndex
                     
                     resetChanges()
                 }
@@ -689,9 +690,10 @@ class CalculatorModel: KeyPressHandler {
                 
                 var auxSettings = AuxSettingRec()
                 
-                auxSettings.auxDisplay  = aux.activeView
-                auxSettings.auxMemTag   = aux.memRec?.symTag ?? SymbolTag.Null
-                auxSettings.auxMacroTag = aux.macroTag
+                auxSettings.auxDisplay    = aux.activeView
+                auxSettings.auxMemTag     = aux.memRec?.symTag ?? SymbolTag.Null
+                auxSettings.auxMacroTag   = aux.macroTag
+                auxSettings.auxValueIndex = aux.valueIndex
                 
                 docRec.writeModule() { obj in
                     obj.state = self.state

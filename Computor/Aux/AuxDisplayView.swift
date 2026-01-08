@@ -52,7 +52,7 @@ struct AuxiliaryDisplayView: View {
                     AuxMacroView( model: model )
                         .id( AuxDispView.macroView )
                     
-                    AuxRegisterView( model: model )
+                    AuxRegisterView( model: model, valueIndex: $model.aux.valueIndex )
                         .id( AuxDispView.registerView )
                     
                     AuxPlotView( model: model )
