@@ -52,6 +52,7 @@ enum Const {
     
     enum Placeholder {
         static let caption = "ç{GrayText}-caption-ç{}"
+        static let xcaption = "-caption-"
     }
     
     enum Icon {

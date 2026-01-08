@@ -63,16 +63,15 @@ struct MemoryDetailView: View {
                                     
                                     let computed: Bool = mr.symTag.isComputedMemoryTag
                                     let sym = computed ? "ç{AccentText}\(mr.symTag.getRichText())ç{}" : mr.symTag.getRichText()
-                                    let caption = mr.caption ?? "-Unnamed-"
+                                    let caption = mr.getCaption(model)
                                     let (valueStr, _) = mr.tv.renderRichText()
-                                    let color = mr.caption != nil ? "UnitText" : "GrayText"
 
                                     VStack {
                                         //  SYMBOL
                                         RichText("ƒ{1.5}\(sym)", size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
                                         
                                         // CAPTION
-                                        RichText( "ƒ{1.2}ç{\(color)}\(caption)", size: .large, design: .serif )
+                                        RichText( "ƒ{1.2}\(caption)", size: .large, design: .serif, defaultColor: "UnitText" )
                                             .onTapGesture {
                                                 renameSheet = true
                                             }

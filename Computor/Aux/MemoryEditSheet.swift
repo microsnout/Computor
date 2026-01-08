@@ -30,8 +30,12 @@ struct MemoryEditSheet: View {
         // Set macro tag for computed memory
         symName = "\(tag.getRichText())  ƒ{0.8}[Computed]"
         mTag = SymbolTag(tag, mod: SymbolTag.computedMemMod)
+        
+        // Provide caption text from macro
+        if let macro = model.getLocalMacro(mTag) {
+            caption = macro.caption ?? Const.Placeholder.xcaption
+        }
     }
-    
     
     var body: some View {
         
@@ -57,7 +61,8 @@ struct MemoryEditSheet: View {
             }
             
             // Caption Editor
-            SheetTextField( label: "Caption:", placeholder: "-caption-", text: $caption )
+            SheetTextField( label: "Caption:", placeholder: Const.Placeholder.xcaption, text: $caption )
+                .disabled( mTag.isComputedMemoryTag )
             
             // Computed Memory Macro Selection
             SheetCollapsibleView( code: 2, label: "={Computed Memory:}", drop: $dropCode ) {
@@ -73,7 +78,13 @@ struct MemoryEditSheet: View {
         .presentationBackground( Color.black.opacity(0.7) )
         .presentationDetents( [.fraction(0.7), .large] )
         .onAppear() {
-            symName = (mTag == SymbolTag.Null) ? "" : mTag.getRichText()
+            
+            if mTag.isComputedMemoryTag {
+                selectComputedMacroSym(mTag)
+            }
+            else {
+                symName = (mTag == SymbolTag.Null) ? "" : mTag.getRichText()
+            }
         }
     }
 }

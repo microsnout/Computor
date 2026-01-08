@@ -24,6 +24,23 @@ class MemoryRec: Codable, Identifiable, Hashable, Equatable, TaggedItem {
         self.tv = tv
     }
     
+    func getCaption( _ model: CalculatorModel ) -> String {
+        
+        /// ** Get Caption **
+        /// If we are a computed memory, try to get the caption from the associated macro
+        
+        if symTag.isComputedMemoryTag {
+            
+            if let macroRec = model.getLocalMacro(symTag) {
+                
+                return macroRec.caption ?? Const.Placeholder.caption
+            }
+        }
+        
+        return caption ?? Const.Placeholder.caption
+    }
+    
+    
     func hash( into hasher: inout Hasher) {
         hasher.combine(symTag)
     }

@@ -74,9 +74,7 @@ struct MemoryListView: View {
                             // Either a global memory tag or a macro tag for a computed memory
                             let sym = mr.symTag.isComputedMemoryTag ? "ç{AccentText}\(mr.symTag.getRichText())ç{}" : mr.symTag.getRichText()
                             
-                            let caption: String = mr.caption ?? "-caption-"
-                            
-                            let color = mr.caption != nil ? "UnitText" : "GrayText"
+                            let caption: String = mr.getCaption(model)
                             
                             VStack {
                                 HStack {
@@ -89,7 +87,7 @@ struct MemoryListView: View {
                                             RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
                                             
                                             // Caption text
-                                            RichText(caption, size: .small, weight: .regular, design: .serif, defaultColor: color )
+                                            RichText(caption, size: .small, weight: .regular, design: .serif, defaultColor: "UnitText" )
                                         }
                                             
                                         // Memory value display
