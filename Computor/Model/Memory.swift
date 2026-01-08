@@ -231,8 +231,6 @@ extension CalculatorModel {
         
         var result: [SymbolTag] = []
         
-        let nVertices = state.memory.count
-        
         var state: [SymbolTag : VisitState] = [:]
         
         
