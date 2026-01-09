@@ -21,7 +21,7 @@ struct PlotPattern {
 }
 
 
-struct AuxPlotView : View {
+struct AuxPlotPatternView : View {
     
     @State var model: CalculatorModel
     
@@ -43,7 +43,7 @@ struct AuxPlotView : View {
         
         var plotList = [PlotType]()
         
-        for pat in AuxPlotView.plotPatternTable {
+        for pat in AuxPlotPatternView.plotPatternTable {
             
             if model.state.patternMatch(pat.pattern) {
                 plotList.append(pat.type)
