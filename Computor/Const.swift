@@ -58,8 +58,10 @@ enum Const {
     enum Icon {
         // System Names from SF Symbols app
         
+        static let plus     = "plus"
         static let trash    = "trash"
         static let document = "candybarphone"
+        static let chart    = "chart.line.uptrend.xyaxis"
         
         static let bulletList = "list.bullet"
         static let gridList   = "square.grid.2x2"

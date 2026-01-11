@@ -39,6 +39,9 @@ struct AuxState {
 
     // Currently selected macro record - if non-null displays macro detail view
     var macroTag: SymbolTag = SymbolTag.Null
+
+    // Currently selected plot record
+    var plotTag: SymbolTag = SymbolTag.Null
    
     // State of macro detail view - only significant if macroRec is not nil
     var recState: MacroRecState = .inactive
@@ -76,6 +79,20 @@ extension AuxState {
             }
             else {
                 macroTag = SymbolTag.Null
+            }
+        }
+    }
+
+    var plotRec: PlotRec? {
+        get {
+            macroMod.getLocalPlot(plotTag)
+        }
+        set {
+            if let pr = newValue {
+                plotTag = pr.symTag
+            }
+            else {
+                plotTag = SymbolTag.Null
             }
         }
     }

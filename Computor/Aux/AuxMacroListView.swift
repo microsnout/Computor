@@ -88,8 +88,7 @@ struct MacroListView: View {
                         ForEach ( model.aux.macroMod.macroList ) { mr in
                             
                             let sym = mr.symTag.getRichText()
-                            let caption = mr.caption ?? "ç{GrayText}-caption-"
-                            let color = mr.caption != nil ? "UnitText" : "GrayText"
+                            let caption = mr.getCaption()
                             let kcKey = model.getKeyAssignment( for: mr.symTag, in: model.aux.macroMod )
                             let key   = kcKey == nil ? "" : "F\(kcKey!.rawValue % 10)"
 
@@ -103,7 +102,7 @@ struct MacroListView: View {
                                             RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
 
                                             // Caption text
-                                            RichText( caption, size: .small, weight: .regular, design: .serif, defaultColor: color )
+                                            RichText( caption, size: .small, weight: .regular, design: .serif, defaultColor: "UnitText" )
                                         }
                                         
                                         // Second line of row

@@ -67,7 +67,7 @@ struct MemoryEditSheet: View {
             // Computed Memory Macro Selection
             SheetCollapsibleView( code: 2, label: "={Computed Memory:}", drop: $dropCode ) {
                 
-                let tagGroupList: [SymbolTagGroup] = [SymbolTagGroup( label: model.activeModName, model: model, mod: model.activeModule )]
+                let tagGroupList: [SymbolTagGroup] = [SymbolTagGroup( label: "Macros", model: model, mod: model.activeModule )]
                 
                 SelectSymbolPopup( tagGroupList: tagGroupList, title: "Select Macro", sscc: selectComputedMacroSym ) { }
             }

@@ -68,6 +68,10 @@ class MacroRec: Codable, Identifiable, TaggedItem, Equatable {
         self.opSeq = opSeq
     }
     
+    func getCaption() -> String {
+        caption ?? Const.Placeholder.caption
+    }
+
     func copy() -> MacroRec {
         return MacroRec( tag: self.symTag, caption: self.caption, seq: self.opSeq)
     }
@@ -80,6 +84,29 @@ class MacroRec: Codable, Identifiable, TaggedItem, Equatable {
     
     static func == ( lhs: MacroRec, rhs: MacroRec ) -> Bool {
         return lhs.symTag == rhs.symTag
+    }
+}
+
+
+@Observable
+class PlotRec: Codable, Identifiable, Equatable, TaggedItem {
+    var symTag: SymbolTag
+    var caption: String? = nil
+    
+    var vsTag: SymbolTag? = nil
+    
+    init( symTag: SymbolTag, vsTag: SymbolTag? = nil, caption: String? = nil) {
+        self.symTag = symTag
+        self.vsTag = vsTag
+        self.caption = caption
+    }
+    
+    func getCaption() -> String {
+        caption ?? Const.Placeholder.caption
+    }
+
+    static func == ( lhs: PlotRec, rhs: PlotRec ) -> Bool {
+        return lhs.symTag == rhs.symTag && lhs.vsTag == rhs.vsTag
     }
 }
 
@@ -132,6 +159,7 @@ struct AuxSettingRec: Codable, Equatable {
     var auxDisplay: AuxDispView = .memoryView
     var auxMemTag: SymbolTag    = SymbolTag.Null
     var auxMacroTag: SymbolTag  = SymbolTag.Null
+    var auxPlotTag: SymbolTag   = SymbolTag.Null
     var auxValueIndex: Int      = 0
 }
 
@@ -141,6 +169,7 @@ typealias GroupId = Int
 
 /// **  Module File **
 
+@Observable
 class ModuleFile: DataObjectFile {
     
     // Added fields
@@ -150,6 +179,8 @@ class ModuleFile: DataObjectFile {
     
     // List of macro definitions in this module - a macro must have a SymbolTag to be in this list
     var macroTable: [MacroRec] = []
+    
+    var plotTable: [PlotRec] = []
     
     // Calculator session state
     var state:       CalcState
@@ -161,6 +192,7 @@ class ModuleFile: DataObjectFile {
     private enum CodingKeys: String, CodingKey {
         case groupTable
         case macroTable
+        case plotTable
         
         case state
         case unitData
@@ -173,6 +205,7 @@ class ModuleFile: DataObjectFile {
         
         self.groupTable = [mfr.id]
         self.macroTable = []
+        self.plotTable = []
         self.state = CalcState()
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
@@ -186,6 +219,7 @@ class ModuleFile: DataObjectFile {
         
         self.groupTable = [UUID()]
         self.macroTable = []
+        self.plotTable = []
         self.state = CalcState()
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
@@ -199,6 +233,7 @@ class ModuleFile: DataObjectFile {
         
         self.groupTable = [obj.id]
         self.macroTable = []
+        self.plotTable = []
         self.state = CalcState()
         self.unitData = UserUnitData()
         self.keyMap = KeyMapRec()
@@ -213,6 +248,7 @@ class ModuleFile: DataObjectFile {
         let container = try decoder.container( keyedBy: CodingKeys.self)
         self.groupTable = try container.decode( [UUID].self, forKey: .groupTable)
         self.macroTable = try container.decode( [MacroRec].self, forKey: .macroTable)
+        self.plotTable = try container.decode( [PlotRec].self, forKey: .plotTable)
         self.state = try container.decode( CalcState.self, forKey: .state)
         self.unitData = try container.decode( UserUnitData.self, forKey: .unitData)
         self.keyMap = try container.decode( KeyMapRec.self, forKey: .keyMap)
@@ -226,6 +262,7 @@ class ModuleFile: DataObjectFile {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(groupTable,  forKey: .groupTable)
         try container.encode(macroTable,  forKey: .macroTable)
+        try container.encode(plotTable,   forKey: .plotTable)
         try container.encode(state,       forKey: .state)
         try container.encode(unitData,    forKey: .unitData)
         try container.encode(keyMap,      forKey: .keyMap)
@@ -345,7 +382,16 @@ extension ModuleRec {
         let mf = loadModule()
         return mf.macroTable
     }
+
     
+    var plotList: [PlotRec] {
+        
+        /// ** Plot List **
+        
+        let mf = loadModule()
+        return mf.plotTable
+    }
+
     
     func getLocalMacro( _ tag: SymbolTag ) -> MacroRec? {
         
@@ -372,6 +418,19 @@ extension ModuleRec {
         
         return nil
     }
+
+    
+    func getLocalPlot( _ tag: SymbolTag ) -> PlotRec? {
+        
+        /// ** Get Plot **
+        
+        // A computed memory tag is a macro tag marked as a computed memory
+        assert( tag.isGlobalMemoryTag || tag.isComputedMemoryTag || tag.isNull )
+        
+        let mf = loadModule()
+        
+        return mf.plotTable.first( where: { $0.symTag == tag } )
+    }
     
     
     func deleteMacro( _ sTag: SymbolTag ) {
@@ -385,6 +444,20 @@ extension ModuleRec {
         let mf = loadModule()
         mf.macroTable.removeAll( where: { $0.symTag == sTag } )
         symList.removeAll( where: { $0 == sTag } )
+        
+        saveModule()
+    }
+
+    
+    func deletePlot( _ pTag: SymbolTag ) {
+        
+        /// ** Delete Plot **
+        ///     Delete a plot from module with given tag
+        
+        log("deletePlot \(String(describing: pTag))")
+        
+        let mf = loadModule()
+        mf.plotTable.removeAll( where: { $0.symTag == pTag } )
         
         saveModule()
     }
@@ -409,6 +482,25 @@ extension ModuleRec {
             symList.append(mr.symTag)
         }
         
+        saveModule()
+    }
+
+    
+    func addPlot( _ pr: PlotRec ) {
+        
+        /// ** Add Plot **
+        
+        let mf = loadModule()
+        
+        if let x = mf.macroTable.firstIndex( where: { $0.symTag == pr.symTag } ) {
+            
+            // Replace existing macro
+            mf.plotTable[x] = pr
+        }
+        else {
+            // Add new macro to the end
+            mf.plotTable.append(pr)
+        }
         saveModule()
     }
     

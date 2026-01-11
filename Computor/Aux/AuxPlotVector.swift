@@ -128,6 +128,8 @@ struct PlotVectorView : View {
     
     @State var model: CalculatorModel
     
+    var tv: TaggedValue
+    
     
     private func getSpecs( _ tv: TaggedValue ) -> (Double, Double, Double, Double) {
         
@@ -176,11 +178,23 @@ struct PlotVectorView : View {
 
     var body: some View {
         
-        let tv = model.state.Xtv
-        
         VStack {
             AuxHeaderView( theme: Theme.lightPurple ) {
-                RichText( "Plot", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                HStack {
+                    
+                    // Back to Memory List
+                    Image( systemName: Const.Icon.chevronLeft)
+                        .padding( [.leading], 10 )
+                        .onTapGesture {
+                            withAnimation {
+                                model.aux.plotRec = nil
+                            }
+                        }
+                    
+                    Spacer()
+                    RichText( "Plot", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                    Spacer()
+                }
             }
             
             Canvas(

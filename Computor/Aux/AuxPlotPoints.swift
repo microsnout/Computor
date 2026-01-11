@@ -9,6 +9,10 @@ import SwiftUI
 
 struct PlotPointsView: View {
     
+    @State var model: CalculatorModel
+    
+    var tv: TaggedValue
+
     func getRange( _ tv: TaggedValue ) -> (Double, Double, Double, Double, Bool) {
         
         guard tv.isMatrix && tv.rows == 1 && tv.cols > 1 && vector2DTypes.contains(tv.vtp) else {
@@ -38,13 +42,8 @@ struct PlotPointsView: View {
         tv.isMatrix && tv.rows == 1 && tv.cols > 1 && vector2DTypes.contains(tv.vtp)
     }
     
-    
-    
-    @State var model: CalculatorModel
-    
+
     var body: some View {
-        let tv = model.state.Xtv
-        
         let (xMin, yMin, xMax, yMax, dataValid) = getRange(tv)
         
         if !dataValid {
@@ -54,10 +53,23 @@ struct PlotPointsView: View {
         else {
             VStack {
                 AuxHeaderView( theme: Theme.lightPurple ) {
-                    RichText( "Vector Plot", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                    HStack {
+                        // Back to Memory List
+                        Image( systemName: Const.Icon.chevronLeft)
+                            .padding( [.leading], 10 )
+                            .onTapGesture {
+                                withAnimation {
+                                    model.aux.plotRec = nil
+                                }
+                            }
+                        
+                        Spacer()
+                        RichText( "Vector Plot", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                        Spacer()
+                    }
                 }
                 
-                if !plotableValue( model.state.Xtv ) {
+                if !plotableValue(tv) {
                     
                     Spacer()
                     Text( "Require a matrix" )

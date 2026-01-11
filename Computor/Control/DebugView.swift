@@ -74,6 +74,13 @@ struct DebugView: View {
                     model.aux.macroMod = model.db.getModZero()
                     model.db.deleteAllMacros()
                 }
+
+                DebugButton( label: "Delete All Plots") {
+                    model.aux.macroMod = model.db.getModZero()
+                    let mf = model.activeModule.loadModule()
+                    mf.plotTable.removeAll()
+                    model.aux.plotRec = nil
+                }
                 
                 DebugButton( label: "Print Macro Table" ) {
                     

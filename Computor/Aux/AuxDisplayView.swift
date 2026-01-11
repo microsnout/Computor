@@ -55,7 +55,7 @@ struct AuxiliaryDisplayView: View {
                     AuxRegisterView( model: model, valueIndex: $model.aux.valueIndex )
                         .id( AuxDispView.registerView )
                     
-                    AuxPlotPatternView( model: model )
+                    AuxPlotView( model: model )
                         .id( AuxDispView.plotView )
                 }
                 .frame( maxHeight: .infinity)
