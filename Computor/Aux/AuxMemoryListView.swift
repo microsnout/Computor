@@ -82,6 +82,8 @@ struct MemoryListView: View {
                             
                             let caption: String = mr.getCaption(model)
                             
+                            let plot = model.activeModule.getLocalPlot(mr.symTag)
+                            
                             VStack {
                                 HStack {
                                     
@@ -107,6 +109,17 @@ struct MemoryListView: View {
                                     
                                     // Button controls at right of rows
                                     HStack( spacing: 20 ) {
+                                        
+                                        if let plotRec = plot {
+
+                                            // PLOT BUTTON - Go to plot screen
+                                            Button( action: {
+                                                model.aux.activeView = .plotView
+                                                model.aux.plotRec = plotRec
+                                            } ) {
+                                                Image( systemName: Const.Icon.chart )
+                                            }
+                                        }
                                         
                                         // ARROW DOWN
                                         Button( action: { model.memoryOp( key: .rclMem, tag: mr.symTag ) } ) {
