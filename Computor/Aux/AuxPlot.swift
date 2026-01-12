@@ -82,7 +82,7 @@ struct AuxPlotPatternView : View {
                 .id( PlotType.pointArray )
 
         case .multiPoint:
-            PlotMultiPointView( model: model )
+            PlotMultiPointView( model: model, tvX: model.state.Xtv, tvY: model.state.Ytv )
                 .id( PlotType.multiPoint )
             
         case .none:
@@ -117,8 +117,13 @@ struct AuxPlotView: View {
                         
                         let yTag = pRec.symTag
                         
-                        // Two tags provided, plot yTag vs xTag
-                        
+                        if let xMem = model.getMemory(xTag),
+                           let yMem = model.getMemory(yTag) {
+                            
+                            // Two tags provided, plot yTag vs xTag
+                            PlotMultiPointView( model: model, tvX: xMem.tv, tvY: yMem.tv )
+                        }
+
                     }
                     else {
                         let xyTag = pRec.symTag
@@ -251,11 +256,14 @@ struct AuxPlotListView : View {
                                         }
                                         .confirmationDialog("Confirm Deletion", isPresented: $deleteDialog, presenting: dialogRec) { pr in
                                             
-                                            Button("Delete \(pr.symTag.getRichText())", role: .destructive) {
-                                                dialogRec = nil
+                                            Button( role: .destructive, action: {
+                                                // Delete Plot
                                                 model.activeModule.deletePlot( pr.symTag )
+                                                dialogRec = nil
+                                            } ) {
+                                                RichText("Delete \(pr.symTag.getRichText())", size: .small, weight: .bold, defaultColor: "BlackText" )
                                             }
-                                            
+
                                             Button("Cancel", role: .cancel) {
                                                 // User cancelled, do nothing
                                                 dialogRec = nil

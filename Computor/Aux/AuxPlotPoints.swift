@@ -48,7 +48,28 @@ struct PlotPointsView: View {
         
         if !dataValid {
             // We have been accessed with invalid state
-            VStack {}
+            VStack {
+                AuxHeaderView( theme: Theme.lightPurple ) {
+                    HStack {
+                        // Back to Memory List
+                        Image( systemName: Const.Icon.chevronLeft)
+                            .padding( [.leading], 10 )
+                            .onTapGesture {
+                                withAnimation {
+                                    model.aux.plotRec = nil
+                                }
+                            }
+                        
+                        Spacer()
+                        RichText( "Vector Plot", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                        Spacer()
+                    }
+                }
+                
+                Spacer()
+                RichText( "Invalid Data", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                Spacer()
+            }
         }
         else {
             VStack {
@@ -155,6 +176,9 @@ struct PlotMultiPointView: View {
     
     @State var model: CalculatorModel
     
+    var tvX: TaggedValue
+    var tvY: TaggedValue
+    
     let colorSeq = [Color.black, Color.blue, Color.red, Color.green, Color.orange]
 
     func getRange( _ tvX: TaggedValue, _ tvY: TaggedValue ) -> (Double, Double, Double, Double, Bool) {
@@ -208,19 +232,50 @@ struct PlotMultiPointView: View {
     var body: some View {
         let _ = Self._printChanges()
         
-        let tvX = model.state.Xtv
-        let tvY = model.state.Ytv
-
         let (xMin, yMin, xMax, yMax, dataValid) = getRange( tvX, tvY )
         
         if !dataValid {
             // We have been accessed with invalid state
-            VStack {}
+            VStack {
+                AuxHeaderView( theme: Theme.lightPurple ) {
+                    HStack {
+                        // Back to Memory List
+                        Image( systemName: Const.Icon.chevronLeft)
+                            .padding( [.leading], 10 )
+                            .onTapGesture {
+                                withAnimation {
+                                    model.aux.plotRec = nil
+                                }
+                            }
+                        
+                        Spacer()
+                        RichText( "Multi Plot", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                        Spacer()
+                    }
+                }
+                
+                Spacer()
+                RichText( "Invalid Data", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                Spacer()
+            }
         }
         else {
             VStack {
                 AuxHeaderView( theme: Theme.lightPurple ) {
-                    RichText( "Multi Plot", size: .small, defaultColor: "AuxHeaderText" )
+                    HStack {
+                        // Back to Memory List
+                        Image( systemName: Const.Icon.chevronLeft)
+                            .padding( [.leading], 10 )
+                            .onTapGesture {
+                                withAnimation {
+                                    model.aux.plotRec = nil
+                                }
+                            }
+                        
+                        Spacer()
+                        RichText( "Multi Plot", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
+                        Spacer()
+                    }
                 }
                 
                 Canvas { context, size in

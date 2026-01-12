@@ -402,7 +402,7 @@ extension TaggedValue {
             return polar2rect(r,w)
             
         default:
-//            assert(false)
+            assert(false)
             return (0.0, 0.0)
         }
     }
