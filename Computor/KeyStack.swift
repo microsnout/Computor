@@ -530,6 +530,7 @@ struct MemorySelectPopup: View, KeyPressHandler {
                     model.saveDocument()
                 }
             }
+            .presentationDetents([.fraction(0.9)])
         }
     }
 }
