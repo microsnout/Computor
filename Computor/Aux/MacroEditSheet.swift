@@ -91,7 +91,8 @@ struct MacroEditSheet: View {
     
     @Environment(\.dismiss) var dismiss
     
-    @State var mr: MacroRec
+    @Binding var mr: MacroRec
+    
     @State var caption: String
     
     @State var model: CalculatorModel

@@ -69,10 +69,13 @@ struct DebugView: View {
                 }
                 
                 DebugButton( label: "Delete All Macros") {
-                    model.kstate.keyMap.fnRow.removeAll()
-                    model.aux.macroRec = nil
-                    model.aux.macroMod = model.db.getModZero()
-                    model.db.deleteAllMacros()
+                    model.aux.macroTag = SymbolTag.Null
+                    
+                    let mList = model.activeModule.macroList
+                    
+                    for mr in mList {
+                        model.deleteMacro(mr.symTag, from: model.activeModule)
+                    }
                 }
 
                 DebugButton( label: "Delete All Plots") {

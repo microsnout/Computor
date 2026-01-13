@@ -158,28 +158,6 @@ extension Database {
     }
     
     
-    func deleteAllMacros() {
-        
-        /// ** Delete All Macros **  Debug use only
-        
-        for mfr in modTable.objTable {
-            
-            if !mfr.isModZero {
-                deleteModule(mfr)
-            }
-        }
-        
-        let mod0 = getModZero()
-        mod0.symList = []
-        modTable.saveTable()
-        
-        let mf0 = mod0.loadModule()
-        mf0.macroTable = []
-        mf0.groupTable = [mod0.id]
-        mod0.saveModule()
-    }
-    
-    
     func deleteMacro( _ sTag: SymbolTag, from mod: ModuleRec  ) {
         
         /// ** Delete Macro **

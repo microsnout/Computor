@@ -151,6 +151,10 @@ struct MacroOpSeq: Codable, Sequence {
         opList.insert( op, at: i )
     }
     
+    mutating func remove( at i: Int ) -> MacroOp {
+        opList.remove( at: i )
+    }
+    
     mutating func removeLast() { opList.removeLast() }
     
     subscript(index:Int) -> MacroOp {

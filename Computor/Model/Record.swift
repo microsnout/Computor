@@ -397,13 +397,17 @@ extension CalculatorModel {
         switch event.kc {
             
         case .enter:
-            if let last = mr.opSeq.last,
-               let value = last as? MacroValue
-            {
-                if value.tv.tag == tagUntyped {
-                    
-                    // An enter is not needed in recording if preceeded by an untyped value
-                    break
+            if aux.opCursor > 0 && aux.opCursor <= mr.opSeq.count {
+                
+                let op = mr.opSeq[aux.opCursor-1]
+                
+                if let value = op as? MacroValue
+                {
+                    if value.tv.tag == tagUntyped {
+                        
+                        // An enter is not needed in recording if preceeded by an untyped value
+                        break
+                    }
                 }
             }
             // Otherwise record the key
@@ -412,60 +416,67 @@ extension CalculatorModel {
 
         case .backUndo:
             // Backspace, need to remove last op or possibly undo a unit tag
-            if let last = mr.opSeq.last {
+            if aux.opCursor > 0 && aux.opCursor <= mr.opSeq.count {
                 
-                if let value = last as? MacroValue
+                let op = mr.opSeq[aux.opCursor-1]
+            
+                if let value = op as? MacroValue
                 {
                     // Last op is a value op
                     if value.tv.tag == tagUntyped {
                         
                         // No unit tag, just remove the value
-                        mr.opSeq.removeLast()
+                        _ = mr.opSeq.remove( at: aux.opCursor-1 )
                         aux.opCursor -= 1
                     }
                     else {
                         // A tagged value, remove the tag
-                        mr.opSeq.removeLast()
+                        _ = mr.opSeq.remove( at: aux.opCursor-1 )
                         var tv = value.tv
                         tv.tag = tagUntyped
-                        mr.opSeq.append( MacroValue( tv: tv))
-                        aux.opCursor += 1
+                        mr.opSeq.insert( MacroValue(tv: tv), at: aux.opCursor-1 )
                     }
                 }
                 else {
                     // Last op id just a key op
-                    mr.opSeq.removeLast()
+                    _ = mr.opSeq.remove( at: aux.opCursor-1 )
                     aux.opCursor -= 1
                 }
             }
             
         case let kc where kc.isUnit:
-            if let last = mr.opSeq.last,
-               let value = last as? MacroValue
-            {
-                if value.tv.tag == tagUntyped {
-                    
-                    // Last macro op is an untyped value
-                    if let tag = TypeDef.tagFromKeyCode(kc) {
+            if aux.opCursor > 0 && aux.opCursor <= mr.opSeq.count {
+                
+                let op = mr.opSeq[aux.opCursor-1]
+                
+                if let value = op as? MacroValue
+                {
+                    if value.tv.tag == tagUntyped {
                         
-                        var tv = value.tv
-                        mr.opSeq.removeLast()
-                        aux.opCursor -= 1
-                        tv.tag = tag
-                        mr.opSeq.insert( MacroEvent( event ), at: aux.opCursor )
-                        aux.opCursor += 1
-                        break
+                        // Last macro op is an untyped value
+                        if let tag = TypeDef.tagFromKeyCode(kc) {
+                            
+                            var tv = value.tv
+                            _ = mr.opSeq.remove( at: aux.opCursor-1 )
+                            aux.opCursor -= 1
+                            tv.tag = tag
+                            mr.opSeq.insert( MacroValue(tv: tv), at: aux.opCursor )
+                            aux.opCursor += 1
+                            break
+                        }
                     }
                 }
             }
-            fallthrough
+            mr.opSeq.insert( MacroEvent( event ), at: aux.opCursor )
+            aux.opCursor += 1
             
         default:
             if event.kc.isFuncKey {
                 
                 if let tag = kstate.keyMap.tagAssignment(event.kc) {
+                    
                     // There is a macro assigned to this key, record the macro tag not the key code
-                    mr.opSeq.append( MacroEvent( KeyEvent( .lib, mTag: tag ) ) )
+                    mr.opSeq.insert( MacroEvent( KeyEvent( .lib, mTag: tag ) ), at: aux.opCursor )
                     aux.opCursor += 1
                     break
                 }

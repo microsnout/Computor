@@ -9,7 +9,7 @@ import SwiftUI
 
 struct MacroDetailView: View {
     
-    var mr: MacroRec
+    @State var mr: MacroRec
     
     @State var model: CalculatorModel
     
@@ -72,12 +72,12 @@ struct MacroDetailView: View {
             HStack( spacing: 0 ) {
                 
                 // List of macro ops with line numbers
-                MacroCodeListing( mr: mr, model: model )
+                MacroCodeListing( mr: $mr, model: model )
                 
                 Divider()
                 
                 // Right panel fields
-                MacroDetailRightPanel( mr: mr, model: model, refreshView: $refreshView )
+                MacroDetailRightPanel( mr: $mr, model: model, refreshView: $refreshView )
             }
         }
         .padding( [.bottom, .leading, .trailing], 5 )
@@ -85,7 +85,7 @@ struct MacroDetailView: View {
         // Macro Edit Sheet
         .sheet(isPresented: $editSheet) {
             
-            MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) {
+            MacroEditSheet( mr: $mr, caption: mr.caption ?? "", model: model ) {
                 
                 refreshView.toggle()
             }
@@ -99,7 +99,7 @@ struct MacroCodeListing: View {
     
     /// ** Macro Code Listing **
     
-    var mr: MacroRec
+    @Binding var mr: MacroRec
     
     @State var model: CalculatorModel
     
@@ -240,7 +240,7 @@ struct MacroDetailRightPanel: View {
     @AppStorage(.settingsRecordExecute)
     private var recordExecute = true
     
-    var mr: MacroRec
+    @Binding var mr: MacroRec
     
     @State var model: CalculatorModel
     
@@ -254,8 +254,7 @@ struct MacroDetailRightPanel: View {
     func enablePlay() -> Bool {
         
         let state = model.aux.recState
-        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
-        let count = opseq.count
+        let count = model.aux.macroRec?.opSeq.count ?? 0
         let opcur = model.aux.opCursor
         
         return (state == .stop || state == .debug) && opcur < count
@@ -279,8 +278,7 @@ struct MacroDetailRightPanel: View {
     func enableStep() -> Bool {
         
         let state = model.aux.recState
-        let opseq = model.aux.macroRec?.opSeq ?? MacroOpSeq()
-        let count = opseq.count
+        let count = model.aux.macroRec?.opSeq.count ?? 0
         let opcur = model.aux.opCursor
         
         return (state == .stop || state == .debug) && opcur < count
