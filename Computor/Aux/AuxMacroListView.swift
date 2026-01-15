@@ -18,7 +18,7 @@ struct AuxMacroView: View {
             if let mr = model.aux.macroRec {
                 
                 // Detailed view of selected macro
-                MacroDetailView( mr: mr, model: model )
+                MacroDetailView( model: model, mr: mr )
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
             }
             else {

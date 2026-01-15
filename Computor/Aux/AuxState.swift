@@ -38,7 +38,7 @@ struct AuxState {
     var macroMod: ModuleRec = ModuleRec( name: "_" )
 
     // Currently selected macro record - if non-null displays macro detail view
-    var macroTag: SymbolTag = SymbolTag.Null
+    var macroRec: MacroRec? = nil
 
     // Currently selected plot record
     var plotTag: SymbolTag = SymbolTag.Null
@@ -69,17 +69,13 @@ extension AuxState {
     
     var isRec: Bool { AuxState.recStates.contains( self.recState ) }
     
-    var macroRec: MacroRec? {
+    var macroTag: SymbolTag {
         get {
-            macroMod.getLocalMacro(macroTag)
+            macroRec?.symTag ?? SymbolTag.Null
         }
+        
         set {
-            if let mr = newValue {
-                macroTag = mr.symTag
-            }
-            else {
-                macroTag = SymbolTag.Null
-            }
+            macroRec = macroMod.getLocalMacro(newValue)
         }
     }
 
@@ -109,7 +105,7 @@ extension AuxState {
             
         case .inactive, .stop:
             // Set macro detail view to mr and switch to macro view pane
-            macroTag   = mr.symTag
+            macroRec   = mr
             activeView = .macroView
             opCursor   = 0
             auxLVF     = nil
@@ -158,7 +154,7 @@ extension AuxState {
         /// This will retrun Aux display to Macro List
 
         stopMacroRecorder()
-        macroTag   = SymbolTag.Null
+        macroRec   = nil
         recState   = .inactive
         errorFlag  = false
     }
