@@ -129,7 +129,7 @@ struct MacroValue: CodableMacroOp {
 }
 
 
-struct MacroOpSeq: Codable, Sequence {
+struct MacroOpSeq1: Codable, Sequence {
     
     private var opList = [MacroOp]()
     
@@ -210,6 +210,126 @@ struct MacroOpSeq: Codable, Sequence {
         return str
     }
 
+    init( from decoder: Decoder) throws {
+        
+        let c = try decoder.container( keyedBy: CodingKeys.self)
+        
+        var opC = try c.nestedUnkeyedContainer( forKey: .opSeq)
+        
+        while !opC.isAtEnd {
+            
+            if let key = try? opC.decode( MacroEvent.self) {
+                opList.append(key)
+            }
+            else if let value = try? opC.decode( MacroValue.self) {
+                opList.append(value)
+            }
+        }
+    }
+    
+    init( _ opSeq: [MacroOp] = [] ) {
+        self.opList = opSeq
+    }
+}
+
+
+// **************************************************
+
+
+struct MacroOpSeq: Codable, MutableCollection {
+    
+    typealias Index = Int
+    typealias Element = MacroOp
+    
+    private var opList = [MacroOp]()
+    
+    var startIndex: Index {
+        opList.startIndex
+    }
+    
+    var endIndex: Index {
+        opList.endIndex
+    }
+
+    func index( after i: Int) -> Int {
+        opList.index( after: i)
+    }
+
+    var count: Int { opList.count }
+    
+    var isEmpty: Bool { opList.isEmpty }
+    
+    var last: MacroOp? { opList.last }
+    
+    var indices: Range<Int> { opList.indices }
+    
+    mutating func clear() { self.opList = [] }
+    
+    mutating func append( _ op: MacroOp ) { opList.append(op) }
+    
+    mutating func insert( _ op: MacroOp, at i: Int ) {
+        opList.insert( op, at: i )
+    }
+    
+    mutating func remove( at i: Int ) -> MacroOp {
+        opList.remove( at: i )
+    }
+    
+    mutating func removeLast() { opList.removeLast() }
+    
+    subscript(index:Int) -> MacroOp {
+        get { return opList[index] }
+        set(newOp) { opList[index] = newOp }
+    }
+    
+    subscript( r: PartialRangeFrom<Int> ) -> ArraySlice<MacroOp> {
+        get { return opList[r] }
+    }
+    
+    func makeIterator() -> IndexingIterator<[any MacroOp]> {
+        return opList.makeIterator()
+    }
+    
+    // ***
+    
+    enum CodingKeys: String, CodingKey {
+        case opSeq
+    }
+    
+    func encode( to encoder: Encoder ) throws {
+        var c = encoder.container( keyedBy: CodingKeys.self )
+        
+        var opC = c.nestedUnkeyedContainer( forKey: .opSeq)
+        
+        for op in opList {
+            
+            if let key = op as? MacroEvent {
+                try opC.encode(key)
+            }
+            else if let value = op as? MacroValue {
+                try opC.encode(value)
+            }
+        }
+    }
+    
+    func getDebugText() -> String {
+        if opList.isEmpty {
+            return "[]"
+        }
+        
+        var str = "["
+        let end = opList.last
+        
+        for s in opList.dropLast() {
+            str += s.getPlainText()
+            str += ", "
+        }
+        
+        str += end?.getPlainText() ?? ""
+        str += "]"
+        return str
+    }
+    
     init( from decoder: Decoder) throws {
         
         let c = try decoder.container( keyedBy: CodingKeys.self)
