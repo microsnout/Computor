@@ -240,8 +240,8 @@ extension CalculatorModel {
     }
     
     
-    func playMacroSeq( _ seq: MacroOpSeq, in mod: ModuleRec ) -> (KeyPressResult, Int ) {
-        
+    func playMacroSeq<OpC: Collection>( _ seq: OpC, in mod: ModuleRec ) -> (KeyPressResult, Int ) where OpC.Element == MacroOp {
+
         /// ** Play Macro Seq **
         /// Returns number of Op macros successfully executed
         
