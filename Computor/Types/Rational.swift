@@ -7,24 +7,26 @@
 import Foundation
 
 
-func installRational() {
+extension CalculatorModel {
     
-    // Set of allowed types
-    let zSet: ValueTypeSet = [.real, .rational]
-    
-    // One operand must be rational
-    let zTest: StateTest = {$0.Xvtp == .rational || $0.Yvtp == .rational}
-    
-    CalculatorModel.defineOpPatterns( .plus, [
+    func installRational() {
         
-        OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { model, s0 in
+        // Set of allowed types
+        let zSet: ValueTypeSet = [.real, .rational]
+        
+        // One operand must be rational
+        let zTest: StateTest = {$0.Xvtp == .rational || $0.Yvtp == .rational}
+        
+        defineOpPatterns( .plus, [
             
-            // Rational addition
-            var s1 = s0
-            s1.stackDrop()
-            return (KeyPressResult.stateChange, s1)
-        }
-    ])
-    
+            OpPattern( [ .X(zSet), .Y(zSet)], where: zTest ) { s0 in
+                
+                // Rational addition
+                var s1 = s0
+                s1.stackDrop()
+                return (KeyPressResult.stateChange, s1)
+            }
+        ])
+        
+    }
 }
-

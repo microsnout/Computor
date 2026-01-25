@@ -8,7 +8,7 @@ import SwiftUI
 import OSLog
 
 
-typealias OpPatternClosure = (CalculatorModel, CalcState) -> (KeyPressResult, CalcState?)
+typealias OpPatternClosure = (CalcState) -> (KeyPressResult, CalcState?)
 
 
 struct OpPattern : StateOperatorEx {
@@ -23,7 +23,7 @@ struct OpPattern : StateOperatorEx {
     }
 
     func transition(_ model: CalculatorModel, _ s0: CalcState ) -> (KeyPressResult, CalcState?) {
-        return block(model, s0)
+        return block(s0)
     }
 }
 

@@ -18,11 +18,6 @@ struct ComputorApp: App {
         initKeyLayout()
         UnitDef.buildStdUnitData()
         TypeDef.buildStdTypeData()
-        
-        // Install Types
-        installMatrix()
-        installComplex()
-        installVector()
 
         // Install Library Functions
         installFunctions()

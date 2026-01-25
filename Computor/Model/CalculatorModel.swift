@@ -349,6 +349,11 @@ class CalculatorModel: KeyPressHandler {
         
         self.changeCount = 0
         
+        // Install Type Extensions
+        installMatrix()
+        installComplex()
+        installVector()
+
         pushContext( NormalContext() )
     }
     
@@ -602,22 +607,22 @@ class CalculatorModel: KeyPressHandler {
     }
     
     
-    static var patternTable: [KeyCode : [OpPattern]] = [:]
+    var patternTable: [KeyCode : [OpPattern]] = [:]
     
-    static func defineOpPatterns( _ kc: KeyCode, _ patterns: [OpPattern]) {
-        if var pList = CalculatorModel.patternTable[kc] {
+    func defineOpPatterns( _ kc: KeyCode, _ patterns: [OpPattern]) {
+        if var pList = patternTable[kc] {
             pList.append( contentsOf: patterns )
-            CalculatorModel.patternTable[kc] = pList
+            patternTable[kc] = pList
         }
         else {
-            CalculatorModel.patternTable[kc] = patterns
+            patternTable[kc] = patterns
         }
     }
     
-    static var conversionTable: [ConversionPattern] = []
+    var conversionTable: [ConversionPattern] = []
     
-    static func defineUnitConversions( _ patterns: [ConversionPattern]) {
-        CalculatorModel.conversionTable.append( contentsOf: patterns )
+    func defineUnitConversions( _ patterns: [ConversionPattern]) {
+        conversionTable.append( contentsOf: patterns )
     }
     
     static func defineOpCodes( _ newOpSet: [KeyCode : StateOperator] ) {
@@ -974,7 +979,7 @@ class CalculatorModel: KeyPressHandler {
             // Modal operators like mapX, do not return a new state but this does not
             // indicate an Error
             
-            if let patternList = CalculatorModel.patternTable[keyCode] {
+            if let patternList = patternTable[keyCode] {
                 
                 for pattern in patternList {
                     
@@ -1012,7 +1017,7 @@ class CalculatorModel: KeyPressHandler {
                 {
                     pushState()
                     
-                    for pattern in CalculatorModel.conversionTable {
+                    for pattern in conversionTable {
                         if state.patternMatch(pattern.regPattern) {
                             pushState()
                             
