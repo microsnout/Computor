@@ -239,17 +239,23 @@ extension CalculatorModel {
         return kstate.keyMap.keyAssignment(remTag)
     }
     
-    
-    func playMacroSeq<OpC: Collection>( _ seq: OpC, in mod: ModuleRec ) -> (KeyPressResult, Int ) where OpC.Element == MacroOp {
+    // func playMacroSeq<OpC: Collection>( _ seq: OpC, in mod: ModuleRec ) -> (KeyPressResult, Int ) where OpC.Element == MacroOp {
+
+    func playMacroSeq( _ seq: ArraySlice<MacroOp>, in mod: ModuleRec ) -> (KeyPressResult, Int ) {
 
         /// ** Play Macro Seq **
         /// Returns number of Op macros successfully executed
         
         acceptTextEntry()
         
-        // Macro playback - save inital state just in case
+        // Preserve state to undo entire sequence if needed
         pushState()
-        pushContext( PlaybackContext() )
+        
+        // Create new Playback context containing the seq
+        let playCtx = PlaybackContext(seq)
+
+        // Macro playback
+        pushContext( playCtx )
         
         // Push a new local variable store
         pushLocalVariableFrame()
@@ -260,22 +266,17 @@ extension CalculatorModel {
         // Create new module execution context for resolving macro references
         pushMEC(mod)
         
-        var index = 0
+        let (result, index) = playCtx.executeSequence()
         
-        for op in seq {
+        if result == KeyPressResult.stateError {
+            popMEC()
+            resumeUndoStack()
+            popLocalVariableFrame()
+            popContext()
+            popState()
             
-            if op.execute(self) == KeyPressResult.stateError {
-                popMEC()
-                resumeUndoStack()
-                popLocalVariableFrame()
-                popContext()
-                popState()
-                
-                logM.debug( "playMacroSeq: ERROR \(String( describing: op.getRichText(self) ))")
-                return (KeyPressResult.stateError, index)
-            }
-            
-            index += 1
+            logM.debug( "playMacroSeq: ERROR \(index )")
+            return (KeyPressResult.stateError, index)
         }
         
         popMEC()
@@ -292,7 +293,7 @@ extension CalculatorModel {
     
     func playSingleOp( _ op: MacroOp, in mod: ModuleRec, with lvf: LocalVariableFrame ) -> KeyPressResult {
         
-        pushContext( PlaybackContext() )
+        pushContext( PlaybackContext([op]) )
         pushLocalVariableFrame( aux.auxLVF )
         
         let kpr = op.execute(self)
@@ -541,7 +542,7 @@ extension CalculatorModel {
         
         if let mr = aux.macroRec {
             
-            let (kpr, count) = playMacroSeq( mr.opSeq, in: aux.macroMod )
+            let (kpr, count) = playMacroSeq( mr.opSeq.seq, in: aux.macroMod )
             
             if kpr == .stateError {
                 
@@ -573,7 +574,7 @@ extension CalculatorModel {
         /// ** Play Macro **
         /// Run the macro currently loaded in recorder
         
-        let (kpr, count) = playMacroSeq( mr.opSeq, in: aux.macroMod )
+        let (kpr, count) = playMacroSeq( mr.opSeq.seq, in: aux.macroMod )
         
         if kpr == .stateError {
             

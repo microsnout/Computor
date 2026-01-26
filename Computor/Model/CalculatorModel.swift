@@ -871,7 +871,7 @@ class CalculatorModel: KeyPressHandler {
                 var result = KeyPressResult.noOp
 
                 // Macro tag assigned to Fn key
-                (result, _) = playMacroSeq(mr.opSeq, in: mfr)
+                (result, _) = playMacroSeq(mr.opSeq.seq, in: mfr)
                 
                 if result == KeyPressResult.stateError {
                     return KeyPressResult.stateError
@@ -911,7 +911,7 @@ class CalculatorModel: KeyPressHandler {
                     if let (mr, mfr) = getMacroFunction(tag) {
                         
                         // Macro tag selected from popup
-                        (result, _) = playMacroSeq(mr.opSeq, in: mfr)
+                        (result, _) = playMacroSeq(mr.opSeq.seq, in: mfr)
                     }
                 }
                 else {

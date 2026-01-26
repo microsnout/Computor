@@ -141,7 +141,7 @@ extension CalculatorModel {
                 }
                 
                 // Evaluate the new computed memory
-                let (result, _) = playMacroSeq( macro.opSeq, in: activeModule )
+                let (result, _) = playMacroSeq( macro.opSeq.seq, in: activeModule )
                 let tv = result == KeyPressResult.stateChange ?  state.Xtv : untypedZero
                 
                 // Restore state of stack
@@ -290,7 +290,7 @@ extension CalculatorModel {
             if upTag.isComputedMemoryTag {
                 if let macro = getLocalMacro(upTag) {
                     
-                    let (result, _) = playMacroSeq( macro.opSeq, in: activeModule )
+                    let (result, _) = playMacroSeq( macro.opSeq.seq, in: activeModule )
                     
                     let tv = result == KeyPressResult.stateChange ?  state.Xtv : untypedZero
                     

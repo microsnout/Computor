@@ -11,6 +11,11 @@ import SwiftUI
 ///
 class PlaybackContext : EventContext {
     
+    let opSeq: ArraySlice<MacroOp>
+    
+    var currentIndex: Int
+    
+    
     override func event( _ event: KeyEvent ) -> KeyPressResult {
         
         guard let model = self.model else { return KeyPressResult.null }
@@ -23,6 +28,32 @@ class PlaybackContext : EventContext {
         default:
             return model.execute( event )
         }
+    }
+    
+    
+    init( _ opSeq: ArraySlice<MacroOp> ) {
+        self.opSeq = opSeq
+        self.currentIndex = 0
+    }
+    
+    
+    func executeSequence() -> (KeyPressResult, Int) {
+        
+        guard let model = self.model else { return (KeyPressResult.null, 0) }
+        
+        for (i, op) in opSeq.enumerated() {
+            
+            self.currentIndex = i
+            
+            if op.execute(model) == KeyPressResult.stateError {
+                
+                return (KeyPressResult.stateError, i)
+            }
+        }
+        
+        self.currentIndex = 0
+
+        return (KeyPressResult.stateChange, opSeq.count)
     }
 }
 

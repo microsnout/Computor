@@ -243,6 +243,8 @@ struct MacroOpSeq: Codable, MutableCollection {
     
     private var opList = [MacroOp]()
     
+    var seq: ArraySlice<MacroOp> { opList[0..<count] }
+    
     var startIndex: Index {
         opList.startIndex
     }
