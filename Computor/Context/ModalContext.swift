@@ -17,12 +17,13 @@ class ModalContext : EventContext {
     // String to display while modal function is active
     var statusString: String? { nil }
     
-    var macroFn: MacroOpSeq = MacroOpSeq()
+    var macroFn: ArraySlice<MacroOp> = ArraySlice<MacroOp>()
+    var seqMark: SequenceMark        = SequenceMark()
     
     override func onActivate( lastEvent: KeyEvent) {
         if let model = self.model {
             // We could be used within a recording context or a normal context
-            withinRecContext = model.previousContext is RecordingContext
+            withinRecContext = model.aux.recState.isRecording
             
             // Enable the open brace key on keyboard
             model.kstate.func2R = psFunctions2Ro
@@ -41,7 +42,15 @@ class ModalContext : EventContext {
     
     func runMacro( model: CalculatorModel ) -> KeyPressResult {
         
-        logM.debug( "Run Macro: \(String( describing: self.macroFn.getDebugText() ))")
+        logM.debug( "Run Macro: \(String( describing: self.macroFn ))")
+        
+//        model.pauseUndoStack()
+//        
+//        let (result, _) = model.playMacroSeq( macroFn, in: model.currentMEC?.module ?? model.activeModule )
+//        
+//        model.resumeUndoStack()
+//        
+//        return result
         
         // Push a new local variable store
         model.pushLocalVariableFrame()
@@ -101,6 +110,8 @@ class ModalContext : EventContext {
                 // Save start index to recording for extracting block {..}
                 let from = model.markMacroIndex()
                 
+                let mark = model.getSequenceMark()
+                
                 model.pushContext( BlockRecord(), lastEvent: event ) { endEvent in
                     
                     if endEvent.kc == .backUndo {
@@ -112,7 +123,11 @@ class ModalContext : EventContext {
                         guard let mr = model.aux.macroRec else { assert(false) }
                         
                         // Before recording closing brace, extract the macro
-                        self.macroFn = MacroOpSeq( [any MacroOp](mr.opSeq[from...]) )
+                        // self.macroFn = MacroOpSeq( [any MacroOp](mr.opSeq[from...]) )
+                        
+                        self.macroFn = model.getModalSequence( from: mark )
+                        
+                        print( "MODAL CAPTURE: \(String( describing: self.macroFn))  from:\(mark.index)" )
                         
                         // Now record the closing brace of the block
                         model.recordKeyEvent( endEvent )
@@ -126,17 +141,15 @@ class ModalContext : EventContext {
             else {
                 // Recording block {..} from normal context
                 
-                model.pushContext( BlockRecord(), lastEvent: event ) { _ in
-                    
-                    guard let mr = model.aux.macroRec else { assert(false) }
+                let mark = model.getSequenceMark( offset: +1 )
+
+                model.pushContext( BlockPlayback(), lastEvent: event ) { _ in
                     
                     // Capture the block macro
-                    self.macroFn = mr.opSeq
+                    let endMark = model.getSequenceMark()
+                    self.macroFn = model.getModalSequence( from: mark, to: endMark )
                     
-                    model.aux.recordModalBlockEnd()
-                    
-                    // model.aux.macroMod.deleteMacro( SymbolTag.Modal )
-                    // model.aux.macroTag = AuxState.saveTag
+                    print( "MODAL CAPTURE: \(String( describing: self.macroFn))  from:\(mark.index) to:\(endMark.index)" )
                     
                     // Queue a .macro event to execute it
                     model.queueEvent( KeyEvent(.macro) )

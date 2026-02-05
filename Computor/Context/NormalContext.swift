@@ -12,6 +12,8 @@ import SwiftUI
 ///
 class NormalContext : EventContext {
     
+    var activeMarks: Int = 0
+    
     override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
         
         guard let model = self.model else { return [] }

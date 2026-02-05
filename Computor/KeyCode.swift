@@ -197,6 +197,8 @@ enum KeyCode: Int, Codable {
     ]
 
     static let macroOpSet:Set<KeyCode> = [.macroOp, .clrFn, .recFn, .stopFn, .editFn, .openBrace]
+    
+    static let modalOpSet:Set<KeyCode> = [.mapX, .mapXY, .reduce]
 
     static let lowerAlpha = Array( "abcdefghijklmnopqrstuvwxyz" )
     static let upperAlpha = Array( "ABCDEFGHIJKLMNOPQRSTUVWXYZ" )

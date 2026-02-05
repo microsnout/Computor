@@ -110,6 +110,13 @@ struct MacroEvent: CodableMacroOp {
     }
 }
 
+
+extension MacroEvent: CustomStringConvertible {
+    var description: String {
+        return getPlainText()
+    }
+}
+
 struct MacroValue: CodableMacroOp {
     var tv: TaggedValue
     
@@ -125,6 +132,13 @@ struct MacroValue: CodableMacroOp {
     
     func getPlainText() -> String {
         return String( tv.reg )
+    }
+}
+
+
+extension MacroValue: CustomStringConvertible {
+    var description: String {
+        return "Value:\( tv.reg )"
     }
 }
 

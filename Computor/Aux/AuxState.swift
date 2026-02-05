@@ -11,11 +11,12 @@ let logAux = Logger(subsystem: "com.microsnout.calculator", category: "aux")
 
 
 enum MacroRecState: Int {
-    case inactive = 0, stop, record, recModal, recNestedModal, play, debug
+    case inactive = 0, stop, record, recModal, play, debug
     
     var isRecording: Bool {
         switch self {
-        case .record, .recModal, .recNestedModal:
+            
+        case .record, .recModal:
             return true
             
         default:
@@ -65,7 +66,7 @@ struct AuxState {
 
 extension AuxState {
     
-    static let recStates:Set<MacroRecState> = [.record, .recModal, .recNestedModal]
+    static let recStates:Set<MacroRecState> = [.record, .recModal]
     
     var isRec: Bool { AuxState.recStates.contains( self.recState ) }
     
@@ -154,9 +155,9 @@ extension AuxState {
         /// This will retrun Aux display to Macro List
 
         stopMacroRecorder()
+        
         macroRec   = nil
         recState   = .inactive
-        errorFlag  = false
     }
 
     
@@ -217,10 +218,6 @@ extension AuxState {
         case .record:
             stopMacroRecorder()
             
-        case .recNestedModal:
-            // Cancel recording as modal rec is incomplete
-            stopMacroRecorder()
-            
         default:
             // Should not happen
             assert(false)
@@ -247,10 +244,7 @@ extension AuxState {
             SubPadSpec.disableAllFnSubmenu()
             recState = .recModal
             
-        case .record:
-            recState = .recNestedModal
-            
-        case .recModal, .recNestedModal:
+        case .record, .recModal:
             break
             
         default:
@@ -269,9 +263,6 @@ extension AuxState {
             macroMod.deleteMacro( SymbolTag.Modal )
             macroTag = AuxState.saveTag
             recState = .stop
-
-        case .recNestedModal:
-            recState = .record
 
         default:
             // Should not happen

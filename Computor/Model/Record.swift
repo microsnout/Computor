@@ -21,7 +21,6 @@ extension CalculatorModel {
             
             // Test if we are deleting the macro currently being viewed in Aux dispaly
             if mod == aux.macroMod && mr === aux.macroRec {
-                aux.stopMacroRecorder()
                 aux.deactivateMacroRecorder()
             }
             
@@ -389,8 +388,15 @@ extension CalculatorModel {
             return
         }
         
+        // TODO: Delete this var soon...
         guard let mr = aux.macroRec else {
             // No macro record despite isRec is true
+            assert(false)
+            return
+        }
+        
+        guard let mrSeq = aux.macroRec else {
+            // No way to record key event
             assert(false)
             return
         }
