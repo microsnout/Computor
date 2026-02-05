@@ -45,8 +45,8 @@ struct StatusView: View {
 
 
 struct DisplayView: View {
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     @AppStorage(.settingsPriDispTextSize)
     private var priDispTextSize = TextSize.normal
     

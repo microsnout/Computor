@@ -15,7 +15,7 @@ struct CalculatorView: View {
     @Environment(\.horizontalSizeClass) var hSizeClass
     @Environment(\.verticalSizeClass) var vSizeClass
 
-    @State var model = CalculatorModel()
+    @Environment(CalculatorModel.self) private var model
     
     @State private var timer: Timer?
     
@@ -35,7 +35,7 @@ struct CalculatorView: View {
                         LandscapeView( model: model )
                     }
                     else {
-                        PortraitView( model: model )
+                        PortraitView()
                     }
                 }
                 
@@ -101,8 +101,8 @@ class AppInitializer {
 
 struct PortraitView : View {
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     @State private var presentSettings: Bool = false
 
     var body: some View {
@@ -123,7 +123,7 @@ struct PortraitView : View {
                     .padding(0)
                     
                     // Main calculator display
-                    DisplayView( model: model )
+                    DisplayView()
                     Spacer().frame( height: 3)
 
                     // Keypads

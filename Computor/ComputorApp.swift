@@ -11,6 +11,8 @@ import SwiftUI
 @main
 struct ComputorApp: App {
     
+    @State private var model = CalculatorModel()
+    
     @AppStorage(.settingsDarkModeKey)
     private var darkMode = false
     
@@ -26,6 +28,7 @@ struct ComputorApp: App {
     var body: some Scene {
         WindowGroup {
             CalculatorView()
+                .environment(model)
                 .preferredColorScheme( darkMode ? .dark : .light)
                 .accentColor( Color("MenuIcon"))
         }
