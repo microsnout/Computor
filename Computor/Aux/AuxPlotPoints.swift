@@ -8,9 +8,8 @@ import SwiftUI
 
 
 struct PlotPointsView: View {
-    
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var tv: TaggedValue
 
     func getRange( _ tv: TaggedValue ) -> (Double, Double, Double, Double, Bool) {
@@ -174,8 +173,8 @@ struct PlotPointsView: View {
 
 struct PlotMultiPointView: View {
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var tvX: TaggedValue
     var tvY: TaggedValue
     

@@ -32,7 +32,7 @@ struct CalculatorView: View {
             case .loaded:
                 Group {
                     if hSizeClass == .regular && vSizeClass == .compact {
-                        LandscapeView( model: model )
+                        LandscapeView()
                     }
                     else {
                         PortraitView()
@@ -115,10 +115,10 @@ struct PortraitView : View {
                     VStack( spacing: 0 ) {
                         
                         // Auxiliary Display
-                        AuxDisplayGroup( model: model )
+                        AuxDisplayGroup()
                         
                         // Computor title and settings control gear
-                        TitleBar( model: model, presentSettings: $presentSettings )
+                        TitleBar( presentSettings: $presentSettings )
                     }
                     .padding(0)
                     
@@ -127,7 +127,7 @@ struct PortraitView : View {
                     Spacer().frame( height: 3)
 
                     // Keypads
-                    KeypadGroup( model: model )
+                    KeypadGroup()
                     Spacer()
                 }
                 .padding(.horizontal, 30)
@@ -137,7 +137,7 @@ struct PortraitView : View {
             .ignoresSafeArea(.keyboard)
         }
         .sheet( isPresented: $presentSettings ) {
-            ControlView( model: model )
+            ControlView()
                 .presentationDetents( [.fraction(0.7), .fraction(1.0)] )
         }
     }
@@ -199,12 +199,13 @@ struct PortraitBackground: View {
 
 struct AuxDisplayGroup: View {
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var body: some View {
+        @Bindable var model = model
         
         Group {
-            AuxiliaryDisplayView( model: model, auxView: $model.aux.activeView )
+            AuxiliaryDisplayView( auxView: $model.aux.activeView )
             
             DotIndicatorView( currentView: $model.aux.activeView )
                 .padding( .top, 5 )
@@ -216,7 +217,7 @@ struct AuxDisplayGroup: View {
 
 struct TitleBar: View {
     
-    var model: CalculatorModel
+    @Environment(CalculatorModel.self) private var model
 
     @Binding var presentSettings: Bool
 
@@ -243,8 +244,8 @@ struct TitleBar: View {
 
 struct KeypadGroup: View {
     
-    var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var body: some View {
         
         Group {

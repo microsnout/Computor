@@ -23,8 +23,8 @@ struct PlotPattern {
 
 struct AuxPlotPatternView : View {
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     static var plotPatternTable: [PlotPattern] = [
         
         PlotPattern(.vector2D,
@@ -74,15 +74,15 @@ struct AuxPlotPatternView : View {
         switch plotType {
             
         case .vector2D:
-            PlotVectorView( model: model, tv: model.state.Xtv )
+            PlotVectorView( tv: model.state.Xtv )
                 .id( PlotType.vector2D )
             
         case .pointArray:
-            PlotPointsView( model: model, tv: model.state.Xtv )
+            PlotPointsView( tv: model.state.Xtv )
                 .id( PlotType.pointArray )
 
         case .multiPoint:
-            PlotMultiPointView( model: model, tvX: model.state.Xtv, tvY: model.state.Ytv )
+            PlotMultiPointView( tvX: model.state.Xtv, tvY: model.state.Ytv )
                 .id( PlotType.multiPoint )
             
         case .none:
@@ -105,7 +105,7 @@ struct AuxPlotPatternView : View {
 
 
 struct AuxPlotView: View {
-    @State var model: CalculatorModel
+    @Environment(CalculatorModel.self) private var model
     
     var body: some View {
         
@@ -121,7 +121,7 @@ struct AuxPlotView: View {
                            let yMem = model.getMemory(yTag) {
                             
                             // Two tags provided, plot yTag vs xTag
-                            PlotMultiPointView( model: model, tvX: xMem.tv, tvY: yMem.tv )
+                            PlotMultiPointView( tvX: xMem.tv, tvY: yMem.tv )
                         }
 
                     }
@@ -134,11 +134,11 @@ struct AuxPlotView: View {
                             if xyMem.tv.isSimple {
                                 
                                 // Memory contains a single point or complex value
-                                PlotVectorView( model: model, tv: xyMem.tv )
+                                PlotVectorView( tv: xyMem.tv )
                             }
                             else {
                                 // Memory contains an array of points
-                                PlotPointsView( model: model, tv: xyMem.tv )
+                                PlotPointsView( tv: xyMem.tv )
                             }
                             
                         }
@@ -149,7 +149,7 @@ struct AuxPlotView: View {
             else {
                 // No plot selected, display list
                 // List of all available plots
-                AuxPlotListView(model: model)
+                AuxPlotListView()
                     .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
             }
         }
@@ -162,7 +162,7 @@ struct AuxPlotView: View {
 
 
 struct AuxPlotListView : View {
-    @State var model: CalculatorModel
+    @Environment(CalculatorModel.self) private var model
 
     @State private var deleteDialog = false
     
@@ -295,7 +295,7 @@ struct AuxPlotListView : View {
         .sheet( isPresented: $plotEditSheet) {
             
             // Edit Plot 
-            PlotEditSheet( model: model ) {  yTag, xTag, caption in
+            PlotEditSheet() {  yTag, xTag, caption in
                 
                 if yTag != SymbolTag.Null {
                     
@@ -326,8 +326,8 @@ struct PlotEditSheet: View {
     
     @State var caption: String = ""
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var pcc: PlotSheetContinuationClosure
     
     @State var dropCode: Int = 0

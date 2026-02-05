@@ -522,7 +522,7 @@ struct MemorySelectPopup: View, KeyPressHandler {
         // Edit Memory
         .sheet( isPresented: $memorySheet) {
             
-            MemoryEditSheet( model: model ) {  newTag, newtxt in
+            MemoryEditSheet() {  newTag, newtxt in
                 
                 if newTag != SymbolTag.Null {
                     let _ = model.newGlobalMemory( newTag, caption: newtxt.isEmpty ? nil : newtxt )

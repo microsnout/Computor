@@ -33,8 +33,8 @@ struct SectionHeaderText: View {
 
 
 struct SettingsView: View {
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     @AppStorage(.settingsDarkModeKey)
     private var darkMode = false
     

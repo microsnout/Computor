@@ -126,8 +126,8 @@ extension GraphicsContext {
 
 struct PlotVectorView : View {
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var tv: TaggedValue
     
     

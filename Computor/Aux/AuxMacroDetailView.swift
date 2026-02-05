@@ -9,7 +9,7 @@ import SwiftUI
 
 struct MacroDetailView: View {
     
-    @State var model: CalculatorModel
+    @Environment(CalculatorModel.self) private var model
 
     @Bindable var mr: MacroRec
     
@@ -72,12 +72,12 @@ struct MacroDetailView: View {
             HStack( spacing: 0 ) {
                 
                 // List of macro ops with line numbers
-                MacroCodeListing( mr: mr, model: model )
+                MacroCodeListing( mr: mr )
                 
                 Divider()
                 
                 // Right panel fields
-                MacroDetailRightPanel( mr: mr, model: model, refreshView: $refreshView )
+                MacroDetailRightPanel( mr: mr, refreshView: $refreshView )
             }
         }
         .padding( [.bottom, .leading, .trailing], 5 )
@@ -85,7 +85,7 @@ struct MacroDetailView: View {
         // Macro Edit Sheet
         .sheet(isPresented: $editSheet) {
             
-            MacroEditSheet( mr: mr, caption: mr.caption ?? "", model: model ) {
+            MacroEditSheet( mr: mr, caption: mr.caption ?? "" ) {
                 
                 refreshView.toggle()
             }
@@ -101,8 +101,8 @@ struct MacroCodeListing: View {
     
     @Bindable var mr: MacroRec
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     func getIndentList( _ opList: MacroOpSeq ) -> [Int] {
         
         var indent = 0
@@ -242,8 +242,8 @@ struct MacroDetailRightPanel: View {
     
     @Bindable var mr: MacroRec
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     @State private var symbolSheet = false
     
     @State private var confirmRec = false

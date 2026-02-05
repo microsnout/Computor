@@ -9,9 +9,11 @@ import SwiftUI
 
 struct LandscapeView : View {
     
-    @State var model: CalculatorModel
+    @Environment(CalculatorModel.self) private var model
 
     var body: some View {
+        @Bindable var model = model
+        
         ZStack {
             Color( Color("SafeBack") )
                 .edgesIgnoringSafeArea( .all )
@@ -29,7 +31,7 @@ struct LandscapeView : View {
             KeyStack( keyPressHandler: model ) {
                 
                 VStack( spacing: 0 ) {
-                    AuxiliaryDisplayView( model: model, auxView: $model.aux.activeView )
+                    AuxiliaryDisplayView( auxView: $model.aux.activeView )
                     
                     DotIndicatorView( currentView: $model.aux.activeView )
                         .padding( .top, 4 )

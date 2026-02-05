@@ -10,10 +10,10 @@ import SwiftUI
 
 struct ModuleView: View {
     
-   @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss) private var dismiss
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     // Open macro module edit sheet for adding or creating new modules
     @State private var addItem:    Bool = false
     @State private var editItem:   ModuleRec? = nil

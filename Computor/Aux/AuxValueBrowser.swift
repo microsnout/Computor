@@ -140,8 +140,8 @@ struct AuxMatrixView: View {
 
 struct AuxRegisterView: View {
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     @Binding var valueIndex: Int
     
     @State private var position: Int? = nil

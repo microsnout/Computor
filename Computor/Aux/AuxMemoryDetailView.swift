@@ -8,8 +8,8 @@ import SwiftUI
 
 
 struct MemoryDetailView: View {
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     @Binding var memRec: MemoryRec?
     
     @State private var renameSheet = false
@@ -144,7 +144,7 @@ struct MemoryDetailView: View {
             // Edit Memory
             .sheet( isPresented: $renameSheet) {
                 
-                MemoryEditSheet( mTag: mr.symTag, caption: mr.caption ?? "", model: model ) { newTag, newtxt in
+                MemoryEditSheet( mTag: mr.symTag, caption: mr.caption ?? "" ) { newTag, newtxt in
                     
                     model.changeMemorySymbol( from: mr.symTag, to: newTag)
                     model.setMemoryCaption( of: newTag, to: newtxt.isEmpty ? nil : newtxt )

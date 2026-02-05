@@ -8,8 +8,8 @@ import SwiftUI
 
 
 struct AuxMacroView: View {
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var body: some View {
         
         // if we are recording OR there is a selected symbol, we are in detail view
@@ -18,12 +18,12 @@ struct AuxMacroView: View {
             if let mr = model.aux.macroRec {
                 
                 // Detailed view of selected macro
-                MacroDetailView( model: model, mr: mr )
+                MacroDetailView( mr: mr )
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
             }
             else {
                 // List of all available macros
-                MacroListView(model: model)
+                MacroListView()
                     .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
             }
         }
@@ -36,8 +36,8 @@ struct AuxMacroView: View {
 
 
 struct MacroListView: View {
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     @State private var deleteDialog = false
     
     @State private var dialogRec: MacroRec? = nil
@@ -163,7 +163,7 @@ struct MacroListView: View {
         .sheet( isPresented: $modSelSheet ) {
             
             // Choose a Module to display in Aux
-            ModuleSelectSheet( model: model )
+            ModuleSelectSheet()
         }
     }
 }
@@ -175,8 +175,8 @@ struct ModuleSelectSheet: View {
     
     @Environment(\.dismiss) var dismiss
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var body: some View {
         
         VStack( alignment: .leading ) {

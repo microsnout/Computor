@@ -17,8 +17,8 @@ struct MemoryEditSheet: View {
     @State var mTag: SymbolTag = SymbolTag.Null
     @State var caption: String = ""
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var scc: MemorySheetContinuationClosure
     
     @State private var symName: String = ""

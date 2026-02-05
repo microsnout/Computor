@@ -35,27 +35,29 @@ struct AuxiliaryDisplayView: View {
     /// Auxiliary Display - above the primary display
     ///  Horizontal scroll view of 4 panes: memorys, macros, registers and plots
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     @Binding var auxView: AuxDispView
     
     @State private var scrollPos: AuxDispView? = AuxDispView.memoryView
     
     var body: some View {
+        @Bindable var model = model
+        
         ScrollView(.horizontal) {
             
             LazyHStack {
                 Group {
-                    AuxMemoryView( model: model )
+                    AuxMemoryView()
                         .id( AuxDispView.memoryView )
                     
-                    AuxMacroView( model: model )
+                    AuxMacroView()
                         .id( AuxDispView.macroView )
                     
-                    AuxRegisterView( model: model, valueIndex: $model.aux.valueIndex )
+                    AuxRegisterView( valueIndex: $model.aux.valueIndex )
                         .id( AuxDispView.registerView )
                     
-                    AuxPlotView( model: model )
+                    AuxPlotView()
                         .id( AuxDispView.plotView )
                 }
                 .frame( maxHeight: .infinity)

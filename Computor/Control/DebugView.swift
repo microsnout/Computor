@@ -34,8 +34,8 @@ struct DebugButton: View {
 
 struct DebugView: View {
     
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var body: some View {
         
         NavigationStack {

@@ -21,7 +21,7 @@ struct TypedRegister: View {
 
 
 struct StatusView: View {
-    @State var model: CalculatorModel
+    @Environment(CalculatorModel.self) private var model
 
     var body: some View {
         
@@ -63,7 +63,7 @@ struct DisplayView: View {
             
             VStack( alignment: .leading, spacing: 4) {
                 // Status line above register displays
-                StatusView( model: model )
+                StatusView()
                 
                 ForEach (0 ..< model.displayRows, id: \.self) { index in
                     TypedRegister( text: model.renderRow(index: index), size: priDispTextSize )
@@ -80,24 +80,3 @@ struct DisplayView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
 }
-
-
-//struct DisplayView_Previews: PreviewProvider {
-//    
-//    static var previews: some View {
-//        @State var model = CalculatorModel()
-//        
-//        ZStack {
-//            Rectangle()
-//                .fill(Color("Background"))
-//                .edgesIgnoringSafeArea( .all )
-//            
-//            VStack {
-//                DisplayView( model: model )
-//                    .preferredColorScheme(.light)
-//            }
-//            .padding(.horizontal, 30)
-//            .padding(.vertical, 5)
-//        }
-//    }
-//}

@@ -8,20 +8,21 @@ import SwiftUI
 
 
 struct AuxMemoryView: View {
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     var body: some View {
+        @Bindable var model = model
         
         Group {
             if model.aux.memRec == nil {
                 
                 // List of all available macros
-                MemoryListView(model: model)
+                MemoryListView()
                     .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
             }
             else {
                 // Detailed view of selected macro
-                MemoryDetailView( model: model, memRec: $model.aux.memRec )
+                MemoryDetailView( memRec: $model.aux.memRec )
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
             }
         }
@@ -34,8 +35,8 @@ struct AuxMemoryView: View {
 
 
 struct MemoryListView: View {
-    @State var model: CalculatorModel
-    
+    @Environment(CalculatorModel.self) private var model
+
     @State private var memorySheet: Bool = false
 
     var body: some View {
@@ -154,7 +155,7 @@ struct MemoryListView: View {
         .sheet( isPresented: $memorySheet) {
             
             // Edit Memory
-            MemoryEditSheet( model: model ) {  newTag, newtxt in
+            MemoryEditSheet() {  newTag, newtxt in
                 
                 if newTag != SymbolTag.Null {
                     let _ = model.newGlobalMemory( newTag, caption: newtxt.isEmpty ? nil : newtxt )

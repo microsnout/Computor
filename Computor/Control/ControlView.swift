@@ -9,19 +9,20 @@ import SwiftUI
 
 struct ControlView: View {
     
-    @State var model: CalculatorModel
+    @Environment(CalculatorModel.self) private var model
 
     var body: some View {
+        @Bindable var model = model
         
         TabView {
             
             Group {
-                ModuleView( model: model, list: $model.db.modTable.objTable )
+                ModuleView( list: $model.db.modTable.objTable )
                     .tabItem {
                         Label( "Modules", systemImage: Const.Icon.cntlModules )
                     }
                 
-                SettingsView( model: model )
+                SettingsView()
                     .tabItem {
                         Label( "Settings", systemImage: Const.Icon.cntlSettings )
                     }
@@ -32,7 +33,7 @@ struct ControlView: View {
                     }
                 
 #if DEBUG
-                DebugView( model: model )
+                DebugView()
                     .tabItem {
                         Label( "Debug", systemImage: Const.Icon.cntlDebug )
                     }
