@@ -290,7 +290,7 @@ struct SubPopMenu: View {
             
             Rectangle()
                 .frame( width: w + keyInset, height: popH)
-                .foregroundColor( Color(keySpec.keyColor))
+                .foregroundColor( Color("PopBack"))
                 .cornerRadius(keySpec.radius*2)
                 .background {
                     RoundedRectangle(cornerRadius: keySpec.radius*2)
