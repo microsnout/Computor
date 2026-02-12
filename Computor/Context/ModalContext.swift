@@ -40,38 +40,18 @@ class ModalContext : EventContext {
         return KeyPressResult.null
     }
     
+    
     func runMacro( model: CalculatorModel ) -> KeyPressResult {
+        
+        /// ** Run Macro **
+        /// Run the recorded modal macro macroFn {...}
         
         logM.debug( "Run Macro: \(String( describing: self.macroFn ))")
         
-//        model.pauseUndoStack()
-//        
-//        let (result, _) = model.playMacroSeq( macroFn, in: model.currentMEC?.module ?? model.activeModule )
-//        
-//        model.resumeUndoStack()
-//        
-//        return result
-        
-        // Push a new local variable store
-        model.pushLocalVariableFrame()
-        
-        for op in macroFn {
-            if op.execute( model ) == KeyPressResult.stateError {
-                
-                logM.debug( "Run Macro: ERROR")
-                
-                // Pop the local variable storage, restoring prev
-                model.popLocalVariableFrame()
-                
-                return KeyPressResult.stateError
-            }
-        }
-        
-        // Pop the local variable storage, restoring prev
-        model.popLocalVariableFrame()
-
-        return KeyPressResult.stateChange
+        let (result, _) = model.playMacroSeq( macroFn, in: model.currentMEC?.module ?? model.activeModule )
+        return result
     }
+    
     
     func executeFn( _ event: KeyEvent ) -> KeyPressResult {
         guard let model = self.model else { return KeyPressResult.null }
@@ -90,72 +70,37 @@ class ModalContext : EventContext {
         }
     }
     
-    override func event( _ event: KeyEvent ) -> KeyPressResult {
+    
+    func normalEvent( _ event: KeyEvent ) -> KeyPressResult {
+        
+        /// ** Normal Event **
+        ///
         
         guard let model = self.model else { return KeyPressResult.null }
-        
-#if DEBUG
-        print( "ModalContext event: \(event.keyCode)")
-#endif
-        
+
         switch event.kc {
             
         case .openBrace:
-            // Start recording, don't record the open brace at top level
-            if withinRecContext {
+            // Recording block {..} from normal context
+            
+            let mark = model.getSequenceMark()
+            
+            model.pushContext( BlockRecord(), lastEvent: event ) { endEvent in
                 
-                // Record the open brace of the block
-                model.recordKeyEvent(event)
-                
-                // Save start index to recording for extracting block {..}
-                let from = model.markMacroIndex()
-                
-                let mark = model.getSequenceMark()
-                
-                model.pushContext( BlockRecord(), lastEvent: event ) { endEvent in
-                    
-                    if endEvent.kc == .backUndo {
-                        // We have backspaced the open brace, cancelling the block
-                        // Stay in this context and wait for another function
-                    }
-                    else {
-                        // There must be an active macro rec if withinRecContext is true
-                        guard let mr = model.aux.macroRec else { assert(false) }
-                        
-                        // Before recording closing brace, extract the macro
-                        // self.macroFn = MacroOpSeq( [any MacroOp](mr.opSeq[from...]) )
-                        
-                        self.macroFn = model.getModalSequence( from: mark )
-                        
-                        print( "MODAL CAPTURE: \(String( describing: self.macroFn))  from:\(mark.index)" )
-                        
-                        // Now record the closing brace of the block
-                        model.recordKeyEvent( endEvent )
-                        
-                        // Queue a .macro event to execute it
-                        model.queueEvent( KeyEvent(.macro) )
-                    }
+                if endEvent.kc == .backUndo {
+                    // We have backspaced the open brace, cancelling the block
+                    // Stay in this context and wait for another function
                 }
-                return KeyPressResult.recordOnly
-            }
-            else {
-                // Recording block {..} from normal context
-                
-                let mark = model.getSequenceMark( offset: +1 )
-
-                model.pushContext( BlockPlayback(), lastEvent: event ) { _ in
+                else {
+                    self.macroFn = model.getModalSequence( from: mark )
                     
-                    // Capture the block macro
-                    let endMark = model.getSequenceMark()
-                    self.macroFn = model.getModalSequence( from: mark, to: endMark )
-                    
-                    print( "MODAL CAPTURE: \(String( describing: self.macroFn))  from:\(mark.index) to:\(endMark.index)" )
+                    print( "MODAL CAPTURE: \(String( describing: self.macroFn))  from:\(mark.index)" )
                     
                     // Queue a .macro event to execute it
                     model.queueEvent( KeyEvent(.macro) )
                 }
-                return KeyPressResult.stateChange
             }
+            return KeyPressResult.modalFunction
             
         case .backUndo:
             // Disable braces
@@ -165,69 +110,180 @@ class ModalContext : EventContext {
             model.popContext( event )
             
             model.popState()
-            
             return KeyPressResult.stateUndo
             
         case .xy, .yz, .xz:
-            model.pauseUndoStack()
-            model.pauseRecording()
+            // Allow re-arranging registers before modal execution
+            return  model.execute( event )
+            
+        default:
+            // Disable braces
+            model.kstate.func2R = psFunctions2R
+            
+            // Restore the Normal context before executing the function
+            model.popContext( event )
+            
+            // Save the calc state in case modalExecute returns error
+            model.pushState()
             
             // ModalExecute runs with Undo stack paused
-            let result =  model.execute( event )
+            model.pauseUndoStack()
+            let result =  modalExecute( event )
+            model.resumeUndoStack()
+
+            if result == .stateError {
+                model.popState()
+            }
+            
+            model.autoswitchFixSci()
+            return result
+        }
+    }
+    
+    
+    func playbackEvent( _ event: KeyEvent ) -> KeyPressResult {
+        
+        /// ** Playback Event **
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        switch event.kc {
+            
+        case .openBrace:
+            // Recording block {..} from normal context
+            
+            // Skip the openning brace
+            let mark = model.getSequenceMark( offset: +1 )
+            
+            model.pushContext( BlockPlayback(), lastEvent: event ) { endEvent in
+                
+                let endMark = model.getSequenceMark()
+                self.macroFn = model.getModalSequence( from: mark, to: endMark )
+
+                print( "MODAL PLAYBACK: \(String( describing: self.macroFn))  from:\(mark.index) to:\(endMark.index)" )
+
+                // Queue a .macro event to execute it
+                model.queueEvent( KeyEvent(.macro) )
+            }
+            return KeyPressResult.stateChange
+            
+        default:
+            // Restore the Normal context before executing the function
+            model.popContext( event )
+            
+            // Save the calc state in case modalExecute returns error
+            model.pushState()
+            
+            // ModalExecute runs with Undo stack paused
+            model.pauseUndoStack()
+            let result =  modalExecute( event )
+            model.resumeUndoStack()
             
             if result == .stateError {
                 model.popState()
             }
             
-            model.resumeRecording()
-            model.resumeUndoStack()
+            model.autoswitchFixSci()
             return result
+        }
+    }
+    
+    
+    func recordingEvent( _ event: KeyEvent ) -> KeyPressResult {
+        
+        /// ** Recording Event **
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        switch event.kc {
             
+        case .openBrace:
+            // Record the open brace of the block
+            model.recordKeyEvent(event)
+            
+            // Get mark that does not include the open brace
+            let mark = model.getSequenceMark()
+            
+            model.pushContext( BlockRecord(), lastEvent: event ) { endEvent in
+                
+                if endEvent.kc == .backUndo {
+                    // We have backspaced the open brace, cancelling the block
+                    // Stay in this context and wait for another function
+                }
+                else {
+                    // Record the close brace of the block
+                    model.recordKeyEvent(endEvent)
+
+                    self.macroFn = model.getModalSequence( from: mark )
+                    
+                    print( "MODAL RECORD: \(String( describing: self.macroFn))  from:\(mark.index)" )
+                    // Queue a .macro event to execute it
+                    model.queueEvent( KeyEvent(.macro) )
+                }
+            }
+            return KeyPressResult.modalFunction
+            
+        case .backUndo:
+            // Disable braces
+            model.kstate.func2R = psFunctions2R
+            
+            // Restore the Normal context
+            model.popContext( event )
+            
+            model.popState()
+            return KeyPressResult.stateUndo
             
         default:
             // Disable braces
             model.kstate.func2R = psFunctions2R
             
             // Check for single key function (not a block) within a recording context
-            if event.kc != .macro && model.previousContext is RecordingContext {
-                
-                // We are recording so the macro rec must exist
-                guard let mr = model.aux.macroRec else { assert(false) }
+            if event.kc != .macro {
                 
                 // Save rollback point in case the single key func is backspaced
-                model.saveRollback( to: mr.opSeq.count )
+                markRollbackPoint(to: self)
                 
                 // Record the key
                 model.recordKeyEvent( event )
             }
-            
-            // Restore either the Normal context before executing the function
+
+            // Restore the Normal context before executing the function
             model.popContext( event )
             
             // Save the calc state in case modalExecute returns error
             model.pushState()
             
             model.pauseUndoStack()
-            model.pauseRecording()
-            
-            // Push a new local variable store
-            model.pushLocalVariableFrame()
-
-            // ModalExecute runs with Undo stack paused
             let result =  modalExecute( event )
-            
-            // Pop the local variable storage, restoring prev
-            model.popLocalVariableFrame()
+            model.resumeUndoStack()
 
             if result == .stateError {
                 model.popState()
             }
             
-            model.resumeRecording()
-            model.resumeUndoStack()
             model.autoswitchFixSci()
             return result
         }
+    }
+
+    
+    override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+#if DEBUG
+        print( "ModalContext event: \(event.keyCode)")
+#endif
+        
+        switch self.rootClass {
+        case .Normal:
+            return normalEvent(event)
+            
+        case .Playback:
+            return playbackEvent(event)
+            
+        case .Recording:
+            return recordingEvent(event)
+        }
+        
     }
     
     override func onModelSet() {

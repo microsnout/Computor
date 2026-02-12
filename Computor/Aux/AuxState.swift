@@ -59,8 +59,6 @@ struct AuxState {
     
     // View refresh toggle value
     var refresh: Bool = false
-    
-    static var saveTag: SymbolTag = SymbolTag.Null
 }
 
 
@@ -139,7 +137,7 @@ extension AuxState {
     }
     
 
-    mutating func stopMacroRecorder() {
+    mutating func auxRecorderStop() {
         
         /// ** Stop Macro Recorder **
         
@@ -154,7 +152,7 @@ extension AuxState {
         /// ** Deactivate Macro Recorder **
         /// This will retrun Aux display to Macro List
 
-        stopMacroRecorder()
+        auxRecorderStop()
         
         macroRec   = nil
         recState   = .inactive
@@ -180,12 +178,11 @@ extension AuxState {
     
     // *** Matched Functions ***
 
-    mutating func record( _ mr: MacroRec, in mfr: ModuleRec ) {
+    mutating func record( _ mr: MacroRec ) {
         
         switch recState {
             
         case .inactive:
-            macroMod = mfr
             loadMacro(mr)
             activeView = .macroView
             fallthrough
@@ -208,28 +205,6 @@ extension AuxState {
     }
     
     
-    mutating func recordStop() {
-        
-        switch recState {
-            
-        case .debug:
-            stopMacroRecorder()
-            
-        case .record:
-            stopMacroRecorder()
-            
-        default:
-            // Should not happen
-            assert(false)
-            break
-        }
-        
-        // Log debug output
-        let auxTxt = getDebugText()
-        logAux.debug( "stopRecFn: \(auxTxt)" )
-    }
-    
-    
     // *** Matched Functions ***
     
     mutating func recordModalBlock() {
@@ -238,7 +213,6 @@ extension AuxState {
             
         case .inactive, .stop:
             // Create new macro rec for modal func
-            AuxState.saveTag = macroTag
             macroTag = SymbolTag.Modal
             activeView = .macroView
             SubPadSpec.disableAllFnSubmenu()
@@ -259,10 +233,9 @@ extension AuxState {
         
         switch recState {
             
-        case .recModal:
+        case .recModal, .record:
             macroMod.deleteMacro( SymbolTag.Modal )
-            macroTag = AuxState.saveTag
-            recState = .stop
+            // recState = .stop
 
         default:
             // Should not happen

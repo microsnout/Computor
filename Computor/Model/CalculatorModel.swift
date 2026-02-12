@@ -131,6 +131,9 @@ protocol StateOperatorEx {
 typealias ContextContinuationClosure = ( _ event: KeyEvent ) -> Void
 
 
+enum ContextRootClass: Int { case Normal, Playback, Recording }
+
+
 ///
 ///  Event Context
 ///
@@ -144,6 +147,8 @@ class EventContext {
             onModelSet()
         }
     }
+    
+    var rootClass: ContextRootClass { previousContext?.rootClass ?? .Normal }
     
     func onActivate( lastEvent: KeyEvent ) {
         // Override if needed
@@ -174,8 +179,18 @@ class EventContext {
         return []
     }
     
-    static var rollbackPoints: [Int : EventContext] = [:]
+    func markRollbackPoint( to ctx: EventContext ) {
+        
+        // This will walk back to the Record context if there is one which will override
+        if let ctx = previousContext {
+            ctx.markRollbackPoint( to: ctx)
+        }
+    }
     
+    func getRollbackPoint() -> SequenceMark? {
+        // Pass request back to the Record context if it exists
+        return previousContext?.getRollbackPoint() ?? nil
+    }
 }
 
 
@@ -450,28 +465,11 @@ class CalculatorModel: KeyPressHandler {
         }
     }
     
-    func saveRollback( to macroIndex: Int ) {
-        EventContext.rollbackPoints[macroIndex] = eventContext
+    
+    func rollbackContext( to ctx: EventContext ) {
         
-        logM.debug( "Save rollback to index: \(macroIndex)")
-    }
-    
-    func clearRollbacks() {
-        EventContext.rollbackPoints = [:]
-    }
-    
-    func rollback( _ ctx: EventContext ) {
-        eventContext = ctx
-        
-        logM.debug( "Rollback context to: \(String( describing: ctx.self ))")
-    }
-    
-    func getRollback( to macroIndex: Int ) -> EventContext? {
-        if let ctx = EventContext.rollbackPoints[macroIndex] {
-            EventContext.rollbackPoints[macroIndex] = nil
-            return ctx
-        }
-        return nil
+        // Restore saved context chain because of deletion while recording
+        self.eventContext = ctx
     }
     
     
@@ -490,17 +488,16 @@ class CalculatorModel: KeyPressHandler {
             else if let normal = ctx as? NormalContext {
                 
                 if normal.activeMarks == 0 {
-                    assert( aux.macroRec == nil )
                     
                     // Allocate new sequence and index starts at beginning
-                    aux.macroRec = MacroRec()
+                    aux.macroTag = SymbolTag.Modal
                     normal.activeMarks = 1
                     return SequenceMark( context: normal, index: 0 )
                 }
                 else {
                     guard let seq = aux.macroRec else {
                         assert(false)
-                        aux.macroRec = MacroRec()
+                        aux.macroTag = SymbolTag.Modal
                         normal.activeMarks = 1
                         return SequenceMark( context: normal, index: 0 )
                     }
@@ -549,6 +546,31 @@ class CalculatorModel: KeyPressHandler {
         
         assert(false)
         return [] as ArraySlice<MacroOp>
+    }
+    
+    
+    func isPlaybackContext() -> Bool {
+        
+        var ctx = eventContext
+        
+        while ctx != nil {
+            
+            if let _ = ctx as? PlaybackContext {
+                return true
+            }
+            
+            if let _ = ctx as? RecordingContext {
+                return false
+            }
+            
+            if let _ = ctx as? NormalContext {
+                return false
+            }
+            
+            ctx = ctx?.previousContext
+        }
+        
+        return false
     }
     
     // ***

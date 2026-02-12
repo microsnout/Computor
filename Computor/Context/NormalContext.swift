@@ -14,6 +14,8 @@ class NormalContext : EventContext {
     
     var activeMarks: Int = 0
     
+    override var rootClass: ContextRootClass { .Normal }
+
     override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
         
         guard let model = self.model else { return [] }

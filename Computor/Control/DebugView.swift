@@ -42,6 +42,18 @@ struct DebugView: View {
             
             VStack {
                 
+                DebugButton( label: "Print context stack") {
+                    
+                    var ctx = model.eventContext
+                    
+                    while ctx != nil {
+                        
+                        print( "    \(String( describing: ctx.self ))" )
+                        
+                        ctx = ctx!.previousContext
+                    }
+                }
+
                 DebugButton( label: "Clear Key Assignments") {
                     model.kstate.keyMap.fnRow.removeAll()
                     model.aux.macroMod.saveModule()

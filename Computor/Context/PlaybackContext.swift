@@ -15,6 +15,8 @@ class PlaybackContext : EventContext {
     
     var currentIndex: Int
     
+    override var rootClass: ContextRootClass { .Playback }
+
     
     override func event( _ event: KeyEvent ) -> KeyPressResult {
         

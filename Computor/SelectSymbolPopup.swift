@@ -144,7 +144,7 @@ struct SelectSymbolPopup<Content: View>: View {
                             Spacer()
                             
                             // BUTTON for Expanded (one per line with caption) vs Icon (4 per line) View of Symbols
-                            Button( "", systemImage: isExpanded.contains(tg.label) ? expIcon : defIcon ) {
+                            Button( "", systemImage: isExpanded.contains(tg.label) ? defIcon : expIcon ) {
                                 
                                 // Toggle Expanded state of tag group tg
                                 withAnimation {

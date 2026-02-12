@@ -30,9 +30,9 @@ class BlockRecord : EventContext {
     
     
     override func onDeactivate(lastEvent: KeyEvent) {
-        // guard let model = self.model else { assert(false); return }
+        guard let model = self.model else { assert(false); return }
         
-        // model.aux.recordModalBlockEnd()
+        model.aux.recordModalBlockEnd()
     }
     
     override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
@@ -66,8 +66,8 @@ class BlockRecord : EventContext {
             else {
                 model.kstate.func2R = psFunctions2R
                 
-                // Restore the modal context and pass the .macro event
-                model.saveRollback( to: mr.opSeq.count )
+                // Restore this block context if we delete back to this point
+                markRollbackPoint( to: self )
                 
                 // Pop back to the modal function state
                 model.popContext( event )
@@ -194,6 +194,12 @@ class BlockPlayback : EventContext {
         }
         
         return KeyPressResult.noOp
+    }
+    
+    
+    override func enterValue(_ tv: TaggedValue) {
+        // Do Nothing here - do not record the value or execute/push it
+        // We are just accumulating the block {..} for later execution
     }
 }
 

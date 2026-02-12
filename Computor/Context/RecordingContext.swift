@@ -12,14 +12,46 @@ import SwiftUI
 ///
 class RecordingContext : EventContext {
     
+    // Used if recording F1..F6
     var kcFn: KeyCode
+    
     var exeflag: Bool
+    
+    // Context chains to restore to in event of deleting a modal func or close brace
+    var rollbackPoints: [SequenceMark]
+    
     
     init( exeflag: Bool) {
         self.kcFn = KeyCode.null
         self.exeflag = exeflag
+        self.rollbackPoints = []
     }
     
+    override var rootClass: ContextRootClass { .Recording }
+    
+    override func markRollbackPoint( to ctx: EventContext ) {
+        
+        guard let model = self.model else { return }
+        
+        // Return to context ctx if we delete recording back to this index
+        self.rollbackPoints.append( SequenceMark( context: ctx, index: model.aux.macroRec?.opSeq.count ?? 0 ) )
+    }
+    
+    override func getRollbackPoint() -> SequenceMark? {
+        
+        guard let model = self.model else { return nil }
+        
+        let mrIndex = model.aux.macroRec?.opSeq.count ?? -1
+        
+        if let mark = self.rollbackPoints.first( where: { $0.index == mrIndex } ) {
+            
+            // Found a valid rollback point, remove from list and return it
+            self.rollbackPoints.removeAll(where: { $0.index == mrIndex } )
+            return mark
+        }
+        return nil
+    }
+
     override func onActivate(lastEvent: KeyEvent) {
         
         /// ** On Activate Recording Context **
@@ -39,7 +71,7 @@ class RecordingContext : EventContext {
             if let mr = model.aux.macroRec {
                 
                 // Start recording
-                model.aux.record(mr, in: model.aux.macroMod)
+                model.aux.record(mr)
             }
             else {
                 // There must be a valid macroRec when the .macroRecord event is received
@@ -127,7 +159,7 @@ class RecordingContext : EventContext {
             if mr.opSeq.isEmpty {
                 
                 // Cancel the recording
-                model.aux.recordStop()
+                model.aux.auxRecorderStop()
                 model.popContext( event )
                 return KeyPressResult.cancelRecording
             }
@@ -135,10 +167,10 @@ class RecordingContext : EventContext {
                 // First remove last key
                 model.recordKeyEvent( event )
                 
-                if let ctx = model.getRollback( to: mr.opSeq.count ) {
+                if let mark = getRollbackPoint() {
                     
                     // Rollback, put modal function context and block record back
-                    model.rollback(ctx)
+                    model.rollbackContext(to: mark.context)
                 }
                 
                 // Execute the .back command to undo the state

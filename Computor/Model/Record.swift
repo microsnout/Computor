@@ -103,7 +103,7 @@ extension CalculatorModel {
         db.addMacro( mr, to: recMod )
         
         // Start recording
-        aux.record(mr, in: recMod)
+        aux.record(mr)
     }
     
     
@@ -620,7 +620,7 @@ extension CalculatorModel {
         aux.macroMod.saveModule()
 
         // Stop recorder
-        aux.recordStop()
+        aux.auxRecorderStop()
         aux.resetMacroCursor()
         hapticFeedback.impactOccurred()
     }
