@@ -11,8 +11,6 @@ struct MacroDetailView: View {
     
     @Environment(CalculatorModel.self) private var model
 
-    @Bindable var mr: MacroRec
-    
     @State private var refreshView = false
     
     @State private var editSheet   = false
@@ -20,7 +18,9 @@ struct MacroDetailView: View {
     let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
 
     var body: some View {
-        let symTag: SymbolTag = mr.symTag
+        let mr = model.aux.macroRec
+        
+        let symTag: SymbolTag = mr?.symTag ?? SymbolTag.Null
         
         let symName  = symTag.getRichText()
         
@@ -39,7 +39,7 @@ struct MacroDetailView: View {
                     Image( systemName: Const.Icon.chevronLeft )
                         .padding( [.leading], 5 )
                         .onTapGesture {
-                            if mr.isEmpty {
+                            if mr?.isEmpty ?? false {
                                 model.db.deleteMacro( SymbolTag.Blank, from: model.aux.macroMod)
                             }
                             
@@ -72,12 +72,12 @@ struct MacroDetailView: View {
             HStack( spacing: 0 ) {
                 
                 // List of macro ops with line numbers
-                MacroCodeListing( mr: mr )
+                MacroCodeListing()
                 
                 Divider()
                 
                 // Right panel fields
-                MacroDetailRightPanel( mr: mr, refreshView: $refreshView )
+                MacroDetailRightPanel( refreshView: $refreshView )
             }
         }
         .padding( [.bottom, .leading, .trailing], 5 )
@@ -85,7 +85,7 @@ struct MacroDetailView: View {
         // Macro Edit Sheet
         .sheet(isPresented: $editSheet) {
             
-            MacroEditSheet( mr: mr, caption: mr.caption ?? "" ) {
+            MacroEditSheet( mr: mr ?? MacroRec(), caption: mr?.caption ?? "" ) {
                 
                 refreshView.toggle()
             }
@@ -98,8 +98,6 @@ struct MacroDetailView: View {
 struct MacroCodeListing: View {
     
     /// ** Macro Code Listing **
-    
-    @Bindable var mr: MacroRec
     
     @Environment(CalculatorModel.self) private var model
 
@@ -172,14 +170,16 @@ struct MacroCodeListing: View {
     
     var body: some View {
         
+        let mr = model.aux.macroRec
+        
         VStack {
             
             ScrollView {
                 ScrollViewReader { proxy in
-                    let list = mr.opSeq
+                    let list = mr?.opSeq ?? MacroOpSeq()
                     let indents = getIndentList(list)
                     let cursorStr = model.aux.errorFlag ? "ç{CursorText}\u{23f4}\u{23f4}ç{}" : model.aux.recState.isRecording ? "ç{CursorText}\u{23f4}ç{}" : "\u{23f4}"
-                    let n = mr.opSeq.count
+                    let n = mr?.opSeq.count ?? 0
                     
                     // Include blank line at end x == n in rec states Record and Debug
                     let indexList = list.indices + (Set<MacroRecState>([.debug, .record]).contains(model.aux.recState) ? [n] : [])
@@ -239,8 +239,6 @@ struct MacroDetailRightPanel: View {
     
     @AppStorage(.settingsRecordExecute)
     private var recordExecute = true
-    
-    @Bindable var mr: MacroRec
     
     @Environment(CalculatorModel.self) private var model
 
@@ -303,7 +301,9 @@ struct MacroDetailRightPanel: View {
 
 
     var body: some View {
-        let symTag: SymbolTag = mr.symTag
+        let mr = model.aux.macroRec
+        
+        let symTag: SymbolTag = mr?.symTag ?? SymbolTag.Null
         
         let symName  = symTag.getRichText()
         
@@ -312,7 +312,7 @@ struct MacroDetailRightPanel: View {
         let fnText = kcFn == nil ? "" : "F\(kcFn!.rawValue % 10)"
 
         HStack {
-            let caption = mr.caption ?? "ç{GrayText}-caption-"
+            let caption = mr?.caption ?? "ç{GrayText}-caption-"
             
             let modSymStr = model.aux.macroMod.name
             
