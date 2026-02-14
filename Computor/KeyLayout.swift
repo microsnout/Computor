@@ -438,8 +438,8 @@ func initKeyLayout() {
     SubPadSpec.define( .zRe,
                        keySpec: ksSubFn,
                        keys: [
-                        Key(.zRe,  "ƒ{0.9}Re(x)",       caption: "Real(x)"),
-                        Key(.zIm,  "ƒ{0.9}Im(x)",       caption: "Imaginary(x)"),
+                        Key(.zRe,  "ƒ{0.8}Re(x)",       caption: "Real(x)"),
+                        Key(.zIm,  "ƒ{0.8}Im(x)",       caption: "Imaginary(x)"),
                         Key(.abs,  "|x|",               caption: "Abs(x)"),
                         Key(.zArg, "ƒ{0.9}Arg(x)",      caption: "Argument(x)"),
                         Key(.zConj,"ƒ{0.9}Conj(x)",   caption: "Conjugate(x)"),
