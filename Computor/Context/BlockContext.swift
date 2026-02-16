@@ -13,34 +13,50 @@ import SwiftUI
 ///
 class BlockRecord : EventContext {
     
-    var macroIndex  = 0
+    var startIndex  = 0
     
     var nestedBlocks = 0
     var lastOpModal = false
-    
+
+    // **************************************************************** //
+
+
     override func onActivate(lastEvent: KeyEvent) {
         guard let model = self.model else { assert(false); return }
         
         // Start recording
         model.aux.recordModalBlock()
         
-        // Enable the close brace key on keyboard
+        // Enable the Close brace to teminate this block
         model.kstate.func2R = psFunctions2Rc
+        
+        // Remember the start of this block {...
+        self.startIndex = model.getMacroIndex()
     }
-    
+
+    // **************************************************************** //
+
     
     override func onDeactivate(lastEvent: KeyEvent) {
         guard let model = self.model else { assert(false); return }
         
         model.aux.recordModalBlockEnd()
     }
-    
+
+    // **************************************************************** //
+
+
     override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
         // Disable Rec and Edit
         return [.clrFn, .recFn, .stopFn, .editFn]
     }
+
+    // **************************************************************** //
+
     
     override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        /// ** Event override **
         
         guard let model = self.model else { return KeyPressResult.null }
         
@@ -48,10 +64,6 @@ class BlockRecord : EventContext {
             assert(false)
             return KeyPressResult.null
         }
-        
-#if DEBUG
-        print( "BlockRecord event: \(event.keyCode)")
-#endif
         
         switch event.kc {
             
@@ -61,9 +73,17 @@ class BlockRecord : EventContext {
         case .closeBrace:
             // Disable braces
             if nestedBlocks > 0 {
+                
+                // One less open block
                 nestedBlocks -= 1
+                
+                // Record the nested close brace
+                model.recordKeyEvent(event)
+
+                // Keep Close brace enabled
             }
             else {
+                // Disable Open and Close brace
                 model.kstate.func2R = psFunctions2R
                 
                 // Restore this block context if we delete back to this point
@@ -77,6 +97,8 @@ class BlockRecord : EventContext {
             
         case .backUndo:
             if mr.opSeq.isEmpty {
+                
+                // Disable Open and Close brace
                 model.kstate.func2R = psFunctions2R
                 
                 // Cancel both BlockRecord context and the ModalContext that spawned it
@@ -85,7 +107,7 @@ class BlockRecord : EventContext {
                 return KeyPressResult.stateUndo
             }
             else {
-                if macroIndex == model.markMacroIndex() {
+                if startIndex == model.getMacroIndex() {
                     
                     // Remove last key event from recording
                     model.recordKeyEvent( event )
@@ -97,6 +119,33 @@ class BlockRecord : EventContext {
                 }
                 else {
                     // Remove last key event from recording
+                    if let lastOp = model.getLastOp() {
+                        
+                        if let lastKey = lastOp as? MacroEvent {
+                            
+                            switch lastKey.event.kc {
+                                
+                            case .closeBrace:
+                                nestedBlocks += 1
+                                lastOpModal = false
+                                model.kstate.func2R = psFunctions2Rc
+
+                            case .openBrace:
+                                nestedBlocks -= 1
+                                lastOpModal = true
+                                model.kstate.func2R = psFunctions2Ro
+
+                            case let kc where KeyCode.modalOpSet.contains(kc):
+                                lastOpModal = false
+                                model.kstate.func2R = psFunctions2Rc
+
+                            default:
+                                break
+                            }
+                        }
+                    }
+                    
+                    // Delete last op
                     model.recordKeyEvent( event )
                     
                     return KeyPressResult.stateUndo
@@ -124,25 +173,40 @@ class BlockRecord : EventContext {
             
             if KeyCode.modalOpSet.contains(event.kc) {
                 
+                // We have recorded a modal key like mapX
                 lastOpModal = true
                 
                 // Enable Open Brace
                 model.kstate.func2R = psFunctions2Ro
+                
+                return KeyPressResult.recordOnly
             }
-            else if lastOpModal {
+            
+            if lastOpModal && event.kc == .openBrace {
                 
-                if event.kc == .openBrace {
-                    
-                    nestedBlocks += 1
-                }
+                // Found a nested modal block
+                nestedBlocks += 1
                 
+                // Enable Close brace
+                model.kstate.func2R = psFunctions2Rc
+                
+                return KeyPressResult.recordOnly
+            }
+            
+            if lastOpModal {
+                // Modal func is a single key not a block
+                
+                // Enable Close brace
                 model.kstate.func2R = psFunctions2Rc
             }
             
+            lastOpModal = false
             return KeyPressResult.recordOnly
         }
     }
-    
+
+    // **************************************************************** //
+
     
     override func enterValue(_ tv: TaggedValue) {
         

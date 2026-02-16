@@ -201,8 +201,7 @@ extension DataObjectRec {
         if let dof = self.objFile {
             
             // Object file already loaded
-            // print( "loadObject: \(dof.name) already loaded" )
-            log("loadObject already loaded")
+            // log("loadObject already loaded")
             return dof
         }
         

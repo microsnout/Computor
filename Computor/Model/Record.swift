@@ -359,7 +359,7 @@ extension CalculatorModel {
     }
     
     
-    func markMacroIndex() -> Int {
+    func getMacroIndex() -> Int {
         
         /// ** Mark Macro Index **
         
@@ -370,6 +370,21 @@ extension CalculatorModel {
         
         // The index of the next element to be added will be...
         return mr.opSeq.count
+    }
+    
+    
+    func getLastOp() -> MacroOp? {
+        
+        if let mr = aux.macroRec {
+            
+            if mr.opSeq.count > 0 {
+                
+                // Return the last op in the sequence
+                return mr.opSeq[mr.opSeq.count-1]
+            }
+        }
+        
+        return nil
     }
     
     
@@ -388,16 +403,10 @@ extension CalculatorModel {
             return
         }
         
-        // TODO: Delete this var soon...
         guard let mr = aux.macroRec else {
+            
             // No macro record despite isRec is true
-            assert(false)
-            return
-        }
-        
-        guard let mrSeq = aux.macroRec else {
-            // No way to record key event
-            assert(false)
+            // assert(false)
             return
         }
         
@@ -496,7 +505,7 @@ extension CalculatorModel {
         
         // Log debug output
         let auxTxt = aux.getDebugText()
-        logAux.debug( "recordKeyFn: \(auxTxt)" )
+        logAux.debug( "recordKeyEvent: \(auxTxt)" )
     }
     
     

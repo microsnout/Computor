@@ -533,11 +533,15 @@ class CalculatorModel: KeyPressHandler {
             return aux.macroRec?.opSeq[mark.index...] ?? [] as ArraySlice<MacroOp>
         }
         else if let normal = mark.context as? NormalContext {
+            
+            // One less active mark
             normal.activeMarks -= 1
             
             let result = aux.macroRec?.opSeq[mark.index...] ?? [] as ArraySlice<MacroOp>
             
             if normal.activeMarks == 0 {
+                
+                // Macro record no longer needed
                 aux.macroRec = nil
             }
             

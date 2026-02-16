@@ -28,7 +28,9 @@ class RecordingContext : EventContext {
     }
     
     override var rootClass: ContextRootClass { .Recording }
-    
+
+    // **************************************************************** //
+
     override func markRollbackPoint( to ctx: EventContext ) {
         
         guard let model = self.model else { return }
@@ -36,7 +38,10 @@ class RecordingContext : EventContext {
         // Return to context ctx if we delete recording back to this index
         self.rollbackPoints.append( SequenceMark( context: ctx, index: model.aux.macroRec?.opSeq.count ?? 0 ) )
     }
-    
+
+    // **************************************************************** //
+
+
     override func getRollbackPoint() -> SequenceMark? {
         
         guard let model = self.model else { return nil }
@@ -51,6 +56,9 @@ class RecordingContext : EventContext {
         }
         return nil
     }
+
+    // **************************************************************** //
+
 
     override func onActivate(lastEvent: KeyEvent) {
         
@@ -85,7 +93,9 @@ class RecordingContext : EventContext {
         // Push a new local variable store
         model.pushLocalVariableFrame()
     }
-    
+
+    // **************************************************************** //
+
     
     override func onDeactivate(lastEvent: KeyEvent) {
         
@@ -99,15 +109,21 @@ class RecordingContext : EventContext {
         // Remove local variable frame that was added by onActivate
         model.popLocalVariableFrame()
     }
-    
+
+    // **************************************************************** //
+
     
     override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
         // Disable Rec and Edit
         return [.recFn, .editFn]
     }
-    
+
+    // **************************************************************** //
+
 
     override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        /// ** Event override **
         
         guard let model = self.model else { return KeyPressResult.null }
         

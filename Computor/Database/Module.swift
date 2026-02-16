@@ -411,8 +411,11 @@ extension ModuleRec {
         
         if sTag == SymbolTag.Modal {
             // Create macro record for modal function recording
-            let mr = MacroRec( tag: sTag, caption: "Modal" )
-            addMacro(mr)
+            let mr = MacroRec( tag: sTag, caption: "{..}" )
+            
+            // TODO: Do we need to do this?
+            // addMacro(mr)
+            
             return mr
         }
         

@@ -19,7 +19,10 @@ class ModalContext : EventContext {
     
     var macroFn: ArraySlice<MacroOp> = ArraySlice<MacroOp>()
     var seqMark: SequenceMark        = SequenceMark()
-    
+
+    // **************************************************************** //
+
+
     override func onActivate( lastEvent: KeyEvent) {
         if let model = self.model {
             // We could be used within a recording context or a normal context
@@ -29,17 +32,25 @@ class ModalContext : EventContext {
             model.kstate.func2R = psFunctions2Ro
         }
     }
-    
+
+    // **************************************************************** //
+
+
     override func getDisableSet( topKey: KeyCode ) -> Set<KeyCode> {
         // Disable Rec and Edit
         return [.clrFn, .recFn, .stopFn, .editFn]
     }
 
+    // **************************************************************** //
+
+
     // Key event handler for modal function
     func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
         return KeyPressResult.null
     }
-    
+
+    // **************************************************************** //
+
     
     func runMacro( model: CalculatorModel ) -> KeyPressResult {
         
@@ -51,7 +62,9 @@ class ModalContext : EventContext {
         let (result, _) = model.playMacroSeq( macroFn, in: model.currentMEC?.module ?? model.activeModule )
         return result
     }
-    
+
+    // **************************************************************** //
+
     
     func executeFn( _ event: KeyEvent ) -> KeyPressResult {
         guard let model = self.model else { return KeyPressResult.null }
@@ -69,7 +82,9 @@ class ModalContext : EventContext {
             return model.keyPress(event)
         }
     }
-    
+
+    // **************************************************************** //
+
     
     func normalEvent( _ event: KeyEvent ) -> KeyPressResult {
         
@@ -92,8 +107,14 @@ class ModalContext : EventContext {
                     // Stay in this context and wait for another function
                 }
                 else {
+                    // The block must end on a close brace
+                    assert( endEvent.kc == .closeBrace )
+                    
                     self.macroFn = model.getModalSequence( from: mark )
                     
+                    // Recorde the Close brace after we get the sequence so it is not included
+                    model.recordKeyEvent(endEvent)
+
                     print( "MODAL CAPTURE: \(String( describing: self.macroFn))  from:\(mark.index)" )
                     
                     // Queue a .macro event to execute it
@@ -139,7 +160,9 @@ class ModalContext : EventContext {
             return result
         }
     }
-    
+
+    // **************************************************************** //
+
     
     func playbackEvent( _ event: KeyEvent ) -> KeyPressResult {
         
@@ -187,7 +210,9 @@ class ModalContext : EventContext {
             return result
         }
     }
-    
+
+    // **************************************************************** //
+
     
     func recordingEvent( _ event: KeyEvent ) -> KeyPressResult {
         
@@ -266,8 +291,12 @@ class ModalContext : EventContext {
         }
     }
 
+    // **************************************************************** //
+    
     
     override func event( _ event: KeyEvent ) -> KeyPressResult {
+        
+        /// ** Event override **
         
 #if DEBUG
         print( "ModalContext event: \(event.keyCode)")

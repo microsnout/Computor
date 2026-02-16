@@ -248,14 +248,16 @@ extension AuxState {
     
     
     func getDebugText() -> String {
-        var txt = "AuxState("
+        var txt = "ActiveView:"
         txt += String( describing: activeView )
-        txt += ") state:\(recState)"
-        txt += " Detail:\(memRec.debugDescription) MacroKey:"
+        txt += " RecState:\(recState)"
+        txt += " MemRec:\(memRec.debugDescription)"
         
         if let mr = macroRec {
-            txt += String( describing: mr.symTag )
-            txt += " OpSeq:\(mr.opSeq.getDebugText()) Rec:"
+            if mr.symTag != SymbolTag.Null {
+                txt += " SymTag:\(String( describing: mr.symTag) )"
+            }
+            txt += " OpSeq:\(mr.opSeq.getDebugText())"
         }
         return txt
     }
