@@ -292,6 +292,51 @@ extension TaggedValue {
     }
     
     
+    mutating func reverseRows() {
+        
+        /// ** Reverse Rows **
+        
+        let (ss, rows, cols) = getShape()
+        
+        for r in 1 ... (rows+1)/2 {
+            
+            let r1 = storageIndex( r: r, c: 1 )
+            let r2 = storageIndex( r: rows-r+1, c: 1 )
+            
+            for x in 0 ..< cols*ss {
+                
+                // Reverse one value
+                let tmp = storage[r1+x]
+                storage[r1+x] = storage[r2+x]
+                storage[r2+x] = tmp
+            }
+        }
+    }
+    
+    
+    mutating func reverseCols() {
+        
+        /// ** Reverse Columns **
+        
+        let (ss, rows, cols) = getShape()
+  
+        for c in 1 ... (cols+1)/2 {
+            
+            for r in 1 ... rows {
+                
+                let c1 = storageIndex( r: r, c: c )
+                let c2 = storageIndex( r: r, c: cols-c+1 )
+
+                // Reverse one value
+                for s in 0 ..< ss {
+                    let tmp = storage[c1+s]
+                    storage[c1+s] = storage[c2+s]
+                    storage[c2+s] = tmp
+                }
+            }
+        }  
+    }
+
     mutating func setMatrix( _ vtp: ValueType, tag: TypeTag = tagUntyped, fmt: FormatRec = FormatRec(), rows: Int = 1, cols: Int = 1 ) {
         setShape( valueSize[vtp] ?? 1, rows: rows, cols: cols )
         self.vtp = vtp

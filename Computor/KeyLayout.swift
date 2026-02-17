@@ -17,10 +17,10 @@ let ksSoftkey = KeySpec( width: 42, height: 25,
                          keyColor: "KeyColor", textColor: "KeyText")
 
 let ksSubFn = KeySpec( width: 48, height: 30,
-                       keyColor: "SuperLightGray", textColor: "PopText")
+                       keyColor: "Background", textColor: "PopText")
 
 let ksSubpad = KeySpec( width: 42, height: 30,
-                        keyColor: "SuperLightGray", textColor: "PopText")
+                        keyColor: "Background", textColor: "PopText")
 
 let ksUnits = KeySpec( width: 60, height: 25,
                        keyColor: "KeyColor", textColor: "KeyText")
@@ -397,6 +397,8 @@ func initKeyLayout() {
     SubPadSpec.define( .matrix,
                        keySpec: ksSubFn,
                        keys: [
+                        Key(.reverseCols, "ƒ{0.8}={Rev[c]}", caption: "Reverse Columns"),
+                        Key(.reverseRows, "ƒ{0.8}={Rev[r]}", caption: "Reverse Rows"),
                         Key(.addRow, "ƒ{0.8}+Row",   caption: "Add New Row"),
                         Key(.addCol, "ƒ{0.8}+Col",   caption: "Add New Col"),
                         Key(.transpose, "={[]}^{T}", caption: "Transpose"),

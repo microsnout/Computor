@@ -63,7 +63,7 @@ enum KeyCode: Int, Codable {
     case multiValue = 290, rational, vector, polar, complex, vector3D, spherical
     
     // Matrix operations
-    case matrix = 300, range, seq, mapX, mapXY, reduce, addRow, addCol, dotProduct, crossProduct, transpose, identity
+    case matrix = 300, range, seq, mapX, mapXY, reduce, addRow, addCol, dotProduct, crossProduct, transpose, identity, reverseCols, reverseRows
     
     // Memory operations
     case noop = 320, rcl, stoX, stoY, stoZ, popX, popXY, popXYZ, mPlus, mMinus, mRename, rclMem, stoMem, noopBrace

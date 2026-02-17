@@ -509,6 +509,28 @@ extension CalculatorModel {
                 return (KeyPressResult.stateChange, s1)
             },
         ])
+
+        
+        defineOpPatterns( .reverseCols, [
+            
+            OpPattern( [.X(allTypes, .matrix)] ) { s0 in
+                
+                var s1 = s0
+                s1.Xtv.reverseCols()
+                return (KeyPressResult.stateChange, s1)
+            },
+        ])
+
+        
+        defineOpPatterns( .reverseRows, [
+            
+            OpPattern( [.X(allTypes, .matrix)] ) { s0 in
+                
+                var s1 = s0
+                s1.Xtv.reverseRows()
+                return (KeyPressResult.stateChange, s1)
+            },
+        ])
         
         
         // *** UNIT Conversions ***
