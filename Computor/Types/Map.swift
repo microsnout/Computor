@@ -1,0 +1,179 @@
+//
+//  Map.swift
+//  Computor
+//
+//  Created by Barry Hall on 2026-02-18.
+//
+import Foundation
+import OSLog
+
+
+extension CalculatorModel {
+    
+    func installMap() {
+        
+        
+        defineOpPatterns( .mapX, [
+            
+            OpPattern( [ .X(allTypes, .matrix) ], where: { s0 in s0.Xtv.rows == 1 } ) { s0 in
+                
+                // Create a Reduce function obj capturing the value list and mode reference
+                let mapFn = MapFunctionX( valueList: s0.Xtv )
+                
+                self.pushContext( mapFn, lastEvent: KeyEvent(.mapX) )
+                
+                // No new state - but don't return nil or it will flag an error
+                return (KeyPressResult.modalFunction, nil)
+            }
+        ])
+        
+        
+        defineOpPatterns( .mapXY, [
+            
+            OpPattern( [ .X(allTypes, .matrix), .Y(allTypes, .matrix) ], where: { s0 in s0.Xtv.rows == 1 && s0.Ytv.rows == 1 } ) { s0 in
+                
+                // Create a Reduce function obj capturing the value list and mode reference
+                let mapFn = MapFunctionXY( valueListX: s0.Xtv, valueListY: s0.Ytv )
+                
+                self.pushContext( mapFn, lastEvent: KeyEvent(.mapX) )
+                
+                // No new state - but don't return nil or it will flag an error
+                return (KeyPressResult.modalFunction, nil)
+            }
+        ])
+    }
+    
+}
+
+
+class MapFunctionX : ModalContext {
+    
+    let valueList:  TaggedValue
+    
+    init( valueList: TaggedValue ) {
+        self.valueList = valueList
+    }
+    
+    override var statusString: String? { "Map ƒ()" }
+    
+    override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+#if DEBUG
+        print( "MapFunction keypress: \(event.keyCode)")
+#endif
+        
+        // Start with empty output list
+        let seqCols    = valueList.cols
+        var resultList = TaggedValue()
+        
+        // Remove parameter value from stack
+        model.state.stackDrop()
+        
+        for c in 1 ... seqCols {
+            
+            if let value = valueList.getValue( c: c) {
+                
+                model.enterValue( value )
+                
+                if executeFn( event ) == .stateChange {
+                    
+                    if c == 1 {
+                        // Grab the first result to define the type tag and format for result
+                        let firstValue = model.state.Xtv
+                        let ss = firstValue.size
+                        
+                        // Establish size of result and add first value
+                        resultList = firstValue
+                        resultList.setShape(ss, cols: seqCols)
+                        resultList.setValue( firstValue, c: 1)
+                    }
+                    else {
+                        // Add next value at correct row
+                        resultList.setValue( model.state.Xtv, c: c )
+                    }
+                    
+                    // Remove intermediate result
+                    model.state.stackDrop()
+                }
+                else {
+                    return KeyPressResult.stateError
+                }
+            }
+        }
+        
+        // Push final result list
+        model.enterValue(resultList)
+        return KeyPressResult.stateChange
+    }
+}
+
+
+class MapFunctionXY : ModalContext {
+    
+    let valueListX:  TaggedValue
+    let valueListY:  TaggedValue
+    
+    init( valueListX: TaggedValue, valueListY: TaggedValue ) {
+        self.valueListX = valueListX
+        self.valueListY = valueListY
+    }
+    
+    override var statusString: String? { "Map-xy ƒ(,)" }
+    
+    override func modalExecute( _ event: KeyEvent ) -> KeyPressResult {
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+#if DEBUG
+        print( "MapFunctionXY keypress: \(event.keyCode)")
+#endif
+        
+        // Start with empty output list
+        let seqCols    = min( valueListX.cols, valueListY.cols )
+        var resultList = TaggedValue()
+        
+        // Remove parameters from stack
+        model.state.stackDrop()
+        model.state.stackDrop()
+        
+        for c in 1 ... seqCols {
+            
+            if let valueX = valueListX.getValue( c: c),
+               let valueY = valueListY.getValue( c: c) {
+                
+                model.enterValue( valueY )
+                model.enterValue( valueX )
+                
+                if executeFn( event ) == .stateChange {
+                    
+                    if c == 1 {
+                        // Grab the first result to define the type tag and format for result
+                        let firstValue = model.state.Xtv
+                        let ss = firstValue.size
+                        
+                        // Establish size of result and add first value
+                        resultList = firstValue
+                        resultList.setShape(ss, cols: seqCols)
+                        resultList.setValue( firstValue, c: 1)
+                    }
+                    else {
+                        // Add next value at correct row
+                        resultList.setValue( model.state.Xtv, c: c )
+                    }
+                    
+                    // Remove intermediate result
+                    model.state.stackDrop()
+                }
+                else {
+                    return KeyPressResult.stateError
+                }
+            }
+        }
+        
+        // Push final result list
+        model.enterValue(resultList)
+        return KeyPressResult.stateChange
+    }
+}
