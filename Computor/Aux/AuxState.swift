@@ -217,6 +217,7 @@ extension AuxState {
             activeView = .macroView
             SubPadSpec.disableAllFnSubmenu()
             recState = .recModal
+            opCursor = 0
             
         case .record, .recModal:
             break
@@ -233,9 +234,12 @@ extension AuxState {
         
         switch recState {
             
-        case .recModal, .record:
+        case .record:
+            break
+
+        case .recModal:
             macroMod.deleteMacro( SymbolTag.Modal )
-            // recState = .stop
+            recState = .inactive
 
         default:
             // Should not happen

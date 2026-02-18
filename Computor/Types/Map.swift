@@ -22,7 +22,19 @@ extension CalculatorModel {
                 
                 self.pushContext( mapFn, lastEvent: KeyEvent(.mapX) )
                 
-                // No new state - but don't return nil or it will flag an error
+                // No new state
+                return (KeyPressResult.modalFunction, nil)
+            },
+            
+            
+            OpPattern( [ .X(allTypes, .matrix) ], where: { s0 in s0.Xtv.cols == 1 } ) { s0 in
+                
+                // Create a Reduce function obj capturing the value list and mode reference
+                let mapFn = MapFunctionXcol( valueList: s0.Xtv )
+                
+                self.pushContext( mapFn, lastEvent: KeyEvent(.mapX) )
+                
+                // No new state
                 return (KeyPressResult.modalFunction, nil)
             }
         ])
@@ -37,7 +49,7 @@ extension CalculatorModel {
                 
                 self.pushContext( mapFn, lastEvent: KeyEvent(.mapX) )
                 
-                // No new state - but don't return nil or it will flag an error
+                // No new state
                 return (KeyPressResult.modalFunction, nil)
             }
         ])
@@ -56,13 +68,12 @@ class MapFunctionX : ModalContext {
     
     override var statusString: String? { "Map ƒ()" }
     
+    
     override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
         
-        guard let model = self.model else { return KeyPressResult.null }
+        /// ** MapX -  Modal Execute **
         
-#if DEBUG
-        print( "MapFunction keypress: \(event.keyCode)")
-#endif
+        guard let model = self.model else { return KeyPressResult.null }
         
         // Start with empty output list
         let seqCols    = valueList.cols
@@ -77,21 +88,124 @@ class MapFunctionX : ModalContext {
                 
                 model.enterValue( value )
                 
+                if model.state.Xtv.cols > 1 {
+                    
+                    // All results must have only one column
+                    return KeyPressResult.stateError
+                }
+                
                 if executeFn( event ) == .stateChange {
                     
                     if c == 1 {
                         // Grab the first result to define the type tag and format for result
                         let firstValue = model.state.Xtv
                         let ss = firstValue.size
+                        let resultRows = firstValue.rows
                         
                         // Establish size of result and add first value
                         resultList = firstValue
-                        resultList.setShape(ss, cols: seqCols)
-                        resultList.setValue( firstValue, c: 1)
+                        resultList.setShape(ss, rows: resultRows, cols: seqCols)
+                        // resultList.setValue( firstValue, c: 1)
                     }
                     else {
-                        // Add next value at correct row
-                        resultList.setValue( model.state.Xtv, c: c )
+                        let newResult = model.state.Xtv
+                        
+                        if newResult.rows != resultList.rows {
+                            // All results must match the number of rows in the first
+                            return KeyPressResult.stateError
+                        }
+                        
+                        if newResult.rows == 1 {
+                            // Add next value at correct row
+                            resultList.setValue( model.state.Xtv, c: c )
+                        }
+                        else {
+                            // Add a new column of values
+                            resultList.copyColumn( toCol: c, from: model.state.Xtv, atCol: 1 )
+                        }
+                    }
+                    
+                    // Remove intermediate result
+                    model.state.stackDrop()
+                }
+                else {
+                    return KeyPressResult.stateError
+                }
+            }
+        }
+        
+        // Push final result list
+        model.enterValue(resultList)
+        return KeyPressResult.stateChange
+    }
+}
+
+
+class MapFunctionXcol : ModalContext {
+    
+    let valueList:  TaggedValue
+    
+    init( valueList: TaggedValue ) {
+        self.valueList = valueList
+    }
+    
+    override var statusString: String? { "Map ƒ()" }
+    
+    
+    override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
+        
+        /// ** MapX -  Modal Execute **
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        // Start with empty output list
+        let seqRows    = valueList.rows
+        var resultList = TaggedValue()
+        
+        // Remove parameter value from stack
+        model.state.stackDrop()
+        
+        for r in 1 ... seqRows {
+            
+            if let value = valueList.getValue( r: r) {
+                
+                model.enterValue( value )
+                
+                if model.state.Xtv.rows > 1 {
+                    
+                    // All results must have only one column
+                    return KeyPressResult.stateError
+                }
+                
+                if executeFn( event ) == .stateChange {
+                    
+                    if r == 1 {
+                        // Grab the first result to define the type tag and format for result
+                        let firstValue = model.state.Xtv
+                        let ss = firstValue.size
+                        let resultCols = firstValue.cols
+                        
+                        // Establish size of result and add first value
+                        resultList = firstValue
+                        resultList.setShape(ss, rows: seqRows, cols: resultCols)
+                        // resultList.setValue( firstValue, c: 1)
+                    }
+                    else {
+                        let newResult = model.state.Xtv
+                        
+                        if newResult.cols != resultList.cols {
+                            // All results must match the number of cols in the first
+                            return KeyPressResult.stateError
+                        }
+                        
+                        if newResult.cols == 1 {
+                            // Add next value at correct row
+                            resultList.setValue( model.state.Xtv, r: r )
+                        }
+                        else {
+                            // Add a new column of values
+                            resultList.copyRow( toRow: r, from: model.state.Xtv, atRow: 1 )
+                        }
                     }
                     
                     // Remove intermediate result
