@@ -191,6 +191,12 @@ class EventContext {
         // Pass request back to the Record context if it exists
         return previousContext?.getRollbackPoint() ?? nil
     }
+    
+#if DEBUG
+    var debugDescription: String {
+        String( describing: type(of: self)) + "/" + (previousContext?.debugDescription ?? "")
+    }
+#endif
 }
 
 
@@ -442,6 +448,11 @@ class CalculatorModel: KeyPressHandler {
         eventContext?.onActivate( lastEvent: lastEvent )
         
         logM.debug( "Push context: \(String( describing: ctx.self ))")
+        
+        #if DEBUG
+        print( "Push:" + (eventContext?.debugDescription ?? "") )
+        #endif
+        
     }
     
     func popContext( _ event: KeyEvent = KeyEvent(.null), runCCC: Bool = true ) {
@@ -462,6 +473,10 @@ class CalculatorModel: KeyPressHandler {
             }
             
             logM.debug( "Restore context: \(String( describing: oldContext.self ))")
+            
+#if DEBUG
+            print( "Restore:" + (eventContext?.debugDescription ?? "") )
+#endif
         }
     }
     
@@ -521,6 +536,8 @@ class CalculatorModel: KeyPressHandler {
         if let play = mark.context as? PlaybackContext {
             
             if let endMark = endMark {
+                
+                print( "GETMODALSEQUENCE: from: \(mark.index), to: \(endMark.index-1)" )
                 
                 return play.opSeq[mark.index..<endMark.index] as ArraySlice<MacroOp>
             }

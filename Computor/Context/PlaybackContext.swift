@@ -43,7 +43,9 @@ class PlaybackContext : EventContext {
         
         guard let model = self.model else { return (KeyPressResult.null, 0) }
         
-        for (i, op) in opSeq.enumerated() {
+        for i in opSeq.startIndex ..< opSeq.endIndex {
+            
+            let op = opSeq[i]
             
             self.currentIndex = i
             
