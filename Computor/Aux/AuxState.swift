@@ -213,7 +213,6 @@ extension AuxState {
             
         case .inactive, .stop:
             // Create new macro rec for modal func
-            macroTag = SymbolTag.Modal
             activeView = .macroView
             SubPadSpec.disableAllFnSubmenu()
             recState = .recModal
@@ -238,8 +237,8 @@ extension AuxState {
             break
 
         case .recModal:
-            macroMod.deleteMacro( SymbolTag.Modal )
             recState = .inactive
+            SubPadSpec.enableAllFnSubmenu()
 
         default:
             // Should not happen

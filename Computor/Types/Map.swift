@@ -103,9 +103,14 @@ class MapFunctionX : ModalContext {
                         let resultRows = firstValue.rows
                         
                         // Establish size of result and add first value
-                        resultList = firstValue
                         resultList.setShape(ss, rows: resultRows, cols: seqCols)
-                        // resultList.setValue( firstValue, c: 1)
+                        
+                        // Copy initial result to list which could be a single value or a row
+                        resultList.copyColumn( toCol: 1, from: model.state.Xtv, atCol: 1 )
+                        
+                        resultList.tag = firstValue.tag
+                        resultList.fmt = firstValue.fmt
+                        resultList.vtp = firstValue.vtp
                     }
                     else {
                         let newResult = model.state.Xtv
@@ -186,9 +191,14 @@ class MapFunctionXcol : ModalContext {
                         let resultCols = firstValue.cols
                         
                         // Establish size of result and add first value
-                        resultList = firstValue
                         resultList.setShape(ss, rows: seqRows, cols: resultCols)
-                        // resultList.setValue( firstValue, c: 1)
+                        
+                        // Copy initial result to list which could be a single value or a row
+                        resultList.copyRow( toRow: 1, from: model.state.Xtv, atRow: 1 )
+
+                        resultList.tag = firstValue.tag
+                        resultList.fmt = firstValue.fmt
+                        resultList.vtp = firstValue.vtp
                     }
                     else {
                         let newResult = model.state.Xtv
