@@ -36,7 +36,19 @@ extension CalculatorModel {
                 
                 // No new state
                 return (KeyPressResult.modalFunction, nil)
-            }
+            },
+            
+            
+            OpPattern( [ .X(allTypes, .matrix) ], where: { s0 in s0.Xtv.cols > 1  && s0.Xtv.rows > 1 } ) { s0 in
+                
+                // Create a Reduce function obj capturing the value list and mode reference
+                let mapFn = MapFunctionXmat( valueList: s0.Xtv )
+                
+                self.pushContext( mapFn, lastEvent: KeyEvent(.mapX) )
+                
+                // No new state
+                return (KeyPressResult.modalFunction, nil)
+            },
         ])
         
         
@@ -195,7 +207,7 @@ class MapFunctionXcol : ModalContext {
                         
                         // Copy initial result to list which could be a single value or a row
                         resultList.copyRow( toRow: 1, from: model.state.Xtv, atRow: 1 )
-
+                        
                         resultList.tag = firstValue.tag
                         resultList.fmt = firstValue.fmt
                         resultList.vtp = firstValue.vtp
@@ -223,6 +235,90 @@ class MapFunctionXcol : ModalContext {
                 }
                 else {
                     return KeyPressResult.stateError
+                }
+            }
+        }
+        
+        // Push final result list
+        model.enterValue(resultList)
+        return KeyPressResult.stateChange
+    }
+}
+
+
+class MapFunctionXmat : ModalContext {
+    
+    let valueList:  TaggedValue
+    
+    init( valueList: TaggedValue ) {
+        self.valueList = valueList
+    }
+    
+    override var statusString: String? { "Map ƒ()" }
+    
+    
+    override func modalExecute(_ event: KeyEvent ) -> KeyPressResult {
+        
+        /// ** MapX -  Modal Execute **
+        
+        guard let model = self.model else { return KeyPressResult.null }
+        
+        // Start with empty output list
+        let seqRows    = valueList.rows
+        let seqCols    = valueList.cols
+        var resultList = TaggedValue()
+        
+        // Remove parameter value from stack
+        model.state.stackDrop()
+        
+        for r in 1 ... seqRows {
+            
+            for c in 1 ... seqCols {
+                
+                if let value = valueList.getValue( r: r, c: c ) {
+                    
+                    model.enterValue( value )
+                    
+                    if executeFn( event ) == .stateChange {
+                        
+                        if r == 1 && c == 1 {
+                            // Grab the first result to define the type tag and format for result
+                            let firstValue = model.state.Xtv
+                            let ss = firstValue.size
+                            
+                            if firstValue.isMatrix {
+                                // Function must return a single value
+                                return KeyPressResult.stateError
+                            }
+                            
+                            // Establish size of result and add first value
+                            resultList.setShape(ss, rows: seqRows, cols: seqCols )
+                            
+                            // Copy initial result to list which must be a single value
+                            resultList.setValue( firstValue, r: 1, c: 1 )
+                            
+                            resultList.tag = firstValue.tag
+                            resultList.fmt = firstValue.fmt
+                            resultList.vtp = firstValue.vtp
+                        }
+                        else {
+                            let newResult = model.state.Xtv
+                            
+                            if newResult.isMatrix {
+                                // All results must be a single value
+                                return KeyPressResult.stateError
+                            }
+                            
+                            // Add next value at correct row and col
+                            resultList.setValue( model.state.Xtv, r: r, c: c )
+                        }
+                        
+                        // Remove intermediate result
+                        model.state.stackDrop()
+                    }
+                    else {
+                        return KeyPressResult.stateError
+                    }
                 }
             }
         }
