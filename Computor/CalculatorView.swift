@@ -111,28 +111,56 @@ struct PortraitView : View {
             PortraitBackground()
             
             KeyStack( keyPressHandler: model ) {
-                VStack( spacing: 5 ) {
-                    VStack( spacing: 0 ) {
-                        
-                        // Auxiliary Display
-                        AuxDisplayGroup()
-                        
-                        // Computor title and settings control gear
-                        TitleBar( presentSettings: $presentSettings )
-                    }
-                    .padding(0)
+                
+                if model.aux.expanded == false {
                     
-                    // Main calculator display
-                    DisplayView()
-                    Spacer().frame( height: 3)
-
-                    // Keypads
-                    KeypadGroup()
-                    Spacer()
+                    // Default non-expanded view
+                    VStack( spacing: 5 ) {
+                        VStack( spacing: 0 ) {
+                            
+                            // Auxiliary Display
+                            AuxDisplayGroup()
+                            
+                            // Computor title and settings control gear
+                            TitleBar( presentSettings: $presentSettings )
+                        }
+                        .padding(0)
+                        
+                        // Main calculator display
+                        DisplayView()
+                        Spacer().frame( height: 3)
+                        
+                        // Keypads
+                        KeypadGroup()
+                        Spacer()
+                    }
+                    .padding(.horizontal, 30)
+                    .padding(.vertical, 5)
+                    .background( Color("Background"))
                 }
-                .padding(.horizontal, 30)
-                .padding(.vertical, 5)
-                .background( Color("Background"))
+                else {
+                    
+                    // Expanded Aux view - no keypad
+                    VStack( spacing: 5 ) {
+                        
+                        VStack( spacing: 0 ) {
+                            
+                            // Auxiliary Display
+                            AuxDisplayGroup()
+                            
+                            // Computor title and settings control gear
+                            TitleBar( presentSettings: $presentSettings )
+                        }
+                        .padding(0)
+                        
+                        // Main calculator display
+                        DisplayView()
+                        Spacer()
+                    }
+                    .padding(.horizontal, 30)
+                    .padding(.vertical, 5)
+                    .background( Color("Background"))
+                }
             }
             .ignoresSafeArea(.keyboard)
         }

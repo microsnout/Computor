@@ -41,6 +41,16 @@ struct MemoryDetailView: View {
                         Spacer()
                         RichText( "Memory Detail", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                         Spacer()
+
+                        // BUTTON - New memory creation button
+                        Image( systemName: model.aux.expanded ? Const.Icon.shrink : Const.Icon.expand )
+                            .foregroundColor( Color("AuxHeaderText") )
+                            .padding( [.trailing], 5 )
+                            .onTapGesture {
+                                withAnimation {
+                                    model.aux.expanded.toggle()
+                                }
+                            }
                     }
                 }
                 

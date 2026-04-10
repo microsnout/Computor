@@ -59,6 +59,9 @@ struct AuxState {
     
     // View refresh toggle value
     var refresh: Bool = false
+    
+    // Expanded state of Aux display
+    var expanded: Bool = false
 }
 
 
