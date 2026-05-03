@@ -340,5 +340,6 @@ extension SymbolTag {
     static var Null: SymbolTag { SymbolTag(.null) }
     static var Blank: SymbolTag { SymbolTag(.blankChar) }
     static var Modal: SymbolTag { SymbolTag(.modalChar) }
+    static var Divider: SymbolTag { SymbolTag(.dividerChar) }
 }
 

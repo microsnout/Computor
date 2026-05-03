@@ -62,6 +62,7 @@ enum Const {
         static let trash    = "trash"
         static let document = "candybarphone"
         static let chart    = "chart.line.uptrend.xyaxis"
+        static let move     = "line.3.horizontal"
         
         static let bulletList = "list.bullet"
         static let gridList   = "square.grid.2x2"

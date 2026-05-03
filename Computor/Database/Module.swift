@@ -6,25 +6,77 @@
 //
 import SwiftUI
 
+
 @Observable
-class MemoryRec: Codable, Identifiable, Hashable, Equatable, TaggedItem {
+class ItemRec: Codable, Identifiable, Hashable, Equatable, TaggedItem {
+    
+    /// BaseRec
+    /// Base class for all persistant objects in database that have a symbol and caption
+    /// Used for Memory, Macro and Plot objects
+    
     var symTag:  SymbolTag
     var caption: String? = nil
+    
+    var id: SymbolTag { symTag }
+    
+    init( tag: SymbolTag, caption: String? = nil ) {
+        self.symTag = tag
+        self.caption = caption
+    }
+    
+    // Override these functions in derived items if needed
+    
+    func getRichSymText() -> String {
+        self.symTag.getRichText()
+    }
+    
+    func getCaption( _ model: CalculatorModel ) -> String {
+        self.caption ?? ""
+    }
+    
+    func getSecondLineText() -> String {
+        return ""
+    }
+    
+    // End Override funcs
+
+    func hash( into hasher: inout Hasher) {
+        hasher.combine(symTag)
+    }
+
+    static func == ( lhs: ItemRec, rhs: ItemRec ) -> Bool {
+        return lhs.symTag == rhs.symTag
+    }
+}
+
+
+// ************************** //
+
+
+@Observable
+class MemoryRec: ItemRec {
     
     var tv:      TaggedValue
     
     // Dependant list - The following list of tags depend on me - all tags must be computed memories
     var dependantList: [SymbolTag] = []
     
-    var id: SymbolTag { symTag }
-    
     init( tag: SymbolTag, caption: String? = nil, tv: TaggedValue = TaggedValue() ) {
-        self.symTag = tag
-        self.caption = caption
+        
         self.tv = tv
+        
+        super.init( tag: tag, caption: caption )
     }
     
-    func getCaption( _ model: CalculatorModel ) -> String {
+    override func getRichSymText() -> String {
+        let richSymText = super.getRichSymText()
+        
+        // Highlight computed memories by color
+        return self.symTag.isComputedMemoryTag ? "ç{AccentText}\(richSymText)ç{}" : richSymText
+    }
+    
+    
+    override func getCaption( _ model: CalculatorModel ) -> String {
         
         /// ** Get Caption **
         /// If we are a computed memory, try to get the caption from the associated macro
@@ -41,31 +93,49 @@ class MemoryRec: Codable, Identifiable, Hashable, Equatable, TaggedItem {
     }
     
     
-    func hash( into hasher: inout Hasher) {
-        hasher.combine(symTag)
+    override func getSecondLineText() -> String {
+        // Display Value of memory below sym and caption
+        let (valueStr, _) = tv.renderRichText()
+        return valueStr
+    }
+
+    
+    private enum CodingKeys: String, CodingKey {
+        case tv, dependantList
     }
     
-    static func == ( lhs: MemoryRec, rhs: MemoryRec ) -> Bool {
-        return lhs.symTag == rhs.symTag
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        self.tv = try container.decode(TaggedValue.self, forKey: .tv)
+        self.dependantList = try container.decode( [SymbolTag].self, forKey: .dependantList )
+        
+        try super.init(from: decoder)
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode( tv, forKey: .tv)
+        try container.encode( dependantList, forKey: .dependantList)
+
+        try super.encode(to: encoder)
     }
 }
 
 
+// ************************** //
+
+
 @Observable
-class MacroRec: Codable, Identifiable, TaggedItem, Equatable {
-    var symTag:     SymbolTag
-    var caption:    String? = nil
-    
+class MacroRec: ItemRec {
     var opSeq:      MacroOpSeq
-    
-    var id: SymbolTag { symTag }
     
     var isEmpty: Bool { symTag == SymbolTag.Blank && caption == nil && opSeq.isEmpty }
     
     init(tag symTag: SymbolTag = SymbolTag.Blank , caption: String? = nil, seq opSeq: MacroOpSeq = MacroOpSeq() ) {
-        self.symTag = symTag
-        self.caption = caption
         self.opSeq = opSeq
+        
+        super.init( tag: symTag, caption: caption )
     }
     
     func getCaption() -> String {
@@ -76,39 +146,72 @@ class MacroRec: Codable, Identifiable, TaggedItem, Equatable {
         return MacroRec( tag: self.symTag, caption: self.caption, seq: self.opSeq)
     }
     
+    private enum CodingKeys: String, CodingKey {
+        case opSeq
+    }
+
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        self.opSeq = try container.decode(MacroOpSeq.self, forKey: .opSeq)
+        
+        try super.init(from: decoder)
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode( opSeq, forKey: .opSeq)
+        
+        try super.encode(to: encoder)
+    }
+
     static func +( lhs: MacroRec, rhs: MacroOp ) -> MacroRec {
         // Add a new op to the op seq - used by Testing
         lhs.opSeq.append(rhs)
         return lhs
     }
-    
-    static func == ( lhs: MacroRec, rhs: MacroRec ) -> Bool {
-        return lhs.symTag == rhs.symTag
-    }
 }
 
 
+// ************************** //
+
+
 @Observable
-class PlotRec: Codable, Identifiable, Equatable, TaggedItem {
-    var symTag: SymbolTag
-    var caption: String? = nil
-    
+class PlotRec: ItemRec {
     var vsTag: SymbolTag? = nil
     
     init( symTag: SymbolTag, vsTag: SymbolTag? = nil, caption: String? = nil) {
-        self.symTag = symTag
         self.vsTag = vsTag
-        self.caption = caption
+        
+        super.init( tag: symTag, caption: caption )
     }
     
     func getCaption() -> String {
         caption ?? Const.Placeholder.caption
     }
-
-    static func == ( lhs: PlotRec, rhs: PlotRec ) -> Bool {
-        return lhs.symTag == rhs.symTag && lhs.vsTag == rhs.vsTag
+    
+    private enum CodingKeys: String, CodingKey {
+        case vsTag
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        self.vsTag = try container.decode(SymbolTag.self, forKey: .vsTag)
+        
+        try super.init(from: decoder)
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode( vsTag, forKey: .vsTag)
+        
+        try super.encode(to: encoder)
     }
 }
+
+
+// ************************** //
 
 
 struct KeyMapRec: Codable {
