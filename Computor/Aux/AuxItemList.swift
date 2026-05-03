@@ -9,13 +9,14 @@ import SwiftUI
 
 
 enum ListControl: Identifiable {
-    case delete, move, recall, store, play, plot
+    case select, delete, move, recall, store, play, plot
     
     var id: Self { self }
 }
 
 
 let listControlSysNames: [ListControl: String] = [
+    .select: "",
     .delete: Const.Icon.trash,
     .move:   Const.Icon.move,
     .recall: Const.Icon.arrowDown,
@@ -25,6 +26,9 @@ let listControlSysNames: [ListControl: String] = [
 ]
 
 
+typealias ControlPressedClosure = ( _ control: ListControl, _ item: ItemRec ) -> Void
+
+
 struct AuxItemList: View {
     @Environment(CalculatorModel.self) private var model
     
@@ -32,7 +36,9 @@ struct AuxItemList: View {
     
     @Binding var controlList: [ListControl]
     
-    @State private var draggedItemId: String?
+    var cpc: ControlPressedClosure
+    
+    @State private var draggedItemId: String? = nil
 
     var body: some View {
         
@@ -77,42 +83,19 @@ struct AuxItemList: View {
                                     
                                     let sysName = listControlSysNames[$lc.wrappedValue]
                                     
-                                    Button( action: { } ) {
+                                    Button( action: { cpc( $lc.wrappedValue, item) } ) {
                                         Image( systemName: sysName ?? Const.Icon.arrowDown )
                                     }
-                                }
-                                
-                                if let plotRec = plot {
-                                    
-                                    // PLOT BUTTON - Go to plot screen
-                                    Button( action: {
-                                        model.aux.activeView = .plotView
-                                        model.aux.plotRec = plotRec
-                                    } ) {
-                                        Image( systemName: Const.Icon.chart )
-                                    }
-                                }
-                                
-                                // ARROW DOWN
-                                Button( action: { model.memoryOp( key: .rclMem, tag: mr.symTag ) } ) {
-                                    Image( systemName: Const.Icon.arrowDown )
-                                }
-                                
-                                // TRASH CAN
-                                Button( action: {
-                                    model.deleteMemoryRecords( set: [mr.symTag] )
-                                } ) {
-                                    Image( systemName: Const.Icon.trash )
                                 }
                             }.padding( [.trailing], 20 )
                         }
                         .contentShape(Rectangle())
-//                        .onTapGesture {
-//                            withAnimation {
-//                                // Navigate to selected item
-//                                model.aux.memRec = mr
-//                            }
-//                        }
+                        .onTapGesture {
+                            withAnimation {
+                                // Navigate to selected item
+                                cpc( .select, item)
+                            }
+                        }
                         
                         Divider()
                     }
@@ -123,52 +106,4 @@ struct AuxItemList: View {
         }
     }
 
-    var body2: some View {
-        
-        ScrollViewReader { proxy in
-            ScrollView(.vertical) {
-                LazyVStack {
-                    
-                    ForEach( $items, id: \.id ) { $mr in
-                        
-                        let item = $mr.wrappedValue
-                        let sym = item.getRichSymText()
-                        let caption = item.getCaption(model)
-                        let secondLine = item.getSecondLineText()
-                        
-                        VStack {
-                            //  SYMBOL
-                            RichText("ƒ{1.5}\(sym)", size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
-                            
-                            // CAPTION
-                            RichText( "ƒ{1.2}\(caption)", size: .large, design: .serif, defaultColor: "UnitText" )
-//                                .onTapGesture {
-//                                    renameSheet = true
-//                                }
-                            
-                            TypedRegister( text: secondLine, size: .large ).padding( .leading, 0)
-                        }
-                        .id( mr.symTag )
-                        .containerRelativeFrame(.vertical, count: 1, spacing: 0)
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .scrollTargetBehavior(.viewAligned)
-//            .scrollPosition( id: $position )
-//            .onChange( of: position ) { oldRec, newRec in
-//                
-//                if newRec != nil  {
-//                    model.aux.memRec = newRec
-//                }
-//            }
-//            .onChange(  of: memRec, initial: true ) {
-//                if let mr = memRec {
-//                    print( "scrollto \(mr.symTag)" )
-//                    proxy.scrollTo( mr.id )
-//                }
-//            }
-        }
-        
-    }
 }
