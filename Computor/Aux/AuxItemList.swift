@@ -29,12 +29,12 @@ let listControlSysNames: [ListControl: String] = [
 typealias ControlPressedClosure = ( _ control: ListControl, _ item: ItemRec ) -> Void
 
 
-struct AuxItemList: View {
+struct AuxItemList<T>: View where T: ItemRec, T: Identifiable {
     @Environment(CalculatorModel.self) private var model
     
-    @Binding var items: [ItemRec]
+    @Binding var items: [T]
     
-    @Binding var controlList: [ListControl]
+    var controlList: [ListControl]
     
     var cpc: ControlPressedClosure
     
@@ -44,7 +44,7 @@ struct AuxItemList: View {
         
         ScrollView {
             LazyVStack {
-                ForEach( $items, id: \.id ) { $mr in
+                ForEach( $items ) { $mr in
                     
                     let item = $mr.wrappedValue
                     let sym = item.getRichSymText()
@@ -79,11 +79,11 @@ struct AuxItemList: View {
                             // Button controls at right of rows
                             HStack( spacing: 20 ) {
                                 
-                                ForEach ( $controlList, id: \.id ) { $lc in
+                                ForEach ( controlList, id: \.self ) { lc in
                                     
-                                    let sysName = listControlSysNames[$lc.wrappedValue]
+                                    let sysName = listControlSysNames[lc]
                                     
-                                    Button( action: { cpc( $lc.wrappedValue, item) } ) {
+                                    Button( action: { cpc( lc, item) } ) {
                                         Image( systemName: sysName ?? Const.Icon.arrowDown )
                                     }
                                 }

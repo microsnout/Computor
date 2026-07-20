@@ -39,7 +39,10 @@ struct MemoryListView: View {
 
     @State private var memorySheet: Bool = false
 
+    
     var body: some View {
+//        @Bindable var model = model
+        
         VStack {
             
             // Header bar
@@ -82,6 +85,26 @@ struct MemoryListView: View {
                 Spacer()
             }
             else {
+                
+//                AuxItemList( items: $model.state.memory, controlList: [.select, .recall]  ) { cntl, item in
+//                    
+//                    switch cntl {
+//                        
+//                    case .select:
+//                        if let mr = item as? MemoryRec {
+//                            model.aux.memRec = mr
+//                        }
+//
+//                    case .recall:
+//                        if let mr = item as? MemoryRec {
+//                            model.memoryOp( key: .rclMem, tag: mr.symTag )
+//                        }
+//                        
+//                    default:
+//                        break
+//                    }
+//                }
+                
                 ScrollView {
                     LazyVStack {
                         ForEach ( model.state.memory ) { mr in

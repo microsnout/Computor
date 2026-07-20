@@ -17,7 +17,9 @@ class ItemRec: Codable, Identifiable, Hashable, Equatable, TaggedItem {
     var symTag:  SymbolTag
     var caption: String? = nil
     
-    var id: SymbolTag { symTag }
+    var id: String {
+        "\(symTag.hashValue)" // Or use a unique string property from SymbolTag, e.g., symTag.name
+    }
     
     init( tag: SymbolTag, caption: String? = nil ) {
         self.symTag = tag
