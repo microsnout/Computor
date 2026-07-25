@@ -175,7 +175,7 @@ struct AuxItemList<T>: View where T: ItemRec {
                     let txt = item.getSecondLineText()
                     
                     // Either a global memory tag or a macro tag for a computed memory
-                    let sym = item.symTag.isComputedMemoryTag ? "ç{AccentText}\(item.symTag.getRichText())ç{}" : item.symTag.getRichText()
+                    let sym = item.getRichSymText()
                     
                     let caption: String = item.getCaption(model)
                     
