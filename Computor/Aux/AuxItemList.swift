@@ -12,6 +12,8 @@ enum ListControl: Identifiable {
     case select, delete, move, recall, store, play, plot
     
     var id: Self { self }
+    
+    var icon: String { listControlSysNames[self] ?? ""  }
 }
 
 
@@ -29,29 +31,29 @@ let listControlSysNames: [ListControl: String] = [
 typealias ControlPressedClosure = ( _ control: ListControl, _ item: ItemRec ) -> Void
 
 
-struct AuxItemList<T>: View where T: ItemRec, T: Identifiable {
+struct AuxItemList2<T>: View where T: ItemRec, T: Identifiable {
+    
     @Environment(CalculatorModel.self) private var model
     
-    @Binding var items: [T]
+    var items: [T]
     
-    var controlList: [ListControl]
+    var controlList: [ListControl] = [.select, .recall]
     
-    var cpc: ControlPressedClosure
+    var cpc: ([ListControl], T) -> Void
     
     @State private var draggedItemId: String? = nil
-
+    
     var body: some View {
-        
+
         ScrollView {
             LazyVStack {
-                ForEach( $items ) { $mr in
+                ForEach( items ) { item in
                     
-                    let item = $mr.wrappedValue
                     let sym = item.getRichSymText()
                     let caption = item.getCaption(model)
                     let secondLine = item.getSecondLineText()
                     
-                    let plot = model.activeModule.getLocalPlot( item.symTag )
+//                    let plot = model.activeModule.getLocalPlot( item.symTag )
                     
                     VStack {
                         HStack {
@@ -83,19 +85,19 @@ struct AuxItemList<T>: View where T: ItemRec, T: Identifiable {
                                     
                                     let sysName = listControlSysNames[lc]
                                     
-                                    Button( action: { cpc( lc, item) } ) {
-                                        Image( systemName: sysName ?? Const.Icon.arrowDown )
-                                    }
+//                                    Button( action: { cpc( lc, item) } ) {
+//                                        Image( systemName: sysName ?? Const.Icon.arrowDown )
+//                                    }
                                 }
                             }.padding( [.trailing], 20 )
                         }
                         .contentShape(Rectangle())
-                        .onTapGesture {
-                            withAnimation {
-                                // Navigate to selected item
-                                cpc( .select, item)
-                            }
-                        }
+//                        .onTapGesture {
+//                            withAnimation {
+//                                // Navigate to selected item
+//                                cpc( .select, item)
+//                            }
+//                        }
                         
                         Divider()
                     }

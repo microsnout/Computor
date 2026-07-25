@@ -11,7 +11,7 @@ struct AuxMemoryView: View {
     @Environment(CalculatorModel.self) private var model
 
     var body: some View {
-        @Bindable var model = model
+        @Bindable var bindableModel = model
         
         Group {
             if model.aux.memRec == nil {
@@ -22,10 +22,12 @@ struct AuxMemoryView: View {
             }
             else {
                 // Detailed view of selected macro
-                MemoryDetailView( memRec: $model.aux.memRec )
+                MemoryDetailView( memRec: $bindableModel.aux.memRec )
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
             }
         }
+        .id( model.aux.memRec == nil ? "list" : "detail" )
+        .animation( .easeInOut, value: model.aux.memRec == nil )
         .onChange(of: model.aux.memRec ) { oldValue, newValue in
             // Force saving of document to persist this value
             model.changed()
@@ -41,7 +43,7 @@ struct MemoryListView: View {
 
     
     var body: some View {
-//        @Bindable var model = model
+        @Bindable var bindableModel = model
         
         VStack {
             
@@ -85,103 +87,36 @@ struct MemoryListView: View {
                 Spacer()
             }
             else {
-                
-//                AuxItemList( items: $model.state.memory, controlList: [.select, .recall]  ) { cntl, item in
-//                    
-//                    switch cntl {
-//                        
-//                    case .select:
-//                        if let mr = item as? MemoryRec {
-//                            model.aux.memRec = mr
-//                        }
-//
-//                    case .recall:
-//                        if let mr = item as? MemoryRec {
-//                            model.memoryOp( key: .rclMem, tag: mr.symTag )
-//                        }
-//                        
-//                    default:
-//                        break
-//                    }
-//                }
-                
-                ScrollView {
-                    LazyVStack {
-                        ForEach ( model.state.memory ) { mr in
-                            
-                            let (txt, _) = mr.tv.renderRichText()
-                            
-                            // Either a global memory tag or a macro tag for a computed memory
-                            let sym = mr.symTag.isComputedMemoryTag ? "ç{AccentText}\(mr.symTag.getRichText())ç{}" : mr.symTag.getRichText()
-                            
-                            let caption: String = mr.getCaption(model)
-                            
-                            let plot = model.activeModule.getLocalPlot(mr.symTag)
-                            
-                            VStack {
-                                HStack {
-                                    
-                                    // Memory two line description
-                                    VStack( alignment: .leading, spacing: 0 ) {
-                                        
-                                        HStack {
-                                            // Tag Symbol
-                                            RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
-                                            
-                                            // Caption text
-                                            RichText(caption, size: .small, weight: .regular, design: .serif, defaultColor: "UnitText" )
-                                        }
-                                            
-                                        // Memory value display
-                                        RichText( "ƒ{0.9}\(txt)", size: .small, weight: .bold, design: .serif ).padding([.leading], 10)
-                                    }
-                                    .padding( [.leading ], 20)
-                                    .frame( height: 30 )
-                                    
-                                    Spacer()
-                                    
-                                    
-                                    // Button controls at right of rows
-                                    HStack( spacing: 20 ) {
-                                        
-                                        if let plotRec = plot {
 
-                                            // PLOT BUTTON - Go to plot screen
-                                            Button( action: {
-                                                model.aux.activeView = .plotView
-                                                model.aux.plotRec = plotRec
-                                            } ) {
-                                                Image( systemName: Const.Icon.chart )
-                                            }
-                                        }
-                                        
-                                        // ARROW DOWN
-                                        Button( action: { model.memoryOp( key: .rclMem, tag: mr.symTag ) } ) {
-                                            Image( systemName: Const.Icon.arrowDown )
-                                        }
-                                        
-                                        // TRASH CAN
-                                        Button( action: {
-                                            model.deleteMemoryRecords( set: [mr.symTag] )
-                                        } ) {
-                                            Image( systemName: Const.Icon.trash )
-                                        }
-                                    }.padding( [.trailing], 20 )
-                                }
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    withAnimation {
-                                        // Navigate to selected item
-                                        model.aux.memRec = mr
-                                    }
-                                }
+                AuxItemList<MemoryRec>( items: $bindableModel.state.memory, controls: memoryListControls ) { cntl, item, model in
+                    
+                    if let mr = item as? MemoryRec {
+                        
+                        switch cntl {
+                            
+                        case .select:
+                            // Navigate to selected item
+                            if let mr = item as? MemoryRec {
                                 
-                                Divider()
+                                model.aux.memRec = mr
                             }
+
+                        case .plot:
+                            if let plotRec = model.activeModule.getLocalPlot(mr.symTag) {
+                                model.aux.activeView = .plotView
+                                model.aux.plotRec = plotRec
+                            }
+
+                        case .recall:
+                            model.memoryOp( key: .rclMem, tag: item.symTag )
+                            
+                        case .delete:
+                            model.deleteMemoryRecords( set: [item.symTag] )
+
+                        default:
+                            break
                         }
                     }
-                    .padding( .horizontal, 0)
-                    .padding( .top, 0)
                 }
             }
         }
@@ -202,3 +137,101 @@ struct MemoryListView: View {
         }
     }
 }
+
+
+typealias ControlListClosure = ( _ item: ItemRec, _ model: CalculatorModel ) -> [ListControl]
+
+typealias ControlPressClosure = ( _ cntl: ListControl,  _ item: ItemRec, _ model: CalculatorModel ) -> Void
+
+
+func memoryListControls( _ item: ItemRec, _ model: CalculatorModel ) -> [ListControl] {
+    
+    if let mr = item as? MemoryRec {
+        
+        if let _ = model.activeModule.getLocalPlot(mr.symTag) {
+            return [.plot, .recall, .delete]
+        }
+    }
+    
+    return [.recall, .delete]
+}
+
+
+struct AuxItemList<T>: View where T: ItemRec {
+    @Environment(CalculatorModel.self) private var model
+    
+    @Binding var items: [T]
+
+    var controls: ControlListClosure
+    
+    var cpc: ControlPressClosure
+
+    var body: some View {
+        
+        ScrollView {
+            LazyVStack {
+                ForEach ( items ) { item in
+                    
+                    let txt = item.getSecondLineText()
+                    
+                    // Either a global memory tag or a macro tag for a computed memory
+                    let sym = item.symTag.isComputedMemoryTag ? "ç{AccentText}\(item.symTag.getRichText())ç{}" : item.symTag.getRichText()
+                    
+                    let caption: String = item.getCaption(model)
+                    
+                    VStack {
+                        HStack {
+                            
+                            // Memory two line description
+                            VStack( alignment: .leading, spacing: 0 ) {
+                                
+                                HStack {
+                                    // Tag Symbol
+                                    RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
+                                    
+                                    // Caption text
+                                    RichText(caption, size: .small, weight: .regular, design: .serif, defaultColor: "UnitText" )
+                                }
+                                
+                                // Memory value display
+                                RichText( "ƒ{0.9}\(txt)", size: .small, weight: .bold, design: .serif ).padding([.leading], 10)
+                            }
+                            .padding( [.leading ], 20)
+                            .frame( height: 30 )
+                            
+                            Spacer()
+                            
+                            
+                            // Button controls at right of rows
+                            HStack( spacing: 20 ) {
+                                
+                                let controlList = controls(item, model)
+                                
+                                ForEach( controlList, id: \.self ) { cntl in
+                                    
+                                    Button( action: { cpc(cntl, item, model) } ) {
+                                        Image( systemName: cntl.icon )
+                                    }
+                                }
+                                
+                            }.padding( [.trailing], 20 )
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            withAnimation {
+                                cpc(.select, item, model)
+                            }
+                        }
+                        
+                        Divider()
+                    }
+                }
+            }
+            .padding( .horizontal, 0)
+            .padding( .top, 0)
+        }
+
+    }
+}
+
+
