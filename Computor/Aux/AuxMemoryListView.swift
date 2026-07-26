@@ -65,7 +65,7 @@ struct MemoryListView: View {
                             }
                         }
 
-                    // BUTTON - New memory creation button
+                    // BUTTON - View expand and shrink button
                     Image( systemName: model.aux.expanded ? Const.Icon.shrink : Const.Icon.expand )
                         .foregroundColor( Color("AuxHeaderText") )
                         .padding( [.trailing], 5 )
@@ -194,16 +194,16 @@ struct AuxItemList<T>: View where T: ItemRec {
                                 }
                                 
                                 // Memory value display
-                                RichText( "ƒ{0.9}\(txt)", size: .small, weight: .bold, design: .serif ).padding([.leading], 10)
+                                RichText( "ƒ{0.9}\(txt)", size: .small, weight: .bold, design: .serif ).padding([.leading], Const.UI.listItemIndent )
                             }
-                            .padding( [.leading ], 20)
-                            .frame( height: 30 )
+                            .padding( [.leading ], Const.UI.listItemPadding )
+                            .frame( height: Const.UI.listItemHeight )
                             
                             Spacer()
                             
                             
                             // Button controls at right of rows
-                            HStack( spacing: 20 ) {
+                            HStack( spacing: Const.UI.listItemSpacing ) {
                                 
                                 let controlList = controls(item, model)
                                 

@@ -48,6 +48,18 @@ enum Const {
         
         // Width of code listing panel in macro detail view
         static let auxCodeListingWidth = 165.0
+        
+        // Frame height of list items
+        static let listItemHeight: CGFloat = 30.0
+        
+        // Spacing of controls in Memory, Macro and Plot list views
+        static let listItemSpacing: CGFloat = 12.0
+        
+        // Padding for list items of Memory, Macro and Plot list views
+        static let listItemPadding: CGFloat = 20.0
+        
+        // Second line indent of Memory, Macro and Plot list views
+        static let listItemIndent: CGFloat = 8.0
     }
     
     enum Placeholder {
@@ -95,11 +107,12 @@ enum Const {
         static let arrowLeft    = "arrowshape.left"
         static let arrowRight   = "arrowshape.right"
 
+        static let expand  = "arrow.down.backward.and.arrow.up.forward"
+        static let shrink  = "arrow.down.right.and.arrow.up.left"
+        
         // ** Unused **
         static let detail = "list.bullet.circle"
         static let gridBox = "square.grid.3x3.square"
-        static let expand  = "arrow.down.backward.and.arrow.up.forward"
-        static let shrink  = "arrow.down.right.and.arrow.up.left"
     }
     
     enum LibMod {
