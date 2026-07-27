@@ -39,9 +39,6 @@ struct AuxMemoryView: View {
 struct MemoryListView: View {
     @Environment(CalculatorModel.self) private var model
 
-    @State private var memorySheet: Bool = false
-
-    
     var body: some View {
         @Bindable var bindableModel = model
         
@@ -54,26 +51,7 @@ struct MemoryListView: View {
                     Spacer()
                     RichText( "Memory", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                     Spacer()
-                    
-                    // BUTTON - New memory creation button
-                    Image( systemName: "plus")
-                        .foregroundColor( Color("AuxHeaderText") )
-                        .padding( [.trailing], 5 )
-                        .onTapGesture {
-                            withAnimation {
-                                memorySheet = true
-                            }
-                        }
-
-                    // BUTTON - View expand and shrink button
-                    Image( systemName: model.aux.expanded ? Const.Icon.shrink : Const.Icon.expand )
-                        .foregroundColor( Color("AuxHeaderText") )
-                        .padding( [.trailing], 5 )
-                        .onTapGesture {
-                            withAnimation {
-                                model.aux.expanded.toggle()
-                            }
-                        }
+                    ItemListMenu()
                 }
             }
             
@@ -120,6 +98,53 @@ struct MemoryListView: View {
                 }
             }
         }
+    }
+}
+
+
+
+struct ItemListMenu: View {
+    @Environment(CalculatorModel.self) private var model
+    
+    @State private var memorySheet: Bool = false
+
+    var body: some View {
+        Menu {
+            Button {
+                withAnimation {
+                    memorySheet = true
+                }
+            }
+            label: {
+                Label( "Add New Memory", systemImage: Const.Icon.plus )
+            }
+            
+            Button {
+            }
+            label: {
+                Label( "Add Divider", systemImage: Const.Icon.listDivider )
+            }
+
+            Button {
+            }
+            label: {
+                Label( "Edit Memory List", systemImage: Const.Icon.edit )
+            }
+            
+            Button {
+                model.aux.expanded.toggle()
+            }
+            label: {
+                Label( model.aux.expanded ? "Collapse Memory List" : "Expand Memory List",
+                       systemImage: model.aux.expanded ? Const.Icon.shrink : Const.Icon.expand )
+            }
+        }
+        label: {
+            Image( systemName: "ellipsis")
+                .foregroundColor( Color("AuxHeaderText") )
+                .padding( [.trailing], 10 )
+        }
+        .disabled( false )
         .sheet( isPresented: $memorySheet) {
             
             // Edit Memory
@@ -137,6 +162,7 @@ struct MemoryListView: View {
         }
     }
 }
+
 
 
 typealias ControlListClosure = ( _ item: ItemRec, _ model: CalculatorModel ) -> [ListControl]

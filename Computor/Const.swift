@@ -71,13 +71,15 @@ enum Const {
         // System Names from SF Symbols app
         
         static let plus     = "plus"
+        static let edit     = "pencil"
         static let trash    = "trash"
         static let document = "candybarphone"
         static let chart    = "chart.line.uptrend.xyaxis"
         static let move     = "line.3.horizontal"
         
-        static let bulletList = "list.bullet"
-        static let gridList   = "square.grid.2x2"
+        static let bulletList  = "list.bullet"
+        static let gridList    = "square.grid.2x2"
+        static let listDivider = "text.line.magnify"
         
         static let chevronRight = "chevron.right"
         static let chevronLeft  = "chevron.left"
