@@ -107,6 +107,7 @@ struct ItemListMenu: View {
     @Environment(CalculatorModel.self) private var model
     
     @State private var memorySheet: Bool = false
+    @State private var dividerSheet: Bool = false
 
     var body: some View {
         Menu {
@@ -120,6 +121,9 @@ struct ItemListMenu: View {
             }
             
             Button {
+                withAnimation {
+                    dividerSheet = true
+                }
             }
             label: {
                 Label( "Add Divider", systemImage: Const.Icon.listDivider )
@@ -159,6 +163,18 @@ struct ItemListMenu: View {
                 }
             }
             .presentationDetents([.fraction(0.9)])
+        }
+        .sheet( isPresented: $dividerSheet ) {
+            
+            ListDividerEditSheet() { newCaption in
+               
+                if !newCaption.isEmpty {
+                    
+                    let _ = model.newGlobalMemory( SymbolTag.Divider, caption: newCaption )
+                    model.changed()
+                    model.saveDocument()
+                }
+            }
         }
     }
 }
@@ -205,34 +221,54 @@ struct AuxItemList<T>: View where T: ItemRec {
                     
                     let caption: String = item.getCaption(model)
                     
+                    let divider = item.symTag == SymbolTag.Divider
+                    
                     VStack {
                         HStack {
                             
-                            // Memory two line description
-                            VStack( alignment: .leading, spacing: 0 ) {
+                            if divider {
                                 
                                 HStack {
-                                    // Tag Symbol
-                                    RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
+                                    Spacer()
                                     
-                                    // Caption text
-                                    RichText(caption, size: .small, weight: .regular, design: .serif, defaultColor: "UnitText" )
+                                    RichText(caption, size: .normal, weight: .regular, design: .serif, defaultColor: "BlackText" )
+                                    
+                                    Spacer()
                                 }
-                                
-                                // Memory value display
-                                RichText( "ƒ{0.9}\(txt)", size: .small, weight: .bold, design: .serif ).padding([.leading], Const.UI.listItemIndent )
+                                .frame( height: 18 )
                             }
-                            .padding( [.leading ], Const.UI.listItemPadding )
-                            .frame( height: Const.UI.listItemHeight )
-                            
+                            else {
+                                // Memory two line description
+                                VStack( alignment: .leading, spacing: 0 ) {
+                                    
+                                    HStack {
+                                        // Tag Symbol
+                                        RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
+                                        
+                                        // Caption text
+                                        RichText(caption, size: .small, weight: .regular, design: .serif, defaultColor: "UnitText" )
+                                    }
+                                    
+                                    // 2nd Line Item text - Value for memories
+                                    RichText( "ƒ{0.9}\(txt)", size: .small, weight: .bold, design: .serif ).padding([.leading], Const.UI.listItemIndent )
+
+                                }
+                                .padding( [.leading ], Const.UI.listItemPadding )
+                                .frame( height: Const.UI.listItemHeight )
+                                .onTapGesture {
+                                    withAnimation {
+                                        cpc(.select, item, model)
+                                    }
+                                }
+                            }
+
                             Spacer()
-                            
                             
                             // Button controls at right of rows
                             HStack( spacing: Const.UI.listItemSpacing ) {
                                 
-                                let controlList = controls(item, model)
-                                
+                                let controlList = divider ? [] : controls(item, model)
+
                                 ForEach( controlList, id: \.self ) { cntl in
                                     
                                     Button( action: { cpc(cntl, item, model) } ) {
@@ -240,13 +276,12 @@ struct AuxItemList<T>: View where T: ItemRec {
                                     }
                                 }
                                 
-                            }.padding( [.trailing], 20 )
+                            }
+                            .padding( [.trailing], 20 )
                         }
                         .contentShape(Rectangle())
-                        .onTapGesture {
-                            withAnimation {
-                                cpc(.select, item, model)
-                            }
+                        .if ( divider ) { view in
+                            view.background(.veryLightBlue)
                         }
                         
                         Divider()
@@ -261,3 +296,40 @@ struct AuxItemList<T>: View where T: ItemRec {
 }
 
 
+
+struct ListDividerEditSheet: View {
+    
+    @Environment(\.dismiss) var dismiss
+    
+    @State var caption: String = ""
+    
+    @Environment(CalculatorModel.self) private var model
+    
+    var ldc: ( _ newCap: String ) -> Void
+    
+    var body: some View {
+        
+        VStack( alignment: .leading ) {
+            
+            // DONE Button
+            HStack {
+                Spacer()
+                
+                Button( action: { ldc(caption); dismiss() } ) {
+                    RichText( "Done", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
+                }
+            }
+            .padding( [.top], 5 )
+            
+            // Caption Editor
+            SheetTextField( label: "Caption:", placeholder: Const.Placeholder.xcaption, text: $caption )
+            
+            Spacer()
+        }
+        .padding( [.leading, .trailing], 40 )
+        .presentationBackground( Color.black.opacity(0.7) )
+        .presentationDetents( [.fraction(0.7), .large] )
+        .onAppear() {
+        }
+    }
+}

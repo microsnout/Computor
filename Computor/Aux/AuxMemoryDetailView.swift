@@ -63,13 +63,20 @@ struct MemoryDetailView: View {
                         .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
                 }
                 else {
+                    let memoryList = model.state.memory
+                    
+                    // Filter out any list dividers
+                    var mrList: [MemoryRec] {
+                        memoryList.filter { $0.symTag != SymbolTag.Divider }
+                    }
+                    
                     
                     // DETAIL VIEW
                     ScrollViewReader { proxy in
                         ScrollView(.vertical) {
                             LazyVStack {
                                 
-                                ForEach( model.state.memory ) { mr in
+                                ForEach( mrList ) { mr in
                                     
                                     let computed: Bool = mr.symTag.isComputedMemoryTag
                                     let sym = computed ? "ç{AccentText}\(mr.symTag.getRichText())ç{}" : mr.symTag.getRichText()

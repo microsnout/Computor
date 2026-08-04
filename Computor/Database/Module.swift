@@ -532,8 +532,12 @@ extension ModuleRec {
         
         /// ** Get Plot **
         
+        if tag == SymbolTag.Divider || tag.isNull {
+            return nil
+        }
+        
         // A computed memory tag is a macro tag marked as a computed memory
-        assert( tag.isGlobalMemoryTag || tag.isComputedMemoryTag || tag.isNull )
+        assert( tag.isGlobalMemoryTag || tag.isComputedMemoryTag )
         
         let mf = loadModule()
         
