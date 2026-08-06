@@ -402,7 +402,7 @@ struct MemorySelectPopup: View, KeyPressHandler {
             
             var itemList: [TaggedItem] = []
 
-            for memRec in model.state.memory {
+            for memRec in model.state.memoryList {
                 
                 if memRec.symTag.isComputedMemoryTag {
                     
@@ -429,7 +429,7 @@ struct MemorySelectPopup: View, KeyPressHandler {
         }
         else {
             // All memories allowed to be recalled if not recording a macro
-            return model.state.memory
+            return model.state.memoryList
         }
     }
     
@@ -437,7 +437,7 @@ struct MemorySelectPopup: View, KeyPressHandler {
     func getGlobalMemorySto() -> [TaggedItem] {
         
         // We can store any memnory except computed memories
-        return model.state.memory.filter( { $0.symTag.isComputedMemoryTag == false } )
+        return model.state.memoryList.filter( { $0.symTag.isComputedMemoryTag == false } )
     }
     
     

@@ -38,6 +38,8 @@ struct AuxMemoryView: View {
 
 struct MemoryListView: View {
     @Environment(CalculatorModel.self) private var model
+    
+    @State var isEditing: Bool = false
 
     var body: some View {
         @Bindable var bindableModel = model
@@ -51,7 +53,7 @@ struct MemoryListView: View {
                     Spacer()
                     RichText( "Memory", size: .small, weight: .bold, defaultColor: "AuxHeaderText" )
                     Spacer()
-                    ItemListMenu()
+                    ItemListMenu( isEditing: $isEditing )
                 }
             }
             
@@ -66,7 +68,7 @@ struct MemoryListView: View {
             }
             else {
 
-                AuxItemList<MemoryRec>( items: $bindableModel.state.memory, controls: memoryListControls ) { cntl, item, model in
+                AuxItemList<MemoryRec>(  items: $bindableModel.state.memory, isEditing: $isEditing, controls: memoryListControls ) { cntl, item, model in
                     
                     if let mr = item as? MemoryRec {
                         
@@ -108,82 +110,98 @@ struct ItemListMenu: View {
     
     @State private var memorySheet: Bool = false
     @State private var dividerSheet: Bool = false
+    
+    @Binding var isEditing: Bool
 
     var body: some View {
-        Menu {
-            Button {
-                withAnimation {
-                    memorySheet = true
-                }
-            }
-            label: {
-                Label( "Add New Memory", systemImage: Const.Icon.plus )
-            }
+        
+        if isEditing {
             
-            Button {
+            Button(action: {
                 withAnimation {
-                    dividerSheet = true
+                    isEditing = false
                 }
-            }
-            label: {
-                Label( "Add Divider", systemImage: Const.Icon.listDivider )
-            }
-
-            Button {
-            }
-            label: {
-                Label( "Edit Memory List", systemImage: Const.Icon.edit )
-            }
-            
-            Button {
-                model.aux.expanded.toggle()
-            }
-            label: {
-                Label( model.aux.expanded ? "Collapse Memory List" : "Expand Memory List",
-                       systemImage: model.aux.expanded ? Const.Icon.shrink : Const.Icon.expand )
+            }) {
+                RichText( "Done", size: .small, weight: .bold, defaultColor: "BlackText" )
+                    .padding( [.trailing], 8 )
             }
         }
-        label: {
-            Image( systemName: "ellipsis")
-                .foregroundColor( Color("AuxHeaderText") )
-                .padding( [.trailing], 10 )
-        }
-        .disabled( false )
-        .sheet( isPresented: $memorySheet) {
-            
-            // Edit Memory
-            MemoryEditSheet() {  newTag, newtxt in
+        else {
+            Menu {
+                Button {
+                    withAnimation {
+                        memorySheet = true
+                    }
+                }
+                label: {
+                    Label( "Add New Memory", systemImage: Const.Icon.plus )
+                }
                 
-                if newTag != SymbolTag.Null {
-                    let _ = model.newGlobalMemory( newTag, caption: newtxt.isEmpty ? nil : newtxt )
-                    model.changed()
-                    model.saveDocument()
-                    
-                    print( "Create Memory: \(newTag.getRichText())" )
+                Button {
+                    withAnimation {
+                        dividerSheet = true
+                    }
+                }
+                label: {
+                    Label( "Add Divider", systemImage: Const.Icon.listDivider )
+                }
+                
+                Button {
+                    withAnimation {
+                        isEditing = true
+                    }
+                }
+                label: {
+                    Label( "Edit Memory List", systemImage: Const.Icon.edit )
+                }
+                
+                Button {
+                    withAnimation {
+                        model.aux.expanded.toggle()
+                    }
+                }
+                label: {
+                    Label( model.aux.expanded ? "Collapse Memory List" : "Expand Memory List",
+                           systemImage: model.aux.expanded ? Const.Icon.shrink : Const.Icon.expand )
                 }
             }
-            .presentationDetents([.fraction(0.9)])
-        }
-        .sheet( isPresented: $dividerSheet ) {
-            
-            ListDividerEditSheet() { newCaption in
-               
-                if !newCaption.isEmpty {
+            label: {
+                Image( systemName: "ellipsis")
+                    .foregroundColor( Color("AuxHeaderText") )
+                    .padding( [.trailing], 10 )
+            }
+            .disabled( false )
+            .sheet( isPresented: $memorySheet) {
+                
+                // Edit Memory
+                MemoryEditSheet() {  newTag, newtxt in
                     
-                    let _ = model.newGlobalMemory( SymbolTag.Divider, caption: newCaption )
-                    model.changed()
-                    model.saveDocument()
+                    if newTag != SymbolTag.Null {
+                        let _ = model.newGlobalMemory( newTag, caption: newtxt.isEmpty ? nil : newtxt )
+                        model.changed()
+                        model.saveDocument()
+                        
+                        print( "Create Memory: \(newTag.getRichText())" )
+                    }
+                }
+                .presentationDetents([.fraction(0.9)])
+            }
+            .sheet( isPresented: $dividerSheet ) {
+                
+                ListDividerEditSheet() { newCaption in
+                    
+                    if !newCaption.isEmpty {
+                        
+                        let _ = model.newGlobalMemory( SymbolTag.Divider, caption: newCaption )
+                        model.changed()
+                        model.saveDocument()
+                    }
                 }
             }
         }
     }
 }
 
-
-
-typealias ControlListClosure = ( _ item: ItemRec, _ model: CalculatorModel ) -> [ListControl]
-
-typealias ControlPressClosure = ( _ cntl: ListControl,  _ item: ItemRec, _ model: CalculatorModel ) -> Void
 
 
 func memoryListControls( _ item: ItemRec, _ model: CalculatorModel ) -> [ListControl] {
@@ -191,145 +209,10 @@ func memoryListControls( _ item: ItemRec, _ model: CalculatorModel ) -> [ListCon
     if let mr = item as? MemoryRec {
         
         if let _ = model.activeModule.getLocalPlot(mr.symTag) {
-            return [.plot, .recall, .delete]
+            return [.plot, .recall]
         }
     }
     
-    return [.recall, .delete]
+    return [.recall]
 }
 
-
-struct AuxItemList<T>: View where T: ItemRec {
-    @Environment(CalculatorModel.self) private var model
-    
-    @Binding var items: [T]
-
-    var controls: ControlListClosure
-    
-    var cpc: ControlPressClosure
-
-    var body: some View {
-        
-        ScrollView {
-            LazyVStack {
-                ForEach ( items ) { item in
-                    
-                    let txt = item.getSecondLineText()
-                    
-                    // Either a global memory tag or a macro tag for a computed memory
-                    let sym = item.getRichSymText()
-                    
-                    let caption: String = item.getCaption(model)
-                    
-                    let divider = item.symTag == SymbolTag.Divider
-                    
-                    VStack {
-                        HStack {
-                            
-                            if divider {
-                                
-                                HStack {
-                                    Spacer()
-                                    
-                                    RichText(caption, size: .normal, weight: .regular, design: .serif, defaultColor: "BlackText" )
-                                    
-                                    Spacer()
-                                }
-                                .frame( height: 18 )
-                            }
-                            else {
-                                // Memory two line description
-                                VStack( alignment: .leading, spacing: 0 ) {
-                                    
-                                    HStack {
-                                        // Tag Symbol
-                                        RichText(sym, size: .small, weight: .bold, design: .serif, defaultColor: "BlackText" )
-                                        
-                                        // Caption text
-                                        RichText(caption, size: .small, weight: .regular, design: .serif, defaultColor: "UnitText" )
-                                    }
-                                    
-                                    // 2nd Line Item text - Value for memories
-                                    RichText( "ƒ{0.9}\(txt)", size: .small, weight: .bold, design: .serif ).padding([.leading], Const.UI.listItemIndent )
-
-                                }
-                                .padding( [.leading ], Const.UI.listItemPadding )
-                                .frame( height: Const.UI.listItemHeight )
-                                .onTapGesture {
-                                    withAnimation {
-                                        cpc(.select, item, model)
-                                    }
-                                }
-                            }
-
-                            Spacer()
-                            
-                            // Button controls at right of rows
-                            HStack( spacing: Const.UI.listItemSpacing ) {
-                                
-                                let controlList = divider ? [] : controls(item, model)
-
-                                ForEach( controlList, id: \.self ) { cntl in
-                                    
-                                    Button( action: { cpc(cntl, item, model) } ) {
-                                        Image( systemName: cntl.icon )
-                                    }
-                                }
-                                
-                            }
-                            .padding( [.trailing], 20 )
-                        }
-                        .contentShape(Rectangle())
-                        .if ( divider ) { view in
-                            view.background(.veryLightBlue)
-                        }
-                        
-                        Divider()
-                    }
-                }
-            }
-            .padding( .horizontal, 0)
-            .padding( .top, 0)
-        }
-
-    }
-}
-
-
-
-struct ListDividerEditSheet: View {
-    
-    @Environment(\.dismiss) var dismiss
-    
-    @State var caption: String = ""
-    
-    @Environment(CalculatorModel.self) private var model
-    
-    var ldc: ( _ newCap: String ) -> Void
-    
-    var body: some View {
-        
-        VStack( alignment: .leading ) {
-            
-            // DONE Button
-            HStack {
-                Spacer()
-                
-                Button( action: { ldc(caption); dismiss() } ) {
-                    RichText( "Done", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
-                }
-            }
-            .padding( [.top], 5 )
-            
-            // Caption Editor
-            SheetTextField( label: "Caption:", placeholder: Const.Placeholder.xcaption, text: $caption )
-            
-            Spacer()
-        }
-        .padding( [.leading, .trailing], 40 )
-        .presentationBackground( Color.black.opacity(0.7) )
-        .presentationDetents( [.fraction(0.7), .large] )
-        .onAppear() {
-        }
-    }
-}

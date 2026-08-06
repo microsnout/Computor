@@ -24,40 +24,58 @@ let listControlSysNames: [ListControl: String] = [
     .recall: Const.Icon.arrowDown,
     .store:  Const.Icon.arrowUp,
     .play:   Const.Icon.play,
-    .plot:   Const.Icon.chart,
+    .plot:   Const.Icon.plot,
 ]
 
 
-typealias ControlPressedClosure = ( _ control: ListControl, _ item: ItemRec ) -> Void
+typealias ControlListClosure = ( _ item: ItemRec, _ model: CalculatorModel ) -> [ListControl]
+
+typealias ControlPressClosure = ( _ cntl: ListControl,  _ item: ItemRec, _ model: CalculatorModel ) -> Void
 
 
-struct AuxItemList2<T>: View where T: ItemRec, T: Identifiable {
-    
+struct AuxItemList<T>: View where T: ItemRec {
     @Environment(CalculatorModel.self) private var model
     
-    var items: [T]
+    @Binding var items: [T]
     
-    var controlList: [ListControl] = [.select, .recall]
+    @Binding var isEditing: Bool
     
-    var cpc: ([ListControl], T) -> Void
+    var controls: ControlListClosure
     
-    @State private var draggedItemId: String? = nil
+    var cpc: ControlPressClosure
     
     var body: some View {
-
-        ScrollView {
-            LazyVStack {
-                ForEach( items ) { item in
-                    
-                    let sym = item.getRichSymText()
-                    let caption = item.getCaption(model)
-                    let secondLine = item.getSecondLineText()
-                    
-//                    let plot = model.activeModule.getLocalPlot( item.symTag )
-                    
-                    VStack {
-                        HStack {
+        
+        List {
+            ForEach ( items ) { item in
+                
+                let txt = item.getSecondLineText()
+                
+                // Either a global memory tag or a macro tag for a computed memory
+                let sym = item.getRichSymText()
+                
+                let caption: String = item.getCaption(model)
+                
+                let divider = item.symTag == SymbolTag.Divider
+                
+                VStack( spacing: 0 ) {
+                    HStack {
+                        
+                        if divider {
                             
+                            HStack {
+                                Color("MenuIcon")
+                                    .frame( height: 3 )
+                                    .padding( [.leading], 20 )
+                                
+                                RichText(caption, size: .normal, weight: .regular, design: .serif, defaultColor: "BlackText" )
+                                
+                                Color("MenuIcon")
+                                    .frame( height: 3 )
+                            }
+                            .frame( height: 18 )
+                        }
+                        else {
                             // Memory two line description
                             VStack( alignment: .leading, spacing: 0 ) {
                                 
@@ -69,43 +87,100 @@ struct AuxItemList2<T>: View where T: ItemRec, T: Identifiable {
                                     RichText(caption, size: .small, weight: .regular, design: .serif, defaultColor: "UnitText" )
                                 }
                                 
-                                // Memory value display
-                                RichText( "ƒ{0.9}\(secondLine)", size: .small, weight: .bold, design: .serif ).padding([.leading], 10)
+                                // 2nd Line Item text - Value for memories
+                                RichText( "ƒ{0.9}\(txt)", size: .small, weight: .bold, design: .serif ).padding([.leading], Const.UI.listItemIndent )
                             }
-                            .padding( [.leading ], 20)
-                            .frame( height: 30 )
-                            
-                            Spacer()
-                            
-                            
-                            // Button controls at right of rows
-                            HStack( spacing: 20 ) {
-                                
-                                ForEach ( controlList, id: \.self ) { lc in
-                                    
-                                    let sysName = listControlSysNames[lc]
-                                    
-//                                    Button( action: { cpc( lc, item) } ) {
-//                                        Image( systemName: sysName ?? Const.Icon.arrowDown )
-//                                    }
+                            .frame(height: Const.UI.listItemHeight )
+                            .padding( [.leading ], Const.UI.listItemPadding )
+                            .onTapGesture {
+                                withAnimation {
+                                    cpc(.select, item, model)
                                 }
-                            }.padding( [.trailing], 20 )
+                            }
                         }
-                        .contentShape(Rectangle())
-//                        .onTapGesture {
-//                            withAnimation {
-//                                // Navigate to selected item
-//                                cpc( .select, item)
-//                            }
-//                        }
                         
+                        Spacer()
+                        
+                        // Button controls at right of rows
+                        HStack( spacing: Const.UI.listItemSpacing ) {
+                            
+                            let controlList = isEditing ? [.delete] : divider ? [] : controls(item, model)
+                            
+                            ForEach( controlList, id: \.self ) { cntl in
+                                
+                                Button( action: { cpc(cntl, item, model) } ) {
+                                    Image( systemName: cntl.icon )
+                                }
+                                .buttonStyle(.borderless)
+                            }
+                            
+                        }
+                        .padding( [.trailing], 20 )
+                    }
+                    .contentShape(Rectangle())
+                    
+                    // .if ( divider ) { view in
+                    //     view.background(.lightGrey)
+                    // }
+                    
+                    if ( !divider ) {
                         Divider()
+                            .padding( [.top], 5 )
                     }
                 }
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
             }
-            .padding( .horizontal, 0)
-            .padding( .top, 0)
+            .onMove(perform: moveItem)
+        }
+        .listStyle(.plain)
+        .listRowSpacing(5)
+        .environment(\.editMode, .constant(isEditing ? .active : .inactive))
+        .environment(\.defaultMinListRowHeight, 0)
+        .environment(\.defaultMinListHeaderHeight, 0)
+        .scrollContentBackground(.hidden)
+    }
+    
+    private func moveItem(from source: IndexSet, to destination: Int) {
+        items.move(fromOffsets: source, toOffset: destination)
+        model.changed()
+    }
+}
+
+
+struct ListDividerEditSheet: View {
+    
+    @Environment(\.dismiss) var dismiss
+    
+    @State var caption: String = ""
+    
+    @Environment(CalculatorModel.self) private var model
+    
+    var ldc: ( _ newCap: String ) -> Void
+    
+    var body: some View {
+        
+        VStack( alignment: .leading ) {
+            
+            // DONE Button
+            HStack {
+                Spacer()
+                
+                Button( action: { ldc(caption); dismiss() } ) {
+                    RichText( "Done", size: .large, weight: .bold, design: .default, defaultColor: "WhiteText")
+                }
+            }
+            .padding( [.top], 5 )
+            
+            // Caption Editor
+            SheetTextField( label: "Caption:", placeholder: Const.Placeholder.xcaption, text: $caption )
+            
+            Spacer()
+        }
+        .padding( [.leading, .trailing], 40 )
+        .presentationBackground( Color.black.opacity(0.7) )
+        .presentationDetents( [.fraction(0.7), .large] )
+        .onAppear() {
         }
     }
-
 }

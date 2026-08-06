@@ -359,7 +359,7 @@ struct PlotEditSheet: View {
             // Memory tag selector
             SheetCollapsibleView( code: 1, label: "={Y-Axis: }\(mTag.getRichText())", drop: $dropCode ) {
                 
-                let tagGroupList: [SymbolTagGroup] = [ SymbolTagGroup( label: "Memories:", itemList: model.state.memory) ]
+                let tagGroupList: [SymbolTagGroup] = [ SymbolTagGroup( label: "Memories:", itemList: model.state.memoryList) ]
                 
                 SelectSymbolPopup( tagGroupList: tagGroupList, title: "Select Macro", sscc: { tag in mTag = tag } ) { }
             }
@@ -367,7 +367,7 @@ struct PlotEditSheet: View {
             // Memory tag selector
             SheetCollapsibleView( code: 2, label: "={X-Axis: }\(xTag?.getRichText() ?? "")", drop: $dropCode ) {
                 
-                let tagGroupList: [SymbolTagGroup] = [ SymbolTagGroup( label: "Memories:", itemList: model.state.memory) ]
+                let tagGroupList: [SymbolTagGroup] = [ SymbolTagGroup( label: "Memories:", itemList: model.state.memoryList) ]
                 
                 SelectSymbolPopup( tagGroupList: tagGroupList, title: "Select Macro", sscc: { tag in xTag = tag } ) { }
             }

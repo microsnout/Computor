@@ -45,6 +45,11 @@ extension CalcState {
     static let defaultDecFormat: FormatRec = FormatRec( style: .decimal, digits: 4 )
     static let defaultSciFormat: FormatRec = FormatRec( style: .scientific, digits: 4 )
     
+    var memoryList: [MemoryRec] {
+        // Return list of normal and computed memories - eliminate dividers
+        memory.filter { $0.symTag != SymbolTag.Divider }
+    }
+
     func memoryAt( index: Int ) -> MemoryRec? {
         guard index >= 0 && index < memory.count else {
             return nil
