@@ -253,7 +253,7 @@ struct AuxPlotListView : View {
                                                 model.aux.plotRec = pr
                                             }
                                         } ) {
-                                            Image( systemName: Const.Icon.chart )
+                                            Image( systemName: Const.Icon.plot )
                                         }
                                         
                                         // DELETE

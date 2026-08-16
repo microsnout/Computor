@@ -503,7 +503,9 @@ extension ModuleRec {
         /// ** Get Macro **
         
         // A computed memory tag is a macro tag marked as a computed memory
-        assert( tag.isLocalTag || tag.isComputedMemoryTag )
+        print( "mod = \(tag.mod)" )
+        
+        assert( tag.isLocalTag || tag.isComputedMemoryTag || tag.isGlobalMemoryTag )
         
         // Eliminate the computed memory tag if present
         let sTag = tag.localTag

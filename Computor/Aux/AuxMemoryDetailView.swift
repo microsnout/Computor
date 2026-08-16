@@ -14,7 +14,7 @@ struct MemoryDetailView: View {
     
     @State private var renameSheet = false
     
-    @State private var position: MemoryRec? = nil
+    @State private var position: SymbolTag? = nil
     
     @State private var refreshView = false
     
@@ -64,47 +64,48 @@ struct MemoryDetailView: View {
                 }
                 else {
                     // DETAIL VIEW
-                    ScrollViewReader { proxy in
-                        ScrollView(.vertical) {
-                            LazyVStack {
-                                
-                                ForEach( model.state.memoryList ) { mr in
-                                    
-                                    let computed: Bool = mr.symTag.isComputedMemoryTag
-                                    let sym = computed ? "ç{AccentText}\(mr.symTag.getRichText())ç{}" : mr.symTag.getRichText()
-                                    let caption = mr.getCaption(model)
-                                    let (valueStr, _) = mr.tv.renderRichText()
-
-                                    VStack {
-                                        //  SYMBOL
-                                        RichText("ƒ{1.5}\(sym)", size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
-                                        
-                                        // CAPTION
-                                        RichText( "ƒ{1.2}\(caption)", size: .large, design: .serif, defaultColor: "UnitText" )
-                                            .onTapGesture {
-                                                renameSheet = true
-                                            }
-                                        
-                                        TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
-                                    }
-                                    .id( mr.symTag )
-                                    .containerRelativeFrame(.vertical, count: 1, spacing: 0)
-                                }
-                            }
-                            .scrollTargetLayout()
-                        }
-                        .scrollTargetBehavior(.viewAligned)
-                        .scrollPosition( id: $position )
-                        .onChange( of: position ) { oldRec, newRec in
+                    ScrollView(.vertical) {
+                        LazyVStack {
                             
-                            if newRec != nil  {
-                                model.aux.memRec = newRec
+                            ForEach( model.state.memoryList ) { mr in
+                                
+                                let computed: Bool = mr.symTag.isComputedMemoryTag
+                                let sym = computed ? "ç{AccentText}\(mr.symTag.getRichText())ç{}" : mr.symTag.getRichText()
+                                let caption = mr.getCaption(model)
+                                let (valueStr, _) = mr.tv.renderRichText()
+                                
+                                VStack {
+                                    //  SYMBOL
+                                    RichText("ƒ{1.5}\(sym)", size: .large, weight: .bold, design: .serif, defaultColor: "BlackText" )
+                                    
+                                    // CAPTION
+                                    RichText( "ƒ{1.2}\(caption)", size: .large, design: .serif, defaultColor: "UnitText" )
+                                        .onTapGesture {
+                                            renameSheet = true
+                                        }
+                                    
+                                    TypedRegister( text: valueStr, size: .large ).padding( .leading, 0)
+                                }
+                                .id( mr.symTag )
+                                .containerRelativeFrame(.vertical, count: 1, spacing: 0)
                             }
                         }
-                        .onChange(  of: memRec, initial: true ) {
-                            if let mr = memRec {
-                                print( "scrollto \(mr.symTag)" )
-                                proxy.scrollTo( mr.id )
+                        .scrollTargetLayout()
+                    }
+                    .scrollTargetBehavior(.viewAligned)
+                    .scrollPosition( id: $position )
+                    .onChange( of: position ) { oldRec, newRec in
+                        
+                        if let tag = newRec  {
+                            print("Scrolling to \(tag)")
+                            model.aux.macroTag = tag
+                        }
+                    }
+                    .onChange(of: memRec, initial: true) { _, newMemRec in
+                        if let mr = newMemRec {
+                            print("Scrolling to \(mr.symTag)")
+                            withAnimation {
+                                position = mr.symTag // Directly drives the scroll view
                             }
                         }
                     }
@@ -147,24 +148,27 @@ struct MemoryDetailView: View {
             .padding( [.top], 0 )
             .padding( [.bottom], 10 )
             .onChange( of: mr ) { oldRec, newRec in
-                position = newRec
+                position = newRec.symTag
             }
             
             // Edit Memory
             .sheet( isPresented: $renameSheet) {
                 
-                MemoryEditSheet( mTag: mr.symTag, caption: mr.caption ?? "" ) { newTag, newtxt in
+                if let mr = model.aux.memRec {
                     
-                    model.changeMemorySymbol( from: mr.symTag, to: newTag)
-                    model.setMemoryCaption( of: newTag, to: newtxt.isEmpty ? nil : newtxt )
-                    
-                    refreshView.toggle()
-                    
-                    // Save changes to memory tag and caption immediately
-                    model.changed()
-                    model.saveDocument()
+                    MemoryEditSheet( mTag: mr.symTag, caption: mr.caption ?? "" ) { newTag, newtxt in
+                        
+                        model.changeMemorySymbol( from: mr.symTag, to: newTag)
+                        model.setMemoryCaption( of: newTag, to: newtxt.isEmpty ? nil : newtxt )
+                        
+                        refreshView.toggle()
+                        
+                        // Save changes to memory tag and caption immediately
+                        model.changed()
+                        model.saveDocument()
+                    }
+                    .presentationDetents([.fraction(0.9)])
                 }
-                .presentationDetents([.fraction(0.9)])
             }
         }
     }

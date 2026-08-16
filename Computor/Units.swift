@@ -786,22 +786,29 @@ class TypeDef: Codable {
     
     static func buildStdTypeData() {
         
-        defineStdType( .length, .metre,  "m",1)
-        defineStdType( .length, .mm, "mm",   1000)
-        defineStdType( .length, .cm, "cm",   100)
-        defineStdType( .length, .km, "km",   0.001)
-        defineStdType( .length, .NM, "NM",   1.0/1852.0)
+        // Metric Length Units
+        defineStdType( .length, .metre,  "m",    1)
+        defineStdType( .length, .mm,     "mm",   1000)
+        defineStdType( .length, .cm,     "cm",   100)
+        defineStdType( .length, .km,     "km",   0.001)
+        defineStdType( .length, .NM,     "NM",   1.0/1852.0)
         
+        // Imperial Length Units
         defineStdType( .length, .inch, "in",   1000/25.4)
         defineStdType( .length, .ft,   "ft",   1000/(12*25.4))
         defineStdType( .length, .yd,   "yd",   1000/(36*25.4))
         defineStdType( .length, .mi,   "mi",   1000/(5280*12*25.4))
+        
+        // Celestial Units
+        defineStdType( .length, .AU,   "AU",   1.0/149597870700.0)
+        defineStdType( .length, .ly,   "ly",   1.0/9460730472580800.0)
 
         // Angular units
         defineStdType( .angle,  .rad,  "rad",  1)
         defineStdType( .angle,  .deg,  "deg",  180/Double.pi)
         defineStdType( .angle,  .minA, "min'", 180/Double.pi * 60.0)
 
+        // Units of Time
         defineStdType( .time,  .second,   "sec",  1.0)
         defineStdType( .time,  .min,   "min",  1.0/60)
         defineStdType( .time,  .hr,    "hr",   1.0/(60*60))
@@ -810,6 +817,7 @@ class TypeDef: Codable {
         defineStdType( .time,  .ms,    "ms",   1000.0)
         defineStdType( .time,  .us,    "\u{03BC}s", 1000000.0)
 
+        // Mass Units
         defineStdType( .mass,  .kg,    "kg",   1)
         defineStdType( .mass,  .gram,  "g",    1000.0)
         defineStdType( .mass,  .mg,    "mg",   1000*1000.0)
@@ -820,6 +828,7 @@ class TypeDef: Codable {
         defineStdType( .mass, .ton,   "ton",  2.2046226218488 / 2000.0)
         defineStdType( .mass, .stone, "st",   2.2046226218488 / 14.0)
         
+        // Volume Units
         defineStdType( .capacity, .mL,    "mL",        1.0)
         defineStdType( .capacity, .liter, "L",         1.0/1000)
         defineStdType( .capacity, .floz,  "fl-oz",     1.0/29.5735295625)
@@ -829,6 +838,7 @@ class TypeDef: Codable {
         defineStdType( .capacity, .us_gal,"US-gal",    1.0/(29.5735295625 * 128))
         defineStdType( .capacity, .gal,   "gal",       1.0/(1000 * 4.54609))
 
+        // Temperature Units
         defineStdType( .temp, .degC,    "C",    1.0)
         defineStdType( .temp, .degF,    "F",    9.0/5.0, delta: 32)
         

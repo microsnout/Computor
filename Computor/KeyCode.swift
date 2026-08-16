@@ -74,22 +74,22 @@ enum KeyCode: Int, Codable {
     case unitStart = 400
     
     // Length
-    case km = 401, mm, cm, metre, inch, ft, yd, mi, NM
+    case km = 401, mm, cm, metre, inch, ft, yd, mi, NM, AU, ly
     
     // Time
-    case second = 410, min, hr, day, yr, ms, us
+    case second = 420, min, hr, day, yr, ms, us
     
     // Angles
-    case deg = 420, rad, dms, dm, minA
+    case deg = 440, rad, dms, dm, minA
     
     // Mass
-    case kg = 430, mg, gram, tonne, lb, oz, ton, stone
+    case kg = 450, mg, gram, tonne, lb, oz, ton, stone
     
     // Capacity
-    case mL = 440, liter, floz, cup, pint, quart, us_gal, gal
+    case mL = 470, liter, floz, cup, pint, quart, us_gal, gal
     
     // Temperature
-    case degC = 450, degF
+    case degC = 490, degF
     
     case unitEnd = 499
     
