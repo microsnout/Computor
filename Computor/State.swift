@@ -137,6 +137,16 @@ extension CalcState {
         stack[index].fmt = fmt
     }
 
+    mutating func setLatlongValue( reg index: Int = regX, _ x: Double, _ y: Double,
+                                   tag: TypeTag = tagUntyped,
+                                   fmt: FormatRec = CalcState.defaultDecFormat ) {
+        stack[index].setShape(2)
+        stack[index].vtp = .latlong
+        stack[index].set2(x,y)
+        stack[index].tag = tag
+        stack[index].fmt = fmt
+    }
+
     mutating func setVector3DValue( reg index: Int = regX, _ x: Double, _ y: Double, _ z: Double,
                                     tag: TypeTag = tagUntyped,
                                     fmt: FormatRec = CalcState.defaultDecFormat ) {

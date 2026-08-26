@@ -12,7 +12,7 @@ extension CalculatorModel {
     
     func memoryOp( key: KeyCode, tag: SymbolTag ) {
         pushState()
-        acceptTextEntry()
+        acceptTextEntry( KeyEvent(key) )
         
         // Leading edge swipe operations
         switch key {

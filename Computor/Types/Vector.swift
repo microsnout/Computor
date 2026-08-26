@@ -124,7 +124,22 @@ extension CalculatorModel {
             },
         ])
         
-        
+        defineOpPatterns( .latlong, [
+            
+            /// Make Lat Long position from 2 reals
+            
+            OpPattern( [ .X([.real]), .Y([.real])], where: { $0.Xt == $0.Yt } ) { s0 in
+                
+                // Create 2D vector value
+                var s1 = s0
+                s1.stackDrop()
+                let x: Double = s0.X
+                let y: Double = s0.Y
+                s1.setLatlongValue( x,y, tag: s0.Yt, fmt: s0.Yfmt )
+                return (KeyPressResult.stateChange, s1)
+            },
+        ])
+
         // Angle parm of polar value must be Rad, Deg or untyped ( = Rad)
         let degTestY: StateTest = {$0.Ytv.isReal && ($0.Yt == tagDeg || $0.Yt == tagRad || $0.Yt == tagUntyped) }
         

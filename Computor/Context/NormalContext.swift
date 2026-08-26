@@ -103,7 +103,7 @@ class NormalContext : EventContext {
                     else {
                         
                         // Successful data entry, copy to X reg
-                        model.acceptTextEntry()
+                        model.acceptTextEntry(exitEvent)
                     }
                 }
                 

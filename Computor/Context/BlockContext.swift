@@ -160,7 +160,7 @@ class BlockRecord : EventContext {
                     if exitEvent.kc != .backUndo {
                         
                         // Grab the entered data value and record it
-                        let tv = model.grabTextEntry()
+                        let tv = model.grabTextEntry(exitEvent)
                         model.recordValueEvent( tv )
                     }
                 }

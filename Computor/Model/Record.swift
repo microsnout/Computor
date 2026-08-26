@@ -245,7 +245,7 @@ extension CalculatorModel {
         /// ** Play Macro Seq **
         /// Returns number of Op macros successfully executed
         
-        acceptTextEntry()
+        acceptTextEntry( KeyEvent(.noop) )
         
         // Preserve state to undo entire sequence if needed
         pushState()

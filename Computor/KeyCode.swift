@@ -60,7 +60,7 @@ enum KeyCode: Int, Codable {
     case macroOp = 280, clrFn, recFn, stopFn, editFn, braceKey, openBrace, closeBrace, macro
     
     // Multi valued types
-    case multiValue = 290, rational, vector, polar, complex, vector3D, spherical
+    case multiValue = 290, rational, vector, polar, complex, vector3D, spherical, latlong
     
     // Matrix operations
     case matrix = 300, range, seq, mapX, mapXY, reduce, addRow, addCol, dotProduct, crossProduct, transpose, identity, reverseCols, reverseRows

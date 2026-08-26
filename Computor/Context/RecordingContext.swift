@@ -210,7 +210,7 @@ class RecordingContext : EventContext {
                     }
                     else {
                         // Successful data entry, copy to X reg
-                        model.acceptTextEntry()
+                        model.acceptTextEntry(exitEvent)
                         
                         // Record the value and key when returning to a recording context
                         model.recordValueEvent( model.state.Xtv )

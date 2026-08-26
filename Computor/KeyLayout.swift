@@ -375,6 +375,7 @@ func initKeyLayout() {
                         Key(.complex,    "x ç{UnitText}+ç{} yç{UnitText}iç{}", caption: "Complex"),
                         Key(.vector,     "\u{27e8}x, y\u{27e9}", caption: "2D Vector"),
                         Key(.vector3D,   "ƒ{0.8}\u{27e8}x, y, z\u{27e9}ƒ{}", caption: "3D Vector"),
+                        Key(.latlong,    "ƒ{0.7}lat lonƒ{}", caption: "Latitude, Longitude"),
 
                         // Eliminate rational numbers for now
                         // Key(.rationalV, "x / y"),

@@ -12,7 +12,7 @@ let logV = Logger(subsystem: "com.microsnout.calculator", category: "value")
 
 
 enum ValueType : Int, Codable, Hashable {
-    case real = 0, rational, complex, vector, polar, vector3D, spherical
+    case real = 0, rational, complex, vector, polar, vector3D, spherical, latlong
 }
 
 typealias ValueTypeSet = Set<ValueType>
@@ -33,6 +33,7 @@ let valueSize: [ValueType : Int] = [
     .polar : 2,
     .vector3D : 3,
     .spherical : 3,
+    .latlong : 2,
 ]
 
 typealias Comp = Complex<Double>
@@ -615,65 +616,80 @@ extension TaggedValue {
         return (text, count)
     }
     
-    func renderValueReal( r: Int = 1, c: Int = 1 ) -> (String, Int) {
-        let value = get1( r: r, c: c)
+    
+    func renderTypedDouble( _ value: Double ) -> (String, Int) {
+        
         var (text, valueCount) = renderDouble(value)
         
-        if isSimple && tag != tagUntyped {
-            if tag == tagDeg {
+        if tag == tagDeg {
+            
+            // Display angle in eithre degrees or degrees minutes seconds - dms
+            
+            if fmt.style == .dms {
                 
-                // Display angle in eithre degrees or degrees minutes seconds - dms
+                // Degrees Minutes Seconds angle display
+                let neg = reg < 0.0 ? -1.0 : 1.0
+                let angle = abs(reg) + 0.0000001
+                let deg = floor(angle)
+                let min = floor((angle - deg) * 60.0)
+                let sec = ((angle - deg)*60.0 - min) * 60.0
                 
-                if fmt.style == .dms {
-                    
-                    // Degrees Minutes Seconds angle display
-                    let neg = reg < 0.0 ? -1.0 : 1.0
-                    let angle = abs(reg) + 0.0000001
-                    let deg = floor(angle)
-                    let min = floor((angle - deg) * 60.0)
-                    let sec = ((angle - deg)*60.0 - min) * 60.0
-                    
-                    let degStr = String( format: "%.0f", neg*deg )
-                    let minStr = String( format: "%.0f", min )
-                    let secStr = String( format: "%.0f", sec )
-                    
-                    let str   = String( format: "={\(degStr)\u{00B0}\(minStr)\u{2032}\(secStr)\u{2033}}" )
-                    let count = degStr.count + minStr.count + secStr.count + 3
-                    return (str, count)
-                }
-                else if fmt.style == .dm {
-                    
-                    // Degrees Minutes angle display
-                    let neg = reg < 0.0 ? -1.0 : 1.0
-                    let angle = abs(reg)
-                    let deg = floor(angle)
-                    let min = (angle - deg) * 60.0
-                    let degStr = String( format: "%.0f", neg*deg )
-                    let (minStr, minCount) = renderDouble(min)
-                    let str   = String( format: "={\(degStr)\u{00B0}}\(minStr)={\u{2032}}" )
-                    let count = degStr.count + minCount + 2
-                    return (str, count)
-                }
-                else {
-                    // Use degree symbol
-                    text.append("\u{00B0}")
-                    valueCount += 1
-                }
+                let degStr = String( format: "%.0f", neg*deg )
+                let minStr = String( format: "%.0f", min )
+                let secStr = String( format: "%.0f", sec )
+                
+                let str   = String( format: "={\(degStr)\u{00B0}\(minStr)\u{2032}\(secStr)\u{2033}}" )
+                let count = degStr.count + minStr.count + secStr.count + 3
+                return (str, count)
             }
-            else if tag == tagMinA {
-                // Display angle in minutes
-                text.append("\u{2032}")
+            else if fmt.style == .dm {
+                
+                // Degrees Minutes angle display
+                let neg = reg < 0.0 ? -1.0 : 1.0
+                let angle = abs(reg)
+                let deg = floor(angle)
+                let min = (angle - deg) * 60.0
+                let degStr = String( format: "%.0f", neg*deg )
+                let (minStr, minCount) = renderDouble(min)
+                let str   = String( format: "={\(degStr)\u{00B0}}\(minStr)={\u{2032}}" )
+                let count = degStr.count + minCount + 2
+                return (str, count)
+            }
+            else {
+                // Use degree symbol
+                text.append("\u{00B0}")
                 valueCount += 1
             }
-            else if let sym = tag.symbol {
-                // Add unit symbol
-                text.append( "ç{UnitText}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
-                valueCount += sym.count + 1
-            }
         }
+        else if tag == tagMinA {
+            // Display angle in minutes
+            text.append("\u{2032}")
+            valueCount += 1
+        }
+        else if let sym = tag.symbol {
+            // Add unit symbol
+            text.append( "ç{UnitText}={ }ƒ{0.9}\(sym)ƒ{}ç{}" )
+            valueCount += sym.count + 1
+        }
+
+        return (text, valueCount)
+    }
+    
+    
+    func renderValueReal( r: Int = 1, c: Int = 1 ) -> (String, Int) {
+        let value = get1( r: r, c: c)
+        
+        if isSimple && tag != tagUntyped {
+            
+            var (text, valueCount) = renderTypedDouble(value)
+            return (text, valueCount)
+        }
+        
+        var (text, valueCount) = renderDouble(value)
         return (text, valueCount)
     }
 
+    
     func renderValueRational( r: Int = 1, c: Int = 1 ) -> (String, Int) {
         let (num, den) = get2( r: r, c: c)
         let (numStr, numCount) = renderDouble(num)
@@ -739,6 +755,32 @@ extension TaggedValue {
     }
     
     
+    func renderValueLatlong( r: Int = 1, c: Int = 1 ) -> (String, Int) {
+        ///
+        /// RenderValueLatLong
+        ///      - Render a Lat Long value to string
+        ///
+        var (lat, long) = get2( r: r, c: c)
+        
+        // North, South, East, West
+        let (latSym, longSym) = ( lat < 0.0 ? "S" : "N", long < 0.0 ? "E" : "W" )
+        
+        // Positive values
+        (lat, long) = ( abs(lat), abs(long) )
+        
+        let (latStr, latCount) = renderTypedDouble(lat)
+        let (longStr, longCount) = renderTypedDouble(long)
+        
+        var text = String()
+        text.append(latStr)
+        text.append( "ç{UnitText}={\(latSym) }ç{}")
+        text.append(longStr)
+        text.append("ç{UnitText}={\(longSym)}ç{}")
+        
+        return (text, latCount + longCount + 3)
+    }
+    
+
     func renderValuePolar( r: Int = 1, c: Int = 1 ) -> (String, Int) {
         ///
         /// RenderValuePolar
@@ -876,6 +918,9 @@ extension TaggedValue {
 
         case .spherical:
             return renderValueSpherical( r: r, c: c)
+            
+        case .latlong:
+            return renderValueLatlong( r: r, c: c)
         }
     }
 

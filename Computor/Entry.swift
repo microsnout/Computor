@@ -202,7 +202,7 @@ struct EntryState {
     }
     
     
-    func makeTaggedValue() -> TaggedValue? {
+    func makeTaggedValue( _ lastEvent: KeyEvent ) -> TaggedValue? {
         
         /// Create a TaggedValue from data entry fields
         /// Multiple values produces a column matrix
@@ -213,16 +213,63 @@ struct EntryState {
             return nil
         }
         
+        // The number of comma separated values entered
         let n = nValues
         
-        var tv = TaggedValue( cols: n )
+        var vtp: ValueType = .real
         
-        for col in 1...n {
+        switch lastEvent.keyCode {
             
-            if let value = entrySet[col-1].getRealValue() {
-                tv.set1( value, c: col )
+        case .polar:
+            vtp = .polar
+
+        case .spherical:
+            vtp = .spherical
+
+        case .complex:
+            vtp = .complex
+
+        case .latlong:
+            vtp = .latlong
+
+        default:
+            var tv = TaggedValue( cols: n )
+            
+            for col in 1...n {
+                
+                if let value = entrySet[col-1].getRealValue() {
+                    tv.set1( value, c: col )
+                }
+            }
+            return tv
+        }
+        
+        var tv = TaggedValue( vtp )
+        
+        var values: [Double] = [0.0, 0.0, 0.0]
+        
+        for x in 0 ..< n {
+            
+            if let val = entrySet[x].getRealValue() {
+                values[x] = val
+            }
+            else {
+                break
             }
         }
+        
+        switch vtp {
+            
+        case .complex, .polar, .latlong:
+            tv.set2( values[0], values[1] )
+            
+        case .spherical:
+            tv.set3( values[0], values[1], values[2] )
+
+        default:
+            tv.set2( values[0], values[1] )
+        }
+        
         return tv
     }
 
@@ -388,9 +435,14 @@ extension CalculatorModel {
 
     // *** Entry State control ***
     
-    func acceptTextEntry() {
+    func acceptTextEntry( _ lastEvent: KeyEvent ) {
+        
+        /// lastEvent - The key event that ended data entry mode
+        
         if entry.entryMode {
-            guard let tv = entry.makeTaggedValue() else  {
+            // We are actually in Data Entry Mode
+            
+            guard let tv = entry.makeTaggedValue( lastEvent ) else  {
                 assert(false)
                 entry.clearEntry()
                 return
@@ -406,9 +458,9 @@ extension CalculatorModel {
     }
     
     
-    func grabTextEntry() -> TaggedValue {
+    func grabTextEntry( _ exitEvent: KeyEvent) -> TaggedValue {
         
-        guard let tv = entry.makeTaggedValue() else  {
+        guard let tv = entry.makeTaggedValue(exitEvent) else  {
             assert(false)
             entry.clearEntry()
             return untypedZero
