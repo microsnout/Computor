@@ -260,7 +260,12 @@ struct EntryState {
         
         switch vtp {
             
-        case .complex, .polar, .latlong:
+        case .latlong:
+            tv.set2( values[0], values[1] )
+            
+            tv.tag = TypeDef.tagOf("deg")
+
+        case .complex, .polar:
             tv.set2( values[0], values[1] )
             
         case .spherical:

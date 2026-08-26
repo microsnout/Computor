@@ -681,11 +681,11 @@ extension TaggedValue {
         
         if isSimple && tag != tagUntyped {
             
-            var (text, valueCount) = renderTypedDouble(value)
+            let (text, valueCount) = renderTypedDouble(value)
             return (text, valueCount)
         }
         
-        var (text, valueCount) = renderDouble(value)
+        let (text, valueCount) = renderDouble(value)
         return (text, valueCount)
     }
 
@@ -773,11 +773,11 @@ extension TaggedValue {
         
         var text = String()
         text.append(latStr)
-        text.append( "ç{UnitText}={\(latSym) }ç{}")
+        text.append( "ç{UnitText} ={\(latSym) }ç{}")
         text.append(longStr)
-        text.append("ç{UnitText}={\(longSym)}ç{}")
+        text.append("ç{UnitText} ={\(longSym)}ç{}")
         
-        return (text, latCount + longCount + 3)
+        return (text, latCount + longCount + 4)
     }
     
 
