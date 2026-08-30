@@ -51,6 +51,10 @@ enum FormatStyle : Int, Codable {
     // Only affect display when tag == tagDeg
     case dms        = 2
     case dm         = 3
+    
+    // Hours:Minutes:Seconds
+    // Only affect display when tag == tagHours
+    case hms        = 4
 }
 
 enum PolarAngle : Int, Codable {
@@ -665,6 +669,24 @@ extension TaggedValue {
             // Display angle in minutes
             text.append("\u{2032}")
             valueCount += 1
+        }
+        else if tag == tagHours && fmt.style == .hms {
+            
+            // Display time in Hours:Minutes:Seconds
+            let negative = reg < 0.0 ? -1.0 : 1.0
+            let duration = abs(reg)
+            
+            let hrs = floor(duration)
+            let min = floor((duration - hrs) * 60.0)
+            let sec = ((duration - hrs)*60.0 - min) * 60.0
+            
+            let hrsStr = String( format: "%.0f", negative*hrs )
+            let minStr = String( format: "%.0f", min )
+            let secStr = String( format: "%.02f", sec )
+            
+            let str   = String( format: "={\(hrsStr)h \(minStr)m \(secStr)s}" )
+            let count = hrsStr.count + minStr.count + secStr.count + 5
+            return (str, count)
         }
         else if let sym = tag.symbol {
             // Add unit symbol

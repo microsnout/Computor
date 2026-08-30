@@ -813,10 +813,12 @@ class TypeDef: Codable {
         defineStdType( .time,  .min,   "min",  1.0/60)
         defineStdType( .time,  .hr,    "hr",   1.0/(60*60))
         defineStdType( .time,  .day,   "day",  1.0/(24*60*60))
-        defineStdType( .time,  .yr,    "yr",   1.0/(365*24*60*60))
         defineStdType( .time,  .ms,    "ms",   1000.0)
         defineStdType( .time,  .us,    "\u{03BC}s", 1000000.0)
 
+        // Julian Year
+        defineStdType( .time,  .yr,    "a_{j}",   1.0/(365.25*24*60*60))
+        
         // Mass Units
         defineStdType( .mass,  .kg,    "kg",   1)
         defineStdType( .mass,  .gram,  "g",    1000.0)
@@ -1209,3 +1211,4 @@ let tagUntyped = TypeTag(.untyped)
 let tagRad     = TypeDef.tagOf("rad")
 let tagDeg     = TypeDef.tagOf("deg")
 let tagMinA    = TypeDef.tagOf("min'")
+let tagHours   = TypeDef.tagOf("hr")

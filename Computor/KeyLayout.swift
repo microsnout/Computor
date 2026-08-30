@@ -290,7 +290,8 @@ func initKeyLayout() {
                         Key(.min, "min",        caption: "Minutes"),
                         Key(.hr,  "hr",         caption: "Hours"),
                         Key(.day, "day",        caption: "Days"),
-                        Key(.yr,  "yr",         caption: "Years"),
+                        Key(.yr,  "a_{j}",      caption: "Julian Years"),
+                        Key(.hms, "ƒ{0.8}HMSƒ{}", caption: "[Hours]h [Minutes]m [Seconds]s")
                        ],
                        caption: "Time"
     )

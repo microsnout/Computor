@@ -462,6 +462,7 @@ extension CalculatorModel {
         .rad: Convert( sym: "rad", fmt: FormatRec( style: .decimal) ),
         .dms: Convert( sym: "deg", fmt: FormatRec( style: .dms)),
         .dm:  Convert( sym: "deg", fmt: FormatRec( style: .dm)),
+        .hms: Convert( sym: "hr",  fmt: FormatRec( style: .hms)),
     ]
 
 }

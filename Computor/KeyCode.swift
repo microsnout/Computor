@@ -77,7 +77,7 @@ enum KeyCode: Int, Codable {
     case km = 401, mm, cm, metre, inch, ft, yd, mi, NM, AU, ly
     
     // Time
-    case second = 420, min, hr, day, yr, ms, us
+    case second = 420, min, hr, day, yr, ms, us, hms
     
     // Angles
     case deg = 440, rad, dms, dm, minA
