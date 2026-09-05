@@ -231,8 +231,12 @@ struct EntryState {
 
         case .latlong:
             vtp = .latlong
+            
+        case .hms:
+            vtp = .real
 
         default:
+            // Produce a row matrix of entered values
             var tv = TaggedValue( cols: n )
             
             for col in 1...n {
@@ -272,7 +276,20 @@ struct EntryState {
             tv.set3( values[0], values[1], values[2] )
 
         default:
-            tv.set2( values[0], values[1] )
+            if lastEvent.keyCode == .hms {
+                
+                // Compute hours from entered hours,min,sec values
+                let negative = values[0] < 0.0 ? -1.0 : 1.0
+                var hours = abs(values[0])
+                hours += values[1] / 60.0
+                hours += values[2] / 3600.0
+                hours *= negative
+                
+                tv.setReal( hours, tag: tagHours, fmt: FormatRec( style: .hms ) )
+            }
+            else {
+                tv.set2( values[0], values[1] )
+            }
         }
         
         return tv

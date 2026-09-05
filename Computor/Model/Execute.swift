@@ -264,6 +264,8 @@ extension CalculatorModel {
                         }
                     }
                     
+                    // No custom conversion patters matched, try auto conversion based on type definitions
+                    
                     if state.convertX( toTag: tag) {
                         // Conversion succeded
                         state.noLift = false
@@ -273,12 +275,13 @@ extension CalculatorModel {
                         return KeyPressResult.stateChange
                     }
                     else {
-                        // else no-op as there was no new state
+                        // else no-op as there was no new state, drop though to Error indication
                         popState()
                     }
                 }
             }
             
+            // Unsuccessful conversion
             displayErrorIndicator()
             return KeyPressResult.stateError
         }
