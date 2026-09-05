@@ -386,6 +386,84 @@ class CalculatorModel: KeyPressHandler {
         installComplex()
         installVector()
 
+        
+        // The custom Unit conversions below are here because they convert between dissimilar types, time and angles
+        
+        defineUnitConversions([
+            
+            /// Conversion pattern from time types to Degrees, DMS, DM and Minutes of Angle
+            /// Based on Celestical navigation equivalance of 24 hours = 360 degrees
+            /// or one hour = 15 degrees
+            ///
+            ConversionPattern( [ .X([.real]) ], where: { s0 in s0.Xt.isType(.time) } ) { s0, tagTo in
+                
+                if tagTo.isType(.angle) {
+                    
+                    // Default format and type tag of result is degrees and a single decimal value
+                    var tagNew: TypeTag     = tagDeg
+                    var fmtNew: FormatStyle = .decimal
+                    
+                    switch tagTo {
+                        
+                    // These two tags require a custom format spec, but value is degrees
+                    case tagDMS: fmtNew = .dms
+                    case tagDM:  fmtNew = .dm
+                        
+                    // Result is in minutes not degrees, single decimal value
+                    case tagMinA: tagNew = tagMinA
+                        
+                    case tagDeg:
+                        // No changes
+                        break
+                        
+                    default:
+                        // Invalid conversion, flag as Error
+                        return nil
+                    }
+                    
+                    if let seq = unitConvert( from: s0.Xt, to: tagHours ) {
+                        var s1 = s0
+                        
+                        // There are 15 degrees in each hour
+                        let degrees = 15.0 * seq.op(s0.X)
+                        
+                        // Convert degrees to minutes of angle if tagTo is MinA
+                        s1.setRealValue( tagTo == tagMinA ? degrees*60.0 : degrees, tag: tagNew, fmt: FormatRec( style: fmtNew ) )
+                        return s1
+                    }
+                }
+                
+                // Conversion not possible
+                return nil
+            },
+            
+            
+            /// Conversion from degrees or minutes of angle to hours
+            /// Based on Celestical navigation equivalance of 24 hours = 360 degrees
+            /// or one hour = 15 degrees
+            ///
+            ConversionPattern( [ .X([.real]) ], where: { s0 in s0.Xt == tagDeg || s0.Xt == tagMinA } ) { s0, tagTo in
+                
+                if tagTo == tagHours {
+                    
+                    // Convert minutes of angle to degrees if needed
+                    if let seq = unitConvert( from: s0.Xt, to: tagDeg ) {
+                        var s1 = s0
+                        
+                        // There are 15 degrees in each hour
+                        let hours = seq.op(s0.X) / 15.0
+                        
+                        // Convert degrees to minutes of angle if tagTo is MinA
+                        s1.setRealValue( hours, tag: tagHours, fmt: FormatRec( style: .decimal ) )
+                        return s1
+                    }
+                }
+                
+                // Conversion not possible
+                return nil
+            },
+        ])
+            
         pushContext( NormalContext() )
     }
     

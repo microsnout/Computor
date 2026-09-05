@@ -807,6 +807,8 @@ class TypeDef: Codable {
         defineStdType( .angle,  .rad,  "rad",  1)
         defineStdType( .angle,  .deg,  "deg",  180/Double.pi)
         defineStdType( .angle,  .minA, "min'", 180/Double.pi * 60.0)
+        defineStdType( .angle,  .dms,  "dms",  180/Double.pi)
+        defineStdType( .angle,  .dm,   "dm",   180/Double.pi)
 
         // Units of Time
         defineStdType( .time,  .second,   "sec",  1.0)
@@ -1212,3 +1214,5 @@ let tagRad     = TypeDef.tagOf("rad")
 let tagDeg     = TypeDef.tagOf("deg")
 let tagMinA    = TypeDef.tagOf("min'")
 let tagHours   = TypeDef.tagOf("hr")
+let tagDMS     = TypeDef.tagOf("dms")
+let tagDM      = TypeDef.tagOf("dm")
