@@ -101,14 +101,26 @@ struct SettingsView: View {
                         }
                         
                         // SECTION DOCUMENT
-                        Section( header: SectionHeaderText( text: "Module").foregroundColor(Color("DisplayText")) ) {
+                        Section( header: SectionHeaderText( text: "Polar Co-ordinates").foregroundColor(Color("DisplayText")) ) {
+                            
+                            VStack {
+                                Image( modSettings.navPolar ? "polarNE" : "polarXY")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 150, height: 150)
+//                                    .padding()
+                            }
                             
                             Group {
-                                Toggle("Navigation Polar Co-ord", isOn: $modSettings.navPolar)
+                                Toggle("Navigation Style", isOn: $modSettings.navPolar)
                             }
                             .tint( Color("Frame"))
                             .listRowSeparator(.hidden)
+                        }
 
+                        // SECTION UNITS
+                        Section( header: SectionHeaderText( text: "Module").foregroundColor(Color("DisplayText")) ) {
+                            
                             Picker( selection: $modSettings.unitSet, label: Text("Unit Keys")) {
                                 Text("Default").tag(SoftkeyUnits.mixed)
                                 Text("Metric").tag(SoftkeyUnits.metric)
