@@ -791,6 +791,8 @@ class TypeDef: Codable {
         defineStdType( .length, .mm,     "mm",   1000)
         defineStdType( .length, .cm,     "cm",   100)
         defineStdType( .length, .km,     "km",   0.001)
+        
+        // Navigational Units - Nautical Miles
         defineStdType( .length, .NM,     "NM",   1.0/1852.0)
         
         // Imperial Length Units
@@ -799,7 +801,7 @@ class TypeDef: Codable {
         defineStdType( .length, .yd,   "yd",   1000/(36*25.4))
         defineStdType( .length, .mi,   "mi",   1000/(5280*12*25.4))
         
-        // Celestial Units
+        // Celestial Units - Astronomical Unit and Light Years
         defineStdType( .length, .AU,   "AU",   1.0/149597870700.0)
         defineStdType( .length, .ly,   "ly",   1.0/9460730472580800.0)
 
@@ -1208,7 +1210,7 @@ func lookupTypeTag( _ tc: TypeCode ) -> TypeTag? {
 }
 
 
-// Common tag values
+// Constants for tag values
 let tagUntyped = TypeTag(.untyped)
 let tagRad     = TypeDef.tagOf("rad")
 let tagDeg     = TypeDef.tagOf("deg")
@@ -1216,3 +1218,4 @@ let tagMinA    = TypeDef.tagOf("min'")
 let tagHours   = TypeDef.tagOf("hr")
 let tagDMS     = TypeDef.tagOf("dms")
 let tagDM      = TypeDef.tagOf("dm")
+let tagNM      = TypeDef.tagOf("NM")

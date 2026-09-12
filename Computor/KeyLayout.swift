@@ -314,6 +314,7 @@ func initKeyLayout() {
                         Key(.ft, "ft",      caption: "Feet"),
                         Key(.yd,  "yd",     caption: "Yards"),
                         Key(.mi, "mi",      caption: "Miles"),
+                        Key(.NM, "NM",      caption: "Nautical Miles")
                        ],
                        caption: "Distance"
     )

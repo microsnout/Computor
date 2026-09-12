@@ -462,6 +462,69 @@ class CalculatorModel: KeyPressHandler {
                 // Conversion not possible
                 return nil
             },
+            
+            
+            /// Conversion from angle of Latitude to nautical miles
+            ///
+            ConversionPattern( [ .X([.real]) ], where: { s0 in s0.Xt == tagDeg || s0.Xt == tagMinA } ) { s0, tagTo in
+                
+                if tagTo == tagNM {
+                    
+                    // Convert degrees or minutes of angle to minutes which are equal to nautical miles
+                    if let seq = unitConvert( from: s0.Xt, to: tagMinA ) {
+                        var s1 = s0
+                        
+                        // Convert sequence produces minutes which are equal to NM
+                        let nm = seq.op(s0.X)
+                        
+                        s1.setRealValue( nm, tag: tagNM, fmt: FormatRec( style: .decimal ) )
+                        return s1
+                    }
+                }
+                
+                // Conversion not possible
+                return nil
+            },
+            
+            
+            /// Conversion from nautical miles to degrees:min:sec or minutes of latitude
+            ///
+            ConversionPattern( [ .X([.real]) ], where: { s0 in s0.Xt == tagNM } ) { s0, tagTo in
+                
+                if tagTo.isType(.angle) {
+                    var s1 = s0
+                    
+                    var tagNew: TypeTag     = tagDeg
+                    var fmtNew: FormatStyle = .decimal
+                    
+                    switch tagTo {
+                        
+                    // These two tags require a custom format spec, but value is degrees
+                    case tagDMS: fmtNew = .dms
+                    case tagDM:  fmtNew = .dm
+                        
+                    // Result is in minutes not degrees, single decimal value
+                    case tagMinA: tagNew = tagMinA
+                        
+                    case tagDeg:
+                        // No changes
+                        break
+                        
+                    default:
+                        // Invalid conversion, flag as Error
+                        return nil
+                    }
+
+                    let value = tagTo == tagMinA ? s0.X : s0.X / 60.0
+                        
+                    s1.setRealValue( value, tag: tagNew, fmt: FormatRec( style: fmtNew ) )
+                    
+                    return s1
+                }
+                
+                // Conversion not possible
+                return nil
+            },
         ])
             
         pushContext( NormalContext() )

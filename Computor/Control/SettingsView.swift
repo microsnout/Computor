@@ -108,7 +108,6 @@ struct SettingsView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 150, height: 150)
-//                                    .padding()
                             }
                             
                             Group {
