@@ -1,0 +1,13 @@
+@@Navigation Conversions
+The followind non-standard conversions are supported for navigation calculations.
+####
+ç{AccentText}ƒ{1.0}Degrees of Longitude <-> Timeƒ{}ç{}
+
+Longitude in degrees, DMS, DM or minutes can be converted to hours or Hours:Min:Sec.
+One hour corresponds to 15 degrees, so 24h makes 360 degrees.
+####
+ç{AccentText}ƒ{1.0}Degrees of Latitude <-> Nautical Milesƒ{}ç{}
+
+Degrees, DMS, DM or minutes of angle convert to nautical miles.
+One minute of latitude equals one nautical mile.
+
